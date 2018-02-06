@@ -28,6 +28,10 @@ public class PythonInvokeInstruction extends SSAAbstractInvokeInstruction {
 		return getNumberOfUses();
 	}
 
+	public int getNumberOfPositionalParameters() {
+		return positionalParams.length;
+	}
+	
 	@Override
 	public int getNumberOfUses() {
 		return positionalParams.length + keywordParams.length;

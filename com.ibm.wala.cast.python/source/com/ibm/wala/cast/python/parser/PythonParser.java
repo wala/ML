@@ -675,14 +675,14 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				
 				public java.util.List<CAstType> getArgumentTypes() {
 					java.util.List<CAstType> types = new ArrayList<CAstType>();
-					for(int i = 0; i < getArgumentCount(); i++) {
+					for(int i = 0; i < getArgumentCount()+1; i++) {
 						types.add(CAstType.DYNAMIC);
 					}
 					return types;
 				}
 				
 				public int getArgumentCount() {
-					return arg0.getInternalArgs().getInternalArgs().size();
+					return arg0.getInternalArgs().getInternalArgs().size()+1;
 				}				
 			};
 			
@@ -705,7 +705,8 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			}
 			
 			int x = 0;
-			String[] argumentNames = new String[ arg0.getInternalArgs().getInternalArgs().size() ];
+			String[] argumentNames = new String[ arg0.getInternalArgs().getInternalArgs().size()+1 ];
+			argumentNames[x++] = "the function";
 			for(expr a : arg0.getInternalArgs().getInternalArgs()) {
 				String name = a.accept(this).getChild(0).getValue().toString();
 				argumentNames[x++] = name;		
@@ -739,7 +740,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 				@Override
 				public int getArgumentCount() {
-					return arg0.getInternalArgs().getInternalArgs().size();
+					return arg0.getInternalArgs().getInternalArgs().size()+1;
 
 				}
 

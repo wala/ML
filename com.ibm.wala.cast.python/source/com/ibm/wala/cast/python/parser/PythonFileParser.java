@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.python.core.PyObject;

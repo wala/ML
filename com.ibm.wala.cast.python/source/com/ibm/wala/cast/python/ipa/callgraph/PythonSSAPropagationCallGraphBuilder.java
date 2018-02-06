@@ -65,7 +65,12 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 		if (! (instruction instanceof PythonInvokeInstruction)) {
 			super.processCallingConstraints(caller, instruction, target, constParams, uniqueCatchKey);
 		} else {
-			
+			PythonInvokeInstruction call = (PythonInvokeInstruction) instruction;
+			for(int i = 0; i < call.getNumberOfPositionalParameters(); i++) {
+				PointerKey lval = getPointerKeyForLocal(target, i+1);
+				PointerKey rval = getPointerKeyForLocal(caller, call.getUse(i));
+			    getSystem().newConstraint(lval, assignOperator, rval);
+			}
 		}
 	}
 
