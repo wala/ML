@@ -49,3 +49,9 @@ print(x)
 y = x()
 print(y)
 print(y.foo(7,8))
+
+def nothing():
+    return 0
+
+z = id(nothing)
+z()

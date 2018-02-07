@@ -71,6 +71,10 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 				PointerKey rval = getPointerKeyForLocal(caller, call.getUse(i));
 			    getSystem().newConstraint(lval, assignOperator, rval);
 			}
+			
+			PointerKey rret = getPointerKeyForReturnValue(target);
+			PointerKey lret = getPointerKeyForLocal(caller, call.getReturnValue(0));
+			getSystem().newConstraint(lret, assignOperator, rret);
 		}
 	}
 
