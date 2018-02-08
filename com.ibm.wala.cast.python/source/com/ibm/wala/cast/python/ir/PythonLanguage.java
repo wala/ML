@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.ibm.wala.analysis.typeInference.PrimitiveType;
+import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
+import com.ibm.wala.cast.ir.ssa.AstGlobalWrite;
+import com.ibm.wala.cast.java.loader.JavaSourceLoaderImpl;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.classLoader.Language;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
@@ -15,6 +18,7 @@ import com.ibm.wala.ipa.callgraph.impl.FakeRootMethod;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.SSAInstructionFactory;
+import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
@@ -144,7 +148,17 @@ public class PythonLanguage implements Language {
 
 	@Override
 	public SSAInstructionFactory instructionFactory() {
-		return Language.JAVA.instructionFactory();
+		return new JavaSourceLoaderImpl.InstructionFactory() {
+		      @Override
+		        public AstGlobalRead GlobalRead(int iindex, int lhs, FieldReference global) {
+		          return new AstGlobalRead(iindex, lhs, global);
+		        }
+
+		        @Override
+		        public AstGlobalWrite GlobalWrite(int iindex, FieldReference global, int rhs) {
+		          return new AstGlobalWrite(iindex, global, rhs);
+		        }
+		};
 	}
 
 	@Override
