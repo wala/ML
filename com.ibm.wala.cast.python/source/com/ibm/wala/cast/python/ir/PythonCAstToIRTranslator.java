@@ -198,19 +198,16 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
 	    for(CAstEntity field : n.getAllScopedEntities().get(null)) {
    			FieldReference fr = FieldReference.findOrCreate(type, Atom.findOrCreateUnicodeAtom(field.getName()), PythonTypes.Root);
+   			int val;
 	    		if (field.getKind() == CAstEntity.FIELD_ENTITY) {
-	 	    		
 	    			this.visit(field.getAST(), context, this);
-	    			int val = context.getValue(field.getAST());
-	    		
-	    			context.cfg().addInstruction(Python.instructionFactory().PutInstruction(context.cfg().getCurrentInstruction(), v, val, fr));
-	    	
-	    		} else if (field.getKind() == CAstEntity.FUNCTION_ENTITY) {
-	    			int val = context.currentScope().allocateTempValue();
-	    			doMaterializeFunction(null, context, val, -1, field);
-	    			
-	    			context.cfg().addInstruction(Python.instructionFactory().PutInstruction(context.cfg().getCurrentInstruction(), v, val, fr));
+	    			val = context.getValue(field.getAST());
+	    		} else {
+	    			assert (field.getKind() == CAstEntity.FUNCTION_ENTITY);
+	    			val = context.currentScope().allocateTempValue();
+	    			doMaterializeFunction(null, context, val, -1, field);	    			
 	    		}
+	    		context.cfg().addInstruction(Python.instructionFactory().PutInstruction(context.cfg().getCurrentInstruction(), v, val, fr));
 	    }
 	}
 
