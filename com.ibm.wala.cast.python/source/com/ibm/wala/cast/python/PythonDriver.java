@@ -1,3 +1,13 @@
+/******************************************************************************
+ * Copyright (c) 2018 IBM Corporation.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     IBM Corporation - initial API and implementation
+ *****************************************************************************/
 package com.ibm.wala.cast.python;
 
 import java.io.File;
@@ -30,7 +40,6 @@ import com.ibm.wala.ipa.callgraph.impl.ClassHierarchyMethodTargetSelector;
 import com.ibm.wala.ipa.callgraph.impl.ContextInsensitiveSelector;
 import com.ibm.wala.ipa.callgraph.impl.DefaultEntrypoint;
 import com.ibm.wala.ipa.callgraph.impl.Everywhere;
-import com.ibm.wala.ipa.callgraph.propagation.cfa.DefaultSSAInterpreter;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXInstanceKeys;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
@@ -75,7 +84,7 @@ public class PythonDriver {
 		IRFactory<IMethod> irs = AstIRFactory.makeDefaultFactory();
 		IClassHierarchy cha = x.getClassHierarchy();
 		for(IClass c : cha) {
-			System.err.println(c + " : " + c.getName());
+			System.err.println(c + " : " + c.getName() + " : " + c.getSuperclass());
 			for(IField ff : c.getAllStaticFields()) {
 				System.err.println(ff);
 			}
