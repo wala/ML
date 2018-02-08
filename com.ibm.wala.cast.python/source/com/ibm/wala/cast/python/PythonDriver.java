@@ -19,6 +19,7 @@ import com.ibm.wala.cast.ipa.callgraph.AstCFAPointerKeys;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.loader.AstMethod;
+import com.ibm.wala.cast.python.ipa.callgraph.PythonConstructorTargetSelector;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
@@ -115,7 +116,7 @@ public class PythonDriver {
 		if (args.length > 1) {
 			AnalysisOptions options = new AnalysisOptions();
 
-			options.setSelector(new ClassHierarchyMethodTargetSelector(cha));
+			options.setSelector(new PythonConstructorTargetSelector(new ClassHierarchyMethodTargetSelector(cha)));
 			options.setSelector(new ClassHierarchyClassTargetSelector(cha));
 
 			IClass entry = cha.lookupClass(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.findOrCreate("Lscript " + args[1])));

@@ -31,7 +31,9 @@ import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
+import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
+import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.classLoader.IClass;
@@ -47,6 +49,7 @@ import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.types.FieldReference;
+import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.types.annotations.Annotation;
@@ -111,6 +114,17 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 		return makeCodeBodyType(name, PythonTypes.CodeBody, pos, entity, context);
 	}
 
+	public IClass defineMethodType(String name, CAstSourcePositionMap.Position pos, CAstEntity entity, CAstType type, WalkContext context) {
+		IClass fun = makeCodeBodyType(name, PythonTypes.CodeBody, pos, entity, context);
+		
+		TypeName cls = TypeName.findOrCreate("L" + type.getName());
+		assert types.containsKey(cls);
+		MethodReference me = MethodReference.findOrCreate(fun.getReference(), Atom.findOrCreateUnicodeAtom(name), AstMethodReference.fnDesc);
+		((PythonClass)types.get(cls)).methodTypes.add(me);
+
+		return fun;
+	}
+
 	public IMethod defineCodeBodyCode(String clsName, AbstractCFG<?, ?> cfg, SymbolTable symtab, boolean hasCatchBlock,
 			Map<IBasicBlock<SSAInstruction>, TypeReference[]> caughtTypes, boolean hasMonitorOp, AstLexicalInformation lexicalInfo, DebuggingInformation debugInfo) {
 		DynamicCodeBody C = (DynamicCodeBody) lookupClass(clsName, cha);
@@ -125,8 +139,9 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 				debugInfo);
 	}
 
-	class PythonClass extends CoreClass {
+	public class PythonClass extends CoreClass {
 		private java.util.Set<IField> staticFields = HashSetFactory.make();
+		private java.util.Set<MethodReference> methodTypes = HashSetFactory.make();
 		
 		public PythonClass(TypeName name, TypeName superName, IClassLoader loader, Position sourcePosition) {
 			super(name, superName, loader, sourcePosition);
@@ -136,6 +151,10 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 		public Collection<IField> getDeclaredStaticFields() {
 			return staticFields;
 		}	
+		
+		public Collection<MethodReference> getMethodReferences() {
+			return methodTypes;
+		}
 	}
 	
 	public void defineType(TypeName cls, TypeName parent) {

@@ -117,7 +117,11 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		}
 		
 	    String fnName = composeEntityName(context, N);
-	    ((PythonLoader) loader).defineFunctionType("L" + fnName, N.getPosition(), N, context);
+	    if (N.getType() instanceof CAstType.Method) {
+	    		((PythonLoader) loader).defineMethodType("L" + fnName, N.getPosition(), N, ((CAstType.Method)N.getType()).getDeclaringType(), context);	    	
+	    } else {
+	    		((PythonLoader) loader).defineFunctionType("L" + fnName, N.getPosition(), N, context);
+	    }
 	}
 
 	@Override
