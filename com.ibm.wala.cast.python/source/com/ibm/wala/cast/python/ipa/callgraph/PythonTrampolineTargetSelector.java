@@ -41,7 +41,7 @@ public class PythonTrampolineTargetSelector implements MethodTargetSelector {
 			SSAAbstractInvokeInstruction call = caller.getIR().getCalls(site)[0];
 			Pair<IClass,Integer> key = Pair.make(receiver,  call.getNumberOfParameters());
 			if (!codeBodies.containsKey(key)) {
-				MethodReference tr = MethodReference.findOrCreate(site.getDeclaredTarget().getDeclaringClass(), 
+				MethodReference tr = MethodReference.findOrCreate(receiver.getReference(),
 						Atom.findOrCreateUnicodeAtom("trampoline" + call.getNumberOfParameters()), 
 						AstMethodReference.fnDesc);
 				PythonSummary x = new PythonSummary(tr, call.getNumberOfParameters());
