@@ -21,6 +21,7 @@ import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonConstructorTargetSelector;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
+import com.ibm.wala.cast.python.ipa.callgraph.PythonTrampolineTargetSelector;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
 import com.ibm.wala.cast.python.types.PythonTypes;
@@ -34,6 +35,7 @@ import com.ibm.wala.classLoader.SourceURLModule;
 import com.ibm.wala.ipa.callgraph.AnalysisCacheImpl;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.AnalysisScope;
+import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.IAnalysisCacheView;
 import com.ibm.wala.ipa.callgraph.impl.ClassHierarchyClassTargetSelector;
@@ -93,11 +95,6 @@ public class PythonDriver {
 				System.err.println(m);
 			}
 		}
-		for(IClass c : cha) {
-			for(IMethod m : c.getDeclaredMethods()) {
-				System.err.println(irs.makeIR(m, Everywhere.EVERYWHERE, SSAOptions.defaultOptions()));
-			}
-		}
 
 		for(IClass c : cha) {
 			for(IMethod m : c.getDeclaredMethods()) {
@@ -116,7 +113,7 @@ public class PythonDriver {
 		if (args.length > 1) {
 			AnalysisOptions options = new AnalysisOptions();
 
-			options.setSelector(new PythonConstructorTargetSelector(new ClassHierarchyMethodTargetSelector(cha)));
+			options.setSelector(new PythonTrampolineTargetSelector(new PythonConstructorTargetSelector(new ClassHierarchyMethodTargetSelector(cha))));
 			options.setSelector(new ClassHierarchyClassTargetSelector(cha));
 
 			IClass entry = cha.lookupClass(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.findOrCreate("Lscript " + args[1])));
@@ -138,6 +135,10 @@ public class PythonDriver {
 
 			System.err.println(builder.getPointerAnalysis());
 			System.err.println(CG);
+	
+			for(CGNode n : CG) {
+				System.err.println(n.getIR());
+			}
 		}
 	}
 }

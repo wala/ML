@@ -683,7 +683,12 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				
 				public int getArgumentCount() {
 					return arg0.getInternalArgs().getInternalArgs().size()+1;
-				}				
+				}		
+				
+				@Override
+				public String toString() {
+					return getName();
+				}
 			};
 			
 			CAstType functionType;

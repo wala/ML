@@ -38,4 +38,6 @@ public class PythonTypes extends AstTypeReference {
 
 	  public static final TypeReference list = TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Llist"));
 
+	  public static final TypeReference trampoline = TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Ltrampoline"));
+
 }

@@ -13,33 +13,34 @@ package com.ibm.wala.cast.python.ipa.summaries;
 import java.util.Collection;
 import java.util.Collections;
 
-import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
-import com.ibm.wala.ssa.SSAInstructionFactory;
-import com.ibm.wala.types.Descriptor;
 import com.ibm.wala.types.FieldReference;
-import com.ibm.wala.types.MethodReference;
-import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.types.annotations.Annotation;
 import com.ibm.wala.util.strings.Atom;
 
 public class PythonInstanceMethodTrampoline extends PythonSyntheticClass {
 	private static final Atom selfName = Atom.findOrCreateUnicodeAtom("self");
-
-	private static final Atom initName = Atom.findOrCreateUnicodeAtom("$init");
-
-	private static final Descriptor initDescr = Descriptor.findOrCreate(new TypeName[] { PythonTypes.Root.getName() }, PythonTypes.Root.getName());
 	
 	public static final FieldReference self = FieldReference.findOrCreate(PythonTypes.Root, selfName, PythonTypes.object);
 	
-	public static final MethodReference init = MethodReference.findOrCreate(PythonTypes.Root, initName, initDescr);
+	public static TypeReference findOrCreate(TypeReference cls, IClassHierarchy cha) {
+		TypeReference t = trampoline(cls);
+		if (cha.lookupClass(t) == null) {
+			new PythonInstanceMethodTrampoline(cls, cha);
+		}
+		return t;
+	}
+	
+	public static TypeReference trampoline(TypeReference x) {
+		return TypeReference.findOrCreate(x.getClassLoader(), "L$" + x.getName().toString().substring(1));
+	}
 	
 	public PythonInstanceMethodTrampoline(TypeReference functionType, IClassHierarchy cha) {
-		super(functionType, cha);
+		super(trampoline(functionType), cha);
 		fields.put(selfName, new IField() {
 			@Override
 			public IClass getDeclaringClass() {
@@ -102,11 +103,16 @@ public class PythonInstanceMethodTrampoline extends PythonSyntheticClass {
 			}
 		});
 		
-		PythonSummary ctor = new PythonSummary(init, 1);
-		SSAInstructionFactory insts = PythonLanguage.Python.instructionFactory();
-		ctor.addStatement(insts.PutInstruction(0, 1, 2, self));
-		
-		functions.put(init.getSelector(), new PythonSummarizedFunction(init, ctor, this));
+		cha.addClass(this);
+	}
+
+	public String toString() {
+		return "Trampoline[" + getReference().getName().toString().substring(1) + "]";
+	}
+
+	@Override
+	public IClass getSuperclass() {
+		return getClassHierarchy().lookupClass(PythonTypes.trampoline);
 	}
 
 }

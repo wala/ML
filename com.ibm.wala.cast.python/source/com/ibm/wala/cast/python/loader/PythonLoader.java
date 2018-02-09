@@ -105,6 +105,8 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 
 	CoreClass object = new CoreClass(PythonTypes.object.getName(), PythonTypes.rootTypeName, this, null);
 
+	CoreClass trampoline = new CoreClass(PythonTypes.trampoline.getName(), PythonTypes.rootTypeName, this, null);
+
 	public IClass makeCodeBodyType(String name, TypeReference P, CAstSourcePositionMap.Position sourcePosition, CAstEntity entity, WalkContext context) {
 		return new DynamicCodeBody(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName(name)), P, this,
 				sourcePosition, entity, context);
@@ -119,7 +121,7 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 		
 		TypeName cls = TypeName.findOrCreate("L" + type.getName());
 		assert types.containsKey(cls);
-		MethodReference me = MethodReference.findOrCreate(fun.getReference(), Atom.findOrCreateUnicodeAtom(name), AstMethodReference.fnDesc);
+		MethodReference me = MethodReference.findOrCreate(fun.getReference(), Atom.findOrCreateUnicodeAtom(entity.getType().getName()), AstMethodReference.fnDesc);
 		((PythonClass)types.get(cls)).methodTypes.add(me);
 
 		return fun;

@@ -12,6 +12,7 @@ package com.ibm.wala.cast.python.ipa.callgraph;
 
 import java.util.Map;
 
+import com.ibm.wala.cast.python.ipa.summaries.PythonInstanceMethodTrampoline;
 import com.ibm.wala.cast.python.ipa.summaries.PythonSummarizedFunction;
 import com.ibm.wala.cast.python.ipa.summaries.PythonSummary;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
@@ -50,22 +51,35 @@ public class PythonConstructorTargetSelector implements MethodTargetSelector {
 				IMethod init = receiver.getMethod(new Selector(Atom.findOrCreateUnicodeAtom("__init__"), AstMethodReference.fnDesc));
 				int params = init==null? 1: init.getNumberOfParameters();
 				int v = params+2;
-				int i = 0;
+				int pc = 0;
 				int inst = v++;
 				MethodReference ref = MethodReference.findOrCreate(receiver.getReference(), site.getDeclaredTarget().getSelector());
 				PythonSummary ctor = new PythonSummary(ref, params);
 				SSAInstructionFactory insts = PythonLanguage.Python.instructionFactory();
-				ctor.addStatement(insts.NewInstruction(i++, inst, NewSiteReference.make(0, PythonTypes.object)));
+				ctor.addStatement(insts.NewInstruction(pc, inst, NewSiteReference.make(pc, PythonTypes.object)));
+				pc++;
 				
 				PythonClass x = (PythonClass)receiver;
 				for(MethodReference r : x.getMethodReferences()) {
 					int f = v++;
-					int pc = i++;
-					ctor.addStatement(insts.NewInstruction(pc, f, NewSiteReference.make(pc, r.getDeclaringClass())));
-					ctor.addStatement(insts.PutInstruction(pc++, 1, f, FieldReference.findOrCreate(PythonTypes.Root, r.getName(), PythonTypes.Root)));
+					ctor.addStatement(insts.NewInstruction(pc, f, NewSiteReference.make(pc, PythonInstanceMethodTrampoline.findOrCreate(r.getDeclaringClass(), receiver.getClassHierarchy()))));
+					pc++;
+					
+					ctor.addStatement(insts.PutInstruction(pc, f, inst, FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("$self"), PythonTypes.Root)));
+					pc++;
+					
+					int orig_f = v++;
+					ctor.addStatement(insts.GetInstruction(pc, orig_f, 1, FieldReference.findOrCreate(PythonTypes.Root, r.getName(), PythonTypes.Root)));
+					pc++;
+
+					ctor.addStatement(insts.PutInstruction(pc, f, orig_f, FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("$function"), PythonTypes.Root)));
+					pc++;
+
+					ctor.addStatement(insts.PutInstruction(pc, inst, f, FieldReference.findOrCreate(PythonTypes.Root, r.getName(), PythonTypes.Root)));
+					pc++;
 				}
 				
-				ctor.addStatement(insts.ReturnInstruction(i++, inst, false));
+				ctor.addStatement(insts.ReturnInstruction(pc++, inst, false));
 			
 				ctors.put(receiver, new PythonSummarizedFunction(ref, ctor, receiver));
 			}
