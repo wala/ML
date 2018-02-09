@@ -43,6 +43,8 @@ import com.ibm.wala.ipa.callgraph.impl.ClassHierarchyMethodTargetSelector;
 import com.ibm.wala.ipa.callgraph.impl.ContextInsensitiveSelector;
 import com.ibm.wala.ipa.callgraph.impl.DefaultEntrypoint;
 import com.ibm.wala.ipa.callgraph.impl.Everywhere;
+import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
+import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXInstanceKeys;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
@@ -56,6 +58,7 @@ import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.collections.Pair;
 
 public class PythonDriver {
 
@@ -80,6 +83,34 @@ public class PythonDriver {
 		return cha;
 	}
 
+	public Pair<CallGraph, PointerAnalysis<InstanceKey>> getCallGraph(String rootScriptName) throws IllegalArgumentException, CancelException {
+		AnalysisOptions options = new AnalysisOptions();
+		IRFactory<IMethod> irs = AstIRFactory.makeDefaultFactory();
+
+		options.setSelector(new PythonTrampolineTargetSelector(new PythonConstructorTargetSelector(new ClassHierarchyMethodTargetSelector(cha))));
+		options.setSelector(new ClassHierarchyClassTargetSelector(cha));
+
+		IClass entry = cha.lookupClass(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.findOrCreate(rootScriptName)));
+		MethodReference er = MethodReference.findOrCreate(entry.getReference(), AstMethodReference.fnSelector);
+		options.setEntrypoints(Collections.singleton(new DefaultEntrypoint(er, cha)));
+
+		IAnalysisCacheView cache = new AnalysisCacheImpl(irs, options.getSSAOptions());
+		PythonSSAPropagationCallGraphBuilder builder = 
+				new PythonSSAPropagationCallGraphBuilder(cha, options, cache, new AstCFAPointerKeys());
+
+		AstContextInsensitiveSSAContextInterpreter interpreter = new AstContextInsensitiveSSAContextInterpreter(options, cache);
+		builder.setContextInterpreter(interpreter);
+
+		builder.setContextSelector(new ContextInsensitiveSelector());
+
+		builder.setInstanceKeys(new ZeroXInstanceKeys(options, cha, interpreter, ZeroXInstanceKeys.ALLOCATIONS));
+
+		CallGraph CG = builder.makeCallGraph(options);
+		PointerAnalysis<InstanceKey> PA = builder.getPointerAnalysis();
+		
+		return Pair.make(CG, PA);
+	}
+	
 	public static void main(String args[]) throws ClassHierarchyException, IOException, IllegalArgumentException, CancelException {
 		File f = new File(args[0]);
 		SourceURLModule e = new SourceURLModule(f.exists()? f.toURI().toURL(): new URL(args[0]));
@@ -111,32 +142,12 @@ public class PythonDriver {
 		}
 
 		if (args.length > 1) {
-			AnalysisOptions options = new AnalysisOptions();
+			Pair<CallGraph, PointerAnalysis<InstanceKey>> data = x.getCallGraph("Lscript " + args[1]);
 
-			options.setSelector(new PythonTrampolineTargetSelector(new PythonConstructorTargetSelector(new ClassHierarchyMethodTargetSelector(cha))));
-			options.setSelector(new ClassHierarchyClassTargetSelector(cha));
-
-			IClass entry = cha.lookupClass(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.findOrCreate("Lscript " + args[1])));
-			MethodReference er = MethodReference.findOrCreate(entry.getReference(), AstMethodReference.fnSelector);
-			options.setEntrypoints(Collections.singleton(new DefaultEntrypoint(er, cha)));
-
-			IAnalysisCacheView cache = new AnalysisCacheImpl(irs, options.getSSAOptions());
-			PythonSSAPropagationCallGraphBuilder builder = 
-					new PythonSSAPropagationCallGraphBuilder(cha, options, cache, new AstCFAPointerKeys());
-
-			AstContextInsensitiveSSAContextInterpreter interpreter = new AstContextInsensitiveSSAContextInterpreter(options, cache);
-			builder.setContextInterpreter(interpreter);
-
-			builder.setContextSelector(new ContextInsensitiveSelector());
-
-			builder.setInstanceKeys(new ZeroXInstanceKeys(options, cha, interpreter, ZeroXInstanceKeys.ALLOCATIONS));
-
-			CallGraph CG = builder.makeCallGraph(options);
-
-			System.err.println(builder.getPointerAnalysis());
-			System.err.println(CG);
+			System.err.println(data.snd);
+			System.err.println(data.fst);
 	
-			for(CGNode n : CG) {
+			for(CGNode n : data.fst) {
 				System.err.println(n.getIR());
 			}
 		}
