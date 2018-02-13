@@ -39,9 +39,11 @@ import com.ibm.wala.classLoader.IClassLoader;
 import com.ibm.wala.classLoader.NewSiteReference;
 import com.ibm.wala.shrikeBT.IBinaryOpInstruction;
 import com.ibm.wala.shrikeBT.IBinaryOpInstruction.IOperator;
+import com.ibm.wala.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.FieldReference;
+import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.Pair;
@@ -300,12 +302,12 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	protected void doPrimitive(int resultVal, WalkContext context, CAstNode primitiveCall) {
 		if (primitiveCall.getChildCount() == 2 && "import".equals(primitiveCall.getChild(0).getValue())) {
 			TypeReference imprt = TypeReference.findOrCreate(PythonTypes.pythonLoader, "L" + primitiveCall.getChild(1).getValue());
+			MethodReference call = MethodReference.findOrCreate(imprt, "import", "()L" + primitiveCall.getChild(1).getValue());
 			int idx = context.cfg().getCurrentInstruction();
-			context.cfg().addInstruction(Python.instructionFactory().NewInstruction(idx, resultVal, NewSiteReference.make(idx, imprt)));
+			context.cfg().addInstruction(Python.instructionFactory().InvokeInstruction(idx, new int[0], context.currentScope().allocateTempValue(), CallSiteReference.make(idx, call, Dispatch.STATIC), null));
 		}
-		
 	}
-
+	
 	@Override
 	protected boolean visitVarAssign(CAstNode n, CAstNode v, CAstNode a, WalkContext c,
 			CAstVisitor<WalkContext> visitor) {

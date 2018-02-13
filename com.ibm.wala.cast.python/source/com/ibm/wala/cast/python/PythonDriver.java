@@ -13,6 +13,7 @@ package com.ibm.wala.cast.python;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 
 import com.ibm.wala.cast.ipa.callgraph.AstCFAPointerKeys;
@@ -29,15 +30,19 @@ import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cast.util.SourceBuffer;
 import com.ibm.wala.classLoader.IClass;
+import com.ibm.wala.classLoader.IClassLoader;
 import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.SourceURLModule;
+import com.ibm.wala.classLoader.SyntheticClass;
 import com.ibm.wala.ipa.callgraph.AnalysisCacheImpl;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.AnalysisScope;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
+import com.ibm.wala.ipa.callgraph.ClassTargetSelector;
 import com.ibm.wala.ipa.callgraph.IAnalysisCacheView;
+import com.ibm.wala.ipa.callgraph.MethodTargetSelector;
 import com.ibm.wala.ipa.callgraph.impl.ClassHierarchyClassTargetSelector;
 import com.ibm.wala.ipa.callgraph.impl.ClassHierarchyMethodTargetSelector;
 import com.ibm.wala.ipa.callgraph.impl.ContextInsensitiveSelector;
@@ -49,34 +54,44 @@ import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXInstanceKeys;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ipa.cha.SeqClassHierarchyFactory;
+import com.ibm.wala.ipa.summaries.BypassClassTargetSelector;
+import com.ibm.wala.ipa.summaries.BypassMethodTargetSelector;
+import com.ibm.wala.ipa.summaries.BypassSyntheticClassLoader;
+import com.ibm.wala.ipa.summaries.XMLMethodSummaryReader;
+import com.ibm.wala.shrikeBT.Constants;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.IRFactory;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.types.MethodReference;
+import com.ibm.wala.types.Selector;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.Pair;
+import com.ibm.wala.util.strings.Atom;
 
 public class PythonDriver {
 
 	private IClassHierarchy cha;
+	
+	private AnalysisScope scope;
 	
 	public PythonDriver(SourceURLModule M) throws ClassHierarchyException {
 		ClassLoaderReference dialogs = PythonTypes.pythonLoader;
 		
 		PythonLoaderFactory loader  = new PythonLoaderFactory();
 		
-		AnalysisScope test = new AnalysisScope(Collections.singleton(PythonLanguage.Python)) { 
+		scope = new AnalysisScope(Collections.singleton(PythonLanguage.Python)) { 
 			{
 				loadersByName.put(dialogs.getName(), dialogs);
+				loadersByName.put(SYNTHETIC, new ClassLoaderReference(SYNTHETIC, PythonLanguage.Python.getName(), PythonTypes.pythonLoader));
 			}
 		};
-		test.addToScope(dialogs, M);
+		scope.addToScope(dialogs, M);
 		
-		cha = SeqClassHierarchyFactory.make(test, loader);
+		cha = SeqClassHierarchyFactory.make(scope, loader);
 	}
 
 	public IClassHierarchy getClassHierarchy() {
@@ -87,8 +102,120 @@ public class PythonDriver {
 		AnalysisOptions options = new AnalysisOptions();
 		IRFactory<IMethod> irs = AstIRFactory.makeDefaultFactory();
 
-		options.setSelector(new PythonTrampolineTargetSelector(new PythonConstructorTargetSelector(new ClassHierarchyMethodTargetSelector(cha))));
-		options.setSelector(new ClassHierarchyClassTargetSelector(cha));
+		XMLMethodSummaryReader xml = new XMLMethodSummaryReader(getClass().getClassLoader().getResourceAsStream("tensorflow.xml"), scope);
+		for(TypeReference t : xml.getAllocatableClasses()) {
+			BypassSyntheticClassLoader ldr = (BypassSyntheticClassLoader) cha.getLoader(scope.getSyntheticLoader());
+			ldr.registerClass(t.getName(), new SyntheticClass(t, cha) {
+				@Override
+				public IClassLoader getClassLoader() {
+					return cha.getLoader(cha.getScope().getSyntheticLoader());
+				}
+
+				@Override
+				public boolean isPublic() {
+					return true;
+				}
+
+				@Override
+				public boolean isPrivate() {
+					return false;
+				}
+
+				@Override
+				public int getModifiers() throws UnsupportedOperationException {
+					return Constants.ACC_PUBLIC;
+				}
+
+				@Override
+				public IClass getSuperclass() {
+					return cha.lookupClass(PythonTypes.Root);
+				}
+
+				@Override
+				public Collection<? extends IClass> getDirectInterfaces() {
+					return Collections.emptySet();
+				}
+
+				@Override
+				public Collection<IClass> getAllImplementedInterfaces() {
+					return Collections.emptySet();
+				}
+
+				@Override
+				public IMethod getMethod(Selector selector) {
+					// TODO Auto-generated method stub
+					return null;
+				}
+
+				@Override
+				public IField getField(Atom name) {
+					// TODO Auto-generated method stub
+					return null;
+				}
+
+				@Override
+				public IMethod getClassInitializer() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+
+				@Override
+				public Collection<? extends IMethod> getDeclaredMethods() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+
+				@Override
+				public Collection<IField> getAllInstanceFields() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+
+				@Override
+				public Collection<IField> getAllStaticFields() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+
+				@Override
+				public Collection<IField> getAllFields() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+
+				@Override
+				public Collection<? extends IMethod> getAllMethods() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+
+				@Override
+				public Collection<IField> getDeclaredInstanceFields() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+
+				@Override
+				public Collection<IField> getDeclaredStaticFields() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+
+				@Override
+				public boolean isReferenceType() {
+					// TODO Auto-generated method stub
+					return false;
+				}				
+			});
+		}
+		
+		MethodTargetSelector targetSelector = new PythonTrampolineTargetSelector(new PythonConstructorTargetSelector(new ClassHierarchyMethodTargetSelector(cha)));
+		targetSelector = new BypassMethodTargetSelector(targetSelector, xml.getSummaries(), xml.getIgnoredPackages(), cha);
+		options.setSelector(targetSelector);
+		
+		ClassTargetSelector cs = new ClassHierarchyClassTargetSelector(cha);
+		cs = new BypassClassTargetSelector(cs, xml.getAllocatableClasses(), cha, cha.getLoader(scope.getSyntheticLoader()));
+		options.setSelector(cs);
 
 		IClass entry = cha.lookupClass(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.findOrCreate(rootScriptName)));
 		MethodReference er = MethodReference.findOrCreate(entry.getReference(), AstMethodReference.fnSelector);
@@ -135,6 +262,8 @@ public class PythonDriver {
 						Position p = ((AstMethod)m).getSourcePosition(inst.iindex);
 						if (p !=  null) {
 							System.err.println(inst + " : " + new SourceBuffer(p));
+						} else {
+							System.err.println(inst);							
 						}
 					}
 				}

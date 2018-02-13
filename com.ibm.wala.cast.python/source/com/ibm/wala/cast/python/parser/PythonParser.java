@@ -823,7 +823,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 					Ast.makeConstant(new CAstSymbolImpl(name(n), PythonCAstToIRTranslator.Any)));
 				elts[i++] = Ast.makeNode(CAstNode.ASSIGN,
 					Ast.makeNode(CAstNode.VAR, Ast.makeConstant(name(n))),
-					Ast.makeNode(CAstNode.PRIMITIVE, Ast.makeConstant("import"), Ast.makeConstant(n.getInternalName())));
+					Ast.makeNode(CAstNode.PRIMITIVE, Ast.makeConstant("import"), Ast.makeConstant(n.getInternalName().replaceAll("[.]", "/"))));
 			}
 			return Ast.makeNode(CAstNode.BLOCK_STMT, elts);
 		}
@@ -838,7 +838,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 						Ast.makeNode(CAstNode.OBJECT_REF,
 								Ast.makeNode(CAstNode.PRIMITIVE, 
 									Ast.makeConstant("import"), 
-									Ast.makeConstant(arg0.getInternalModule())),
+									Ast.makeConstant(arg0.getInternalModule().replaceAll("[.]", "/"))),
 								Ast.makeConstant(n.getInternalName())));
 			}
 			return Ast.makeNode(CAstNode.BLOCK_STMT, elts);
