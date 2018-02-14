@@ -4,14 +4,105 @@
 <summary-spec>
   <classloader name="PythonLoader">
 
+    <class name="tensorflow" allocatable="true">
+      <method name="import"
+	      static="true"
+	      descriptor="()Ltensorflow;">
+        <new def="x" class="Ltensorflow"/>
+
+        <new def="estimator" class="Lobject"/>
+	<putfield class="LRoot"
+                  field="estimator"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="estimator"/>
+
+	<new def="Estimator" class="Ltensorflow/estimator/Estimator"/>
+	<putfield class="LRoot"
+                  field="Estimator"
+                  fieldType="LRoot"
+                  ref="estimator"
+                  value="Estimator"/>
+	
+	<return value="x"/>
+      </method>
+    </class>
+	
+   <package name="tensorflow/estimator">
+      <class name="Estimator" allocatable="true">
+        <method name="do" descriptor="()LRoot;" numArgs="2">
+          <new def="x" class="Ltensorflow/estimator/train/train"/>
+	  <putfield class="LRoot"
+                    field="train"
+                    fieldType="LRoot"
+                    ref="arg0"
+                    value="x"/>
+	  <putfield class="LRoot"
+                    field="$callback"
+                    fieldType="LRoot"
+                    ref="x"
+                    value="2"/>
+	  <return value="arg0"/>
+	</method>
+      </class>
+   </package>
+   
+   <package name="tensorflow/estimator/train">
+      <class name="train" allocatable="true">
+        <method name="do" descriptor="()LRoot;">
+	  <getfield class="LRoot"
+                    field="$callback"
+                    fieldType="LRoot"
+                    ref="arg0"
+                    def="x"/>
+	  <call class="LRoot"
+		name="do"
+		descriptor="()LRoot;"
+		type="virtual"
+		arg0="x"
+		def="v"/>
+	  <return value="v"/>
+	</method>
+      </class>
+    </package>
+    
     <package name="tensorflow/examples/tutorials/mnist">
       <class name="read_data_sets" allocatable="true">
         <method name="do" descriptor="()LRoot;">
           <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset"/>
-          <return value="x"/>
+          <new def="test" class="Lobject"/>
+	  <putfield class="LRoot"
+                    field="images"
+                    fieldType="LRoot"
+                    ref="test"
+                    value="x"/>
+
+          <new def="y" class="Ltensorflow/examples/tutorials/mnist/dataset"/>
+          <new def="training" class="Lobject"/>
+	  <putfield class="LRoot"
+                    field="images"
+                    fieldType="LRoot"
+                    ref="training"
+                    value="y"/>
+
+          <new def="data" class="Lobject"/>
+	  <putfield class="LRoot"
+                    field="test"
+                    fieldType="LRoot"
+                    ref="data"
+                    value="test"/>
+	  <putfield class="LRoot"
+                    field="train"
+                    fieldType="LRoot"
+                    ref="data"
+                    value="training"/>
+
+          <return value="data"/>
         </method>
       </class>
       <class name="input_data" allocatable="true">
+      </class>
+      <class name="dataset" allocatable="true">
       </class>
     </package>
 
