@@ -5,13 +5,13 @@
   <classloader name="PythonLoader">
 
     <package name="tensorflow/examples/tutorials/mnist">
-      <class name="dataset" allocatable="true">
-      </class>
-      <class name="input_data" allocatable="true">
-        <method name="read_data_sets" descriptor="(LRoot;)LRoot;">
+      <class name="read_data_sets" allocatable="true">
+        <method name="do" descriptor="()LRoot;">
           <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset"/>
           <return value="x"/>
         </method>
+      </class>
+      <class name="input_data" allocatable="true">
       </class>
     </package>
 
@@ -24,17 +24,23 @@
 	  <call name="__init__"
 		class="Ltensorflow/examples/tutorials/mnist"
 		descriptor="()V"
-		type="static"
+		type="virtual"
 		arg0="x" />
 	  <return value="x"/>
 	</method>
         <method name="__init__" descriptor="()V">
-          <new def="x" class="Ltensorflow/examples/tutorials/input_data"/>
+          <new def="x" class="Ltensorflow/examples/tutorials/mnist/input_data"/>
+          <new def="y" class="Ltensorflow/examples/tutorials/mnist/read_data_sets"/>
           <putfield class="Ltensorflow/examples/tutorials/mnist"
                     field="input_data"
-                    fieldType="Ltensorflow/examples/tutorials/input_data"
+                    fieldType="LRoot"
                     ref="arg0"
                     value="x"/>
+          <putfield class="Ltensorflow/examples/tutorials/mnist/input_data"
+                    field="read_data_sets"
+                    fieldType="LRoot"
+                    ref="x"
+                    value="y"/>
         </method>
       </class>
     </package>

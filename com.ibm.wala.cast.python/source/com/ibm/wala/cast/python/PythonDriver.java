@@ -15,10 +15,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 import com.ibm.wala.cast.ipa.callgraph.AstCFAPointerKeys;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
+import com.ibm.wala.cast.loader.AstDynamicField;
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonConstructorTargetSelector;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
@@ -48,8 +50,10 @@ import com.ibm.wala.ipa.callgraph.impl.ClassHierarchyMethodTargetSelector;
 import com.ibm.wala.ipa.callgraph.impl.ContextInsensitiveSelector;
 import com.ibm.wala.ipa.callgraph.impl.DefaultEntrypoint;
 import com.ibm.wala.ipa.callgraph.impl.Everywhere;
+import com.ibm.wala.ipa.callgraph.propagation.InstanceFieldKey;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
+import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXInstanceKeys;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
@@ -69,6 +73,7 @@ import com.ibm.wala.types.Selector;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.strings.Atom;
 
@@ -98,6 +103,8 @@ public class PythonDriver {
 		return cha;
 	}
 
+	private final Map<Atom,IField> fields = HashMapFactory.make();
+	
 	public Pair<CallGraph, PointerAnalysis<InstanceKey>> getCallGraph(String rootScriptName) throws IllegalArgumentException, CancelException {
 		AnalysisOptions options = new AnalysisOptions();
 		IRFactory<IMethod> irs = AstIRFactory.makeDefaultFactory();
@@ -128,7 +135,7 @@ public class PythonDriver {
 
 				@Override
 				public IClass getSuperclass() {
-					return cha.lookupClass(PythonTypes.Root);
+					return cha.lookupClass(PythonTypes.CodeBody);
 				}
 
 				@Override
@@ -149,8 +156,10 @@ public class PythonDriver {
 
 				@Override
 				public IField getField(Atom name) {
-					// TODO Auto-generated method stub
-					return null;
+					if (! fields.containsKey(name)) {
+						fields.put(name, new AstDynamicField(false, cha.lookupClass(PythonTypes.Root), name, PythonTypes.Root));
+					}
+					return fields.get(name);
 				}
 
 				@Override
@@ -278,6 +287,22 @@ public class PythonDriver {
 	
 			for(CGNode n : data.fst) {
 				System.err.println(n.getIR());
+			}
+			
+			for(PointerKey pk1 : data.snd.getPointerKeys()) {
+				for(PointerKey pk2 : data.snd.getPointerKeys()) {
+					if (pk1 != pk2 && pk1.toString().equals(pk2.toString())) {
+						System.err.println("*** " + pk1.getClass() + " " + pk2.getClass());
+						InstanceFieldKey if1 = (InstanceFieldKey)pk1;
+						InstanceFieldKey if2 = (InstanceFieldKey)pk2;
+						System.err.println(if1.getInstanceKey() == if2.getInstanceKey());
+						System.err.println(if1.getField().equals(if2.getField()));
+						System.err.println(if1.getField().getClass());
+						System.err.println(if2.getField().getClass());
+						System.err.println(if1.getField().getDeclaringClass());
+						System.err.println(if2.getField().getDeclaringClass());
+					}
+				}
 			}
 		}
 	}

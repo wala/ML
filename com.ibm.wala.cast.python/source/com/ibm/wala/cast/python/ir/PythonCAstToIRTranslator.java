@@ -304,7 +304,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 			TypeReference imprt = TypeReference.findOrCreate(PythonTypes.pythonLoader, "L" + primitiveCall.getChild(1).getValue());
 			MethodReference call = MethodReference.findOrCreate(imprt, "import", "()L" + primitiveCall.getChild(1).getValue());
 			int idx = context.cfg().getCurrentInstruction();
-			context.cfg().addInstruction(Python.instructionFactory().InvokeInstruction(idx, new int[0], context.currentScope().allocateTempValue(), CallSiteReference.make(idx, call, Dispatch.STATIC), null));
+			context.cfg().addInstruction(Python.instructionFactory().InvokeInstruction(idx, resultVal, new int[0], context.currentScope().allocateTempValue(), CallSiteReference.make(idx, call, Dispatch.STATIC), null));
 		}
 	}
 	
