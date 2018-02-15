@@ -15,11 +15,11 @@ public class TestTensorflowModel extends TestPythonCallGraphShape {
 
 	@Test
 	public void testTf1() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		CallGraph CG = process("tf1.py").fst;
+		CallGraph CG = process("tf1.py");
 		System.err.println(CG);
 		
 		Collection<CGNode> nodes = getNodes(CG, "Lmodel_fn");
-		assert ! nodes.isEmpty();
+		assert ! nodes.isEmpty() : "model_fn should be called";
 		check: {
 			for(CGNode node : nodes) {
 				for(Iterator<CGNode> ns = CG.getPredNodes(node); ns.hasNext(); ) {

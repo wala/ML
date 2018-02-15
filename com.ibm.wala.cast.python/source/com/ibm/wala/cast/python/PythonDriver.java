@@ -50,10 +50,9 @@ import com.ibm.wala.ipa.callgraph.impl.ClassHierarchyMethodTargetSelector;
 import com.ibm.wala.ipa.callgraph.impl.ContextInsensitiveSelector;
 import com.ibm.wala.ipa.callgraph.impl.DefaultEntrypoint;
 import com.ibm.wala.ipa.callgraph.impl.Everywhere;
-import com.ibm.wala.ipa.callgraph.propagation.InstanceFieldKey;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
-import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
+import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXInstanceKeys;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
@@ -75,6 +74,7 @@ import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
+import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.strings.Atom;
 
 public class PythonDriver {
@@ -82,6 +82,12 @@ public class PythonDriver {
 	private IClassHierarchy cha;
 	
 	private AnalysisScope scope;
+	
+	private CallGraph CG;
+	
+	private PointerAnalysis<InstanceKey> PA;
+	
+	private Graph<PointsToSetVariable> flowGraph;
 	
 	public PythonDriver(SourceURLModule M) throws ClassHierarchyException {
 		ClassLoaderReference dialogs = PythonTypes.pythonLoader;
@@ -105,7 +111,7 @@ public class PythonDriver {
 
 	private final Map<Atom,IField> fields = HashMapFactory.make();
 	
-	public Pair<CallGraph, PointerAnalysis<InstanceKey>> getCallGraph(String rootScriptName) throws IllegalArgumentException, CancelException {
+	public CallGraph getCallGraph(String rootScriptName) throws IllegalArgumentException, CancelException {
 		AnalysisOptions options = new AnalysisOptions();
 		IRFactory<IMethod> irs = AstIRFactory.makeDefaultFactory();
 
@@ -241,10 +247,11 @@ public class PythonDriver {
 
 		builder.setInstanceKeys(new ZeroXInstanceKeys(options, cha, interpreter, ZeroXInstanceKeys.ALLOCATIONS));
 
-		CallGraph CG = builder.makeCallGraph(options);
-		PointerAnalysis<InstanceKey> PA = builder.getPointerAnalysis();
+		CG = builder.makeCallGraph(options);
+		PA = builder.getPointerAnalysis();
+		flowGraph = builder.getPropagationSystem().getFlowGraphIncludingImplicitConstraints();
 		
-		return Pair.make(CG, PA);
+		return CG;
 	}
 	
 	public static void main(String args[]) throws ClassHierarchyException, IOException, IllegalArgumentException, CancelException {
@@ -280,30 +287,16 @@ public class PythonDriver {
 		}
 
 		if (args.length > 1) {
-			Pair<CallGraph, PointerAnalysis<InstanceKey>> data = x.getCallGraph("Lscript " + args[1]);
+			CallGraph CG = x.getCallGraph("Lscript " + args[1]);
 
-			System.err.println(data.snd);
-			System.err.println(data.fst);
+			System.err.println(x.PA);
+			System.err.println(x.flowGraph);
+			System.err.println(CG);
 	
-			for(CGNode n : data.fst) {
+			for(CGNode n : CG) {
 				System.err.println(n.getIR());
 			}
-			
-			for(PointerKey pk1 : data.snd.getPointerKeys()) {
-				for(PointerKey pk2 : data.snd.getPointerKeys()) {
-					if (pk1 != pk2 && pk1.toString().equals(pk2.toString())) {
-						System.err.println("*** " + pk1.getClass() + " " + pk2.getClass());
-						InstanceFieldKey if1 = (InstanceFieldKey)pk1;
-						InstanceFieldKey if2 = (InstanceFieldKey)pk2;
-						System.err.println(if1.getInstanceKey() == if2.getInstanceKey());
-						System.err.println(if1.getField().equals(if2.getField()));
-						System.err.println(if1.getField().getClass());
-						System.err.println(if2.getField().getClass());
-						System.err.println(if1.getField().getDeclaringClass());
-						System.err.println(if2.getField().getDeclaringClass());
-					}
-				}
-			}
+
 		}
 	}
 }

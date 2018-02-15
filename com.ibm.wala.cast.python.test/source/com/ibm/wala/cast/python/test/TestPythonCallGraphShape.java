@@ -10,14 +10,11 @@ import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.classLoader.SourceURLModule;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
-import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
-import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
-import com.ibm.wala.util.collections.Pair;
 
 public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 
@@ -30,7 +27,7 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 		return new SourceURLModule(getClass().getClassLoader().getResource(name));
 	}
 	
-	protected Pair<CallGraph, PointerAnalysis<InstanceKey>> process(String name) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+	protected CallGraph process(String name) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		PythonDriver engine = new PythonDriver(getScript(name));
 		return engine.getCallGraph("Lscript " + name);
 	}
