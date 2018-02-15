@@ -4,7 +4,7 @@ mnist = input_data.read_data_sets(one_hot=False)
 import tensorflow as tf
 
 def model_fn(a, b, c):
-    return 0
+    return a.data.images
 
 model = tf.estimator.Estimator(model_fn)
     

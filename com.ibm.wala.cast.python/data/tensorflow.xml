@@ -23,7 +23,21 @@
                   fieldType="LRoot"
                   ref="estimator"
                   value="Estimator"/>
-	
+
+	<new def="inputs" class="Lobject"/>
+	<putfield class="LRoot"
+                  field="inputs"
+                  fieldType="LRoot"
+                  ref="estimator"
+                  value="inputs"/>
+
+	<new def="numpy_input_fn" class="Ltensorflow/estimator/numpy_input_fn"/>
+	<putfield class="LRoot"
+                  field="numpy_input_fn"
+                  fieldType="LRoot"
+                  ref="inputs"
+                  value="numpy_input_fn"/>
+
 	<return value="x"/>
       </method>
     </class>
@@ -45,11 +59,28 @@
 	  <return value="arg0"/>
 	</method>
       </class>
+
+      <class name="numpy_input_fn" allocatable="true">
+        <method name="do" descriptor="()LRoot;" numArgs="3">
+          <new def="x" class="Lobject"/>
+	  <putfield class="LRoot"
+                    field="data"
+                    fieldType="LRoot"
+                    ref="x"
+                    value="2"/>
+	  <putfield class="LRoot"
+                    field="labels"
+                    fieldType="LRoot"
+                    ref="x"
+                    value="3"/>
+	  <return value="x"/>
+	</method>
+      </class>
    </package>
    
    <package name="tensorflow/estimator/train">
       <class name="train" allocatable="true">
-        <method name="do" descriptor="()LRoot;">
+        <method name="do" descriptor="()LRoot;" numArgs="3">
 	  <getfield class="LRoot"
                     field="$callback"
                     fieldType="LRoot"
@@ -60,6 +91,9 @@
 		descriptor="()LRoot;"
 		type="virtual"
 		arg0="x"
+		arg1="2"
+		arg2="3"
+		numArgs="3"
 		def="v"/>
 	  <return value="v"/>
 	</method>

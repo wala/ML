@@ -228,8 +228,14 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
 	@Override
 	protected void doNewObject(WalkContext context, CAstNode newNode, int result, Object type, int[] arguments) {
-		// TODO Auto-generated method stub
-
+		context.cfg().addInstruction(
+			insts.NewInstruction(context.cfg().getCurrentInstruction(), 
+				result, 
+				NewSiteReference.make(
+						context.cfg().getCurrentInstruction(), 
+						TypeReference.findOrCreate(
+								PythonTypes.pythonLoader, 
+								"L" + type))));
 	}
 
 	@Override

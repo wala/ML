@@ -1070,7 +1070,8 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		@Override
 		public CAstNode visitTuple(Tuple arg0) throws Exception {
 			int i = 0;
-			CAstNode[] elts = new CAstNode[ arg0.getInternalElts().size() ];
+			CAstNode[] elts = new CAstNode[ arg0.getInternalElts().size()+1 ];
+			
 			for(expr e : arg0.getInternalElts()) {
 				elts[i++] = e.accept(this);
 			}
