@@ -38,10 +38,26 @@
                   ref="inputs"
                   value="numpy_input_fn"/>
 
+	<new def="reshape" class="Ltensorflow/reshape"/>
+	<putfield class="LRoot"
+                  field="reshape"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="reshape"/>
+
 	<return value="x"/>
       </method>
     </class>
 	
+    <package name="tensorflow">
+      <class name="reshape" allocatable="true">
+        <method name="do" descriptor="()LRoot;" numArgs="2">
+          <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset"/>
+	  <return value="x"/>
+	</method>
+      </class>
+    </package>
+    
    <package name="tensorflow/estimator">
       <class name="Estimator" allocatable="true">
         <method name="do" descriptor="()LRoot;" numArgs="2">

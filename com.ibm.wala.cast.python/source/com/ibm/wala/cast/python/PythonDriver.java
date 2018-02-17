@@ -24,6 +24,7 @@ import com.ibm.wala.cast.loader.AstDynamicField;
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonConstructorTargetSelector;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
+import com.ibm.wala.cast.python.ipa.callgraph.PythonScopeMappingInstanceKeys;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonTrampolineTargetSelector;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
@@ -73,7 +74,6 @@ import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashMapFactory;
-import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.strings.Atom;
 
@@ -245,7 +245,7 @@ public class PythonDriver {
 
 		builder.setContextSelector(new ContextInsensitiveSelector());
 
-		builder.setInstanceKeys(new ZeroXInstanceKeys(options, cha, interpreter, ZeroXInstanceKeys.ALLOCATIONS));
+		builder.setInstanceKeys(new PythonScopeMappingInstanceKeys(builder, new ZeroXInstanceKeys(options, cha, interpreter, ZeroXInstanceKeys.ALLOCATIONS)));
 
 		CG = builder.makeCallGraph(options);
 		PA = builder.getPointerAnalysis();

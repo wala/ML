@@ -53,8 +53,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 
 	@Override
 	protected boolean sameMethod(CGNode opNode, String definingMethod) {
-		// TODO Auto-generated method stub
-		return false;
+	    return definingMethod.equals(opNode.getMethod().getReference().getDeclaringClass().getName().toString());
 	}
 
 	public static class PythonConstraintVisitor extends AstConstraintVisitor implements PythonInstructionVisitor {
