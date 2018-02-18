@@ -75,6 +75,8 @@ import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.graph.Graph;
+import com.ibm.wala.util.graph.GraphSlicer;
+import com.ibm.wala.util.intset.IntIterator;
 import com.ibm.wala.util.strings.Atom;
 
 public class PythonDriver {
@@ -254,6 +256,55 @@ public class PythonDriver {
 		return CG;
 	}
 	
+	Graph<PointsToSetVariable> getTensorGraph() {
+		TypeReference tensor = TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/examples/tutorials/mnist/dataset"));
+		/*
+		Set<PointsToSetVariable> sources = HashSetFactory.make();
+		flowGraph.forEach((pts) -> {
+			PointerKey k = pts.getPointerKey();
+			if (k instanceof LocalPointerKey) {
+				CGNode n = ((LocalPointerKey)k).getNode();
+				int vn = ((LocalPointerKey)k).getValueNumber();
+				SSAInstruction def = n.getDU().getDef(vn);
+				if (def instanceof SSANewInstruction) {
+					SSANewInstruction inst = (SSANewInstruction) def;
+					if (((SSANewInstruction) def).getConcreteType().equals(tensor)) {
+						sources.add(pts);
+					}
+				}
+			}
+		});
+		
+		Atom functions = Atom.findOrCreateUnicodeAtom("tensorflow/functions");
+		Set<PointsToSetVariable> sinks = HashSetFactory.make();
+		flowGraph.forEach((pts) -> {
+			PointerKey k = pts.getPointerKey();
+			if (k instanceof LocalPointerKey) {
+				CGNode n = ((LocalPointerKey)k).getNode();
+				int vn = ((LocalPointerKey)k).getValueNumber();
+				if (n.getMethod().getDeclaringClass().getReference().getName().getPackage().equals(functions) 
+						 &&
+					vn <= n.getIR().getNumberOfParameters()) 
+				{
+					sinks.add(pts);
+				}
+			}
+		});
+		*/
+		
+		return GraphSlicer.prune(flowGraph, (pts) -> {
+			if (pts.getValue() != null) {
+				IntIterator objects = pts.getValue().intIterator();
+				while (objects.hasNext()) {
+					if (PA.getInstanceKeyMapping().getMappedObject(objects.next()).getConcreteType().getReference().equals(tensor)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		});
+	}
+	
 	public static void main(String args[]) throws ClassHierarchyException, IOException, IllegalArgumentException, CancelException {
 		File f = new File(args[0]);
 		SourceURLModule e = new SourceURLModule(f.exists()? f.toURI().toURL(): new URL(args[0]));
@@ -289,8 +340,7 @@ public class PythonDriver {
 		if (args.length > 1) {
 			CallGraph CG = x.getCallGraph("Lscript " + args[1]);
 
-			System.err.println(x.PA);
-			System.err.println(x.flowGraph);
+			System.err.println(x.getTensorGraph());
 			System.err.println(CG);
 	
 			for(CGNode n : CG) {

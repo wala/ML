@@ -38,7 +38,7 @@
                   ref="inputs"
                   value="numpy_input_fn"/>
 
-	<new def="reshape" class="Ltensorflow/reshape"/>
+	<new def="reshape" class="Ltensorflow/functions/reshape"/>
 	<putfield class="LRoot"
                   field="reshape"
                   fieldType="LRoot"
@@ -49,7 +49,7 @@
       </method>
     </class>
 	
-    <package name="tensorflow">
+    <package name="tensorflow/functions">
       <class name="reshape" allocatable="true">
         <method name="do" descriptor="()LRoot;" numArgs="2">
           <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset"/>
