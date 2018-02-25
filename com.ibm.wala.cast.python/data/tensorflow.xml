@@ -51,8 +51,18 @@
 	
     <package name="tensorflow/functions">
       <class name="reshape" allocatable="true">
-        <method name="do" descriptor="()LRoot;" numArgs="2">
+	<method name="read_data" descriptor="()LRoot;">
           <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset"/>
+	  <return value="x"/>
+	</method>
+
+        <method name="do" descriptor="()LRoot;" numArgs="3">
+	  <call class="LRoot"
+		name="read_data"
+		descriptor="()LRoot;"
+		type="virtual"
+		arg0="arg0"
+		def="x"/>
 	  <return value="x"/>
 	</method>
       </class>
@@ -118,16 +128,34 @@
     
     <package name="tensorflow/examples/tutorials/mnist">
       <class name="read_data_sets" allocatable="true">
-        <method name="do" descriptor="()LRoot;">
+	<method name="read_data" descriptor="()LRoot;">
           <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset"/>
+	  <return value="x"/>
+	</method>
+	
+        <method name="do" descriptor="()LRoot;">
           <new def="test" class="Lobject"/>
+
+	  <call class="LRoot"
+		name="read_data"
+		descriptor="()LRoot;"
+		type="virtual"
+		arg0="arg0"
+		def="x"/>
+	  
 	  <putfield class="LRoot"
                     field="images"
                     fieldType="LRoot"
                     ref="test"
                     value="x"/>
 
-          <new def="y" class="Ltensorflow/examples/tutorials/mnist/dataset"/>
+	  <call class="LRoot"
+		name="read_data"
+		descriptor="()LRoot;"
+		type="virtual"
+		arg0="arg0"
+		def="y"/>
+
           <new def="training" class="Lobject"/>
 	  <putfield class="LRoot"
                     field="images"

@@ -16,6 +16,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import com.ibm.wala.cast.ipa.callgraph.AstCFAPointerKeys;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
@@ -52,7 +53,9 @@ import com.ibm.wala.ipa.callgraph.impl.ContextInsensitiveSelector;
 import com.ibm.wala.ipa.callgraph.impl.DefaultEntrypoint;
 import com.ibm.wala.ipa.callgraph.impl.Everywhere;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
+import com.ibm.wala.ipa.callgraph.propagation.LocalPointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
+import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXInstanceKeys;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
@@ -63,9 +66,11 @@ import com.ibm.wala.ipa.summaries.BypassMethodTargetSelector;
 import com.ibm.wala.ipa.summaries.BypassSyntheticClassLoader;
 import com.ibm.wala.ipa.summaries.XMLMethodSummaryReader;
 import com.ibm.wala.shrikeBT.Constants;
+import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.IRFactory;
 import com.ibm.wala.ssa.SSAInstruction;
+import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.types.MethodReference;
@@ -74,9 +79,8 @@ import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashMapFactory;
+import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.graph.Graph;
-import com.ibm.wala.util.graph.GraphSlicer;
-import com.ibm.wala.util.intset.IntIterator;
 import com.ibm.wala.util.strings.Atom;
 
 public class PythonDriver {
@@ -290,7 +294,6 @@ public class PythonDriver {
 				}
 			}
 		});
-		*/
 		
 		return GraphSlicer.prune(flowGraph, (pts) -> {
 			if (pts.getValue() != null) {
@@ -303,7 +306,11 @@ public class PythonDriver {
 			}
 			return false;
 		});
+		*/
+		return flowGraph;
 	}
+	
+	private static final TypeReference dataset = TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/examples/tutorials/mnist/dataset"));
 	
 	public static void main(String args[]) throws ClassHierarchyException, IOException, IllegalArgumentException, CancelException {
 		File f = new File(args[0]);
@@ -339,14 +346,32 @@ public class PythonDriver {
 
 		if (args.length > 1) {
 			CallGraph CG = x.getCallGraph("Lscript " + args[1]);
-
-			System.err.println(x.getTensorGraph());
-			System.err.println(CG);
 	
 			for(CGNode n : CG) {
 				System.err.println(n.getIR());
 			}
 
+			Graph<PointsToSetVariable> dataflow = x.getTensorGraph();
+			System.err.println(dataflow);
+			System.err.println(CG);
+
+			Set<PointsToSetVariable> sources = HashSetFactory.make();
+			for(PointsToSetVariable src : dataflow) {
+				PointerKey k = src.getPointerKey();
+				if (k instanceof LocalPointerKey) {
+					LocalPointerKey kk = (LocalPointerKey)k;
+					int vn = kk.getValueNumber();
+					DefUse du = kk.getNode().getDU();
+					SSAInstruction inst = du.getDef(vn);
+					if (inst instanceof SSAInvokeInstruction) {
+						SSAInvokeInstruction ni = (SSAInvokeInstruction) inst;
+						if (ni.getCallSite().getDeclaredTarget().getName().toString().equals("read_data") && ni.getException() != vn) {
+							sources.add(src);
+						}
+					}
+				}
+			}
+			System.err.println(sources);
 		}
 	}
 }
