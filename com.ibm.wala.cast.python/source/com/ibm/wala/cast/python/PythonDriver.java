@@ -310,7 +310,7 @@ public class PythonDriver {
 		return flowGraph;
 	}
 	
-	private static final TypeReference dataset = TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/examples/tutorials/mnist/dataset"));
+	private static final MethodReference reshape = MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/reshape")), AstMethodReference.fnSelector);
 	
 	public static void main(String args[]) throws ClassHierarchyException, IOException, IllegalArgumentException, CancelException {
 		File f = new File(args[0]);
@@ -372,6 +372,14 @@ public class PythonDriver {
 				}
 			}
 			System.err.println(sources);
+			
+			Set<PointerKey> targets = HashSetFactory.make();
+			for(CGNode n : CG) {
+				if (n.getMethod().getReference().equals(reshape)) {
+					targets.add(x.PA.getHeapModel().getPointerKeyForLocal(n, 2));
+				}
+			}
+			System.err.println(targets);
 		}
 	}
 }
