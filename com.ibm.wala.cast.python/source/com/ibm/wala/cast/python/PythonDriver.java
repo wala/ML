@@ -57,6 +57,7 @@ import com.ibm.wala.ipa.callgraph.propagation.LocalPointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
+import com.ibm.wala.ipa.callgraph.propagation.PropagationSystem;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXInstanceKeys;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
@@ -94,6 +95,8 @@ public class PythonDriver {
 	private PointerAnalysis<InstanceKey> PA;
 	
 	private Graph<PointsToSetVariable> flowGraph;
+	
+	private PropagationSystem system;
 	
 	public PythonDriver(SourceURLModule M) throws ClassHierarchyException {
 		ClassLoaderReference dialogs = PythonTypes.pythonLoader;
@@ -256,6 +259,7 @@ public class PythonDriver {
 		CG = builder.makeCallGraph(options);
 		PA = builder.getPointerAnalysis();
 		flowGraph = builder.getPropagationSystem().getFlowGraphIncludingImplicitConstraints();
+		system = builder.getPropagationSystem();
 		
 		return CG;
 	}
@@ -355,31 +359,41 @@ public class PythonDriver {
 			System.err.println(dataflow);
 			System.err.println(CG);
 
-			Set<PointsToSetVariable> sources = HashSetFactory.make();
-			for(PointsToSetVariable src : dataflow) {
-				PointerKey k = src.getPointerKey();
-				if (k instanceof LocalPointerKey) {
-					LocalPointerKey kk = (LocalPointerKey)k;
-					int vn = kk.getValueNumber();
-					DefUse du = kk.getNode().getDU();
-					SSAInstruction inst = du.getDef(vn);
-					if (inst instanceof SSAInvokeInstruction) {
-						SSAInvokeInstruction ni = (SSAInvokeInstruction) inst;
-						if (ni.getCallSite().getDeclaredTarget().getName().toString().equals("read_data") && ni.getException() != vn) {
-							sources.add(src);
-						}
+			Set<PointsToSetVariable> sources = getDataflowSources(dataflow);
+			System.err.println(sources);
+
+			Set<PointsToSetVariable> targets = x.getDataflowTargets();
+			System.err.println(targets);
+		}
+	}
+
+	private Set<PointsToSetVariable> getDataflowTargets() {
+		Set<PointsToSetVariable> targets = HashSetFactory.make();
+		for(CGNode n : CG) {
+			if (n.getMethod().getReference().equals(reshape)) {
+				targets.add(system.findOrCreatePointsToSet(PA.getHeapModel().getPointerKeyForLocal(n, 2)));
+			}
+		}
+		return targets;
+	}
+	
+	private static Set<PointsToSetVariable> getDataflowSources(Graph<PointsToSetVariable> dataflow) {
+		Set<PointsToSetVariable> sources = HashSetFactory.make();
+		for(PointsToSetVariable src : dataflow) {
+			PointerKey k = src.getPointerKey();
+			if (k instanceof LocalPointerKey) {
+				LocalPointerKey kk = (LocalPointerKey)k;
+				int vn = kk.getValueNumber();
+				DefUse du = kk.getNode().getDU();
+				SSAInstruction inst = du.getDef(vn);
+				if (inst instanceof SSAInvokeInstruction) {
+					SSAInvokeInstruction ni = (SSAInvokeInstruction) inst;
+					if (ni.getCallSite().getDeclaredTarget().getName().toString().equals("read_data") && ni.getException() != vn) {
+						sources.add(src);
 					}
 				}
 			}
-			System.err.println(sources);
-			
-			Set<PointerKey> targets = HashSetFactory.make();
-			for(CGNode n : CG) {
-				if (n.getMethod().getReference().equals(reshape)) {
-					targets.add(x.PA.getHeapModel().getPointerKeyForLocal(n, 2));
-				}
-			}
-			System.err.println(targets);
 		}
+		return sources;
 	}
 }
