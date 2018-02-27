@@ -164,8 +164,8 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
 	@Override
 	public void doArrayWrite(WalkContext context, int arrayValue, CAstNode arrayRef, int[] dimValues, int rval) {
-		// TODO Auto-generated method stub
-
+		assert dimValues.length == 1;
+		context.cfg().addInstruction(Python.instructionFactory().ArrayStoreInstruction(context.cfg().getCurrentInstruction(), arrayValue, dimValues[0], rval, PythonTypes.Root));
 	}
 
 	@Override

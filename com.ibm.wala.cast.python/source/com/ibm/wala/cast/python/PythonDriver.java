@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,9 +31,11 @@ import com.ibm.wala.cast.python.ipa.callgraph.PythonTrampolineTargetSelector;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
 import com.ibm.wala.cast.python.types.PythonTypes;
+import com.ibm.wala.cast.python.types.TensorType;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cast.util.SourceBuffer;
+import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
 import com.ibm.wala.classLoader.IField;
@@ -70,6 +73,7 @@ import com.ibm.wala.shrikeBT.Constants;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.IRFactory;
+import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.ssa.SSAOptions;
@@ -265,8 +269,8 @@ public class PythonDriver {
 	}
 	
 	Graph<PointsToSetVariable> getTensorGraph() {
-		TypeReference tensor = TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/examples/tutorials/mnist/dataset"));
-		/*
+/*
+ 		TypeReference tensor = TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/examples/tutorials/mnist/dataset"));
 		Set<PointsToSetVariable> sources = HashSetFactory.make();
 		flowGraph.forEach((pts) -> {
 			PointerKey k = pts.getPointerKey();
@@ -315,6 +319,7 @@ public class PythonDriver {
 	}
 	
 	private static final MethodReference reshape = MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/reshape")), AstMethodReference.fnSelector);
+	private static final MethodReference conv2d = MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/conv2d")), AstMethodReference.fnSelector);
 	
 	public static void main(String args[]) throws ClassHierarchyException, IOException, IllegalArgumentException, CancelException {
 		File f = new File(args[0]);
@@ -362,12 +367,37 @@ public class PythonDriver {
 			Set<PointsToSetVariable> sources = getDataflowSources(dataflow);
 			System.err.println(sources);
 
-			Set<PointsToSetVariable> targets = x.getDataflowTargets();
-			System.err.println(targets);
+			Set<PointsToSetVariable> targets1 = x.getDataflowTargets(reshape);
+			System.err.println(targets1);
+			
+			Set<PointsToSetVariable> targets2 = x.getDataflowTargets(conv2d);
+			System.err.println(targets2);
+			
+			System.err.println(x.getReshapeTypes());
 		}
 	}
 
-	private Set<PointsToSetVariable> getDataflowTargets() {
+	private Map<PointsToSetVariable,TensorType> getReshapeTypes() {
+		Map<PointsToSetVariable,TensorType> targets = HashMapFactory.make();
+		for(CGNode n : CG) {
+			if (n.getMethod().getReference().equals(reshape)) {
+				for(Iterator<CGNode> srcs = CG.getPredNodes(n); srcs.hasNext(); ) {
+					CGNode src = srcs.next();
+					for(Iterator<CallSiteReference> sites = CG.getPossibleSites(src, n); sites.hasNext(); ) {
+						CallSiteReference site = sites.next();
+						for(SSAAbstractInvokeInstruction call : src.getIR().getCalls(site)) {
+							targets.put(
+								system.findOrCreatePointsToSet(PA.getHeapModel().getPointerKeyForLocal(n, 2)),
+								TensorType.reshapeArg(src, call.getUse(2)));
+						}
+					}
+				}
+			}
+		}
+		return targets;
+	}
+
+	private Set<PointsToSetVariable> getDataflowTargets(MethodReference reshape) {
 		Set<PointsToSetVariable> targets = HashSetFactory.make();
 		for(CGNode n : CG) {
 			if (n.getMethod().getReference().equals(reshape)) {

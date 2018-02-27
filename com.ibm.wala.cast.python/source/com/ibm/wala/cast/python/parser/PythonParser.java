@@ -862,12 +862,13 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		@Override
 		public CAstNode visitList(List arg0) throws Exception {
 			int i = 0;
-			CAstNode[] elts = new CAstNode[ arg0.getInternalElts().size()+1 ];
-			elts[i++] = Ast.makeConstant(PythonTypes.list.toString());
+			CAstNode[] elts = new CAstNode[ 2*arg0.getInternalElts().size()+1 ];
+			elts[i++] = Ast.makeNode(CAstNode.NEW, Ast.makeConstant("list"));
 			for(expr e : arg0.getInternalElts()) {
+				elts[i++] = Ast.makeConstant("" + i/2);
 				elts[i++] = e.accept(this);
 			}
-			return Ast.makeNode(CAstNode.ARRAY_LITERAL, elts);
+			return Ast.makeNode(CAstNode.OBJECT_LITERAL, elts);
 		}
 
 		@Override

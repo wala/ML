@@ -105,6 +105,8 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 
 	CoreClass object = new CoreClass(PythonTypes.object.getName(), PythonTypes.rootTypeName, this, null);
 
+	CoreClass list = new CoreClass(PythonTypes.list.getName(), PythonTypes.rootTypeName, this, null);
+
 	CoreClass trampoline = new CoreClass(PythonTypes.trampoline.getName(), PythonTypes.rootTypeName, this, null);
 
 	public IClass makeCodeBodyType(String name, TypeReference P, CAstSourcePositionMap.Position sourcePosition, CAstEntity entity, WalkContext context) {
