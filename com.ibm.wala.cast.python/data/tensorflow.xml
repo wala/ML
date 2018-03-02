@@ -57,14 +57,14 @@
 	
     <package name="tensorflow/functions">
       <class name="reshape" allocatable="true">
-	<method name="read_data" descriptor="()LRoot;">
+	<method name="copy_data" descriptor="()LRoot;">
           <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset"/>
 	  <return value="x"/>
 	</method>
 
         <method name="do" descriptor="()LRoot;" numArgs="3">
 	  <call class="LRoot"
-		name="read_data"
+		name="copy_data"
 		descriptor="()LRoot;"
 		type="virtual"
 		arg0="arg0"
@@ -74,14 +74,14 @@
       </class>
       
       <class name="conv2d" allocatable="true">
-	<method name="read_data" descriptor="()LRoot;">
+	<method name="copy_data" descriptor="()LRoot;">
           <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset"/>
 	  <return value="x"/>
 	</method>
 
         <method name="do" descriptor="()LRoot;" numArgs="3">
 	  <call class="LRoot"
-		name="read_data"
+		name="copy_data"
 		descriptor="()LRoot;"
 		type="virtual"
 		arg0="arg0"

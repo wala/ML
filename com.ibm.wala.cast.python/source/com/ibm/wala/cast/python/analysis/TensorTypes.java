@@ -13,8 +13,6 @@ import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.graph.Graph;
 
 public class TensorTypes extends DataflowSolver<PointsToSetVariable, TensorVariable> {
-	private final Map<PointsToSetVariable, TensorVariable> ins = HashMapFactory.make();
-	private final Map<PointsToSetVariable, TensorVariable> outs = HashMapFactory.make();
 	
 	private static IKilldallFramework<PointsToSetVariable, TensorVariable> createProblem(Graph<PointsToSetVariable> G) {
 		return new IKilldallFramework<PointsToSetVariable, TensorVariable>() {
@@ -130,9 +128,7 @@ public class TensorTypes extends DataflowSolver<PointsToSetVariable, TensorVaria
 
 	@Override
 	protected TensorVariable makeNodeVariable(PointsToSetVariable n, boolean IN) {
-		TensorVariable v = new TensorVariable();
-		(IN? ins: outs).put(n, v); 
-		return v;
+		return new TensorVariable();
 	}
 
 	@Override
