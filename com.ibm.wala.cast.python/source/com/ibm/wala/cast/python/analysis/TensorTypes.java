@@ -9,7 +9,6 @@ import com.ibm.wala.dataflow.graph.IKilldallFramework;
 import com.ibm.wala.dataflow.graph.ITransferFunctionProvider;
 import com.ibm.wala.fixpoint.UnaryOperator;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
-import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.graph.Graph;
 
 public class TensorTypes extends DataflowSolver<PointsToSetVariable, TensorVariable> {

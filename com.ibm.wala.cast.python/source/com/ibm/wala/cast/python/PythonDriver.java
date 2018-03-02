@@ -383,6 +383,10 @@ public class PythonDriver {
 			tt.solve(new NullProgressMonitor());
 			
 			System.err.println(init);
+			Set<PointsToSetVariable> targets1 = x.getDataflowTargets(reshape);
+			for(PointsToSetVariable t : targets1) {
+				System.err.println(t + ":" + tt.getIn(t));
+			}
 			Set<PointsToSetVariable> targets2 = x.getDataflowTargets(conv2d);
 			for(PointsToSetVariable t : targets2) {
 				System.err.println(t + ":" + tt.getIn(t));
