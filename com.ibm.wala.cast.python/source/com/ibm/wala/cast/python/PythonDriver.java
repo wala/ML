@@ -24,6 +24,7 @@ import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterprete
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.loader.AstDynamicField;
 import com.ibm.wala.cast.loader.AstMethod;
+import com.ibm.wala.cast.python.analysis.TensorTypes;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonConstructorTargetSelector;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonScopeMappingInstanceKeys;
@@ -83,6 +84,7 @@ import com.ibm.wala.types.Selector;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.NullProgressMonitor;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.graph.Graph;
@@ -366,14 +368,25 @@ public class PythonDriver {
 
 			Set<PointsToSetVariable> sources = getDataflowSources(dataflow);
 			System.err.println(sources);
-
-			Set<PointsToSetVariable> targets1 = x.getDataflowTargets(reshape);
-			System.err.println(targets1);
 			
+			TensorType mnistData = TensorType.mnistInput();
+			Map<PointsToSetVariable, TensorType> init = HashMapFactory.make();
+			for(PointsToSetVariable v : sources) {
+				init.put(v, mnistData);
+			}
+			
+			Map<PointsToSetVariable, TensorType> reshapeTypes = x.getReshapeTypes();
+			init.putAll(reshapeTypes);
+			
+			TensorTypes tt = new TensorTypes(dataflow, init);
+			
+			tt.solve(new NullProgressMonitor());
+			
+			System.err.println(init);
 			Set<PointsToSetVariable> targets2 = x.getDataflowTargets(conv2d);
-			System.err.println(targets2);
-			
-			System.err.println(x.getReshapeTypes());
+			for(PointsToSetVariable t : targets2) {
+				System.err.println(t + ":" + tt.getIn(t));
+			}
 		}
 	}
 
@@ -387,7 +400,7 @@ public class PythonDriver {
 						CallSiteReference site = sites.next();
 						for(SSAAbstractInvokeInstruction call : src.getIR().getCalls(site)) {
 							targets.put(
-								system.findOrCreatePointsToSet(PA.getHeapModel().getPointerKeyForLocal(n, 2)),
+								system.findOrCreatePointsToSet(PA.getHeapModel().getPointerKeyForReturnValue(n)),
 								TensorType.reshapeArg(src, call.getUse(2)));
 						}
 					}

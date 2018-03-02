@@ -145,7 +145,7 @@ public class TensorType {
 	}
 	
 	public static TensorType reshapeArg(CGNode node, int literalVn) {
-		ArrayList<Dimension<?>> r = new ArrayList<>(10);
+		ArrayList<Dimension<?>> r = new ArrayList<>();
 		DefUse du = node.getDU();
 		SymbolTable S = node.getIR().getSymbolTable();
 		for(Iterator<SSAInstruction> uses = du.getUses(literalVn); uses.hasNext(); ) {
