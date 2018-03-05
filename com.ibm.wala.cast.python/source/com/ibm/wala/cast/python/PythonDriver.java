@@ -24,7 +24,7 @@ import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterprete
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.loader.AstDynamicField;
 import com.ibm.wala.cast.loader.AstMethod;
-import com.ibm.wala.cast.python.analysis.TensorTypes;
+import com.ibm.wala.cast.python.analysis.TensorTypeAnalysis;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonConstructorTargetSelector;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonScopeMappingInstanceKeys;
@@ -385,7 +385,7 @@ public class PythonDriver {
 				dataflow.addEdge(x.system.findOrCreatePointsToSet(from), to);
 			}
 			
-			TensorTypes tt = new TensorTypes(dataflow, init, reshapeTypes);
+			TensorTypeAnalysis tt = new TensorTypeAnalysis(dataflow, init, reshapeTypes);
 			
 			tt.solve(new NullProgressMonitor());
 			

@@ -21,7 +21,7 @@ import com.ibm.wala.fixpoint.UnaryOperator;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.util.graph.Graph;
 
-public class TensorTypes extends DataflowSolver<PointsToSetVariable, TensorVariable> {
+public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, TensorVariable> {
 	
 	private static IKilldallFramework<PointsToSetVariable, TensorVariable> createProblem(Graph<PointsToSetVariable> G, Map<PointsToSetVariable,TensorType> init) {
 		return new IKilldallFramework<PointsToSetVariable, TensorVariable>() {
@@ -167,7 +167,7 @@ public class TensorTypes extends DataflowSolver<PointsToSetVariable, TensorVaria
 
 	private final Map<PointsToSetVariable, TensorType> init;
 	
-	public TensorTypes(Graph<PointsToSetVariable> G, Map<PointsToSetVariable,TensorType> init, Map<PointsToSetVariable, TensorType> reshapeTypes) {
+	public TensorTypeAnalysis(Graph<PointsToSetVariable> G, Map<PointsToSetVariable,TensorType> init, Map<PointsToSetVariable, TensorType> reshapeTypes) {
 		super(createProblem(G, reshapeTypes));
 		this.init = init;
 	}
