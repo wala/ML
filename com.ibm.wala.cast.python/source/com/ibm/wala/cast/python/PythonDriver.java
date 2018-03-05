@@ -62,6 +62,7 @@ import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationSystem;
+import com.ibm.wala.ipa.callgraph.propagation.ReturnValueKey;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXInstanceKeys;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
@@ -88,6 +89,7 @@ import com.ibm.wala.util.NullProgressMonitor;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.graph.Graph;
+import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
 import com.ibm.wala.util.strings.Atom;
 
 public class PythonDriver {
@@ -362,7 +364,7 @@ public class PythonDriver {
 				System.err.println(n.getIR());
 			}
 
-			Graph<PointsToSetVariable> dataflow = x.getTensorGraph();
+			Graph<PointsToSetVariable> dataflow = SlowSparseNumberedGraph.duplicate(x.getTensorGraph());
 			System.err.println(dataflow);
 			System.err.println(CG);
 
@@ -376,9 +378,14 @@ public class PythonDriver {
 			}
 			
 			Map<PointsToSetVariable, TensorType> reshapeTypes = x.getReshapeTypes();
-			init.putAll(reshapeTypes);
 			
-			TensorTypes tt = new TensorTypes(dataflow, init);
+			for(PointsToSetVariable to : reshapeTypes.keySet()) {
+				assert to.getPointerKey() instanceof ReturnValueKey;
+				PointerKey from = x.PA.getHeapModel().getPointerKeyForLocal(((ReturnValueKey)to.getPointerKey()).getNode(), 2);
+				dataflow.addEdge(x.system.findOrCreatePointsToSet(from), to);
+			}
+			
+			TensorTypes tt = new TensorTypes(dataflow, init, reshapeTypes);
 			
 			tt.solve(new NullProgressMonitor());
 			

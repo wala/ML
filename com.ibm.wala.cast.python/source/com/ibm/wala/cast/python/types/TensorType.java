@@ -5,13 +5,14 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import com.ibm.wala.cast.python.types.TensorType.Dimension;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAPutInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 
-public class TensorType {
+public class TensorType implements Iterable<Dimension<?>> {
 
 	enum DimensionType { Constant, Symbolic, Compound };
 	
@@ -23,6 +24,10 @@ public class TensorType {
 		}
 
 		abstract DimensionType type();
+		
+		abstract int symbolicDims();
+		
+		abstract int concreteSize();
 		
 		T value() {
 			return v;
@@ -68,6 +73,16 @@ public class TensorType {
 		DimensionType type() {
 			return DimensionType.Symbolic;
 		}
+
+		@Override
+		int concreteSize() {
+			return 1;
+		}
+
+		@Override
+		int symbolicDims() {
+			return 1;
+		}
 	}
 
 	static class NumericDim extends Dimension<Integer> {
@@ -78,6 +93,16 @@ public class TensorType {
 		@Override
 		DimensionType type() {
 			return DimensionType.Constant;
+		}
+
+		@Override
+		int concreteSize() {
+			return value();
+		}
+
+		@Override
+		int symbolicDims() {
+			return 0;
 		}
 	}
 
@@ -90,6 +115,24 @@ public class TensorType {
 		DimensionType type() {
 			return DimensionType.Compound;
 		}
+
+		@Override
+		int concreteSize() {
+			int size = 1;
+			for(Dimension<?> x : value()) {
+				size *= x.concreteSize();
+			}
+			return size;
+		}
+
+		@Override
+		int symbolicDims() {
+			int size = 0;
+			for(Dimension<?> x : value()) {
+				size += x.symbolicDims();
+			}
+			return size;
+		}
 	}
 
 	private final String cellType;
@@ -99,7 +142,7 @@ public class TensorType {
 		this.cellType = cellType;
 		this.dims = dims;
 	}
-
+	
 	@Override
 	public String toString() {
 		return "{" + dims.toString() + " of " + cellType + "}";
@@ -158,4 +201,26 @@ public class TensorType {
 		}
 		return new TensorType("pixel", r);
 	}
+
+	@Override
+	public Iterator<Dimension<?>> iterator() {
+		return dims.iterator();
+	}
+	
+	public int symbolicDims() {
+		int sz = 0;
+		for(Dimension<?> d : this) {
+			sz += d.symbolicDims();
+		}
+		return sz;
+	}
+	
+	public int concreteSize() {
+		int sz = 1;
+		for(Dimension<?> d : this) {
+			sz *= d.concreteSize();
+		}
+		return sz;
+	}
+
 }

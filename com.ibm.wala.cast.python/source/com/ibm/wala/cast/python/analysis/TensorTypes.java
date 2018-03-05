@@ -13,9 +13,47 @@ import com.ibm.wala.util.graph.Graph;
 
 public class TensorTypes extends DataflowSolver<PointsToSetVariable, TensorVariable> {
 	
-	private static IKilldallFramework<PointsToSetVariable, TensorVariable> createProblem(Graph<PointsToSetVariable> G) {
+	private static IKilldallFramework<PointsToSetVariable, TensorVariable> createProblem(Graph<PointsToSetVariable> G, Map<PointsToSetVariable,TensorType> init) {
 		return new IKilldallFramework<PointsToSetVariable, TensorVariable>() {
 
+			final class ReshapeOp extends UnaryOperator<TensorVariable> {
+				private final TensorType reshapeTo;
+				
+				public ReshapeOp(TensorType reshapeTo) {
+					this.reshapeTo = reshapeTo;
+				}
+
+				@Override
+				public byte evaluate(TensorVariable lhs, TensorVariable rhs) {
+					boolean changed = false;
+					int ssz = reshapeTo.symbolicDims();
+					int csz = reshapeTo.concreteSize();
+					if (rhs != null && rhs.state != null) {
+						for(TensorType t : rhs.state) {
+							if (t.symbolicDims() == ssz && t.concreteSize() == csz) {
+								changed |= lhs.state.add(reshapeTo);
+							}
+						}
+					}
+					return changed? CHANGED: NOT_CHANGED;
+				}
+
+				@Override
+				public int hashCode() {
+					return reshapeTo.hashCode();
+				}
+
+				@Override
+				public boolean equals(Object o) {
+					return this == o || ((o instanceof ReshapeOp) && reshapeTo.equals(((ReshapeOp)o).reshapeTo));
+				}
+
+				@Override
+				public String toString() {
+					return "reshape to " + reshapeTo;
+				}
+			}
+			
 			UnaryOperator<TensorVariable> nodeOp = new UnaryOperator<TensorVariable>() {
 
 				@Override
@@ -60,7 +98,11 @@ public class TensorTypes extends DataflowSolver<PointsToSetVariable, TensorVaria
 
 					@Override
 					public UnaryOperator<TensorVariable> getNodeTransferFunction(PointsToSetVariable node) {
-						return nodeOp;
+						if (init.containsKey(node)) {
+							return new ReshapeOp(init.get(node));
+						} else {
+							return nodeOp;
+						}
 					}
 
 					@Override
@@ -113,18 +155,14 @@ public class TensorTypes extends DataflowSolver<PointsToSetVariable, TensorVaria
 			}	
 		};
 	}
+
+	private final Map<PointsToSetVariable, TensorType> init;
 	
-	private final Map<PointsToSetVariable,TensorType> init;
-	
-	public TensorTypes(Graph<PointsToSetVariable> G, Map<PointsToSetVariable,TensorType> init) {
-		this(createProblem(G), init);
-	}
-	
-	private TensorTypes(IKilldallFramework<PointsToSetVariable, TensorVariable> problem, Map<PointsToSetVariable,TensorType> init) {
-		super(problem);
+	public TensorTypes(Graph<PointsToSetVariable> G, Map<PointsToSetVariable,TensorType> init, Map<PointsToSetVariable, TensorType> reshapeTypes) {
+		super(createProblem(G, reshapeTypes));
 		this.init = init;
 	}
-
+	
 	@Override
 	protected TensorVariable makeNodeVariable(PointsToSetVariable n, boolean IN) {
 		return new TensorVariable();
