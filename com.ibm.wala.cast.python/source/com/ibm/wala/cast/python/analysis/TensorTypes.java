@@ -1,3 +1,13 @@
+/******************************************************************************
+ * Copyright (c) 2018 IBM Corporation.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     IBM Corporation - initial API and implementation
+ *****************************************************************************/
 package com.ibm.wala.cast.python.analysis;
 
 import java.util.Map;
@@ -54,8 +64,7 @@ public class TensorTypes extends DataflowSolver<PointsToSetVariable, TensorVaria
 				}
 			}
 			
-			UnaryOperator<TensorVariable> nodeOp = new UnaryOperator<TensorVariable>() {
-
+			private final UnaryOperator<TensorVariable> nodeOp = new UnaryOperator<TensorVariable>() {
 				@Override
 				public byte evaluate(TensorVariable lhs, TensorVariable rhs) {
 					if (rhs != null && rhs.state != null) {
@@ -186,6 +195,4 @@ public class TensorTypes extends DataflowSolver<PointsToSetVariable, TensorVaria
 			getOut(src).state.add(init.get(src));
 		}
 	}
-
-
 }
