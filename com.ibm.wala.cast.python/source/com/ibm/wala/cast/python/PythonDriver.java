@@ -377,8 +377,7 @@ public class PythonDriver {
 				init.put(v, mnistData);
 			}
 			
-			Map<PointsToSetVariable, TensorType> reshapeTypes = x.getReshapeTypes();
-			
+			Map<PointsToSetVariable, TensorType> reshapeTypes = x.getReshapeTypes();			
 			for(PointsToSetVariable to : reshapeTypes.keySet()) {
 				assert to.getPointerKey() instanceof ReturnValueKey;
 				PointerKey from = x.PA.getHeapModel().getPointerKeyForLocal(((ReturnValueKey)to.getPointerKey()).getNode(), 2);

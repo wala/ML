@@ -86,7 +86,6 @@ import org.python.antlr.base.expr;
 import org.python.antlr.base.slice;
 import org.python.antlr.base.stmt;
 import org.python.core.PyObject;
-import org.python.util.PythonInterpreter;
 
 import com.ibm.wala.cast.ir.translator.AbstractClassEntity;
 import com.ibm.wala.cast.ir.translator.AbstractCodeEntity;
@@ -94,7 +93,6 @@ import com.ibm.wala.cast.ir.translator.AbstractFieldEntity;
 import com.ibm.wala.cast.ir.translator.AbstractScriptEntity;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
 import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
-import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
@@ -178,7 +176,6 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 	}
 
 	private final CAst Ast = new CAstImpl();
-	protected final PythonInterpreter interpreter = new PythonInterpreter();
 	
 	private class CAstVisitor implements VisitorIF<CAstNode>  {
 		private final PythonParser.WalkContext context;
@@ -1195,7 +1192,6 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 	
 	protected PythonParser(CAstTypeDictionaryImpl<PyObject> types) {
 		this.types = types;
-		interpreter.exec("import ast");
 	}
 	
 	@Override

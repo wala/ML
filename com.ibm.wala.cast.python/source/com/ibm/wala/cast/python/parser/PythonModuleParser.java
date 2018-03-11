@@ -10,12 +10,14 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.parser;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 
+import org.python.antlr.BaseParser;
+import org.python.antlr.runtime.ANTLRInputStream;
+import org.python.antlr.runtime.CharStream;
 import org.python.core.PyObject;
 
 import com.ibm.wala.cast.tree.CAstEntity;
@@ -23,7 +25,6 @@ import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
 import com.ibm.wala.cast.util.CAstPrinter;
 import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.SourceURLModule;
-import com.ibm.wala.util.io.TemporaryFile;
 
 public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
@@ -35,10 +36,9 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
 	@Override
 	protected PyObject parse() throws IOException {
-		File f = File.createTempFile("wala", "py");
-		f.deleteOnExit();
-		TemporaryFile.streamToFile(f, fileName.getInputStream());
-		return interpreter.eval("ast.parse(''.join(open('" + f.getAbsolutePath() + "')))");
+		CharStream file = new ANTLRInputStream(fileName.getInputStream());
+		BaseParser parser = new BaseParser(file, fileName.getName(), null);
+		return parser.parseModule();
 	}
 
 	public PythonModuleParser(SourceURLModule fileName, CAstTypeDictionaryImpl<PyObject> types) {
