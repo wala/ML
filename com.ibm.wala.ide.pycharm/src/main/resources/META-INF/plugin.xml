@@ -1,0 +1,29 @@
+<idea-plugin version="2" url="https://github.com/wala/ML">
+    <name>Ariadne</name>
+    <description><![CDATA[
+Ariadne is program analysis for Python using WALA
+  ]]></description>
+    <vendor url="http://www.ibm.com/" email="dolby@us.ibm.com">IBM</vendor>
+    <version>0.0.1</version>
+    <idea-version since-build="8000"/>
+
+    <change-notes />
+    <application-components />
+    <project-components />
+
+    <actions>
+        <group id="AriadneActionGroup" text="Ariadne" popup="false">
+            <separator/>
+
+            <action id="AnalysisAction" class="com.ibm.wala.ide.pycharm.AnalysisAction" text="Analysis" description="Analysis">
+                <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift alt A"/>
+            </action>
+
+            <add-to-group group-id="EditMenu" anchor="last"/>
+        </group>
+    </actions>
+
+    <extensions defaultExtensionNs="com.ibm.wala.ide.pycharm"/>
+
+    <depends>com.intellij.modules.lang</depends>
+</idea-plugin>

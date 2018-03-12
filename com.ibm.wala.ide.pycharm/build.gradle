@@ -1,0 +1,28 @@
+buildscript {
+    repositories {
+    	mavenLocal()
+        mavenCentral()
+    }
+}
+
+plugins {
+    id "org.jetbrains.intellij" version "0.1.10"
+}
+
+apply plugin: 'idea'
+apply plugin: 'org.jetbrains.intellij'
+apply plugin: 'java'
+
+intellij {
+    version 'IC-2017.3'
+    pluginName 'com.ibm.wala.ide.pycharm.Ariadne'
+}
+
+  dependencies {
+    compile files('../com.ibm.wala.cast.python/build/libs/com.ibm.wala.cast.python-all.jar')
+  }
+
+
+group 'com.ibm.wala.ide.pycharm'
+version '0.1' // Plugin version
+

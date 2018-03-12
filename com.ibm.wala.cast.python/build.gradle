@@ -1,0 +1,29 @@
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "com.github.jengelman.gradle.plugins:shadow:2.0.2"
+  }
+}
+
+apply plugin: "com.github.johnrengelman.shadow"
+apply plugin: 'java'
+
+sourceSets.main.java.srcDirs = ['source']
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.ibm.wala:com.ibm.wala.util:1.4.4-SNAPSHOT'
+    implementation 'com.ibm.wala:com.ibm.wala.shrike:1.4.4-SNAPSHOT'
+    implementation 'com.ibm.wala:com.ibm.wala.core:1.4.4-SNAPSHOT'
+    implementation 'com.ibm.wala:com.ibm.wala.cast:1.4.4-SNAPSHOT'
+    implementation 'com.ibm.wala:com.ibm.wala.cast.java:1.4.4-SNAPSHOT'
+    implementation 'org.python:jython:2.7.1b3'
+}
