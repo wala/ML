@@ -1,0 +1,5 @@
+/.gradle/
+/build/
+/com.ibm.wala.ide.pycharm.iml
+/com.ibm.wala.ide.pycharm.ipr
+/com.ibm.wala.ide.pycharm.iws
