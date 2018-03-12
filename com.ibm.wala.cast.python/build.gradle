@@ -13,6 +13,7 @@ apply plugin: "com.github.johnrengelman.shadow"
 apply plugin: 'java'
 
 sourceSets.main.java.srcDirs = ['source']
+sourceSets.main.resources.srcDirs = ['data']
 
 repositories {
     mavenLocal()

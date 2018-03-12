@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.ibm.wala.cast.python.PythonDriver;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
+import com.ibm.wala.util.CancelException;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -28,6 +29,10 @@ import com.intellij.openapi.project.Project;
  * Implode / Explode Action
  */
 class AnalysisAction extends AnAction {
+
+	static {
+		System.setProperty("javax.xml.parsers.SAXParserFactory", "org.python.apache.xerces.jaxp.SAXParserFactoryImpl");
+	}
 
 	private Project project;
     private Editor editor;
@@ -54,9 +59,10 @@ class AnalysisAction extends AnAction {
 		ApplicationManager.getApplication().runWriteAction(new java.lang.Runnable() {
 		    public void run() {
 		    	try {
-		    		PythonDriver x = new PythonDriver(new DocumentURLModule(editor.getDocument()));
-		    		editor.getDocument().insertString(0, "" + x.getClassHierarchy());
-		    	} catch (IOException | ClassHierarchyException e) {
+		    		DocumentURLModule scriptModule = new DocumentURLModule(editor.getDocument());
+		    		PythonDriver x = new PythonDriver(scriptModule);
+		    		editor.getDocument().insertString(0, "" + x.getCallGraph("Lscript " + scriptModule.getName()));
+		    	} catch (IOException | ClassHierarchyException | java.lang.IllegalArgumentException | CancelException e) {
 		    		editor.getDocument().insertString(0, e.toString());
 		    	}
 		    }
