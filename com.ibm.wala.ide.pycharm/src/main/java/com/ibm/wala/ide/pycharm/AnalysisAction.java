@@ -23,10 +23,11 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 
 /**
- * Implode / Explode Action
+ * WALA Analysis Action
  */
 class AnalysisAction extends AnAction {
 
@@ -68,6 +69,6 @@ class AnalysisAction extends AnAction {
 		    }
 		    });
 	    }
-	    }, "bad", null);
+	    }, "analyze "  + FileDocumentManager.getInstance().getFile(editor.getDocument()).getName(), null);
     }
 }
