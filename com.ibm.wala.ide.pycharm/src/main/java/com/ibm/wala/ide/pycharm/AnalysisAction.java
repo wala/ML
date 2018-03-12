@@ -13,9 +13,9 @@ package com.ibm.wala.ide.pycharm;
 import java.io.IOException;
 
 import org.jetbrains.annotations.NotNull;
-import org.python.core.PyObject;
 
-import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
+import com.ibm.wala.cast.python.PythonDriver;
+import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -49,16 +49,14 @@ class AnalysisAction extends AnAction {
      * @param   event   Action system event
      */
     public void actionPerformed(@NotNull final AnActionEvent event) {
-    	CAstTypeDictionaryImpl<PyObject> dict = new CAstTypeDictionaryImpl<PyObject>();
-	CommandProcessor.getInstance().executeCommand(project, new java.lang.Runnable() {
+ 	CommandProcessor.getInstance().executeCommand(project, new java.lang.Runnable() {
 	    public void run() {
 		ApplicationManager.getApplication().runWriteAction(new java.lang.Runnable() {
 		    public void run() {
 		    	try {
-		    		PythonDocumentParser parser = new PythonDocumentParser(editor.getDocument(), dict);
-		    		PyObject	 x = parser.parse();
-		    		editor.getDocument().insertString(0, x.toString());
-		    	} catch (IOException e) {
+		    		PythonDriver x = new PythonDriver(new DocumentURLModule(editor.getDocument()));
+		    		editor.getDocument().insertString(0, "" + x.getClassHierarchy());
+		    	} catch (IOException | ClassHierarchyException e) {
 		    		editor.getDocument().insertString(0, e.toString());
 		    	}
 		    }
