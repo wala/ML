@@ -16,9 +16,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
 
-import org.python.antlr.BaseParser;
 import org.python.antlr.runtime.ANTLRFileStream;
-import org.python.antlr.runtime.CharStream;
 import org.python.core.PyObject;
 
 import com.ibm.wala.cast.tree.CAstEntity;
@@ -42,11 +40,9 @@ public class PythonFileParser extends PythonParser<File> {
 		return fileName.toURI().toURL();
 	}
 	
-	protected PyObject parse() throws IOException {
-		CharStream file = new ANTLRFileStream(fileName.getAbsolutePath());
-		BaseParser parser = new BaseParser(file, fileName.getAbsolutePath(), null);
-		return parser.parseModule();
-		//return interpreter.eval("ast.parse(''.join(open('" + fileName.getAbsolutePath() + "')))");
+	protected WalaPythonParser makeParser() throws IOException {
+        ANTLRFileStream file = new ANTLRFileStream(fileName.getAbsolutePath());
+		return new WalaPythonParser(file, fileName.getAbsolutePath(), null);
 	}
 
 	public static void main(String[] args) throws Exception {

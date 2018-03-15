@@ -15,7 +15,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 
-import org.python.antlr.BaseParser;
 import org.python.antlr.runtime.ANTLRInputStream;
 import org.python.antlr.runtime.CharStream;
 import org.python.core.PyObject;
@@ -34,11 +33,9 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 		return fileName.getURL();
 	}
 
-	@Override
-	protected PyObject parse() throws IOException {
+	protected WalaPythonParser makeParser() throws IOException {
 		CharStream file = new ANTLRInputStream(fileName.getInputStream());
-		BaseParser parser = new BaseParser(file, fileName.getName(), null);
-		return parser.parseModule();
+		return new WalaPythonParser(file, fileName.getName(), null);
 	}
 
 	public PythonModuleParser(SourceURLModule fileName, CAstTypeDictionaryImpl<PyObject> types) {

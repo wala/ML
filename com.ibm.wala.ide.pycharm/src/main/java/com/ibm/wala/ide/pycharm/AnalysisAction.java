@@ -60,9 +60,10 @@ class AnalysisAction extends AnAction {
 		ApplicationManager.getApplication().runWriteAction(new java.lang.Runnable() {
 		    public void run() {
 		    	try {
+		    		int offset = editor.logicalPositionToOffset(editor.getCaretModel().getLogicalPosition());
 		    		DocumentURLModule scriptModule = new DocumentURLModule(editor.getDocument());
 		    		PythonDriver x = new PythonDriver(scriptModule);
-		    		editor.getDocument().insertString(0, "" + x.getCallGraph("Lscript " + scriptModule.getName()));
+		    		editor.getDocument().insertString(0, "" + offset + "\n" + x.getCallGraph("Lscript " + scriptModule.getName()) + "\n");
 		    	} catch (IOException | ClassHierarchyException | java.lang.IllegalArgumentException | CancelException e) {
 		    		editor.getDocument().insertString(0, e.toString());
 		    	}

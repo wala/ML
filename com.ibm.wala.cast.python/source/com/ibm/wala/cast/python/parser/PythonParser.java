@@ -179,14 +179,16 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 	
 	private class CAstVisitor implements VisitorIF<CAstNode>  {
 		private final PythonParser.WalkContext context;
+		private final WalaPythonParser parser;
 		
 		private CAstNode fail(PyObject tree) {
 			assert false : tree;
 			return null;
 		}
 		
-		private CAstVisitor(PythonParser.WalkContext context) {
+		private CAstVisitor(PythonParser.WalkContext context, WalaPythonParser parser) {
 			this.context = context;
+			this.parser = parser;
 		}
 		
 		private CAstNode notePosition(CAstNode n, PythonTree p) {
@@ -209,22 +211,42 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 				@Override
 				public int getFirstLine() {
-					return -1;
-				}
-
-				@Override
-				public int getLastLine() {
-					return -1;
+					return p.getLine();
 				}
 
 				@Override
 				public int getFirstCol() {
-					return -1;
+					return p.getCharPositionInLine();
+				}
+
+				boolean set_last = false;
+				int last_line;
+				int last_col;
+				
+				private void setLast() {
+					String s = parser.getText(p.getTokenStartIndex(), p.getTokenStopIndex());
+					String[] lines = s.split("\n");
+					last_line = getFirstLine() + lines.length - 1;
+					if (lines.length == 0) {
+						last_col = getFirstCol();
+					} else if (lines.length > 1) {
+						last_col = lines[lines.length-1].length();
+					} else {
+						last_col = getFirstCol() + lines[0].length();
+					}
+					set_last = true;
+				}
+				
+				@Override
+				public int getLastLine() {
+					if (! set_last) setLast();
+					return last_line;
 				}
 
 				@Override
 				public int getLastCol() {
-					return -1;
+					if (! set_last) setLast();
+					return last_col;
 				}
 
 				@Override
@@ -507,7 +529,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				}				
 			};			
 
-			CAstVisitor v = new CAstVisitor(child);
+			CAstVisitor v = new CAstVisitor(child, parser);
 			for(stmt e : arg0.getInternalBody()) {
 				e.accept(v);				
 			}
@@ -753,7 +775,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			};
 
 			PythonParser.FunctionContext child = new PythonParser.FunctionContext(context, fun, arg0);	
-			CAstVisitor cv = new CAstVisitor(child);
+			CAstVisitor cv = new CAstVisitor(child, parser);
 			for(stmt s : arg0.getInternalBody()) {
 				nodes[i++] = s.accept(cv);
 			}
@@ -1050,7 +1072,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			}
 				
 			TryCatchContext catches = new TryCatchContext(context, handlers);
-			CAstVisitor child = new CAstVisitor(catches);
+			CAstVisitor child = new CAstVisitor(catches, parser);
 			CAstNode block = child.block(arg0.getInternalBody());
 			
 			return Ast.makeNode(CAstNode.TRY,
@@ -1116,7 +1138,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			Pass b = new Pass();
 			Pass c = new Pass();
 			LoopContext x = new LoopContext(context, b, c);
-			CAstVisitor child = new CAstVisitor(x);
+			CAstVisitor child = new CAstVisitor(x, parser);
 			
 			if (arg0.getInternalOrelse() == null || arg0.getInternalOrelse().size() == 0) {
 				return
@@ -1180,7 +1202,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		}
 	}
 	
-	protected abstract PyObject parse() throws IOException;
+	protected abstract WalaPythonParser makeParser() throws IOException;
 	
 	protected abstract Reader getReader() throws IOException;
 	
@@ -1203,8 +1225,8 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 	@Override
 	public CAstEntity translateToCAst() throws Error, IOException {
-		PyObject ast = parse();
-		Module pythonAst = (Module)ast;
+		WalaPythonParser parser = makeParser();
+		Module pythonAst = (Module)parser.parseModule();
 		try {
 			WalkContext root = new PythonParser.RootContext(pythonAst);
 			CAstEntity script = new AbstractScriptEntity(scriptName(), CAstType.DYNAMIC) {
@@ -1213,8 +1235,8 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				private final CAstNode cast;
 				
 				{
-					context = new PythonParser.FunctionContext(root, this, ast);			
-					cast = pythonAst.accept(new CAstVisitor(context));
+					context = new PythonParser.FunctionContext(root, this, pythonAst);			
+					cast = pythonAst.accept(new CAstVisitor(context, parser));
 				}
 				
 								@Override
