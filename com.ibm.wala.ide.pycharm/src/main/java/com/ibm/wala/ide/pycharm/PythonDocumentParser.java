@@ -20,6 +20,7 @@ import org.python.antlr.runtime.CharStream;
 import org.python.core.PyObject;
 
 import com.ibm.wala.cast.python.parser.PythonParser;
+import com.ibm.wala.cast.python.parser.WalaPythonParser;
 import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -44,15 +45,14 @@ class PythonDocumentParser extends PythonParser<Document> {
 	}
 
 	@Override
-	protected PyObject parse() throws IOException {
-		CharStream file = new ANTLRReaderStream(getReader());
-		BaseParser parser = new BaseParser(file, scriptName(), null);
-		return parser.parseModule();
-	}
-
-	@Override
 	protected java.lang.String scriptName() {
 		return FileDocumentManager.getInstance().getFile(script).getName();
 
+	}
+
+	@Override
+	protected WalaPythonParser makeParser() throws IOException {
+		CharStream file = new ANTLRReaderStream(getReader());
+		return new WalaPythonParser(file, scriptName(), null);
 	}
 }

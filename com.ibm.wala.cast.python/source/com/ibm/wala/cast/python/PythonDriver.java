@@ -250,7 +250,7 @@ public class PythonDriver {
 		options.setSelector(cs);
 
 		IClass entry = cha.lookupClass(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.findOrCreate(rootScriptName)));
-		assert entry != null: "bad root name " + rootScriptName;
+		assert entry != null: "bad root name " + rootScriptName + ":\n" + cha;
 		MethodReference er = MethodReference.findOrCreate(entry.getReference(), AstMethodReference.fnSelector);
 		options.setEntrypoints(Collections.singleton(new DefaultEntrypoint(er, cha)));
 
