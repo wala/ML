@@ -24,6 +24,7 @@ import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterprete
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.loader.AstDynamicField;
 import com.ibm.wala.cast.loader.AstMethod;
+import com.ibm.wala.cast.lsp.WALAServer;
 import com.ibm.wala.cast.python.analysis.TensorTypeAnalysis;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonConstructorTargetSelector;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
@@ -398,6 +399,17 @@ public class PythonDriver {
 			for(PointsToSetVariable t : targets2) {
 				System.err.println(t + ":" + tt.getIn(t));
 			}
+			
+			WALAServer lsp = new WALAServer(CG, x.PA.getHeapModel());
+			lsp.add((PointerKey v) -> {
+				if (x.system.isImplicit(v)) {
+					return null;
+				} else {
+					PointsToSetVariable pts = x.system.findOrCreatePointsToSet(v);
+					return tt.getOut(pts).toString();
+				}
+			});
+			System.err.println(lsp);
 		}
 	}
 
