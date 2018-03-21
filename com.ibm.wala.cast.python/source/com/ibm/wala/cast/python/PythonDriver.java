@@ -401,7 +401,8 @@ public class PythonDriver {
 			}
 			
 			WALAServer lsp = new WALAServer(CG, x.PA.getHeapModel());
-			lsp.add((PointerKey v) -> {
+			
+			lsp.addValueAnalysis((PointerKey v) -> {
 				if (x.system.isImplicit(v)) {
 					return null;
 				} else {
@@ -409,6 +410,23 @@ public class PythonDriver {
 					return tt.getOut(pts).toString();
 				}
 			});
+			
+			lsp.addInstructionAnalysis((int[] instId) -> {
+				CGNode node = CG.getNode(instId[0]);
+				SSAInstruction inst = node.getIR().getInstructions()[instId[1]];
+				if (inst instanceof SSAAbstractInvokeInstruction) {
+					CallSiteReference ref = ((SSAAbstractInvokeInstruction)inst).getCallSite();
+					String targets = "targets[ ";
+					for(CGNode callee : CG.getPossibleTargets(node, ref)) {
+						targets += callee.getMethod().getDeclaringClass().getName().toString() + " ";
+					}
+					targets += "]";
+					return targets;
+				} else {
+					return null;
+				}
+			});
+			
 			System.err.println(lsp);
 		}
 	}
