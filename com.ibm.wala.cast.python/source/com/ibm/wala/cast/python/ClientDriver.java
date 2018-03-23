@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.InitializedParams;
@@ -43,8 +44,7 @@ public class ClientDriver implements LanguageClient {
 
 	@Override
 	public void showMessage(MessageParams messageParams) {
-		// TODO Auto-generated method stub
-
+		System.out.println(messageParams.getMessage());
 	}
 
 	@Override
@@ -69,6 +69,8 @@ public class ClientDriver implements LanguageClient {
 		System.err.println(client.server.getTextDocumentService());
 		
 		InitializeParams x = new InitializeParams();
+		ClientCapabilities c = new ClientCapabilities();
+		x.setCapabilities(c);
 		CompletableFuture<InitializeResult> y = client.server.initialize(x);
 		System.err.println(y.get());
 		InitializedParams z = new InitializedParams();
