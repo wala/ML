@@ -12,12 +12,18 @@ package com.ibm.wala.cast.python;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import org.eclipse.lsp4j.jsonrpc.Launcher;
+import org.eclipse.lsp4j.launch.LSPLauncher;
+import org.eclipse.lsp4j.services.LanguageClient;
 
 import com.ibm.wala.cast.ipa.callgraph.AstCFAPointerKeys;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
@@ -428,9 +434,20 @@ public class PythonDriver {
 			});
 			
 			System.err.println(lsp);
+			
+			runServer(lsp);
 		}
 	}
 
+	private static void runServer(WALAServer server) throws IOException {
+		ServerSocket ss = new ServerSocket(6660);
+		Socket conn = ss.accept();
+		Launcher<LanguageClient> launcher = 
+			LSPLauncher.createServerLauncher(server, conn.getInputStream(), conn.getOutputStream());
+		server.connect(launcher.getRemoteProxy());
+		launcher.startListening();
+	}
+	
 	private Map<PointsToSetVariable,TensorType> getReshapeTypes() {
 		Map<PointsToSetVariable,TensorType> targets = HashMapFactory.make();
 		for(CGNode n : CG) {
