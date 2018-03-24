@@ -7,13 +7,16 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.InitializedParams;
 import org.eclipse.lsp4j.MessageActionItem;
 import org.eclipse.lsp4j.MessageParams;
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.launch.LSPLauncher;
@@ -76,7 +79,15 @@ public class ClientDriver implements LanguageClient {
 		InitializedParams z = new InitializedParams();
 		client.server.initialized(z);
 		
+		TextDocumentIdentifier id = new TextDocumentIdentifier();
 		TextDocumentPositionParams a = new TextDocumentPositionParams();
-		client.server.getTextDocumentService().hover(a);
+		id.setUri("file:///Users/dolby/git/ML/com.ibm.wala.cast.python/data/tf1.py");
+		a.setTextDocument(id);
+		Position p = new Position();
+		p.setLine(5);
+		p.setCharacter(15);
+		a.setPosition(p);
+		CompletableFuture<Hover> data = client.server.getTextDocumentService().hover(a);
+		System.err.println(data.get());
 	}
 }
