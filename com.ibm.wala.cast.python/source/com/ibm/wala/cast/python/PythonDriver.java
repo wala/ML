@@ -406,7 +406,7 @@ public class PythonDriver {
 				System.err.println(t + ":" + tt.getIn(t));
 			}
 			
-			WALAServer lsp = new WALAServer(CG, x.PA.getHeapModel());
+			WALAServer lsp = WALAServer.launch(6660, CG, x.PA.getHeapModel());
 			
 			lsp.addValueAnalysis((PointerKey v) -> {
 				if (x.system.isImplicit(v)) {
@@ -434,18 +434,7 @@ public class PythonDriver {
 			});
 			
 			System.err.println(lsp);
-			
-			runServer(lsp);
 		}
-	}
-
-	private static void runServer(WALAServer server) throws IOException {
-		ServerSocket ss = new ServerSocket(6660);
-		Socket conn = ss.accept();
-		Launcher<LanguageClient> launcher = 
-			LSPLauncher.createServerLauncher(server, conn.getInputStream(), conn.getOutputStream());
-		server.connect(launcher.getRemoteProxy());
-		launcher.startListening();
 	}
 	
 	private Map<PointsToSetVariable,TensorType> getReshapeTypes() {

@@ -76,6 +76,7 @@ public class ClientDriver implements LanguageClient {
 		x.setCapabilities(c);
 		CompletableFuture<InitializeResult> y = client.server.initialize(x);
 		System.err.println(y.get());
+		
 		InitializedParams z = new InitializedParams();
 		client.server.initialized(z);
 		
