@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
@@ -17,6 +18,7 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.launch.LSPLauncher;
@@ -62,6 +64,7 @@ public class ClientDriver implements LanguageClient {
 	}
 
 	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
+		@SuppressWarnings("resource")
 		Socket s = new Socket(); 
 		s.connect(new InetSocketAddress("localhost", 6660));
 		ClientDriver client = new ClientDriver();
@@ -80,9 +83,18 @@ public class ClientDriver implements LanguageClient {
 		InitializedParams z = new InitializedParams();
 		client.server.initialized(z);
 		
+		String scriptUri = "file:///Users/dolby/git/ML/com.ibm.wala.cast.python/data/tf1.py";
+		
+		DidOpenTextDocumentParams open = new DidOpenTextDocumentParams();
+		TextDocumentItem script = new TextDocumentItem();
+		open.setTextDocument(script);
+		script.setLanguageId("python");
+		script.setUri(scriptUri);
+		client.server.getTextDocumentService().didOpen(open);
+		
 		TextDocumentIdentifier id = new TextDocumentIdentifier();
 		TextDocumentPositionParams a = new TextDocumentPositionParams();
-		id.setUri("file:///Users/dolby/git/ML/com.ibm.wala.cast.python/data/tf1.py");
+		id.setUri(scriptUri);
 		a.setTextDocument(id);
 		Position p = new Position();
 		p.setLine(5);
