@@ -2,8 +2,9 @@ package com.ibm.wala.cast.python.test;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 
-import com.ibm.wala.cast.python.PythonDriver;
+import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.test.TestCallGraphShape;
 import com.ibm.wala.cast.types.AstMethodReference;
@@ -28,8 +29,9 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 	}
 	
 	protected CallGraph process(String name) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		PythonDriver engine = new PythonDriver(getScript(name));
-		return engine.getCallGraph("Lscript " + name);
+		PythonAnalysisEngine engine = new PythonAnalysisEngine();
+		engine.setModuleFiles(Collections.singleton(getScript(name)));
+		return engine.buildDefaultCallGraph();
 	}
 	
 }

@@ -317,7 +317,7 @@ public class PythonAnalysisEngine extends AbstractAnalysisEngine<InstanceKey, Py
 	
 	@Override
 	public TensorTypeAnalysis performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
-		Graph<PointsToSetVariable> dataflow = SlowSparseNumberedGraph.duplicate(builder.getSystem().getFlowGraphIncludingImplicitConstraints());
+		Graph<PointsToSetVariable> dataflow = SlowSparseNumberedGraph.duplicate(builder.getPropagationSystem().getFlowGraphIncludingImplicitConstraints());
 
 		Set<PointsToSetVariable> sources = getDataflowSources(dataflow);
 		System.err.println(sources);

@@ -74,6 +74,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 		if (! (instruction instanceof PythonInvokeInstruction)) {
 			super.processCallingConstraints(caller, instruction, target, constParams, uniqueCatchKey);
 		} else {
+			// positional parameters
 			PythonInvokeInstruction call = (PythonInvokeInstruction) instruction;
 			for(int i = 0; i < call.getNumberOfPositionalParameters(); i++) {
 				PointerKey lval = getPointerKeyForLocal(target, i+1);
@@ -88,6 +89,27 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 				}
 			}
 			
+			// keyword arguments
+			for(int i = 0; i < target.getMethod().getNumberOfParameters(); i++) {
+				for(String destName : target.getIR().getLocalNames(0, i+1)) {
+					int src = call.getUse(destName);
+					if (src != -1) {
+						PointerKey lval = getPointerKeyForLocal(target, i+1);
+						int p = call.getNumberOfPositionalParameters() + i;
+						if (constParams != null && constParams[p] != null) {
+							InstanceKey[] ik = constParams[p];
+							for (InstanceKey element : ik) {
+								system.newConstraint(lval, element);
+							}		
+						} else {
+							PointerKey rval = getPointerKeyForLocal(caller, src);
+							getSystem().newConstraint(lval, assignOperator, rval);
+						}
+					}
+				}
+			}
+			
+			// return values
 			PointerKey rret = getPointerKeyForReturnValue(target);
 			PointerKey lret = getPointerKeyForLocal(caller, call.getReturnValue(0));
 			getSystem().newConstraint(lret, assignOperator, rret);

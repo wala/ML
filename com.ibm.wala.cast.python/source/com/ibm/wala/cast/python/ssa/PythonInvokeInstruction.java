@@ -12,6 +12,7 @@ package com.ibm.wala.cast.python.ssa;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.classLoader.CallSiteReference;
@@ -19,6 +20,7 @@ import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.types.TypeReference;
+import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
 
 public class PythonInvokeInstruction extends SSAAbstractInvokeInstruction {
@@ -47,6 +49,14 @@ public class PythonInvokeInstruction extends SSAAbstractInvokeInstruction {
 		return positionalParams.length + keywordParams.length;
 	}
 
+	public Set<String> getKeywords() {
+		Set<String> names = HashSetFactory.make();
+		for(Pair<String,?> a : keywordParams) {
+			names.add(a.fst);
+		}
+		return names;
+	}
+	
 	public int getUse(String keyword) {
 		for(int i = 0; i < keywordParams.length; i++) {
 			if (keywordParams[i].fst.equals(keyword)) {
@@ -54,7 +64,6 @@ public class PythonInvokeInstruction extends SSAAbstractInvokeInstruction {
 			}
 		}
 		
-		assert false : "keyword " + keyword + " not found in " + this;
 		return -1;
 	}
 	

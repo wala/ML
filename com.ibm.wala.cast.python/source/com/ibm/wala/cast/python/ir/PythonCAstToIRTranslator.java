@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.ibm.wala.cast.ir.ssa.AbstractReflectivePut;
 import com.ibm.wala.cast.ir.translator.ArrayOpHandler;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
@@ -41,6 +42,7 @@ import com.ibm.wala.shrikeBT.IBinaryOpInstruction;
 import com.ibm.wala.shrikeBT.IBinaryOpInstruction.IOperator;
 import com.ibm.wala.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.ssa.SSAInstruction;
+import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
@@ -165,6 +167,27 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	@Override
 	public void doArrayWrite(WalkContext context, int arrayValue, CAstNode arrayRef, int[] dimValues, int rval) {
 		assert dimValues.length == 1;
+		
+		AbstractReflectivePut inst = new AbstractReflectivePut(
+				context.cfg().getCurrentInstruction(),
+				arrayValue,
+				dimValues[0],
+				rval) {
+
+					@Override
+					public SSAInstruction copyForSSA(SSAInstructionFactory insts, int[] defs, int[] uses) {
+						// TODO Auto-generated method stub
+						return null;
+					}
+
+					@Override
+					public void visit(IVisitor v) {
+						// TODO Auto-generated method stub
+						
+					}
+			
+		};
+		
 		context.cfg().addInstruction(Python.instructionFactory().ArrayStoreInstruction(context.cfg().getCurrentInstruction(), arrayValue, dimValues[0], rval, PythonTypes.Root));
 	}
 

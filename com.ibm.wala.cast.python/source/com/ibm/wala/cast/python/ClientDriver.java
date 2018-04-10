@@ -92,6 +92,8 @@ public class ClientDriver implements LanguageClient {
 		script.setUri(scriptUri);
 		client.server.getTextDocumentService().didOpen(open);
 		
+		Thread.sleep(10000);
+		
 		TextDocumentIdentifier id = new TextDocumentIdentifier();
 		TextDocumentPositionParams a = new TextDocumentPositionParams();
 		id.setUri(scriptUri);
