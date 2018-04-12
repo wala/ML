@@ -15,11 +15,11 @@ import com.ibm.wala.cfg.InducedCFG;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.ipa.callgraph.impl.Everywhere;
 import com.ibm.wala.ipa.summaries.MethodSummary;
-import com.ibm.wala.ipa.summaries.SummarizedMethod;
+import com.ibm.wala.ipa.summaries.SummarizedMethodWithNames;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.types.MethodReference;
 
-public class PythonSummarizedFunction extends SummarizedMethod {
+public class PythonSummarizedFunction extends SummarizedMethodWithNames {
 
 	public PythonSummarizedFunction(MethodReference ref, MethodSummary summary, IClass declaringClass)
 			throws NullPointerException {

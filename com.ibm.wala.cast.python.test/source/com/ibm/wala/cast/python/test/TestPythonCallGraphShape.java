@@ -16,12 +16,19 @@ import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.strings.Atom;
 
 public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 
 	@Override
 	protected Collection<CGNode> getNodes(CallGraph CG, String functionIdentifier) {
-		return CG.getNodes(MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName(functionIdentifier)), AstMethodReference.fnSelector));
+		if (functionIdentifier.contains(":")) {
+			String cls = functionIdentifier.substring(0, functionIdentifier.indexOf(":"));
+			String name = functionIdentifier.substring(functionIdentifier.indexOf(":")+1);
+			return CG.getNodes(MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("L" + cls)), Atom.findOrCreateUnicodeAtom(name), AstMethodReference.fnDesc));
+		} else {
+			return CG.getNodes(MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("L" + functionIdentifier)), AstMethodReference.fnSelector));
+		}
 	}
 
 	protected SourceURLModule getScript(String name) throws IOException {
@@ -34,4 +41,11 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 		return engine.buildDefaultCallGraph();
 	}
 	
+	StringBuffer dump(CallGraph CG) {
+		StringBuffer sb = new StringBuffer();
+		for(CGNode n : CG) {
+			sb.append(n.getIR()).append("\n");
+		}
+		return sb;
+	}
 }

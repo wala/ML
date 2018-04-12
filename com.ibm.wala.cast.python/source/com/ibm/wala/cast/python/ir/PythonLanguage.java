@@ -20,6 +20,7 @@ import com.ibm.wala.cast.ir.ssa.AstGlobalWrite;
 import com.ibm.wala.cast.java.loader.JavaSourceLoaderImpl;
 import com.ibm.wala.cast.python.cfg.PythonInducedCFG;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
+import com.ibm.wala.cast.python.ssa.PythonStoreProperty;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cfg.InducedCFG;
@@ -36,6 +37,7 @@ import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.shrikeCT.BootstrapMethodsReader.BootstrapMethod;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
+import com.ibm.wala.ssa.SSAArrayStoreInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.ssa.SSAInvokeInstruction;
@@ -181,6 +183,7 @@ public class PythonLanguage implements Language {
 		          return new AstGlobalWrite(iindex, global, rhs);
 		        }
 
+				@SuppressWarnings("unchecked")
 				@Override
 				public SSAAbstractInvokeInstruction InvokeInstruction(int iindex, int result, int[] params, int exception,
 						CallSiteReference site, BootstrapMethod bootstrap) {
@@ -197,6 +200,12 @@ public class PythonLanguage implements Language {
 						CallSiteReference site, BootstrapMethod bootstrap) {
 					// TODO Auto-generated method stub
 					return super.InvokeInstruction(iindex, params, exception, site, bootstrap);
+				}
+
+				@Override
+				public SSAArrayStoreInstruction ArrayStoreInstruction(int iindex, int arrayref, int index, int value,
+						TypeReference declaredType) {
+					return new PythonStoreProperty(iindex, arrayref, index, value);
 				}
 		        
 		        

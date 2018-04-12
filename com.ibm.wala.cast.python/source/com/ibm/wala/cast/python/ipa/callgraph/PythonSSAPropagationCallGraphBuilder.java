@@ -15,6 +15,7 @@ import com.ibm.wala.cast.ipa.callgraph.GlobalObjectKey;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.ssa.PythonInstructionVisitor;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
+import com.ibm.wala.cast.python.ssa.PythonStoreProperty;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.CGNode;
@@ -66,6 +67,13 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 		public void visitPythonInvoke(PythonInvokeInstruction inst) {
 	        visitInvokeInternal(inst, new DefaultInvariantComputer());
 		}
+
+		@Override
+		public void visitPythonStoreProperty(PythonStoreProperty inst) {
+			newFieldWrite(node, inst.getArrayRef(), inst.getIndex(), inst.getValue());
+		}
+		
+		
 	}
 
 	@Override
@@ -91,19 +99,22 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 			
 			// keyword arguments
 			for(int i = 0; i < target.getMethod().getNumberOfParameters(); i++) {
-				for(String destName : target.getIR().getLocalNames(0, i+1)) {
-					int src = call.getUse(destName);
-					if (src != -1) {
-						PointerKey lval = getPointerKeyForLocal(target, i+1);
-						int p = call.getNumberOfPositionalParameters() + i;
-						if (constParams != null && constParams[p] != null) {
-							InstanceKey[] ik = constParams[p];
-							for (InstanceKey element : ik) {
-								system.newConstraint(lval, element);
-							}		
-						} else {
-							PointerKey rval = getPointerKeyForLocal(caller, src);
-							getSystem().newConstraint(lval, assignOperator, rval);
+				String[] names = target.getIR().getLocalNames(0, i+1);
+				if (names != null) {
+					for(String destName : names) {
+						int src = call.getUse(destName);
+						if (src != -1) {
+							PointerKey lval = getPointerKeyForLocal(target, i+1);
+							int p = call.getNumberOfPositionalParameters() + i;
+							if (constParams != null && constParams[p] != null) {
+								InstanceKey[] ik = constParams[p];
+								for (InstanceKey element : ik) {
+									system.newConstraint(lval, element);
+								}		
+							} else {
+								PointerKey rval = getPointerKeyForLocal(caller, src);
+								getSystem().newConstraint(lval, assignOperator, rval);
+							}
 						}
 					}
 				}

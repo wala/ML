@@ -23,7 +23,7 @@ print(Foo.base)
 
 instance = Foo()
 print(Foo.foo(instance, 2,3))
-print(instance.foo(2,3))
+print(instance.foo(b=2,a=3))
 
 instance.foo = foo;
 print(instance.foo(5,6))

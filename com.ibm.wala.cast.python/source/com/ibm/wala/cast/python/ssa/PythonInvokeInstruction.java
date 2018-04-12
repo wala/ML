@@ -19,6 +19,7 @@ import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInstructionFactory;
+import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
@@ -36,12 +37,12 @@ public class PythonInvokeInstruction extends SSAAbstractInvokeInstruction {
 	}
 
 	@Override
-	public int getNumberOfParameters() {
-		return getNumberOfUses();
-	}
-
 	public int getNumberOfPositionalParameters() {
 		return positionalParams.length;
+	}
+
+	public int getNumberOfTotalParameters() {
+		return positionalParams.length + keywordParams.length;
 	}
 	
 	@Override
@@ -72,7 +73,7 @@ public class PythonInvokeInstruction extends SSAAbstractInvokeInstruction {
 		if (j < positionalParams.length) {
 			return positionalParams[j];
 		} else {
-			assert j < getNumberOfParameters();
+			assert j < getNumberOfTotalParameters();
 			return keywordParams[j - positionalParams.length].snd;
 		}
 	}
@@ -123,6 +124,17 @@ public class PythonInvokeInstruction extends SSAAbstractInvokeInstruction {
 	@Override
 	public Collection<TypeReference> getExceptionTypes() {
 		return Collections.singleton(PythonTypes.Exception);
+	}
+
+	@Override
+	public String toString(SymbolTable symbolTable) {
+		String s = "";
+		if (keywordParams != null) {
+			for(Pair<String,Integer> kp : keywordParams) {
+				s = s + " " + kp.fst + ":" + kp.snd;
+			}
+		}
+		return super.toString(symbolTable) + s;
 	}
 
 }

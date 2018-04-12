@@ -17,5 +17,9 @@ public interface PythonInstructionVisitor extends AstInstructionVisitor {
 	default void visitPythonInvoke(PythonInvokeInstruction inst) {
 		
 	}
-	
+
+	default void visitPythonStoreProperty(PythonStoreProperty inst) {
+		
+	}
+
 }

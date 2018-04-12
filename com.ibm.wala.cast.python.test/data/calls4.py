@@ -1,3 +1,6 @@
+def bad():
+    return 7
+    
 def id(x):
     return x
 
@@ -6,5 +9,6 @@ def foo(a,b):
 
 foo.x = foo;
 print(foo.x(b=7, a=6));
-print(foo.x);
+bd = id(x=bad)
+bd()
 

@@ -10,6 +10,7 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.ipa.callgraph;
 
+import java.util.Collections;
 import java.util.Map;
 
 import com.ibm.wala.cast.python.ipa.summaries.PythonInstanceMethodTrampoline;
@@ -81,6 +82,8 @@ public class PythonConstructorTargetSelector implements MethodTargetSelector {
 				
 				ctor.addStatement(insts.ReturnInstruction(pc++, inst, false));
 			
+				ctor.setValueNames(Collections.singletonMap(1, Atom.findOrCreateUnicodeAtom("self")));
+				
 				ctors.put(receiver, new PythonSummarizedFunction(ref, ctor, receiver));
 			}
 			
