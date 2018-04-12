@@ -10,7 +10,7 @@ install:
  - pushd /tmp/WALA
  - mvn clean install -DskipTests -B -q
  - popd
- - pushd /tmp/IDE
+ - pushd /tmp/IDE/com.ibm.wala.cast.lsp
  - mvn clean install -DskipTests -B -q
  - popd
 script:
