@@ -110,19 +110,20 @@
       </class>
 
       <class name="numpy_input_fn" allocatable="true">
-        <method name="do" descriptor="()LRoot;" numArgs="3">
-          <new def="x" class="Lobject"/>
+        <method name="do" descriptor="()LRoot;" numArgs="5"
+        paramNames="self x y batch_size shuffle">
+          <new def="xx" class="Lobject"/>
 	  <putfield class="LRoot"
                     field="data"
                     fieldType="LRoot"
-                    ref="x"
+                    ref="xx"
                     value="2"/>
 	  <putfield class="LRoot"
                     field="labels"
                     fieldType="LRoot"
-                    ref="x"
+                    ref="xx"
                     value="3"/>
-	  <return value="x"/>
+	  <return value="xx"/>
 	</method>
       </class>
    </package>
@@ -134,13 +135,18 @@
                     field="$callback"
                     fieldType="LRoot"
                     ref="arg0"
-                    def="x"/>
+                    def="xx"/>
+	  <getfield class="LRoot"
+                    field="data"
+                    fieldType="LRoot"
+                    ref="arg1"
+                    def="data"/>
 	  <call class="LRoot"
 		name="do"
 		descriptor="()LRoot;"
 		type="virtual"
-		arg0="x"
-		arg1="2"
+		arg0="xx"
+		arg1="data"
 		arg2="3"
 		numArgs="3"
 		def="v"/>

@@ -1,10 +1,13 @@
 package com.ibm.wala.cast.python.test;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
+import com.ibm.wala.cast.python.client.PythonTensorAnalysisEngine;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.test.TestCallGraphShape;
 import com.ibm.wala.cast.types.AstMethodReference;
@@ -32,11 +35,16 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 	}
 
 	protected SourceURLModule getScript(String name) throws IOException {
-		return new SourceURLModule(getClass().getClassLoader().getResource(name));
+		try {
+			URL url = new URL(name);
+			return new SourceURLModule(url);
+		} catch (MalformedURLException e) {
+			return new SourceURLModule(getClass().getClassLoader().getResource(name));
+		}
 	}
 	
 	protected CallGraph process(String name) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		PythonAnalysisEngine engine = new PythonAnalysisEngine();
+		PythonAnalysisEngine engine = new PythonTensorAnalysisEngine();
 		engine.setModuleFiles(Collections.singleton(getScript(name)));
 		return engine.buildDefaultCallGraph();
 	}

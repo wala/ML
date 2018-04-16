@@ -10,6 +10,7 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.analysis;
 
+import java.util.Collections;
 import java.util.Set;
 
 import com.ibm.wala.cast.python.types.TensorType;
@@ -21,6 +22,10 @@ public class TensorVariable implements IVariable<TensorVariable> {
 	private int orderNumber = -1;
 	
 	Set<TensorType> state = HashSetFactory.make();
+	
+	public Set<TensorType> getTypes() {
+		return Collections.unmodifiableSet(state);
+	}
 	
 	@Override
 	public int getGraphNodeId() {

@@ -79,6 +79,11 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 	@Override
 	protected void processCallingConstraints(CGNode caller, SSAAbstractInvokeInstruction instruction, CGNode target,
 			InstanceKey[][] constParams, PointerKey uniqueCatchKey) {
+		
+		if (target.toString().contains("numpy_input_fn")) {
+			System.err.println(target);
+		}
+		
 		if (! (instruction instanceof PythonInvokeInstruction)) {
 			super.processCallingConstraints(caller, instruction, target, constParams, uniqueCatchKey);
 		} else {
@@ -98,14 +103,17 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 			}
 			
 			// keyword arguments
-			for(int i = 0; i < target.getMethod().getNumberOfParameters(); i++) {
+			for(int i = 0; i < call.getNumberOfTotalParameters() && i < target.getIR().getSymbolTable().getMaxValueNumber(); i++) {
 				String[] names = target.getIR().getLocalNames(0, i+1);
 				if (names != null) {
 					for(String destName : names) {
+						if ("x".equals(destName)) {
+							System.err.println(target);
+						}
 						int src = call.getUse(destName);
 						if (src != -1) {
 							PointerKey lval = getPointerKeyForLocal(target, i+1);
-							int p = call.getNumberOfPositionalParameters() + i;
+							int p = call.getNumberOfPositionalParameters() + i - 1;
 							if (constParams != null && constParams[p] != null) {
 								InstanceKey[] ik = constParams[p];
 								for (InstanceKey element : ik) {

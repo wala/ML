@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BiConsumer;
 
 import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
@@ -12,6 +13,7 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.InitializedParams;
+import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.MessageActionItem;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.Position;
@@ -21,6 +23,7 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.launch.LSPLauncher;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageServer;
@@ -103,6 +106,13 @@ public class ClientDriver implements LanguageClient {
 		p.setCharacter(15);
 		a.setPosition(p);
 		CompletableFuture<Hover> data = client.server.getTextDocumentService().hover(a);
-		System.err.println(data.get());
+		data.whenComplete(new BiConsumer<Hover, Throwable>() {
+			@Override
+			public void accept(Hover t, Throwable u) {
+				for(Either<String, MarkedString> hd : t.getContents()) {
+					System.err.println(hd.getLeft());			
+				}
+			}
+		});
 	}
 }

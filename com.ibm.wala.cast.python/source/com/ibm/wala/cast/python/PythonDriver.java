@@ -16,7 +16,7 @@ import java.util.function.Function;
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.lsp.WALAServer;
 import com.ibm.wala.cast.python.analysis.TensorTypeAnalysis;
-import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
+import com.ibm.wala.cast.python.client.PythonTensorAnalysisEngine;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IMethod;
@@ -38,7 +38,7 @@ public class PythonDriver {
 	public static void main(String args[]) throws ClassHierarchyException, IOException, IllegalArgumentException, CancelException {
 		Function<WALAServer, Function<String, AbstractAnalysisEngine<InstanceKey, ? extends PropagationCallGraphBuilder, ?>>> python = (WALAServer lsp) -> {
 			return (String url) -> {
-				PythonAnalysisEngine engine = new PythonAnalysisEngine() {
+				PythonTensorAnalysisEngine engine = new PythonTensorAnalysisEngine() {
 
 					@Override
 					public TensorTypeAnalysis performAnalysis(
