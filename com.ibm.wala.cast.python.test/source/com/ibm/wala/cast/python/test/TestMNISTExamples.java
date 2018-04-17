@@ -65,4 +65,12 @@ public class TestMNISTExamples extends TestPythonCallGraphShape {
 			}
 		}
 	}
+	
+	private static final String Ex2URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/tutorials/mnist/mnist_deep.py";
+
+	@Test
+	public void testEx2CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		CallGraph CG = process(Ex2URL);
+	}
+
 }

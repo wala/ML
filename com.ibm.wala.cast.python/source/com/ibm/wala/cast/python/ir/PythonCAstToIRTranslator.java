@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import com.ibm.wala.cast.ir.ssa.AbstractReflectivePut;
 import com.ibm.wala.cast.ir.translator.ArrayOpHandler;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
@@ -42,7 +41,6 @@ import com.ibm.wala.shrikeBT.IBinaryOpInstruction;
 import com.ibm.wala.shrikeBT.IBinaryOpInstruction.IOperator;
 import com.ibm.wala.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.ssa.SSAInstruction;
-import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
@@ -56,17 +54,19 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	public PythonCAstToIRTranslator(IClassLoader loader, Map<Object, CAstEntity> namedEntityResolver,
 			ArrayOpHandler arrayOpHandler) {
 		super(loader, namedEntityResolver, arrayOpHandler);
-		// TODO Auto-generated constructor stub
 	}
 
 	public PythonCAstToIRTranslator(IClassLoader loader, Map<Object, CAstEntity> namedEntityResolver) {
 		super(loader, namedEntityResolver);
-		// TODO Auto-generated constructor stub
 	}
 
 	public PythonCAstToIRTranslator(IClassLoader loader) {
 		super(loader);
-		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	protected boolean hasImplicitGlobals() {
+		return true;
 	}
 
 	@Override
