@@ -17,6 +17,19 @@
                   ref="x"
                   value="estimator"/>
 
+	<new def="app" class="Lobject"/>
+	<putfield class="LRoot"
+                  field="app"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="app"/>
+	<new def="run" class="Ltensorflow/app/run"/>
+	<putfield class="LRoot"
+                  field="run"
+                  fieldType="LRoot"
+                  ref="app"
+                  value="run"/>
+
 	<new def="Estimator" class="Ltensorflow/estimator/Estimator"/>
 	<putfield class="LRoot"
                   field="Estimator"
@@ -44,6 +57,7 @@
                   fieldType="LRoot"
                   ref="x"
                   value="reshape"/>
+
 	<new def="conv2d" class="Ltensorflow/functions/conv2d"/>
 	<putfield class="LRoot"
                   field="conv2d"
@@ -149,6 +163,22 @@
 		arg1="data"
 		arg2="3"
 		numArgs="3"
+		def="v"/>
+	  <return value="v"/>
+	</method>
+      </class>
+    </package>
+
+    <package name="tensorflow/app">
+      <class name="run" allocatable="true">
+	<method name="do" descriptor="()LRoot;" numArgs="3"
+        paramNames="self main argv">
+	  <call class="LRoot"
+		name="do"
+		descriptor="()LRoot;"
+		type="virtual"
+		arg0="arg1"
+		arg1=""
 		def="v"/>
 	  <return value="v"/>
 	</method>
