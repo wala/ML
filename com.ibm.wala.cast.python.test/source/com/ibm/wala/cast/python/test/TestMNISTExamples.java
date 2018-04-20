@@ -74,4 +74,13 @@ public class TestMNISTExamples extends TestPythonCallGraphShape {
 		System.err.println(CG);
 	}
 
+	@Test
+	public void testEx2Tensors() throws IllegalArgumentException, CancelException, IOException {
+		PythonTensorAnalysisEngine e = new PythonTensorAnalysisEngine();
+		e.setModuleFiles(Collections.singleton(new SourceURLModule(new URL(Ex2URL))));
+		PropagationCallGraphBuilder cgBuilder = (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
+		CallGraph CG = cgBuilder.getCallGraph();		
+		TensorTypeAnalysis result = e.performAnalysis(cgBuilder);
+		System.err.println(result);;
+	}
 }

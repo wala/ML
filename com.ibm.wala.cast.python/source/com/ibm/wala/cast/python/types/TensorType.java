@@ -10,12 +10,20 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.types;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.python.core.PyObject;
+import org.python.core.PySystemState;
+import org.python.util.PythonInterpreter;
+
+import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.python.types.TensorType.Dimension;
+import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
+import com.ibm.wala.cast.util.SourceBuffer;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.SSAInstruction;
@@ -197,16 +205,49 @@ public class TensorType implements Iterable<Dimension<?>> {
 		return new TensorType("pixel", Arrays.asList(batch, vec));
 	}
 	
-	public static TensorType reshapeArg(CGNode node, int literalVn) {
+	private static PythonInterpreter interp = null;
+	
+	private static PythonInterpreter getInterp() {
+		if (interp == null) {
+			PySystemState.initialize(  );
+			interp = new PythonInterpreter(  );
+		}
+		return interp;
+	}
+
+	public static TensorType shapeArg(CGNode node, int literalVn) {
 		ArrayList<Dimension<?>> r = new ArrayList<>();
 		DefUse du = node.getDU();
 		SymbolTable S = node.getIR().getSymbolTable();
 		for(Iterator<SSAInstruction> uses = du.getUses(literalVn); uses.hasNext(); ) {
 			SSAInstruction use = uses.next();
 			if (use instanceof SSAPutInstruction && ((SSAPutInstruction)use).getRef() == literalVn) {
-				int v = ((Number) S.getConstantValue(((SSAPutInstruction)use).getVal())).intValue();
-//				int dim = Integer.valueOf(((SSAPutInstruction)use).getDeclaredField().getName().toString());
-				r.add(v >=0? new NumericDim((Integer)v): new SymbolicDim("?")); 
+				int val = ((SSAPutInstruction)use).getVal();
+				if (S.isConstant(val)) {
+					int v = ((Number) S.getConstantValue(val)).intValue();
+					System.err.println("value: " + v);
+					r.add(v >=0? new NumericDim((Integer)v): new SymbolicDim("?")); 
+				} else {
+					if (du.getDef(val) !=  null && node.getMethod() instanceof AstMethod) {
+						Position p = ((AstMethod)node.getMethod()).debugInfo().getInstructionPosition(du.getDef(val).iindex);
+						System.err.println(p);
+						try {
+							SourceBuffer b = new SourceBuffer(p);
+							String expr = b.toString();
+							System.err.println(expr);
+							PyObject value = getInterp().eval(expr);
+							System.err.println(value);
+							if (value.isInteger() ) {
+								r.add(new NumericDim(value.asInt()));
+								continue;
+							}
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					r.add(new SymbolicDim("?"));
+				}
 			}
 		}
 		return new TensorType("pixel", r);

@@ -3,7 +3,6 @@
 <!-- TensorFlow model -->
 <summary-spec>
   <classloader name="PythonLoader">
-
     <class name="tensorflow" allocatable="true">
       <method name="import"
 	      static="true"
@@ -65,6 +64,14 @@
                   ref="x"
                   value="conv2d"/>
 
+	<new def="placeholder"
+	     class="Ltensorflow/functions/placeholder"/>
+	<putfield class="LRoot"
+                  field="placeholder"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="placeholder"/>
+	
 	<return value="x"/>
       </method>
     </class>
@@ -83,6 +90,14 @@
 		type="virtual"
 		arg0="arg0"
 		def="x"/>
+	  <return value="x"/>
+	</method>
+      </class>
+
+      <class name="placeholder" allocatable="true">
+	<method name="do" descriptor="()LRoot;" numArgs="3"
+		paramNames="dtype shape name">
+	  <new def="x" class="Lobject"/>
 	  <return value="x"/>
 	</method>
       </class>

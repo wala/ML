@@ -107,9 +107,6 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 				String[] names = target.getIR().getLocalNames(0, i+1);
 				if (names != null) {
 					for(String destName : names) {
-						if ("x".equals(destName)) {
-							System.err.println(target);
-						}
 						int src = call.getUse(destName);
 						if (src != -1) {
 							PointerKey lval = getPointerKeyForLocal(target, i+1);
