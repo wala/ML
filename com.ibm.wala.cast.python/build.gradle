@@ -27,4 +27,5 @@ dependencies {
     implementation 'com.ibm.wala:com.ibm.wala.cast:1.4.4-SNAPSHOT'
     implementation 'com.ibm.wala:com.ibm.wala.cast.java:1.4.4-SNAPSHOT'
     implementation 'org.python:jython:2.7.1b3'
+    implementation 'commons-cli:commons-cli:1.3.1'
 }
