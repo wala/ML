@@ -23,6 +23,10 @@ import com.ibm.wala.util.strings.Atom;
 
 public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 
+	static {
+		System.setProperty("python.import.site", "false");
+	}
+	
 	@Override
 	protected Collection<CGNode> getNodes(CallGraph CG, String functionIdentifier) {
 		if (functionIdentifier.contains(":")) {
