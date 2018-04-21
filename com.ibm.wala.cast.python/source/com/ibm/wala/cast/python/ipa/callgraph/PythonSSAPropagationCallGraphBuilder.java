@@ -103,26 +103,31 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 			}
 			
 			// keyword arguments
-			for(int i = 0; i < call.getNumberOfKeywordParameters() && i < target.getIR().getSymbolTable().getMaxValueNumber(); i++) {
-				String[] names = target.getIR().getLocalNames(0, i+1);
-				if (names != null) {
-					for(String destName : names) {
-						int src = call.getUse(destName);
-						if (src != -1) {
-							PointerKey lval = getPointerKeyForLocal(target, i+1);
-							int p = call.getNumberOfPositionalParameters() + i - 1;
-							if (constParams != null && constParams.length > p && constParams[p] != null) {
-								InstanceKey[] ik = constParams[p];
-								for (InstanceKey element : ik) {
-									system.newConstraint(lval, element);
-								}		
-							} else {
-								PointerKey rval = getPointerKeyForLocal(caller, src);
-								getSystem().newConstraint(lval, assignOperator, rval);
+			int paramNumber = call.getNumberOfPositionalParameters();
+			keywords: for(String argName : call.getKeywords()) {
+				int src = call.getUse(argName);
+				for(int i = 0; i < target.getIR().getSymbolTable().getMaxValueNumber(); i++) {
+					String[] paramNames = target.getIR().getLocalNames(0, i+1);
+					if (paramNames != null) {
+						for(String destName : paramNames) {
+							if (argName.equals(destName)) {
+								PointerKey lval = getPointerKeyForLocal(target, i+1);
+								int p = paramNumber;
+								if (constParams != null && constParams[p] != null) {
+									InstanceKey[] ik = constParams[p];
+									for (InstanceKey element : ik) {
+										system.newConstraint(lval, element);
+									}		
+								} else {
+									PointerKey rval = getPointerKeyForLocal(caller, src);
+									getSystem().newConstraint(lval, assignOperator, rval);
+								}
+								continue keywords;
 							}
 						}
-					}
+					}	
 				}
+				paramNumber++;
 			}
 			
 			// return values

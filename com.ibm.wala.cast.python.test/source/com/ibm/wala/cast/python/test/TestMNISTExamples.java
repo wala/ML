@@ -47,7 +47,8 @@ public class TestMNISTExamples extends TestPythonCallGraphShape {
 		PropagationCallGraphBuilder cgBuilder = (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
 		CallGraph CG = cgBuilder.getCallGraph();		
 		TensorTypeAnalysis result = e.performAnalysis(cgBuilder);
-
+		System.err.println(result);
+		
 		Set<CGNode> reshapes = CG.getNodes(MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, "Ltensorflow/functions/reshape"), AstMethodReference.fnSelector));
 		assert reshapes.size() > 0;
 		for(CGNode reshape : reshapes) {

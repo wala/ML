@@ -12,7 +12,8 @@ package com.ibm.wala.cast.python.ssa;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
+import java.util.LinkedList;
+import java.util.List;
 
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.classLoader.CallSiteReference;
@@ -21,7 +22,6 @@ import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.TypeReference;
-import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
 
 public class PythonInvokeInstruction extends SSAAbstractInvokeInstruction {
@@ -54,8 +54,8 @@ public class PythonInvokeInstruction extends SSAAbstractInvokeInstruction {
 		return positionalParams.length + keywordParams.length;
 	}
 
-	public Set<String> getKeywords() {
-		Set<String> names = HashSetFactory.make();
+	public List<String> getKeywords() {
+		List<String> names = new LinkedList<String>();
 		for(Pair<String,?> a : keywordParams) {
 			names.add(a.fst);
 		}

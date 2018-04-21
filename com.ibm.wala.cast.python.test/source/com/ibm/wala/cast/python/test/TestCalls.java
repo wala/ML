@@ -108,5 +108,23 @@ public class TestCalls extends TestPythonCallGraphShape {
 		verifyGraphAssertions(CG, assertionsCalls5);
 	}
 	
+	 protected static final Object[][] assertionsCalls6 = new Object[][] {
+		    new Object[] { ROOT, new String[] { "script calls6.py" } },
+		    new Object[] {
+		        "script calls6.py",
+		        new String[] { "Foo", "$Foo/foo:trampoline3", "bad" } },
+		    new Object[] {
+		    	"$Foo/foo:trampoline3",
+		    	new String[] { "Foo/foo" } },
+		    new Object[] {
+		    	"Foo/foo",
+		    	new String[] { "id" } }
+	 };
+
+	 @Test
+	public void testCalls6() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		CallGraph CG = process("calls6.py");
+		verifyGraphAssertions(CG, assertionsCalls6);
+	}
 
 }
