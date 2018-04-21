@@ -103,7 +103,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 			}
 			
 			// keyword arguments
-			for(int i = 0; i < call.getNumberOfTotalParameters() && i < target.getIR().getSymbolTable().getMaxValueNumber(); i++) {
+			for(int i = 0; i < call.getNumberOfKeywordParameters() && i < target.getIR().getSymbolTable().getMaxValueNumber(); i++) {
 				String[] names = target.getIR().getLocalNames(0, i+1);
 				if (names != null) {
 					for(String destName : names) {
@@ -111,7 +111,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 						if (src != -1) {
 							PointerKey lval = getPointerKeyForLocal(target, i+1);
 							int p = call.getNumberOfPositionalParameters() + i - 1;
-							if (constParams != null && constParams[p] != null) {
+							if (constParams != null && constParams.length > p && constParams[p] != null) {
 								InstanceKey[] ik = constParams[p];
 								for (InstanceKey element : ik) {
 									system.newConstraint(lval, element);

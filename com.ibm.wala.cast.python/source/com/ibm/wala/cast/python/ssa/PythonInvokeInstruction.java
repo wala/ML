@@ -41,6 +41,10 @@ public class PythonInvokeInstruction extends SSAAbstractInvokeInstruction {
 		return positionalParams.length;
 	}
 
+	public int getNumberOfKeywordParameters() {
+		return keywordParams.length;
+	}
+
 	public int getNumberOfTotalParameters() {
 		return positionalParams.length + keywordParams.length;
 	}

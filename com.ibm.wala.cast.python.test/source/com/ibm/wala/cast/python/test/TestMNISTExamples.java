@@ -83,4 +83,28 @@ public class TestMNISTExamples extends TestPythonCallGraphShape {
 		TensorTypeAnalysis result = e.performAnalysis(cgBuilder);
 		System.err.println(result);;
 	}
+	
+	private static final String Ex3URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/tutorials/mnist/mnist_softmax.py";
+	
+	@Test
+	public void testEx3CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		CallGraph CG = process(Ex3URL);
+		System.err.println(CG);
+	}
+
+	private static final String Ex4URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/tutorials/mnist/mnist_softmax_xla.py";
+
+	@Test
+	public void testEx4CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		CallGraph CG = process(Ex4URL);
+		System.err.println(CG);
+	}
+
+	private static final String Ex5URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/tutorials/mnist/mnist_with_summaries.py";
+
+	@Test
+	public void testEx5CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		CallGraph CG = process(Ex5URL);
+		System.err.println(CG);
+	}
 }

@@ -16,6 +16,13 @@
                   ref="x"
                   value="estimator"/>
 
+        <new def="nn" class="Lobject"/>
+	<putfield class="LRoot"
+                  field="nn"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="nn"/>
+
 	<new def="app" class="Lobject"/>
 	<putfield class="LRoot"
                   field="app"
@@ -62,6 +69,11 @@
                   field="conv2d"
                   fieldType="LRoot"
                   ref="x"
+                  value="conv2d"/>
+	<putfield class="LRoot"
+                  field="conv2d"
+                  fieldType="LRoot"
+                  ref="nn"
                   value="conv2d"/>
 
 	<new def="placeholder"

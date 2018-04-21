@@ -10,6 +10,7 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.analysis;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import com.ibm.wala.cast.python.types.TensorType;
@@ -194,5 +195,15 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 		for(PointsToSetVariable src : init.keySet()) {
 			getOut(src).state.add(init.get(src));
 		}
+	}
+	
+	public String toString() {
+		StringBuffer sb = new StringBuffer("answer:\n");
+		for(PointsToSetVariable var : getProblem().getFlowGraph()) {
+			if (getOut(var) != null && getOut(var).state != null && !getOut(var).state.isEmpty()) {
+				sb.append(var.getPointerKey()).append(": ").append(getOut(var)).append("\n");
+			}
+		}
+		return sb.toString();
 	}
 }
