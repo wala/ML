@@ -41,6 +41,7 @@ public class PythonTrampolineTargetSelector implements MethodTargetSelector {
 
 	private final Map<Pair<IClass,Integer>, IMethod> codeBodies = HashMapFactory.make();
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
 		if (receiver != null) {

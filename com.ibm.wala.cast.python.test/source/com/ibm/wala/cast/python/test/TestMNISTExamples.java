@@ -49,6 +49,10 @@ public class TestMNISTExamples extends TestPythonCallGraphShape {
 		TensorTypeAnalysis result = e.performAnalysis(cgBuilder);
 		System.err.println(result);
 		
+		checkMNISTReshape(cgBuilder, CG, result);
+	}
+
+	private void checkMNISTReshape(PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) {
 		Set<CGNode> reshapes = CG.getNodes(MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, "Ltensorflow/functions/reshape"), AstMethodReference.fnSelector));
 		assert reshapes.size() > 0;
 		for(CGNode reshape : reshapes) {
@@ -82,7 +86,8 @@ public class TestMNISTExamples extends TestPythonCallGraphShape {
 		PropagationCallGraphBuilder cgBuilder = (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
 		CallGraph CG = cgBuilder.getCallGraph();		
 		TensorTypeAnalysis result = e.performAnalysis(cgBuilder);
-		System.err.println(result);;
+		System.err.println(result);
+		//checkMNISTReshape(cgBuilder, CG, result);
 	}
 	
 	private static final String Ex3URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/tutorials/mnist/mnist_softmax.py";

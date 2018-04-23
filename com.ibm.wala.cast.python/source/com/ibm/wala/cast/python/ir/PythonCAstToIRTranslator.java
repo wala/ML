@@ -240,6 +240,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 								"L" + type))));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void doCall(WalkContext context, CAstNode call, int result, int exception, CAstNode name, int receiver,
 			int[] arguments) {

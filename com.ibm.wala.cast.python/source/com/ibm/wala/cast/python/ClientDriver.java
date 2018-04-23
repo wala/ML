@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
@@ -67,6 +68,10 @@ public class ClientDriver implements LanguageClient {
 	}
 
 	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
+		main(args, (String s) -> { System.err.println(s); });
+	}
+	
+	public static void main(String[] args, Consumer<String> process) throws IOException, InterruptedException, ExecutionException {
 		@SuppressWarnings("resource")
 		Socket s = new Socket(); 
 		s.connect(new InetSocketAddress("localhost", 6660));
@@ -110,7 +115,7 @@ public class ClientDriver implements LanguageClient {
 			@Override
 			public void accept(Hover t, Throwable u) {
 				for(Either<String, MarkedString> hd : t.getContents()) {
-					System.err.println(hd.getLeft());			
+					process.accept(hd.getLeft());			
 				}
 			}
 		});

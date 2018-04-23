@@ -10,7 +10,6 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.analysis;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import com.ibm.wala.cast.python.types.TensorType;

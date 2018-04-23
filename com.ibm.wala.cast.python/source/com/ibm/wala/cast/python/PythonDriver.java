@@ -121,6 +121,12 @@ public class PythonDriver {
 		/* Command line options */
 		final Options options = new Options();
 
+		final Option runAsDaemonOpt = Option.builder().longOpt("daemon")
+				.hasArg().argName("daemon")
+				.desc("Run server as daemon thread")
+				.required(false).build();
+		options.addOption(runAsDaemonOpt);
+
 		final Option serverPortOpt = Option.builder().longOpt("server-port")
 			.hasArg().argName("server-port")
 			.desc("Specify the port that the server should start listening on.")
@@ -139,6 +145,8 @@ public class PythonDriver {
 
 		int serverPort = -1;
 		int clientPort = -1;
+		boolean runAsDaemon = false;
+		
 		try {
 			/* Parse command line */
 			final CommandLine cmd = optionParser.parse(options, args);
@@ -149,6 +157,10 @@ public class PythonDriver {
 
 			final String serverPortString = cmd.getOptionValue("server-port");
 			final String clientPortString = cmd.getOptionValue("client-port");
+			if (cmd.hasOption("daemon")) {
+				runAsDaemon = Boolean.parseBoolean(cmd.getOptionValue("daemon"));
+			}
+			
 			if(serverPortString == null) {
 				serverPort = -1;
 			} else {
@@ -196,7 +208,7 @@ public class PythonDriver {
 			if(serverPort < 0) {
 				WALAServer.launchOnStdio(python);
 			} else {
-				final WALAServer server = WALAServer.launchOnServerPort(serverPort, python);
+				final WALAServer server = WALAServer.launchOnServerPort(serverPort, python, runAsDaemon);
 				if(serverPort == 0) {
 					final Integer actualPort = server.getServerPort();
 					System.out.println("Server up, listening on port: " + actualPort);
