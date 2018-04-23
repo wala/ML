@@ -60,15 +60,17 @@ public class PythonDriver {
 							if (M instanceof AstMethod) {
 								IR ir = n.getIR();
 								ir.iterateAllInstructions().forEachRemaining((SSAInstruction inst) -> {
-									Position pos = ((AstMethod)M).debugInfo().getInstructionPosition(inst.iindex);
-									if (pos != null) {
-										lsp.add(pos, new int[] {CG.getNumber(n), inst.iindex});
-									}
-									if (inst.hasDef()) {
-										PointerKey v = builder.getPointerAnalysis().getHeapModel().getPointerKeyForLocal(n, inst.getDef());
-										if (M instanceof AstMethod) {
-											if (pos != null) {
-												lsp.add(pos, v);
+									if (inst.iindex != -1) {
+										Position pos = ((AstMethod)M).debugInfo().getInstructionPosition(inst.iindex);
+										if (pos != null) {
+											lsp.add(pos, new int[] {CG.getNumber(n), inst.iindex});
+										}
+										if (inst.hasDef()) {
+											PointerKey v = builder.getPointerAnalysis().getHeapModel().getPointerKeyForLocal(n, inst.getDef());
+											if (M instanceof AstMethod) {
+												if (pos != null) {
+													lsp.add(pos, v);
+												}
 											}
 										}
 									}
@@ -81,7 +83,11 @@ public class PythonDriver {
 								return null;
 							} else {
 								PointsToSetVariable pts = builder.getPropagationSystem().findOrCreatePointsToSet(v);
-								return String.valueOf(tt.getOut(pts));
+								if (tt.getProblem().getFlowGraph().containsNode(pts)) {
+									return String.valueOf(tt.getOut(pts));
+								} else {
+									return null;
+								}
 							}
 						});
 
@@ -198,6 +204,7 @@ public class PythonDriver {
 			}
 		} else {
 			if(serverPort < 0) {
+				@SuppressWarnings("unused")
 				final WALAServer server = WALAServer.launchOnClientPort(null, clientPort, python);
 			} else {
 				System.err.println("Both of the mutually exclusive options --server-port ("

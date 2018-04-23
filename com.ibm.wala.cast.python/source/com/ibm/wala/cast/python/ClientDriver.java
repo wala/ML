@@ -86,7 +86,7 @@ public class ClientDriver implements LanguageClient {
 		InitializedParams z = new InitializedParams();
 		client.server.initialized(z);
 		
-		String scriptUri = "file:///Users/dolby/git/ML/com.ibm.wala.cast.python/data/tf1.py";
+		String scriptUri = "https://raw.githubusercontent.com/aymericdamien/TensorFlow-Examples/dd2e6dcd9603d5de008d8c766453162d0204affa/examples/3_NeuralNetworks/convolutional_network.py";
 		
 		DidOpenTextDocumentParams open = new DidOpenTextDocumentParams();
 		TextDocumentItem script = new TextDocumentItem();
@@ -102,8 +102,8 @@ public class ClientDriver implements LanguageClient {
 		id.setUri(scriptUri);
 		a.setTextDocument(id);
 		Position p = new Position();
-		p.setLine(5);
-		p.setCharacter(15);
+		p.setLine(42);
+		p.setCharacter(12);
 		a.setPosition(p);
 		CompletableFuture<Hover> data = client.server.getTextDocumentService().hover(a);
 		data.whenComplete(new BiConsumer<Hover, Throwable>() {
