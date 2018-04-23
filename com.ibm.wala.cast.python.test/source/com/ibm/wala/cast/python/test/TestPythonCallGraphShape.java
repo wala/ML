@@ -6,8 +6,6 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.junit.BeforeClass;
-
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.client.PythonTensorAnalysisEngine;
 import com.ibm.wala.cast.python.types.PythonTypes;
