@@ -6,6 +6,8 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.junit.BeforeClass;
+
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.client.PythonTensorAnalysisEngine;
 import com.ibm.wala.cast.python.types.PythonTypes;
@@ -22,10 +24,6 @@ import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.strings.Atom;
 
 public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
-
-	static {
-		System.setProperty("python.import.site", "false");
-	}
 	
 	@Override
 	protected Collection<CGNode> getNodes(CallGraph CG, String functionIdentifier) {
