@@ -111,13 +111,9 @@ public class ClientDriver implements LanguageClient {
 		p.setCharacter(12);
 		a.setPosition(p);
 		CompletableFuture<Hover> data = client.server.getTextDocumentService().hover(a);
-		data.whenComplete(new BiConsumer<Hover, Throwable>() {
-			@Override
-			public void accept(Hover t, Throwable u) {
-				for(Either<String, MarkedString> hd : t.getContents()) {
-					process.accept(hd.getLeft());			
-				}
-			}
-		});
+		Hover t = data.get();
+		for(Either<String, MarkedString> hd : t.getContents()) {
+			process.accept(hd.getLeft());			
+		}
 	}
 }
