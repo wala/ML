@@ -81,7 +81,7 @@ public class PythonDriver {
 								return null;
 							} else {
 								PointsToSetVariable pts = builder.getPropagationSystem().findOrCreatePointsToSet(v);
-								return tt.getOut(pts).toString();
+								return String.valueOf(tt.getOut(pts));
 							}
 						});
 
