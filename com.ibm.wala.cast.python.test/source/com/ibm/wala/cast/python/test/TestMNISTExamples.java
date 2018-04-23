@@ -27,11 +27,6 @@ import com.ibm.wala.util.CancelException;
 
 public class TestMNISTExamples extends TestPythonCallGraphShape {
 
-	@BeforeClass
-	public static void noImport() {
-		System.setProperty("python.import.site", "false");
-	}
-
 	private static final String Ex1URL = "https://raw.githubusercontent.com/aymericdamien/TensorFlow-Examples/dd2e6dcd9603d5de008d8c766453162d0204affa/examples/3_NeuralNetworks/convolutional_network.py";
 
 	 protected static final Object[][] assertionsEx1 = new Object[][] {
