@@ -17,11 +17,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.python.core.PyObject;
-import org.python.core.PySystemState;
-import org.python.util.PythonInterpreter;
 
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.python.types.TensorType.Dimension;
+import com.ibm.wala.cast.python.util.PythonUtil;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.util.SourceBuffer;
 import com.ibm.wala.ipa.callgraph.CGNode;
@@ -205,16 +204,6 @@ public class TensorType implements Iterable<Dimension<?>> {
 		return new TensorType("pixel", Arrays.asList(batch, vec));
 	}
 	
-	private static PythonInterpreter interp = null;
-	
-	private static PythonInterpreter getInterp() {
-		if (interp == null) {
-			PySystemState.initialize(  );
-			interp = new PythonInterpreter(  );
-		}
-		return interp;
-	}
-
 	public static TensorType shapeArg(CGNode node, int literalVn) {
 		ArrayList<Dimension<?>> r = new ArrayList<>();
 		DefUse du = node.getDU();
@@ -235,7 +224,7 @@ public class TensorType implements Iterable<Dimension<?>> {
 							SourceBuffer b = new SourceBuffer(p);
 							String expr = b.toString();
 							System.err.println(expr);
-							PyObject value = getInterp().eval(expr);
+							PyObject value = PythonUtil.getInterp().eval(expr);
 							System.err.println(value);
 							if (value.isInteger() ) {
 								r.add(new NumericDim(value.asInt()));

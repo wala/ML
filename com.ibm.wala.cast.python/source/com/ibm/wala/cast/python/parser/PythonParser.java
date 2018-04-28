@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.python.antlr.PythonTree;
 import org.python.antlr.ast.Assert;
@@ -1178,22 +1179,29 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				blk[i++] = s.accept(this);
 			}
 		
-			CAstNode v = arg0.getInternalOptional_vars() == null?
-				Ast.makeNode(CAstNode.VAR, Ast.makeConstant("tmp_" + tmpIndex++)):
-				arg0.getInternalOptional_vars().accept(this);
+			Supplier<CAstNode> v = () -> { 
+				try {
+					return arg0.getInternalOptional_vars() == null?
+							Ast.makeNode(CAstNode.VAR, Ast.makeConstant("tmp_" + tmpIndex++)):
+								arg0.getInternalOptional_vars().accept(this);
+				} catch (Exception e) {
+					assert false : e.toString();
+					return null;
+				}
+			};
 			
 			return Ast.makeNode(CAstNode.BLOCK_STMT,
 					Ast.makeNode(CAstNode.DECL_STMT,
-							Ast.makeConstant(new CAstSymbolImpl(v.getChild(0).getValue().toString(), PythonCAstToIRTranslator.Any)),
+							Ast.makeConstant(new CAstSymbolImpl(v.get().getChild(0).getValue().toString(), PythonCAstToIRTranslator.Any)),
 							arg0.getInternalContext_expr().accept(this)),
 					Ast.makeNode(CAstNode.UNWIND, 
 						Ast.makeNode(CAstNode.BLOCK_EXPR,
 							Ast.makeNode(CAstNode.CALL, 
-								Ast.makeNode(CAstNode.OBJECT_REF, v, Ast.makeConstant("__begin__")),
+								Ast.makeNode(CAstNode.OBJECT_REF, v.get(), Ast.makeConstant("__begin__")),
 								Ast.makeNode(CAstNode.EMPTY)),
 							blk),
 						Ast.makeNode(CAstNode.CALL, 
-							Ast.makeNode(CAstNode.OBJECT_REF, v, Ast.makeConstant("__end__")),
+							Ast.makeNode(CAstNode.OBJECT_REF, v.get(), Ast.makeConstant("__end__")),
 							Ast.makeNode(CAstNode.EMPTY))));
 		}
 

@@ -23,9 +23,38 @@ import com.ibm.wala.util.graph.Graph;
 
 public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, TensorVariable> {
 	
-	private static IKilldallFramework<PointsToSetVariable, TensorVariable> createProblem(Graph<PointsToSetVariable> G, Map<PointsToSetVariable,TensorType> init) {
+	private static IKilldallFramework<PointsToSetVariable, TensorVariable> createProblem(Graph<PointsToSetVariable> G, Map<PointsToSetVariable,TensorType> reshapeNodes, Map<PointsToSetVariable, TensorType> set_shapes) {
 		return new IKilldallFramework<PointsToSetVariable, TensorVariable>() {
 
+			final class SetShapeOp extends UnaryOperator<TensorVariable> {
+				private final TensorType setShapeTo;
+				
+				public SetShapeOp(TensorType reshapeTo) {
+					this.setShapeTo = reshapeTo;
+				}
+
+				@Override
+				public byte evaluate(TensorVariable lhs, TensorVariable rhs) {
+					return lhs.state.add(setShapeTo)? CHANGED: NOT_CHANGED;
+				}
+				
+				@Override
+				public int hashCode() {
+					return setShapeTo.hashCode();
+				}
+
+				@Override
+				public boolean equals(Object o) {
+					return this == o || ((o instanceof ReshapeOp) && setShapeTo.equals(((ReshapeOp)o).reshapeTo));
+				}
+
+				@Override
+				public String toString() {
+					return "set shape to " + setShapeTo;
+				}
+			}
+			
+			
 			final class ReshapeOp extends UnaryOperator<TensorVariable> {
 				private final TensorType reshapeTo;
 				
@@ -107,8 +136,8 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 
 					@Override
 					public UnaryOperator<TensorVariable> getNodeTransferFunction(PointsToSetVariable node) {
-						if (init.containsKey(node)) {
-							return new ReshapeOp(init.get(node));
+						if (reshapeNodes.containsKey(node)) {
+							return new ReshapeOp(reshapeNodes.get(node));
 						} else {
 							return nodeOp;
 						}
@@ -122,13 +151,16 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 					@Override
 					public UnaryOperator<TensorVariable> getEdgeTransferFunction(PointsToSetVariable src,
 							PointsToSetVariable dst) {
-						assert false;
-						return null;
+						if (set_shapes.containsKey(dst)) {
+							return new SetShapeOp(set_shapes.get(dst));
+						} else {
+							return nodeOp;
+						}
 					}
 
 					@Override
 					public boolean hasEdgeTransferFunctions() {
-						return false;
+						return true;
 					}
 
 					@Override
@@ -167,8 +199,8 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 
 	private final Map<PointsToSetVariable, TensorType> init;
 	
-	public TensorTypeAnalysis(Graph<PointsToSetVariable> G, Map<PointsToSetVariable,TensorType> init, Map<PointsToSetVariable, TensorType> reshapeTypes) {
-		super(createProblem(G, reshapeTypes));
+	public TensorTypeAnalysis(Graph<PointsToSetVariable> G, Map<PointsToSetVariable,TensorType> init, Map<PointsToSetVariable, TensorType> reshapeTypes, Map<PointsToSetVariable, TensorType> set_shapes) {
+		super(createProblem(G, reshapeTypes, set_shapes));
 		this.init = init;
 	}
 	
@@ -179,8 +211,7 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 
 	@Override
 	protected TensorVariable makeEdgeVariable(PointsToSetVariable src, PointsToSetVariable dst) {
-		assert false;
-		return null;
+		return new TensorVariable();
 	}
 
 	@Override
@@ -200,7 +231,7 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 		StringBuffer sb = new StringBuffer("answer:\n");
 		for(PointsToSetVariable var : getProblem().getFlowGraph()) {
 			if (getOut(var) != null && getOut(var).state != null && !getOut(var).state.isEmpty()) {
-				sb.append(var.getPointerKey()).append(": ").append(getOut(var)).append("\n");
+				sb.append(var.getPointerKey()).append(getOut(var)).append("\n");
 			}
 		}
 		return sb.toString();

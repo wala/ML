@@ -20,7 +20,6 @@ import com.ibm.wala.util.collections.HashSetFactory;
 public class TensorVariable implements IVariable<TensorVariable> {
 	private int graphNodeId = -1;
 	private int orderNumber = -1;
-	
 	Set<TensorType> state = HashSetFactory.make();
 	
 	public Set<TensorType> getTypes() {
@@ -54,6 +53,6 @@ public class TensorVariable implements IVariable<TensorVariable> {
 
 	@Override
 	public String toString() {
-		return "tensor types:" + state;
+		return state.toString();
 	}
 }

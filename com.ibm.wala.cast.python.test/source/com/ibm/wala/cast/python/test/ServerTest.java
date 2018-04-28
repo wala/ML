@@ -21,7 +21,7 @@ public class ServerTest {
 	@Test
 	public void trivialClient() throws IOException, InterruptedException, ExecutionException {
 		ClientDriver.main(new String[0], (String s) -> { 
-			assert s.contains("tensor types:[{[D:Symbolic,n, D:Compound,[D:Constant,28, D:Constant,28]] of pixel}]");
+			assert s.contains("[{[D:Symbolic,n, D:Compound,[D:Constant,28, D:Constant,28]] of pixel}]");
 		});
 	}
 }

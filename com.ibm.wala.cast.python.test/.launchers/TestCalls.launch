@@ -16,5 +16,5 @@
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.ibm.wala.cast.python.test.TestCalls"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="com.ibm.wala.cast.python.test"/>
     <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dpython.home=/opt/local/share/java/jython/ -ea"/>
+    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dpython.import.site=false -ea"/>
 </launchConfiguration>

@@ -33,6 +33,9 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
 
 	private static final MethodReference placeholder = MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/placeholder")), AstMethodReference.fnSelector);
 
+
+	private static final MethodReference set_shape = MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/set_shape")), AstMethodReference.fnSelector);
+
 	private static Set<PointsToSetVariable> getDataflowSources(Graph<PointsToSetVariable> dataflow) {
 		Set<PointsToSetVariable> sources = HashSetFactory.make();
 		for(PointsToSetVariable src : dataflow) {
@@ -53,7 +56,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
 		return sources;
 	}
 
-	private Map<PointsToSetVariable,TensorType> getShapeSourceCalls(MethodReference op, PropagationCallGraphBuilder builder) {
+	private Map<PointsToSetVariable,TensorType> getShapeSourceCalls(MethodReference op, PropagationCallGraphBuilder builder, int param) {
 		Map<PointsToSetVariable,TensorType> targets = HashMapFactory.make();
 		for(CGNode n : builder.getCallGraph()) {
 			if (n.getMethod().getReference().equals(op)) {
@@ -62,10 +65,10 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
 					for(Iterator<CallSiteReference> sites = builder.getCallGraph().getPossibleSites(src, n); sites.hasNext(); ) {
 						CallSiteReference site = sites.next();
 						for(SSAAbstractInvokeInstruction call : src.getIR().getCalls(site)) {
-							if (call.getNumberOfUses() >= 3) {
+							if (call.getNumberOfUses() > param) {
 							targets.put(
 								builder.getPropagationSystem().findOrCreatePointsToSet(builder.getPointerAnalysis().getHeapModel().getPointerKeyForLocal(src, call.getDef())),
-								TensorType.shapeArg(src, call.getUse(2)));
+								TensorType.shapeArg(src, call.getUse(param)));
 							}
 						}
 					}
@@ -88,16 +91,29 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
 			init.put(v, mnistData);			
 		}
 
-		Map<PointsToSetVariable, TensorType> placeholders = handleShapeSourceOp(builder, dataflow, placeholder);
+		Map<PointsToSetVariable, TensorType> placeholders = handleShapeSourceOp(builder, dataflow, placeholder, 2);
 		System.err.println(placeholders);
 		for(Map.Entry<PointsToSetVariable, TensorType> e : placeholders.entrySet()) {
 			init.put(e.getKey(), e.getValue());
 		}
 
+		Map<PointsToSetVariable, TensorType> setCalls = HashMapFactory.make();
+		Map<PointsToSetVariable, TensorType> set_shapes = getShapeSourceCalls(set_shape, builder, 1);		
+		for(Map.Entry<PointsToSetVariable, TensorType> x : set_shapes.entrySet()) {
+			CGNode setNode = ((LocalPointerKey)x.getKey().getPointerKey()).getNode();
+			int defVn = ((LocalPointerKey)x.getKey().getPointerKey()).getValueNumber();
+			SSAInstruction read = setNode.getDU().getDef(defVn);
+			SSAInstruction call = setNode.getDU().getDef(read.getUse(0));
+			PointerKey setKey = builder.getPointerAnalysis().getHeapModel().getPointerKeyForLocal(setNode, call.getUse(0));
+			setCalls.put(builder.getPropagationSystem().findOrCreatePointsToSet(setKey), x.getValue());
+		}
+		System.err.println(setCalls);
+
 		Map<PointsToSetVariable, TensorType> shapeOps = HashMapFactory.make();
-		shapeOps.putAll(handleShapeSourceOp(builder, dataflow, reshape));
+		shapeOps.putAll(handleShapeSourceOp(builder, dataflow, reshape, 2));
+		System.err.println(shapeOps);
 		
-		TensorTypeAnalysis tt = new TensorTypeAnalysis(dataflow, init, shapeOps);
+		TensorTypeAnalysis tt = new TensorTypeAnalysis(dataflow, init, shapeOps, setCalls);
 		
 		tt.solve(new NullProgressMonitor());
 		
@@ -105,8 +121,8 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
 	}
 
 	private Map<PointsToSetVariable, TensorType> handleShapeSourceOp(PropagationCallGraphBuilder builder,
-			Graph<PointsToSetVariable> dataflow, MethodReference op) {
-		Map<PointsToSetVariable, TensorType> reshapeTypes = getShapeSourceCalls(op, builder);			
+			Graph<PointsToSetVariable> dataflow, MethodReference op, int shapeSrcOperand) {
+		Map<PointsToSetVariable, TensorType> reshapeTypes = getShapeSourceCalls(op, builder, shapeSrcOperand);			
 		for(PointsToSetVariable to : reshapeTypes.keySet()) {
 			assert to.getPointerKey() instanceof LocalPointerKey;
 			int toVn = ((LocalPointerKey)to.getPointerKey()).getValueNumber();

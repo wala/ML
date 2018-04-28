@@ -9,6 +9,35 @@
 	      descriptor="()Ltensorflow;">
         <new def="x" class="Ltensorflow"/>
 
+	<new def="parse_single_example"
+	     class="Ltensorflow/functions/parse_single_example"/>
+	<putfield class="LRoot"
+                  field="parse_single_example"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="parse_single_example"/>
+	
+	<new def="FixedLenFeature"
+	     class="Ltensorflow/functions/FixedLenFeature"/>
+	<putfield class="LRoot"
+                  field="FixedLenFeature"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="FixedLenFeature"/>
+	
+	<new def="pass_through"
+	     class="Ltensorflow/functions/pass_through"/>
+	<putfield class="LRoot"
+                  field="cast"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="pass_through"/>
+	<putfield class="LRoot"
+                  field="decode_raw"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="pass_through"/>
+	
         <new def="estimator" class="Lobject"/>
 	<putfield class="LRoot"
                   field="estimator"
@@ -88,7 +117,19 @@
       </method>
     </class>
 	
+    <package name="tensorflow/objects">
+      <class name="feature" allocatable="true"/>
+    </package>
+    
     <package name="tensorflow/functions">
+
+      <class name="set_shape" allocatable="true">
+	<method name="do" descriptor="()LRoot;" numArgs="2"
+		paramNames="self shape">
+	  <return value="self"/>
+	</method>
+      </class>
+
       <class name="reshape" allocatable="true">
 	<method name="copy_data" descriptor="()LRoot;">
           <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset"/>
@@ -110,6 +151,36 @@
 	<method name="do" descriptor="()LRoot;" numArgs="3"
 		paramNames="dtype shape name">
 	  <new def="x" class="Lobject"/>
+	  <return value="x"/>
+	</method>
+      </class>
+      
+      <class name="pass_through" allocatable="true">
+	<method name="do" descriptor="()LRoot;" numArgs="3"
+		paramNames="self data features">
+	  <return value="data"/>
+	</method>
+      </class>
+      
+      <class name="parse_single_example" allocatable="true">
+	<method name="do" descriptor="()LRoot;" numArgs="3"
+		paramNames="self data features">
+	  <return value="features"/>
+	</method>
+      </class>
+      
+     <class name="FixedLenFeature" allocatable="true">
+	<method name="do" descriptor="()LRoot;" numArgs="3"
+		paramNames="self dims type">
+	  <new def="x" class="Ltensorflow/objects/feature"/>
+
+	  <new def="y" class="Ltensorflow/functions/set_shape"/>
+	  <putfield class="LRoot"
+                    field="set_shape"
+                    fieldType="LRoot"
+                    ref="x"
+                    value="y"/>
+
 	  <return value="x"/>
 	</method>
       </class>

@@ -19,6 +19,8 @@ import org.python.core.PyObject;
 
 import com.ibm.wala.cast.ir.translator.AstTranslator.AstLexicalInformation;
 import com.ibm.wala.cast.ir.translator.AstTranslator.WalkContext;
+import com.ibm.wala.cast.ir.translator.ConstantFoldingRewriter;
+import com.ibm.wala.cast.ir.translator.RewritingTranslatorToCAst;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
 import com.ibm.wala.cast.ir.translator.TranslatorToIR;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
@@ -27,12 +29,18 @@ import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.parser.PythonModuleParser;
 import com.ibm.wala.cast.python.types.PythonTypes;
+import com.ibm.wala.cast.python.util.PythonUtil;
 import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
+import com.ibm.wala.cast.tree.impl.CAstOperator;
 import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
+import com.ibm.wala.cast.tree.rewrite.AstConstantFolder;
+import com.ibm.wala.cast.tree.rewrite.CAstBasicRewriter.NoKey;
+import com.ibm.wala.cast.tree.rewrite.CAstBasicRewriter.NonCopyingContext;
+import com.ibm.wala.cast.tree.rewrite.CAstRewriterFactory;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
@@ -84,7 +92,32 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 
 	@Override
 	protected TranslatorToCAst getTranslatorToCAst(CAst ast, ModuleEntry M) throws IOException {
-		return new PythonModuleParser((SourceURLModule)M, typeDictionary);
+		RewritingTranslatorToCAst x = new RewritingTranslatorToCAst(M, new PythonModuleParser((SourceURLModule)M, typeDictionary) {
+			@Override
+			public CAstEntity translateToCAst() throws Error, IOException {
+				CAstEntity ce =  super.translateToCAst();
+				return AstConstantFolder.fold(ce);
+			}
+		});
+		x.addRewriter(new CAstRewriterFactory<NonCopyingContext,NoKey>() {
+			@Override
+			public ConstantFoldingRewriter createCAstRewriter(CAst ast) {
+				return new ConstantFoldingRewriter(ast) {
+					@Override
+					protected Object eval(CAstOperator op, Object lhs, Object rhs) {
+						PyObject x = PythonUtil.getInterp().eval(lhs + " " + op.getValue() + " " + rhs);
+						if (x.isNumberType()) {
+							System.err.println(lhs + " " + op.getValue() + " " + rhs + " -> " + x.asInt());
+							return x.asInt();
+						} else {
+							return null;
+						}
+					}
+				};
+			}
+			
+		}, false);
+		return x;
 	}
 
 	@Override

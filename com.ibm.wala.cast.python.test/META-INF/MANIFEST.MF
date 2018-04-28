@@ -13,3 +13,4 @@ Require-Bundle: com.ibm.wala.cast.python;bundle-version="0.0.1",
  com.ibm.wala.util,
  com.ibm.wala.shrike,
  org.junit;bundle-version="4.12.0"
+Automatic-Module-Name: com.ibm.wala.cast.python.test
