@@ -105,13 +105,16 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 				return new ConstantFoldingRewriter(ast) {
 					@Override
 					protected Object eval(CAstOperator op, Object lhs, Object rhs) {
-						PyObject x = PythonUtil.getInterp().eval(lhs + " " + op.getValue() + " " + rhs);
-						if (x.isNumberType()) {
-							System.err.println(lhs + " " + op.getValue() + " " + rhs + " -> " + x.asInt());
-							return x.asInt();
-						} else {
-							return null;
+						try {
+							PyObject x = PythonUtil.getInterp().eval(lhs + " " + op.getValue() + " " + rhs);
+							if (x.isNumberType()) {
+								System.err.println(lhs + " " + op.getValue() + " " + rhs + " -> " + x.asInt());
+								return x.asInt();
+							}
+						} catch (Exception e) {
+							// interpreter died for some reason, so no information.
 						}
+						return null;
 					}
 				};
 			}

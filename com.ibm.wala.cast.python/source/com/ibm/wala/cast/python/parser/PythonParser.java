@@ -94,6 +94,7 @@ import com.ibm.wala.cast.ir.translator.AbstractFieldEntity;
 import com.ibm.wala.cast.ir.translator.AbstractScriptEntity;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
 import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
+import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
@@ -119,7 +120,7 @@ import com.ibm.wala.util.warnings.Warning;
 
 abstract public class PythonParser<T> implements TranslatorToCAst {
 
-	interface WalkContext extends TranslatorToCAst.WalkContext<WalkContext, PyObject> {
+	interface WalkContext extends TranslatorToCAst.WalkContext<WalkContext, PythonTree> {
  
 		WalkContext getParent();
 		
@@ -129,7 +130,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		
 	}
 	
-	private static class RootContext extends TranslatorToCAst.RootContext<WalkContext, PyObject> implements WalkContext {
+	private static class RootContext extends TranslatorToCAst.RootContext<WalkContext, PythonTree> implements WalkContext {
 		private final Module ast;
 		
 		private RootContext(Module ast) { 
@@ -137,7 +138,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		}
 		
 		@Override
-		public PyObject top() {
+		public PythonTree top() {
 			return ast;
 		}
 
@@ -147,14 +148,14 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		}
 	}
 	
-	private static class FunctionContext extends TranslatorToCAst.FunctionContext<WalkContext, PyObject> implements WalkContext {
+	private static class FunctionContext extends TranslatorToCAst.FunctionContext<WalkContext, PythonTree> implements WalkContext {
 		private final AbstractCodeEntity fun;
 		
 		public WalkContext getParent() {
 			return parent;
 		}
 		
-		private FunctionContext(WalkContext parent, AbstractCodeEntity fun, PyObject s) {
+		private FunctionContext(WalkContext parent, AbstractCodeEntity fun, PythonTree s) {
 			super(parent, s);
 			this.fun = fun;
 		}
@@ -173,6 +174,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		public CAstSourcePositionRecorder pos() {
 			return fun.getSourceMap();
 		}
+
+		@Override
+		public CAstControlFlowRecorder cfg() {
+			return fun.getControlFlow();
+		}
 		
 	}
 
@@ -183,8 +189,9 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		private final WalaPythonParser parser;
 		
 		private CAstNode fail(PyObject tree) {
-			assert false : tree;
-			return null;
+// pretend it is a no-op for now.
+//			assert false : tree;
+			return Ast.makeNode(CAstNode.EMPTY);
 		}
 		
 		private CAstVisitor(PythonParser.WalkContext context, WalaPythonParser parser) {
@@ -379,10 +386,12 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitBreak(Break arg0) throws Exception {
-			PyObject target = context.getBreakFor(null);
-			context.cfg().add(arg0, target, true);
+			PythonTree target = context.getBreakFor(null);
 			CAstNode gt = notePosition(Ast.makeNode(CAstNode.GOTO), arg0);
+			
 			context.cfg().map(arg0, gt);
+			context.cfg().add(arg0, target, null);
+
 			return gt;
 		}
 
@@ -481,7 +490,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				}
 
 				@Override
-				public PyObject top() {
+				public PythonTree top() {
 					return arg0;
 				}
 
@@ -508,13 +517,13 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				}
 
 				@Override
-				public PyObject getContinueFor(String label) {
+				public PythonTree getContinueFor(String label) {
 					assert false;
 					return null;
 				}
 
 				@Override
-				public PyObject getBreakFor(String label) {
+				public PythonTree getBreakFor(String label) {
 					assert false;
 					return null;
 				}
@@ -615,9 +624,24 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			return Ast.makeNode(CAstNode.OBJECT_LITERAL, args);
 		}
 
+		
 		@Override
 		public CAstNode visitDictComp(DictComp arg0) throws Exception {
-			return fail(arg0);
+			String dictName = "temp " + tmpIndex++;
+			CAstNode body =
+			  Ast.makeNode(CAstNode.ASSIGN,
+			    Ast.makeNode(CAstNode.OBJECT_REF,
+			      Ast.makeNode(CAstNode.VAR, Ast.makeConstant(dictName)),
+			      arg0.getInternalKey().accept(this)),
+			    arg0.getInternalValue().accept(this));
+				
+			return Ast.makeNode(CAstNode.BLOCK_EXPR,
+					  Ast.makeNode(CAstNode.DECL_STMT, 
+					    Ast.makeConstant(new CAstSymbolImpl(dictName, PythonCAstToIRTranslator.Any)),
+					    Ast.makeNode(CAstNode.NEW, Ast.makeConstant(PythonTypes.object))),
+					  visitGenerators(arg0.getInternalGenerators(), body),
+					  Ast.makeNode(CAstNode.VAR, Ast.makeConstant(dictName)));
+					  
 		}
 
 		@Override
@@ -657,16 +681,35 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitFor(For arg0) throws Exception {
+			Pass b = new Pass();
+			Pass c = new Pass();
+			LoopContext x = new LoopContext(context, b, c);
+			CAstVisitor child = new CAstVisitor(x, parser);
+
+			CAstNode breakStmt = b.accept(this);
+			context.cfg().map(b, breakStmt);
+			
+			CAstNode continueStmt = c.accept(this);
+			context.cfg().map(c, continueStmt);
+			
 			int i = 0;
 			CAstNode[] body = new CAstNode[ arg0.getInternalBody().size() ];
 			for(stmt s : arg0.getInternalBody()) {
-				body[i++] = s.accept(this);
+				body[i++] = s.accept(child);
 			}
-	      return 
-			Ast.makeNode(CAstNode.COMPREHENSION_EXPR,
-				arg0.getInternalIter().accept(this),
-				arg0.getInternalTarget().accept(this),
-				Ast.makeNode(CAstNode.BLOCK_EXPR, body));
+			
+			comprehension g = new comprehension();
+			g.setIter(arg0.getIter());
+			g.setTarget(arg0.getTarget());
+			
+			return 
+			  Ast.makeNode(CAstNode.BLOCK_EXPR,
+			    visitGenerators(
+			      Collections.singletonList(g),
+				  Ast.makeNode(CAstNode.BLOCK_EXPR, 
+					Ast.makeNode(CAstNode.BLOCK_EXPR, body),
+					continueStmt)),
+			    breakStmt);
 		}
 
 		@Override
@@ -893,28 +936,77 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitListComp(ListComp arg0) throws Exception {
-			CAstNode body = arg0.getInternalElt().accept(this);
-			int i = 0;
-			CAstNode[] ctrl = new CAstNode[ 3* arg0.getInternalGenerators().size() ];
-			for(comprehension c : arg0.getInternalGenerators())  {
-				ctrl[i++] = c.getInternalIter().accept(this);
-				ctrl[i++] = c.getInternalTarget().accept(this);
-				int j = c.getInternalIfs().size();
-				if (j > 0) {
-					for(expr test : c.getInternalIfs()) {
-						CAstNode v = test.accept(this);
-						if (ctrl[i] == null) {
-							ctrl[i] = v; 
-						} else {
-							ctrl[i] = Ast.makeNode(CAstNode.IF_EXPR, ctrl[i], v, Ast.makeConstant(false));
+			String listName = "temp " + tmpIndex++;
+			String indexName = "temp " + tmpIndex++;
+			CAstNode body = 
+			  Ast.makeNode(CAstNode.BLOCK_EXPR,
+			    Ast.makeNode(CAstNode.ASSIGN,
+			      Ast.makeNode(CAstNode.ARRAY_REF, 
+			        Ast.makeNode(CAstNode.VAR, Ast.makeConstant(listName)),
+			        Ast.makeConstant(PythonTypes.Root),
+			        Ast.makeNode(CAstNode.VAR, Ast.makeConstant(indexName))),
+			      arg0.getInternalElt().accept(this)),
+			    Ast.makeNode(CAstNode.ASSIGN,
+			      Ast.makeNode(CAstNode.VAR, Ast.makeConstant(indexName)),
+			      Ast.makeNode(CAstNode.BINARY_EXPR, 
+			        CAstOperator.OP_ADD,
+			        Ast.makeNode(CAstNode.VAR, Ast.makeConstant(indexName)),
+			        Ast.makeConstant(1))));
+			
+			return Ast.makeNode(CAstNode.BLOCK_EXPR,
+			  Ast.makeNode(CAstNode.DECL_STMT, 
+			    Ast.makeConstant(new CAstSymbolImpl(listName, PythonCAstToIRTranslator.Any)),
+			    Ast.makeNode(CAstNode.NEW, Ast.makeConstant(PythonTypes.list))),
+			  Ast.makeNode(CAstNode.DECL_STMT, 
+			    Ast.makeConstant(new CAstSymbolImpl(indexName, PythonCAstToIRTranslator.Any)),
+				Ast.makeConstant(0)),
+			  visitGenerators(arg0.getInternalGenerators(), body),
+			  Ast.makeNode(CAstNode.VAR, Ast.makeConstant(listName)));
+		}
+
+		private CAstNode visitGenerators(java.util.List<comprehension> generators, CAstNode body) throws Exception {
+			CAstNode result = body;
+									
+			for(comprehension c : generators)  {
+				if (c.getInternalIfs() != null) {
+					int j = c.getInternalIfs().size();
+					if (j > 0) {
+						for(expr test : c.getInternalIfs()) {
+							CAstNode v = test.accept(this);
+							result = Ast.makeNode(CAstNode.IF_EXPR, v, body);
 						}
 					}
-					i++;
-				} else {
-					ctrl[i++] = Ast.makeConstant(true);
 				}
+				
+				String tempName = "temp " + tmpIndex++;
+				
+				CAstNode test = 
+		          Ast.makeNode(CAstNode.BINARY_EXPR,
+		            CAstOperator.OP_NE,
+		            Ast.makeConstant(null),
+		            Ast.makeNode(CAstNode.BLOCK_EXPR,
+		              Ast.makeNode(CAstNode.ASSIGN, 
+		                c.getInternalTarget().accept(this),
+			            Ast.makeNode(CAstNode.EACH_ELEMENT_GET,   
+			              Ast.makeNode(CAstNode.VAR, Ast.makeConstant(tempName)),
+			              c.getInternalTarget().accept(this)))));
+				
+				result = Ast.makeNode(CAstNode.BLOCK_EXPR,
+				  Ast.makeNode(CAstNode.DECL_STMT, Ast.makeConstant(new CAstSymbolImpl(tempName, PythonCAstToIRTranslator.Any)), 
+				    c.getInternalIter().accept(this)),
+				  Ast.makeNode(CAstNode.LOOP, 
+					test, 
+					Ast.makeNode(CAstNode.BLOCK_EXPR,
+					  Ast.makeNode(CAstNode.ASSIGN,
+					    c.getInternalTarget().accept(this),
+					    Ast.makeNode(CAstNode.OBJECT_REF,
+					    	c.getInternalIter().accept(this),
+					    	c.getInternalTarget().accept(this))),
+					  result)));
+				
 			}
-			return Ast.makeNode(CAstNode.COMPREHENSION_EXPR, body, ctrl);
+
+			return result;
 		}
 
 		private String[] defaultImportNames = new String[] {
@@ -965,7 +1057,8 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitPass(Pass arg0) throws Exception {
-			return Ast.makeNode(CAstNode.EMPTY);
+			String label = "temp " + tmpIndex++;
+			return Ast.makeNode(CAstNode.LABEL_STMT, Ast.makeConstant(label), Ast.makeNode(CAstNode.EMPTY));
 		}
 
 		@Override
@@ -1036,7 +1129,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			return fail(arg0);
 		}
 	
-		private class TryCatchContext extends TranslatorToCAst.TryCatchContext<WalkContext, PyObject> implements WalkContext {
+		private class TryCatchContext extends TranslatorToCAst.TryCatchContext<WalkContext, PythonTree> implements WalkContext {
 
 			TryCatchContext(WalkContext parent, Map<String, CAstNode> catchNode) {
 				super(parent, catchNode);
@@ -1123,9 +1216,9 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			}
 		}
 
-		private class LoopContext extends TranslatorToCAst.LoopContext<WalkContext, PyObject> implements WalkContext {
+		private class LoopContext extends TranslatorToCAst.LoopContext<WalkContext, PythonTree> implements WalkContext {
 
-			LoopContext(WalkContext parent, PyObject breakTo, PyObject continueTo) {
+			LoopContext(WalkContext parent, PythonTree breakTo, PythonTree continueTo) {
 				super(parent, breakTo, continueTo, null);
 			}
 

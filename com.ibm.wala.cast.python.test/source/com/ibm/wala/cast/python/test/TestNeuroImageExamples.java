@@ -43,4 +43,20 @@ public class TestNeuroImageExamples extends TestPythonCallGraphShape {
 		CallGraph CG = process(Ex2URL);
 		System.err.println(CG);
 	}	
+	
+	public static final String Ex3URL = "https://raw.githubusercontent.com/zsdonghao/u-net-brain-tumor/master/train.py";
+
+	@Test
+	public void testEx3CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		CallGraph CG = process(Ex3URL);
+		System.err.println(CG);
+	}	
+	
+	public static final String Ex4URL = "https://raw.githubusercontent.com/zsdonghao/u-net-brain-tumor/master/prepare_data_with_valid.py";
+
+	@Test
+	public void testEx4CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		CallGraph CG = process(Ex4URL);
+		System.err.println(CG);
+	}	
 }

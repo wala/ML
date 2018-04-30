@@ -26,105 +26,7 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 	private static IKilldallFramework<PointsToSetVariable, TensorVariable> createProblem(Graph<PointsToSetVariable> G, Map<PointsToSetVariable,TensorType> reshapeNodes, Map<PointsToSetVariable, TensorType> set_shapes) {
 		return new IKilldallFramework<PointsToSetVariable, TensorVariable>() {
 
-			final class SetShapeOp extends UnaryOperator<TensorVariable> {
-				private final TensorType setShapeTo;
-				
-				public SetShapeOp(TensorType reshapeTo) {
-					this.setShapeTo = reshapeTo;
-				}
-
-				@Override
-				public byte evaluate(TensorVariable lhs, TensorVariable rhs) {
-					return lhs.state.add(setShapeTo)? CHANGED: NOT_CHANGED;
-				}
-				
-				@Override
-				public int hashCode() {
-					return setShapeTo.hashCode();
-				}
-
-				@Override
-				public boolean equals(Object o) {
-					return this == o || ((o instanceof ReshapeOp) && setShapeTo.equals(((ReshapeOp)o).reshapeTo));
-				}
-
-				@Override
-				public String toString() {
-					return "set shape to " + setShapeTo;
-				}
-			}
-			
-			
-			final class ReshapeOp extends UnaryOperator<TensorVariable> {
-				private final TensorType reshapeTo;
-				
-				public ReshapeOp(TensorType reshapeTo) {
-					this.reshapeTo = reshapeTo;
-				}
-
-				@Override
-				public byte evaluate(TensorVariable lhs, TensorVariable rhs) {
-					boolean changed = false;
-					int ssz = reshapeTo.symbolicDims();
-					int csz = reshapeTo.concreteSize();
-					if (rhs != null && rhs.state != null) {
-						for(TensorType t : rhs.state) {
-							if (t.symbolicDims() == ssz && t.concreteSize() == csz) {
-								changed |= lhs.state.add(reshapeTo);
-							}
-						}
-					}
-					return changed? CHANGED: NOT_CHANGED;
-				}
-
-				@Override
-				public int hashCode() {
-					return reshapeTo.hashCode();
-				}
-
-				@Override
-				public boolean equals(Object o) {
-					return this == o || ((o instanceof ReshapeOp) && reshapeTo.equals(((ReshapeOp)o).reshapeTo));
-				}
-
-				@Override
-				public String toString() {
-					return "reshape to " + reshapeTo;
-				}
-			}
-			
-			private final UnaryOperator<TensorVariable> nodeOp = new UnaryOperator<TensorVariable>() {
-				@Override
-				public byte evaluate(TensorVariable lhs, TensorVariable rhs) {
-					if (rhs != null && rhs.state != null) {
-						if (lhs == null || lhs.state == null) {
-							lhs.copyState(rhs);
-							return CHANGED;
-						} else {
-							return lhs.state.addAll(rhs.state)? CHANGED: NOT_CHANGED;
-						}
-					} else {
-						return NOT_CHANGED;
-					}
-				}
-
-				@Override
-				public int hashCode() {
-					return 817504253;
-				}
-
-				@Override
-				public boolean equals(Object o) {
-					return o == this;
-				}
-
-				@Override
-				public String toString() {
-					return "propagate node tensor types";
-				}
-				
-			};
-			
+					
 			@Override
 			public Graph<PointsToSetVariable> getFlowGraph() {
 				return G;
@@ -133,6 +35,105 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 			@Override
 			public ITransferFunctionProvider<PointsToSetVariable, TensorVariable> getTransferFunctionProvider() {
 				return new ITransferFunctionProvider<PointsToSetVariable, TensorVariable>() {
+
+					final class SetShapeOp extends UnaryOperator<TensorVariable> {
+						private final TensorType setShapeTo;
+						
+						public SetShapeOp(TensorType reshapeTo) {
+							this.setShapeTo = reshapeTo;
+						}
+
+						@Override
+						public byte evaluate(TensorVariable lhs, TensorVariable rhs) {
+							return lhs.state.add(setShapeTo)? CHANGED_AND_FIXED: NOT_CHANGED;
+						}
+						
+						@Override
+						public int hashCode() {
+							return setShapeTo.hashCode();
+						}
+
+						@Override
+						public boolean equals(Object o) {
+							return this == o || ((o instanceof ReshapeOp) && setShapeTo.equals(((ReshapeOp)o).reshapeTo));
+						}
+
+						@Override
+						public String toString() {
+							return "set shape to " + setShapeTo;
+						}
+					}
+					
+					
+					final class ReshapeOp extends UnaryOperator<TensorVariable> {
+						private final TensorType reshapeTo;
+						
+						public ReshapeOp(TensorType reshapeTo) {
+							this.reshapeTo = reshapeTo;
+						}
+
+						@Override
+						public byte evaluate(TensorVariable lhs, TensorVariable rhs) {
+							boolean changed = false;
+							int ssz = reshapeTo.symbolicDims();
+							int csz = reshapeTo.concreteSize();
+							if (rhs != null && rhs.state != null) {
+								for(TensorType t : rhs.state) {
+									if (t.symbolicDims() == ssz && t.concreteSize() == csz) {
+										changed |= lhs.state.add(reshapeTo);
+									}
+								}
+							}
+							return changed? CHANGED_AND_FIXED: NOT_CHANGED;
+						}
+
+						@Override
+						public int hashCode() {
+							return reshapeTo.hashCode();
+						}
+
+						@Override
+						public boolean equals(Object o) {
+							return this == o || ((o instanceof ReshapeOp) && reshapeTo.equals(((ReshapeOp)o).reshapeTo));
+						}
+
+						@Override
+						public String toString() {
+							return "reshape to " + reshapeTo;
+						}
+					}
+					
+					private final UnaryOperator<TensorVariable> nodeOp = new UnaryOperator<TensorVariable>() {
+						@Override
+						public byte evaluate(TensorVariable lhs, TensorVariable rhs) {
+							if (rhs != null && rhs.state != null) {
+								if (lhs == null || lhs.state == null) {
+									lhs.copyState(rhs);
+									return CHANGED;
+								} else {
+									return lhs.state.addAll(rhs.state)? CHANGED: NOT_CHANGED;
+								}
+							} else {
+								return NOT_CHANGED;
+							}
+						}
+
+						@Override
+						public int hashCode() {
+							return 817504253;
+						}
+
+						@Override
+						public boolean equals(Object o) {
+							return o == this;
+						}
+
+						@Override
+						public String toString() {
+							return "propagate node tensor types";
+						}
+						
+					};
 
 					@Override
 					public UnaryOperator<TensorVariable> getNodeTransferFunction(PointsToSetVariable node) {

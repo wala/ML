@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.translator.ArrayOpHandler;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
@@ -71,8 +72,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
 	@Override
 	protected boolean useDefaultInitValues() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
@@ -176,7 +176,9 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 			FieldReference f = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), PythonTypes.Root);
 			context.cfg().addInstruction(Python.instructionFactory().GetInstruction(context.cfg().getCurrentInstruction(), result, receiver, f));
 		} else {
-
+			visit(elt, context, this);		
+			assert context.getValue(elt) != -1;
+			context.cfg().addInstruction(((AstInstructionFactory) insts).PropertyRead(context.cfg().getCurrentInstruction(), result, receiver, context.getValue(elt)));
 		}
 	}
 

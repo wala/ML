@@ -49,6 +49,9 @@ import com.ibm.wala.ipa.summaries.BypassSyntheticClassLoader;
 import com.ibm.wala.ipa.summaries.XMLMethodSummaryReader;
 import com.ibm.wala.shrikeBT.Constants;
 import com.ibm.wala.ssa.IRFactory;
+import com.ibm.wala.ssa.SSAOptions;
+import com.ibm.wala.ssa.SymbolTable;
+import com.ibm.wala.ssa.SSAOptions.DefaultValues;
 import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.Selector;
@@ -247,6 +250,17 @@ public abstract class PythonAnalysisEngine
 		options.setSelector(new ClassHierarchyMethodTargetSelector(cha));
 		
 		addBypassLogic(options);
+		
+		options.setUseConstantSpecificKeys(true);
+		
+		SSAOptions ssaOptions = options.getSSAOptions();
+		ssaOptions.setDefaultValues(new DefaultValues() {
+			@Override
+			public int getDefaultValue(SymbolTable symtab, int valueNumber) {
+				return symtab.getNullConstant();
+			} 
+		});
+		options.setSSAOptions(ssaOptions);
 		
 		PythonSSAPropagationCallGraphBuilder builder = 
 				new PythonSSAPropagationCallGraphBuilder(cha, options, cache, new AstCFAPointerKeys());

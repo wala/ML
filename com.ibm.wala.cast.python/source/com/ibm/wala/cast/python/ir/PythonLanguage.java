@@ -17,9 +17,14 @@ import java.util.Set;
 import com.ibm.wala.analysis.typeInference.PrimitiveType;
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.ir.ssa.AstGlobalWrite;
+import com.ibm.wala.cast.ir.ssa.AstPropertyRead;
+import com.ibm.wala.cast.ir.ssa.AstPropertyWrite;
+import com.ibm.wala.cast.ir.ssa.EachElementGetInstruction;
 import com.ibm.wala.cast.java.loader.JavaSourceLoaderImpl;
 import com.ibm.wala.cast.python.cfg.PythonInducedCFG;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
+import com.ibm.wala.cast.python.ssa.PythonPropertyRead;
+import com.ibm.wala.cast.python.ssa.PythonPropertyWrite;
 import com.ibm.wala.cast.python.ssa.PythonStoreProperty;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
@@ -173,7 +178,17 @@ public class PythonLanguage implements Language {
 	@Override
 	public SSAInstructionFactory instructionFactory() {
 		return new JavaSourceLoaderImpl.InstructionFactory() {
-		      @Override
+	        @Override
+	        public AstPropertyRead PropertyRead(int iindex, int result, int objectRef, int memberRef) {
+	          return new PythonPropertyRead(iindex, result, objectRef, memberRef);
+	        }
+
+	        @Override
+	        public AstPropertyWrite PropertyWrite(int iindex, int objectRef, int memberRef, int value) {
+	          return new PythonPropertyWrite(iindex, objectRef, memberRef, value);
+	        }
+
+			@Override
 		        public AstGlobalRead GlobalRead(int iindex, int lhs, FieldReference global) {
 		          return new AstGlobalRead(iindex, lhs, global);
 		        }
@@ -208,7 +223,10 @@ public class PythonLanguage implements Language {
 					return new PythonStoreProperty(iindex, arrayref, index, value);
 				}
 		        
-		        
+				@Override
+				public EachElementGetInstruction EachElementGetInstruction(int iindex, int value, int objectRef, int prevProp) {
+					return new EachElementGetInstruction(iindex, value, objectRef, prevProp);
+				} 
 		};
 	}
 
