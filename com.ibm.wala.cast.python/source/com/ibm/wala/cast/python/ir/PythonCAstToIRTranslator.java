@@ -160,14 +160,15 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
 	@Override
 	public void doArrayRead(WalkContext context, int result, int arrayValue, CAstNode arrayRef, int[] dimValues) {
-		// TODO Auto-generated method stub
-
+		if (dimValues.length == 1) {
+			context.cfg().addInstruction(((AstInstructionFactory) insts).PropertyRead(context.cfg().getCurrentInstruction(), result, arrayValue, dimValues[0]));
+		}
 	}
-
+	
 	@Override
 	public void doArrayWrite(WalkContext context, int arrayValue, CAstNode arrayRef, int[] dimValues, int rval) {
 		assert dimValues.length == 1;
-		context.cfg().addInstruction(Python.instructionFactory().ArrayStoreInstruction(context.cfg().getCurrentInstruction(), arrayValue, dimValues[0], rval, PythonTypes.Root));
+	    context.cfg().addInstruction(((AstInstructionFactory) insts).PropertyWrite(context.cfg().getCurrentInstruction(), arrayValue, dimValues[0], rval));
 	}
 
 	@Override
@@ -343,15 +344,15 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	protected void leaveArrayLiteralAssign(CAstNode n, CAstNode v, CAstNode a, WalkContext c,
 			CAstVisitor<WalkContext> visitor) {
 		int rval = c.getValue(v);
-		for(int i = 0; i < n.getChildCount(); i++) {
+		for(int i = 1; i < n.getChildCount(); i++) {
 			CAstNode var = n.getChild(i);
 			String name = (String) var.getChild(0).getValue();
 			c.currentScope().declare(new CAstSymbolImpl(name, topType()));
 		    Symbol ls = c.currentScope().lookup(name);
 		    
 		    int rvi = c.currentScope().allocateTempValue();
-		    int idx = c.currentScope().getConstantValue(i);
-		    c.cfg().addInstruction(Python.instructionFactory().ArrayLoadInstruction(c.cfg().getCurrentInstruction(), rvi, rval, idx, PythonTypes.Root));
+		    int idx = c.currentScope().getConstantValue(i-1);
+		    c.cfg().addInstruction(Python.instructionFactory().PropertyRead(c.cfg().getCurrentInstruction(), rvi, rval, idx));
 		    
 		    c.setValue(n, rvi);
 		    assignValue(n, c, ls, name, rvi);

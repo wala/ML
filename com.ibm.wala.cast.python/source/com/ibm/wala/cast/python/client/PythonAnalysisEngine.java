@@ -263,7 +263,7 @@ public abstract class PythonAnalysisEngine
 		options.setSSAOptions(ssaOptions);
 		
 		PythonSSAPropagationCallGraphBuilder builder = 
-				new PythonSSAPropagationCallGraphBuilder(cha, options, cache, new AstCFAPointerKeys());
+			new PythonSSAPropagationCallGraphBuilder(cha, options, cache, new AstCFAPointerKeys());
 	
 		AstContextInsensitiveSSAContextInterpreter interpreter = new AstContextInsensitiveSSAContextInterpreter(options, cache);
 		builder.setContextInterpreter(interpreter);

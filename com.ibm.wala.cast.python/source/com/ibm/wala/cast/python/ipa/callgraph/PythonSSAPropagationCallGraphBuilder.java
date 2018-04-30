@@ -27,6 +27,7 @@ import com.ibm.wala.ipa.callgraph.propagation.PointerKeyFactory;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSABinaryOpInstruction;
+import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.util.strings.Atom;
 
 public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallGraphBuilder {
@@ -34,6 +35,10 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 	public PythonSSAPropagationCallGraphBuilder(IClassHierarchy cha, AnalysisOptions options, IAnalysisCacheView cache,
 			PointerKeyFactory pointerKeyFactory) {
 		super(PythonLanguage.Python.getFakeRootMethod(cha, options, cache), options, cache, pointerKeyFactory);
+	}
+
+	protected boolean isConstantRef(SymbolTable symbolTable, int valueNumber) {
+		return valueNumber != -1 && symbolTable.isConstant(valueNumber);
 	}
 
 	@Override
@@ -122,12 +127,12 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 									PointerKey rval = getPointerKeyForLocal(caller, src);
 									getSystem().newConstraint(lval, assignOperator, rval);
 								}
+								paramNumber++;
 								continue keywords;
 							}
 						}
 					}	
 				}
-				paramNumber++;
 			}
 			
 			// return values

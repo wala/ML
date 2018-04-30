@@ -1186,7 +1186,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			int i = 0;
 			CAstNode[] elts = new CAstNode[ arg0.getInternalElts().size()+1 ];
 			
-			elts[i++] = Ast.makeNode(CAstNode.NEW, Ast.makeConstant("Tuple"));
+			elts[i++] = Ast.makeNode(CAstNode.NEW, Ast.makeConstant("list"));
 			for(expr e : arg0.getInternalElts()) {
 				elts[i++] = e.accept(this);
 			}

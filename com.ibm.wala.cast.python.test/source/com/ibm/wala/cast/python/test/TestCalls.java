@@ -1,10 +1,17 @@
 package com.ibm.wala.cast.python.test;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.Collections;
 
 import org.junit.Test;
 
+import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
+import com.ibm.wala.cast.python.client.PythonTensorAnalysisEngine;
+import com.ibm.wala.classLoader.SourceURLModule;
 import com.ibm.wala.ipa.callgraph.CallGraph;
+import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
+import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 
@@ -125,6 +132,16 @@ public class TestCalls extends TestPythonCallGraphShape {
 	public void testCalls6() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		CallGraph CG = process("calls6.py");
 		verifyGraphAssertions(CG, assertionsCalls6);
+	}
+
+	 @Test
+	public void testCalls7() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+			PythonTensorAnalysisEngine e = new PythonTensorAnalysisEngine();
+			e.setModuleFiles(Collections.singleton(getScript("calls7.py")));
+			PropagationCallGraphBuilder cgBuilder = (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
+			CallGraph CG = cgBuilder.getCallGraph();	
+			CAstCallGraphUtil.AVOID_DUMP = false;
+			CAstCallGraphUtil.dumpCG((SSAContextInterpreter)cgBuilder.getContextInterpreter(), cgBuilder.getPointerAnalysis(), CG);
 	}
 
 }

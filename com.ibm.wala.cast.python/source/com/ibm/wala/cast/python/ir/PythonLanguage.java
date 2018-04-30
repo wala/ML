@@ -17,6 +17,7 @@ import java.util.Set;
 import com.ibm.wala.analysis.typeInference.PrimitiveType;
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.ir.ssa.AstGlobalWrite;
+import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.ssa.AstPropertyRead;
 import com.ibm.wala.cast.ir.ssa.AstPropertyWrite;
 import com.ibm.wala.cast.ir.ssa.EachElementGetInstruction;
@@ -44,7 +45,6 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAArrayStoreInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
-import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
@@ -176,7 +176,7 @@ public class PythonLanguage implements Language {
 	}
 
 	@Override
-	public SSAInstructionFactory instructionFactory() {
+	public AstInstructionFactory instructionFactory() {
 		return new JavaSourceLoaderImpl.InstructionFactory() {
 	        @Override
 	        public AstPropertyRead PropertyRead(int iindex, int result, int objectRef, int memberRef) {
@@ -269,6 +269,11 @@ public class PythonLanguage implements Language {
 	  public
 	  InducedCFG makeInducedCFG(SSAInstruction[] instructions, IMethod method, Context context) {
 	    return new PythonInducedCFG(instructions, method, context);
+	  }
+
+	  @Override
+	  public boolean modelConstant(Object o) {
+	    return true;
 	  }
 
 }
