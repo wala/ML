@@ -188,7 +188,9 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 			FieldReference f = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), PythonTypes.Root);
 			context.cfg().addInstruction(Python.instructionFactory().PutInstruction(context.cfg().getCurrentInstruction(), receiver, rval, f));
 		} else {
-
+			visit(elt, context, this);		
+			assert context.getValue(elt) != -1;
+		    context.cfg().addInstruction(((AstInstructionFactory) insts).PropertyWrite(context.cfg().getCurrentInstruction(), receiver, context.getValue(elt), rval));
 		}
 	}
 
