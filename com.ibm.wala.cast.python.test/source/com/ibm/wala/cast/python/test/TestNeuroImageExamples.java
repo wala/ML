@@ -32,7 +32,7 @@ public class TestNeuroImageExamples extends TestPythonCallGraphShape {
 
 		String in = "[{[D:Constant,64000] of pixel}]";
 		String out = "[{[D:Constant,40, D:Constant,40, D:Constant,40, D:Constant,1] of pixel}]";
-		checkReshape(cgBuilder, CG, result, in, out);
+		checkTensorOp(cgBuilder, CG, result, "reshape", in, out);
 		System.err.println(result);
 	}
 	

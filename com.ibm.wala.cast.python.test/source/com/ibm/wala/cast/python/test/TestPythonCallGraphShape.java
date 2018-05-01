@@ -64,20 +64,20 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 		return sb;
 	}
 
-	protected void checkReshape(PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result, String in, String out) {
+	protected void checkTensorOp(PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result, String fn, String in, String out) {
 		boolean found = false;
-		Set<CGNode> reshapes = CG.getNodes(MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, "Ltensorflow/functions/reshape"), AstMethodReference.fnSelector));
-		assert reshapes.size() > 0;
-		for(CGNode reshape : reshapes) {
-			for(Iterator<CGNode> callers = CG.getPredNodes(reshape); callers.hasNext(); ) {
+		Set<CGNode> nodes = CG.getNodes(MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, "Ltensorflow/functions/" + fn), AstMethodReference.fnSelector));
+		assert nodes.size() > 0;
+		for(CGNode node : nodes) {
+			for(Iterator<CGNode> callers = CG.getPredNodes(node); callers.hasNext(); ) {
 				CGNode caller = callers.next();
-				for(Iterator<CallSiteReference> sites = CG.getPossibleSites(caller, reshape); sites.hasNext(); ) {
+				for(Iterator<CallSiteReference> sites = CG.getPossibleSites(caller, node); sites.hasNext(); ) {
 					for(SSAAbstractInvokeInstruction call : caller.getIR().getCalls(sites.next())) {
 						TensorVariable orig = result.getOut(cgBuilder.getPropagationSystem().findOrCreatePointsToSet(cgBuilder.getPointerKeyForLocal(caller, call.getUse(1))));
-						boolean thisOne = in.equals(orig.getTypes().toString());
+						boolean thisOne = (in == null || in.equals(orig.getTypes().toString()));
 						
 						TensorVariable reshaped = result.getOut(cgBuilder.getPropagationSystem().findOrCreatePointsToSet(cgBuilder.getPointerKeyForLocal(caller, call.getDef())));
-						thisOne &= out.equals(reshaped.getTypes().toString());
+						thisOne &= (out == null || out.equals(reshaped.getTypes().toString()));
 						
 						if (thisOne) {
 							found = true;

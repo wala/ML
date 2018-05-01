@@ -1,14 +1,12 @@
 package com.ibm.wala.cast.python.test;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Collections;
 
 import org.junit.Test;
 
 import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonTensorAnalysisEngine;
-import com.ibm.wala.classLoader.SourceURLModule;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;

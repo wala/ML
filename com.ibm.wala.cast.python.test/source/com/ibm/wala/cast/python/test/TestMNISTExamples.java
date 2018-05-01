@@ -41,7 +41,7 @@ public class TestMNISTExamples extends TestPythonCallGraphShape {
 		
 		String in = "[{[D:Symbolic,n, D:Compound,[D:Constant,28, D:Constant,28]] of pixel}]";
 		String out = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
-		checkReshape(cgBuilder, CG, result, in, out);
+		checkTensorOp(cgBuilder, CG, result, "reshape", in, out);		
 	}
 
 	private static final String Ex2URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/tutorials/mnist/mnist_deep.py";
@@ -63,8 +63,11 @@ public class TestMNISTExamples extends TestPythonCallGraphShape {
 		
 		String in = "[{[D:Symbolic,?, D:Constant,784] of pixel}]";
 		String out = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
-		checkReshape(cgBuilder, CG, result, in, out);
-	}
+		checkTensorOp(cgBuilder, CG, result, "reshape", in, out);
+
+		in = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
+		checkTensorOp(cgBuilder, CG, result, "conv2d", in, null);
+}
 	
 	private static final String Ex3URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/tutorials/mnist/mnist_softmax.py";
 	
