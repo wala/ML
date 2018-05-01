@@ -9,6 +9,13 @@
 	      descriptor="()Ltensorflow;">
         <new def="x" class="Ltensorflow"/>
 
+	<new def="InteractiveSession" class="Ltensorflow/functions/InteractiveSession"/>
+	<putfield class="LRoot"
+                  field="InteractiveSession"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="InteractiveSession"/>
+	
 	<new def="parse_single_example"
 	     class="Ltensorflow/functions/parse_single_example"/>
 	<putfield class="LRoot"
@@ -133,6 +140,26 @@
     </package>
     
     <package name="tensorflow/functions">
+
+      <class name="InteractiveSession" allocatable="true">
+	<method name="do" descriptor="()LRoot;">
+	  <new def="v" class="Lobject"/>
+	  <new def="f" class="Ltensorflow/functions/Runner"/>
+	  <putfield class="LRoot"
+                    field="run"
+                    fieldType="LRoot"
+                    ref="v"
+                    value="f"/>
+	  <return value="v"/>
+	</method>
+      </class>
+      
+      <class name="Runner" allocatable="true">
+	<method name="do" descriptor="()LRoot;" numArgs="3"
+		paramNames="self graph feed_dict">
+	  <return value="self"/>
+	</method>
+      </class>
 
       <class name="set_shape" allocatable="true">
 	<method name="do" descriptor="()LRoot;" numArgs="2"

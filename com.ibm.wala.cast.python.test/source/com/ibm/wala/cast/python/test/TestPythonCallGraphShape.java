@@ -104,6 +104,6 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 				CallGraph CG = cgBuilder.getCallGraph();		
 				TensorTypeAnalysis result = e.performAnalysis(cgBuilder);
 				System.err.println(result);
-			
+				check.check(cgBuilder, CG, result);
 			}
 }
