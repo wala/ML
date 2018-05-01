@@ -51,6 +51,12 @@
                   fieldType="LRoot"
                   ref="x"
                   value="nn"/>
+        <new def="layers" class="Lobject"/>
+	<putfield class="LRoot"
+                  field="layers"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="layers"/>
 
 	<new def="app" class="Lobject"/>
 	<putfield class="LRoot"
@@ -103,6 +109,11 @@
                   field="conv2d"
                   fieldType="LRoot"
                   ref="nn"
+                  value="conv2d"/>
+	<putfield class="LRoot"
+                  field="conv2d"
+                  fieldType="LRoot"
+                  ref="layers"
                   value="conv2d"/>
 
 	<new def="placeholder"
