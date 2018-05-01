@@ -133,7 +133,10 @@ public class TestMNISTExamples extends TestPythonCallGraphShape {
 
 	@Test
 	public void testEx5CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		CallGraph CG = process(Ex5URL);
-		System.err.println(CG);
+		checkTensorOps(Ex5URL, (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
+			String in = "[{[D:Symbolic,?, D:Constant,784] of pixel}]";
+			String out = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
+			checkTensorOp(cgBuilder, CG, result, "reshape", in, out);
+		});
 	}
 }
