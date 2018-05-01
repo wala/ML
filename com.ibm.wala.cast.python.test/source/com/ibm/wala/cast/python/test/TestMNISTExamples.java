@@ -1,14 +1,10 @@
 package com.ibm.wala.cast.python.test;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.Collections;
 
 import org.junit.Test;
 
 import com.ibm.wala.cast.python.analysis.TensorTypeAnalysis;
-import com.ibm.wala.cast.python.client.PythonTensorAnalysisEngine;
-import com.ibm.wala.classLoader.SourceURLModule;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
@@ -33,19 +29,14 @@ public class TestMNISTExamples extends TestPythonCallGraphShape {
 	
 	@Test
 	public void testEx1Tensors() throws IllegalArgumentException, CancelException, IOException {
-		PythonTensorAnalysisEngine e = new PythonTensorAnalysisEngine();
-		e.setModuleFiles(Collections.singleton(new SourceURLModule(new URL(Ex1URL))));
-		PropagationCallGraphBuilder cgBuilder = (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
-		CallGraph CG = cgBuilder.getCallGraph();		
-		TensorTypeAnalysis result = e.performAnalysis(cgBuilder);
-		System.err.println(result);
-		
-		String in = "[{[D:Symbolic,n, D:Compound,[D:Constant,28, D:Constant,28]] of pixel}]";
-		String out = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
-		checkTensorOp(cgBuilder, CG, result, "reshape", in, out);		
+		checkTensorOps(Ex1URL, (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
+			String in = "[{[D:Symbolic,n, D:Compound,[D:Constant,28, D:Constant,28]] of pixel}]";
+			String out = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
+			checkTensorOp(cgBuilder, CG, result, "reshape", in, out);		
 
-		in = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
-		checkTensorOp(cgBuilder, CG, result, "conv2d", in, null);
+			in = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
+			checkTensorOp(cgBuilder, CG, result, "conv2d", in, null);
+		});
 	}
 
 	private static final String Ex2URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/tutorials/mnist/mnist_deep.py";
@@ -58,19 +49,14 @@ public class TestMNISTExamples extends TestPythonCallGraphShape {
 
 	@Test
 	public void testEx2Tensors() throws IllegalArgumentException, CancelException, IOException {
-		PythonTensorAnalysisEngine e = new PythonTensorAnalysisEngine();
-		e.setModuleFiles(Collections.singleton(new SourceURLModule(new URL(Ex2URL))));
-		PropagationCallGraphBuilder cgBuilder = (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
-		CallGraph CG = cgBuilder.getCallGraph();		
-		TensorTypeAnalysis result = e.performAnalysis(cgBuilder);
-		System.err.println(result);
-		
-		String in = "[{[D:Symbolic,?, D:Constant,784] of pixel}]";
-		String out = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
-		checkTensorOp(cgBuilder, CG, result, "reshape", in, out);
+		checkTensorOps(Ex2URL, (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
+			String in = "[{[D:Symbolic,?, D:Constant,784] of pixel}]";
+			String out = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
+			checkTensorOp(cgBuilder, CG, result, "reshape", in, out);
 
-		in = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
-		checkTensorOp(cgBuilder, CG, result, "conv2d", in, null);
+			in = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
+			checkTensorOp(cgBuilder, CG, result, "conv2d", in, null);
+		});
 	}
 	
 	private static final String Ex3URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/tutorials/mnist/mnist_softmax.py";

@@ -30,6 +30,12 @@ import com.ibm.wala.util.strings.Atom;
 
 public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 	
+	@FunctionalInterface
+		protected
+		interface CheckTensorOps {
+			void check(PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result);
+		}
+
 	@Override
 	protected Collection<CGNode> getNodes(CallGraph CG, String functionIdentifier) {
 		if (functionIdentifier.contains(":")) {
@@ -89,4 +95,15 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 		}
 		assert found;
 	}
+
+	protected void checkTensorOps(String url, CheckTensorOps check)
+			throws IllegalArgumentException, CancelException, IOException {
+				PythonTensorAnalysisEngine e = new PythonTensorAnalysisEngine();
+				e.setModuleFiles(Collections.singleton(new SourceURLModule(new URL(url))));
+				PropagationCallGraphBuilder cgBuilder = (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
+				CallGraph CG = cgBuilder.getCallGraph();		
+				TensorTypeAnalysis result = e.performAnalysis(cgBuilder);
+				System.err.println(result);
+			
+			}
 }

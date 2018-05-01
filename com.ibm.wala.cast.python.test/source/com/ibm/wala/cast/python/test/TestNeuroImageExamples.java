@@ -22,18 +22,12 @@ public class TestNeuroImageExamples extends TestPythonCallGraphShape {
 	
 	@Test
 	public void testEx1CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		PythonTensorAnalysisEngine e = new PythonTensorAnalysisEngine();
-		e.setModuleFiles(Collections.singleton(new SourceURLModule(new URL(Ex1URL))));
-		PropagationCallGraphBuilder cgBuilder = (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
-		CallGraph CG = cgBuilder.getCallGraph();	
-		CAstCallGraphUtil.AVOID_DUMP = false;
-		CAstCallGraphUtil.dumpCG((SSAContextInterpreter)cgBuilder.getContextInterpreter(), cgBuilder.getPointerAnalysis(), CG);
-		TensorTypeAnalysis result = e.performAnalysis(cgBuilder);
-
-		String in = "[{[D:Constant,64000] of pixel}]";
-		String out = "[{[D:Constant,40, D:Constant,40, D:Constant,40, D:Constant,1] of pixel}]";
-		checkTensorOp(cgBuilder, CG, result, "reshape", in, out);
-		System.err.println(result);
+		checkTensorOps(Ex1URL, (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
+			String in = "[{[D:Constant,64000] of pixel}]";
+			String out = "[{[D:Constant,40, D:Constant,40, D:Constant,40, D:Constant,1] of pixel}]";
+			checkTensorOp(cgBuilder, CG, result, "reshape", in, out);
+			System.err.println(result);
+		});
 	}
 	
 	private static final String Ex2URL = "http://nilearn.github.io/_downloads/plot_group_level_connectivity.py";
