@@ -11,12 +11,15 @@
 package com.ibm.wala.ide.pycharm;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.ibm.wala.cast.python.PythonDriver;
-import com.ibm.wala.ipa.cha.ClassHierarchyException;
+import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
+import com.ibm.wala.cast.python.client.PythonTensorAnalysisEngine;
+import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.NullProgressMonitor;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -62,9 +65,11 @@ class AnalysisAction extends AnAction {
 		    	try {
 		    		int offset = editor.logicalPositionToOffset(editor.getCaretModel().getLogicalPosition());
 		    		DocumentURLModule scriptModule = new DocumentURLModule(editor.getDocument());
-		    		PythonDriver x = new PythonDriver(scriptModule);
-		    		editor.getDocument().insertString(0, "" + offset + "\n" + x.getCallGraph("Lscript " + scriptModule.getName()) + "\n");
-		    	} catch (IOException | ClassHierarchyException | java.lang.IllegalArgumentException | CancelException e) {
+		    		PythonAnalysisEngine x = new PythonTensorAnalysisEngine();
+		    		x.setModuleFiles(Collections.singleton(scriptModule));
+					CallGraph CG = x.defaultCallGraphBuilder().makeCallGraph(x.getOptions(), new NullProgressMonitor());
+		    		editor.getDocument().insertString(0, "" + offset + "\n" + CG);
+		    	} catch (IOException | java.lang.IllegalArgumentException | CancelException e) {
 		    		editor.getDocument().insertString(0, e.toString());
 		    	}
 		    }

@@ -15,6 +15,11 @@
                   fieldType="LRoot"
                   ref="x"
                   value="InteractiveSession"/>
+	<putfield class="LRoot"
+                  field="Session"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="InteractiveSession"/>
 	
 	<new def="parse_single_example"
 	     class="Ltensorflow/functions/parse_single_example"/>

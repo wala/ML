@@ -77,10 +77,9 @@ public class TestMNISTExamples extends TestPythonCallGraphShape {
 	
 	private static final String Ex3URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/tutorials/mnist/mnist_softmax.py";
 	
-	@Test
-	public void testEx3CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+	public void testMnistSoftmax(String url) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		Set<SSAInstruction> goodCalls = HashSetFactory.make();
-		checkTensorOps(Ex3URL, (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
+		checkTensorOps(url, (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
 			Set<CGNode> nodes = CG.getNodes(MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, "Ltensorflow/functions/Runner"), AstMethodReference.fnSelector));
 			assert nodes.size() > 0;
 			for(CGNode node : nodes) {
@@ -118,12 +117,16 @@ public class TestMNISTExamples extends TestPythonCallGraphShape {
 		assert !goodCalls.isEmpty();
 	}
 
+	@Test
+	public void testEx3CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		testMnistSoftmax(Ex3URL);
+	}
+	
 	private static final String Ex4URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/tutorials/mnist/mnist_softmax_xla.py";
 
 	@Test
 	public void testEx4CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		CallGraph CG = process(Ex4URL);
-		System.err.println(CG);
+		testMnistSoftmax(Ex4URL);
 	}
 
 	private static final String Ex5URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/tutorials/mnist/mnist_with_summaries.py";
