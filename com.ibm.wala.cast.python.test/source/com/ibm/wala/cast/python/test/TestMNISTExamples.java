@@ -60,7 +60,10 @@ public class TestMNISTExamples extends TestPythonCallGraphShape {
 		CallGraph CG = cgBuilder.getCallGraph();		
 		TensorTypeAnalysis result = e.performAnalysis(cgBuilder);
 		System.err.println(result);
-		//checkMNISTReshape(cgBuilder, CG, result);
+		
+		String in = "[{[D:Symbolic,?, D:Constant,784] of pixel}]";
+		String out = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
+		checkReshape(cgBuilder, CG, result, in, out);
 	}
 	
 	private static final String Ex3URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/tutorials/mnist/mnist_softmax.py";
