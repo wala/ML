@@ -9,6 +9,21 @@
 	      descriptor="()Ltensorflow;">
         <new def="x" class="Ltensorflow"/>
 
+	<new def="train" class="Lobject"/>
+	<putfield class="LRoot"
+                  field="train"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="train"/>
+
+	<new def="shuffle_batch"
+	     class="Ltensorflow/functions/shuffle_batch"/>
+	<putfield class="LRoot"
+                  field="shuffle_batch"
+                  fieldType="LRoot"
+                  ref="train"
+                  value="shuffle_batch"/>
+
 	<new def="InteractiveSession" class="Ltensorflow/functions/InteractiveSession"/>
 	<putfield class="LRoot"
                   field="InteractiveSession"
@@ -128,6 +143,13 @@
                   ref="layers"
                   value="conv2d"/>
 
+	<new def="conv3d" class="Ltensorflow/functions/conv3d"/>
+	<putfield class="LRoot"
+                  field="conv3d"
+                  fieldType="LRoot"
+                  ref="nn"
+                  value="conv3d"/>
+
 	<new def="placeholder"
 	     class="Ltensorflow/functions/placeholder"/>
 	<putfield class="LRoot"
@@ -146,6 +168,13 @@
     
     <package name="tensorflow/functions">
 
+      <class name="shuffle_batch" allocatable="true">
+	<method name="do" descriptor="()LRoot;" numArgs="3"
+		paramNames="self data">
+	  <return value="data"/>
+	</method>
+      </class>
+      
       <class name="InteractiveSession" allocatable="true">
 	<method name="do" descriptor="()LRoot;">
 	  <new def="v" class="Lobject"/>
@@ -229,6 +258,23 @@
       </class>
       
       <class name="conv2d" allocatable="true">
+	<method name="copy_data" descriptor="()LRoot;">
+          <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset"/>
+	  <return value="x"/>
+	</method>
+
+        <method name="do" descriptor="()LRoot;" numArgs="3">
+	  <call class="LRoot"
+		name="copy_data"
+		descriptor="()LRoot;"
+		type="virtual"
+		arg0="arg0"
+		def="x"/>
+	  <return value="x"/>
+	</method>
+      </class>
+
+      <class name="conv3d" allocatable="true">
 	<method name="copy_data" descriptor="()LRoot;">
           <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset"/>
 	  <return value="x"/>

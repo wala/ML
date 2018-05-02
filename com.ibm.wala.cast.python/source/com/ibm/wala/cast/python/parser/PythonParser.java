@@ -924,11 +924,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitList(List arg0) throws Exception {
-			int i = 0;
+			int i = 0, j = 0;
 			CAstNode[] elts = new CAstNode[ 2*arg0.getInternalElts().size()+1 ];
 			elts[i++] = Ast.makeNode(CAstNode.NEW, Ast.makeConstant("list"));
 			for(expr e : arg0.getInternalElts()) {
-				elts[i++] = Ast.makeConstant("" + i/2);
+				elts[i++] = Ast.makeConstant("" + j++);
 				elts[i++] = e.accept(this);
 			}
 			return Ast.makeNode(CAstNode.OBJECT_LITERAL, elts);

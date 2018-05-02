@@ -1,18 +1,12 @@
 package com.ibm.wala.cast.python.test;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.Collections;
 
 import org.junit.Test;
 
-import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.analysis.TensorTypeAnalysis;
-import com.ibm.wala.cast.python.client.PythonTensorAnalysisEngine;
-import com.ibm.wala.classLoader.SourceURLModule;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
-import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 
@@ -26,7 +20,9 @@ public class TestNeuroImageExamples extends TestPythonCallGraphShape {
 			String in = "[{[D:Constant,64000] of pixel}]";
 			String out = "[{[D:Constant,40, D:Constant,40, D:Constant,40, D:Constant,1] of pixel}]";
 			checkTensorOp(cgBuilder, CG, result, "reshape", in, out);
-			System.err.println(result);
+			
+			in = "[{[D:Constant,40, D:Constant,40, D:Constant,40, D:Constant,1] of pixel}]";
+			checkTensorOp(cgBuilder, CG, result, "conv3d", in, null);
 		});
 	}
 	
