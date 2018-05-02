@@ -21,7 +21,8 @@ public class ServerTest {
 	@Test
 	public void trivialClient() throws IOException, InterruptedException, ExecutionException {
 		ClientDriver.main(new String[0], (String s) -> { 
-			assert s.contains("[{[D:Symbolic,n, D:Compound,[D:Constant,28, D:Constant,28]] of pixel}]");
+			System.err.println("found " + s);
+			assert s.contains("[ *n* ; 28 \\* 28 **of** _pixel_ ]");
 		});
 	}
 }
