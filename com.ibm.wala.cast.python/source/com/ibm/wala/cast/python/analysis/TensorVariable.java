@@ -12,6 +12,8 @@ package com.ibm.wala.cast.python.analysis;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 import com.ibm.wala.cast.python.types.TensorType;
 import com.ibm.wala.fixpoint.IVariable;
@@ -22,6 +24,17 @@ public class TensorVariable implements IVariable<TensorVariable> {
 	private int orderNumber = -1;
 	Set<TensorType> state = HashSetFactory.make();
 	
+	public String toMDString() {
+		if(state == null || state.isEmpty()) {
+			return "?";
+		}
+		
+		return state
+		.stream()
+		.map(TensorType::toMDString)
+		.collect(Collectors.joining(" _or_ "));
+	}
+
 	public Set<TensorType> getTypes() {
 		return Collections.unmodifiableSet(state);
 	}

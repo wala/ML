@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.python.core.PyObject;
 
@@ -46,6 +47,8 @@ public class TensorType implements Iterable<Dimension<?>> {
 		
 		abstract int concreteSize();
 		
+		abstract String toMDString();
+
 		T value() {
 			return v;
 		}
@@ -100,6 +103,11 @@ public class TensorType implements Iterable<Dimension<?>> {
 		int symbolicDims() {
 			return 1;
 		}
+
+		@Override
+		String toMDString() {
+			return "*" + value() + "*";
+		}
 	}
 
 	static class NumericDim extends Dimension<Integer> {
@@ -120,6 +128,11 @@ public class TensorType implements Iterable<Dimension<?>> {
 		@Override
 		int symbolicDims() {
 			return 0;
+		}
+
+		@Override
+		String toMDString() {
+			return value().toString();
 		}
 	}
 
@@ -150,6 +163,14 @@ public class TensorType implements Iterable<Dimension<?>> {
 			}
 			return size;
 		}
+
+		@Override
+		String toMDString() {
+			return value().stream()
+			.map(Dimension::toMDString)
+			.collect(Collectors.joining(" \\* "));
+		}
+
 	}
 
 	private final String cellType;
@@ -160,6 +181,15 @@ public class TensorType implements Iterable<Dimension<?>> {
 		this.dims = dims;
 	}
 	
+	public String toMDString() {
+		final String dimString = dims
+		.stream()
+		.map(Dimension::toMDString)
+		.collect(Collectors.joining(" ; "));
+
+		return "[ " + dimString + " **of** _" + cellType + "_ ]";	
+	}
+
 	@Override
 	public String toString() {
 		return "{" + dims.toString() + " of " + cellType + "}";

@@ -3,6 +3,7 @@ package com.ibm.wala.cast.python;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -14,6 +15,7 @@ import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.InitializedParams;
 import org.eclipse.lsp4j.MarkedString;
+import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MessageActionItem;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.Position;
@@ -111,8 +113,13 @@ public class ClientDriver implements LanguageClient {
 		a.setPosition(p);
 		CompletableFuture<Hover> data = client.server.getTextDocumentService().hover(a);
 		Hover t = data.get();
-		for(Either<String, MarkedString> hd : t.getContents()) {
-			process.accept(hd.getLeft());			
+		Either<List<Either<String, MarkedString>>, MarkupContent> contents = t.getContents();
+		if(contents.isLeft()) {
+			for(Either<String, MarkedString> hd : contents.getLeft()) {
+				process.accept(hd.getLeft());			
+			}
+		} else {
+			process.accept(contents.getRight().getValue());
 		}
 	}
 }

@@ -24,6 +24,7 @@ import org.apache.commons.cli.ParseException;
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.lsp.WALAServer;
 import com.ibm.wala.cast.python.analysis.TensorTypeAnalysis;
+import com.ibm.wala.cast.python.analysis.TensorVariable;
 import com.ibm.wala.cast.python.client.PythonTensorAnalysisEngine;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.classLoader.CallSiteReference;
@@ -82,7 +83,9 @@ public class PythonDriver {
 						} else {
 							PointsToSetVariable pts = builder.getPropagationSystem().findOrCreatePointsToSet(v);
 							if (tt.getProblem().getFlowGraph().containsNode(pts)) {
-								return String.valueOf(tt.getOut(pts));
+								TensorVariable vv = tt.getOut(pts);
+								String str = vv.toMDString();
+								return str;
 							} else {
 								return null;
 							}
