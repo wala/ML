@@ -11,15 +11,17 @@
 package com.ibm.wala.ide.pycharm;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
+import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.MarkedString;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.jetbrains.annotations.NotNull;
 
-import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
-import com.ibm.wala.cast.python.client.PythonTensorAnalysisEngine;
-import com.ibm.wala.ipa.callgraph.CallGraph;
-import com.ibm.wala.util.CancelException;
-import com.ibm.wala.util.NullProgressMonitor;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -28,12 +30,19 @@ import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 
 /**
  * WALA Analysis Action
  */
 class AnalysisAction extends AnAction {
 
+	private WALAClient wala;
+	
+	AnalysisAction() throws IOException {
+		wala = new WALAClient();
+	}
+	
 	static {
 		System.setProperty("javax.xml.parsers.SAXParserFactory", "org.python.apache.xerces.jaxp.SAXParserFactoryImpl");
 	}
@@ -64,12 +73,26 @@ class AnalysisAction extends AnAction {
 		    public void run() {
 		    	try {
 		    		int offset = editor.logicalPositionToOffset(editor.getCaretModel().getLogicalPosition());
+		    		java.lang.String text = editor.getDocument().getText();
+		    		int line = StringUtil.countNewLines(text.subSequence(0, offset)) + 1; // bad: copies text
+		    		int column = offset - StringUtil.lastIndexOf(text, '\n', 0, offset); 
+		    		
 		    		DocumentURLModule scriptModule = new DocumentURLModule(editor.getDocument());
-		    		PythonAnalysisEngine x = new PythonTensorAnalysisEngine();
-		    		x.setModuleFiles(Collections.singleton(scriptModule));
-					CallGraph CG = x.defaultCallGraphBuilder().makeCallGraph(x.getOptions(), new NullProgressMonitor());
-		    		editor.getDocument().insertString(0, "" + offset + "\n" + CG);
-		    	} catch (IOException | java.lang.IllegalArgumentException | CancelException e) {
+		    		wala.wala.analyze("python", scriptModule);
+		    		TextDocumentIdentifier id = new TextDocumentIdentifier();
+		    		TextDocumentPositionParams a = new TextDocumentPositionParams();
+		    		id.setUri(scriptModule.getURL().toString());
+		    		a.setTextDocument(id);
+		    		Position p = new Position();
+		    		p.setLine(line);
+		    		p.setCharacter(column);
+		    		a.setPosition(p);
+		    		CompletableFuture<Hover> data = wala.wala.getTextDocumentService().hover(a);
+		    		Hover t = data.get();
+		    		for(Either<java.lang.String, MarkedString> hd : t.getContents()) {
+			    		editor.getDocument().insertString(0, "" + hd.getLeft() + "\n");
+		    		}
+		    	} catch (IOException | java.lang.IllegalArgumentException | InterruptedException | ExecutionException e) {
 		    		editor.getDocument().insertString(0, e.toString());
 		    	}
 		    }

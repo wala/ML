@@ -5,7 +5,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.ClientCapabilities;

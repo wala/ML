@@ -42,81 +42,80 @@ import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.util.CancelException;
 
 public class PythonDriver {
+	public static final Function<WALAServer, Function<String, AbstractAnalysisEngine<InstanceKey, ? extends PropagationCallGraphBuilder, ?>>> python = (WALAServer lsp) -> {
+		return (String url) -> {
+			PythonTensorAnalysisEngine engine = new PythonTensorAnalysisEngine() {
 
-	public static void main(String args[]) throws ClassHierarchyException, IOException, IllegalArgumentException, CancelException {
-		Function<WALAServer, Function<String, AbstractAnalysisEngine<InstanceKey, ? extends PropagationCallGraphBuilder, ?>>> python = (WALAServer lsp) -> {
-			return (String url) -> {
-				PythonTensorAnalysisEngine engine = new PythonTensorAnalysisEngine() {
+				@Override
+				public TensorTypeAnalysis performAnalysis(
+						PropagationCallGraphBuilder builder) throws CancelException {
 
-					@Override
-					public TensorTypeAnalysis performAnalysis(
-							PropagationCallGraphBuilder builder) throws CancelException {
+					TensorTypeAnalysis tt = super.performAnalysis(builder);
 
-						TensorTypeAnalysis tt = super.performAnalysis(builder);
-
-						CallGraph CG = builder.getCallGraph();
-						CG.iterator().forEachRemaining((CGNode n) -> { 
-							IMethod M = n.getMethod();
-							if (M instanceof AstMethod) {
-								IR ir = n.getIR();
-								ir.iterateAllInstructions().forEachRemaining((SSAInstruction inst) -> {
-									if (inst.iindex != -1) {
-										Position pos = ((AstMethod)M).debugInfo().getInstructionPosition(inst.iindex);
-										if (pos != null) {
-											lsp.add(pos, new int[] {CG.getNumber(n), inst.iindex});
-										}
-										if (inst.hasDef()) {
-											PointerKey v = builder.getPointerAnalysis().getHeapModel().getPointerKeyForLocal(n, inst.getDef());
-											if (M instanceof AstMethod) {
-												if (pos != null) {
-													lsp.add(pos, v);
-												}
+					CallGraph CG = builder.getCallGraph();
+					CG.iterator().forEachRemaining((CGNode n) -> { 
+						IMethod M = n.getMethod();
+						if (M instanceof AstMethod) {
+							IR ir = n.getIR();
+							ir.iterateAllInstructions().forEachRemaining((SSAInstruction inst) -> {
+								if (inst.iindex != -1) {
+									Position pos = ((AstMethod)M).debugInfo().getInstructionPosition(inst.iindex);
+									if (pos != null) {
+										lsp.add(pos, new int[] {CG.getNumber(n), inst.iindex});
+									}
+									if (inst.hasDef()) {
+										PointerKey v = builder.getPointerAnalysis().getHeapModel().getPointerKeyForLocal(n, inst.getDef());
+										if (M instanceof AstMethod) {
+											if (pos != null) {
+												lsp.add(pos, v);
 											}
 										}
 									}
-								});
-							}
-						});
-
-						lsp.addValueAnalysis((PointerKey v) -> {
-							if (builder.getPropagationSystem().isImplicit(v)) {
-								return null;
-							} else {
-								PointsToSetVariable pts = builder.getPropagationSystem().findOrCreatePointsToSet(v);
-								if (tt.getProblem().getFlowGraph().containsNode(pts)) {
-									return String.valueOf(tt.getOut(pts));
-								} else {
-									return null;
 								}
-							}
-						});
+							});
+						}
+					});
 
-						lsp.addInstructionAnalysis((int[] instId) -> {
-							CGNode node = builder.getCallGraph().getNode(instId[0]);
-							SSAInstruction inst = node.getIR().getInstructions()[instId[1]];
-							if (inst instanceof SSAAbstractInvokeInstruction) {
-								CallSiteReference ref = ((SSAAbstractInvokeInstruction)inst).getCallSite();
-								String targets = "targets[ ";
-								for(CGNode callee : builder.getCallGraph().getPossibleTargets(node, ref)) {
-									targets += callee.getMethod().getDeclaringClass().getName().toString() + " ";
-								}
-								targets += "]";
-								return targets;
+					lsp.addValueAnalysis((PointerKey v) -> {
+						if (builder.getPropagationSystem().isImplicit(v)) {
+							return null;
+						} else {
+							PointsToSetVariable pts = builder.getPropagationSystem().findOrCreatePointsToSet(v);
+							if (tt.getProblem().getFlowGraph().containsNode(pts)) {
+								return String.valueOf(tt.getOut(pts));
 							} else {
 								return null;
 							}
-						});		
-						
-						System.err.println(lsp);
-						
-						return tt;
-					}	
-				};
+						}
+					});
 
-				return engine;
+					lsp.addInstructionAnalysis((int[] instId) -> {
+						CGNode node = builder.getCallGraph().getNode(instId[0]);
+						SSAInstruction inst = node.getIR().getInstructions()[instId[1]];
+						if (inst instanceof SSAAbstractInvokeInstruction) {
+							CallSiteReference ref = ((SSAAbstractInvokeInstruction)inst).getCallSite();
+							String targets = "targets[ ";
+							for(CGNode callee : builder.getCallGraph().getPossibleTargets(node, ref)) {
+								targets += callee.getMethod().getDeclaringClass().getName().toString() + " ";
+							}
+							targets += "]";
+							return targets;
+						} else {
+							return null;
+						}
+					});		
+					
+					System.err.println(lsp);
+					
+					return tt;
+				}	
 			};
-		};
 
+			return engine;
+		};
+	};
+
+	public static void main(String args[]) throws ClassHierarchyException, IOException, IllegalArgumentException, CancelException {
 		final CommandLineParser optionParser = new DefaultParser();
 		/* Command line options */
 		final Options options = new Options();
