@@ -84,7 +84,8 @@ public class PythonDriver {
 							PointsToSetVariable pts = builder.getPropagationSystem().findOrCreatePointsToSet(v);
 							if (tt.getProblem().getFlowGraph().containsNode(pts)) {
 								TensorVariable vv = tt.getOut(pts);
-								String str = vv.toMDString();
+								// TODO: make this configurable
+								String str = vv.toCString(true);
 								return str;
 							} else {
 								return null;

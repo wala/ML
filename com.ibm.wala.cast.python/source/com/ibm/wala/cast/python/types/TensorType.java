@@ -49,6 +49,8 @@ public class TensorType implements Iterable<Dimension<?>> {
 		
 		abstract String toMDString();
 
+		abstract String toCString(boolean useMarkdown);
+
 		T value() {
 			return v;
 		}
@@ -108,6 +110,16 @@ public class TensorType implements Iterable<Dimension<?>> {
 		String toMDString() {
 			return "*" + value() + "*";
 		}
+
+		@Override
+		String toCString(boolean useMarkdown) {
+			if(useMarkdown) {
+				return "*" + value() + "*";
+			} else {
+				return value();
+			}
+		}
+
 	}
 
 	static class NumericDim extends Dimension<Integer> {
@@ -134,6 +146,12 @@ public class TensorType implements Iterable<Dimension<?>> {
 		String toMDString() {
 			return value().toString();
 		}
+
+		@Override
+		String toCString(boolean useMarkdown) {
+			return value().toString();
+		}
+
 	}
 
 	static class CompoundDim extends Dimension<List<Dimension<?>>> {
@@ -171,6 +189,19 @@ public class TensorType implements Iterable<Dimension<?>> {
 			.collect(Collectors.joining(" \\* "));
 		}
 
+		@Override
+		String toCString(boolean useMarkdown) {
+			final String delim;
+			if(useMarkdown) {
+				delim = " \\* ";
+			} else {
+				delim = " * ";
+			}
+
+			return value().stream()
+			.map(x -> x.toCString(useMarkdown))
+			.collect(Collectors.joining(delim));
+		}
 	}
 
 	private final String cellType;
@@ -188,6 +219,23 @@ public class TensorType implements Iterable<Dimension<?>> {
 		.collect(Collectors.joining(" ; "));
 
 		return "[ " + dimString + " **of** _" + cellType + "_ ]";	
+	}
+
+	public String toCString(boolean useMarkdown) {
+		final String dimString = dims
+		.stream()
+		.map(x -> x.toCString(useMarkdown))
+		.map(x -> "["+x+"]")
+		.collect(Collectors.joining());
+
+		final String ctypeString;
+		if(useMarkdown) {
+			ctypeString = "_" + cellType + "_";
+		} else {
+			ctypeString = cellType;
+		}
+
+		return ctypeString + dimString;	
 	}
 
 	@Override

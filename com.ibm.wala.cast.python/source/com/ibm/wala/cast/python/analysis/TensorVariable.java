@@ -35,6 +35,24 @@ public class TensorVariable implements IVariable<TensorVariable> {
 		.collect(Collectors.joining(" _or_ "));
 	}
 
+	public String toCString(boolean useMarkdown) {
+		if(state == null || state.isEmpty()) {
+			return "?";
+		}
+		
+		final String delim;
+		if(useMarkdown) {
+			delim = " _or_ ";
+		} else {
+			delim = " or ";
+		}
+	
+		return state
+		.stream()
+		.map(x -> x.toCString(useMarkdown))
+		.collect(Collectors.joining(" _or_ "));
+	}
+
 	public Set<TensorType> getTypes() {
 		return Collections.unmodifiableSet(state);
 	}
