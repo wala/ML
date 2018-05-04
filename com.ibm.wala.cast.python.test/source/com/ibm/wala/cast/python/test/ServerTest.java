@@ -22,7 +22,7 @@ public class ServerTest {
 	public void trivialClient() throws IOException, InterruptedException, ExecutionException {
 		ClientDriver.main(new String[0], (String s) -> { 
 			System.err.println("found " + s);
-			assert s.contains("[ *n* ; 28 \\* 28 **of** _pixel_ ]");
+			assert s.contains("_pixel_[*n*][28 \\* 28]");
 		});
 	}
 }
