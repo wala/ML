@@ -179,7 +179,16 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		public CAstControlFlowRecorder cfg() {
 			return fun.getControlFlow();
 		}
-		
+
+		@Override
+		public void addScopedEntity(CAstNode construct, CAstEntity e) {
+			fun.addScopedEntity(construct, e);
+		}
+
+		@Override
+		public Map<CAstNode, Collection<CAstEntity>> getScopedEntities() {
+			return fun.getAllScopedEntities();
+		}
 	}
 
 	private final CAst Ast = new CAstImpl();
@@ -1341,23 +1350,9 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 					cast = pythonAst.accept(new CAstVisitor(context, parser));
 				}
 				
-								@Override
+				@Override
 				public CAstNode getAST() {
 					return cast;
-				}
-
-				@Override
-				public Map<CAstNode, Collection<CAstEntity>> getAllScopedEntities() {
-					return context.getScopedEntities();
-				}
-
-				@Override
-				public Iterator<CAstEntity> getScopedEntities(CAstNode construct) {
-					if (context.getScopedEntities().containsKey(construct)) {
-						return context.getScopedEntities().get(construct).iterator();
-					} else {
-						return EmptyIterator.instance();
-					}
 				}
 			};
 			return script;

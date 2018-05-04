@@ -16,6 +16,14 @@
                   ref="x"
                   value="train"/>
 
+	<new def="AdamOptimizer"
+	     class="Ltensorflow/functions/AdamOptimizer"/>
+	<putfield class="LRoot"
+                  field="AdamOptimizer"
+                  fieldType="LRoot"
+                  ref="train"
+                  value="AdamOptimizer"/>
+	
 	<new def="shuffle_batch"
 	     class="Ltensorflow/functions/shuffle_batch"/>
 	<putfield class="LRoot"
@@ -168,6 +176,34 @@
     
     <package name="tensorflow/functions">
 
+      <class name="AdamOptimizer" allocatable="true">
+	<method name="do" descriptor="()LRoot;">
+	  <new def="opt" class="Lobject"/>
+
+	  <new def="minimize" class="Ltensorflow/functions/minimize"/>
+	  <putfield class="LRoot"
+                    field="minimize"
+                    fieldType="LRoot"
+                    ref="opt"
+                    value="minimize"/>
+
+	  <return value="opt"/>
+	</method>
+      </class>
+
+      <class name="minimize" allocatable="true">
+	<method name="do" descriptor="()LRoot;">
+	  <new def="v" class="Lobject"/>
+	  <new def="f" class="Ltensorflow/functions/Runner"/>
+	  <putfield class="LRoot"
+                    field="run"
+                    fieldType="LRoot"
+                    ref="v"
+                    value="f"/>
+	  <return value="v"/>
+	</method>
+      </class>
+      
       <class name="shuffle_batch" allocatable="true">
 	<method name="do" descriptor="()LRoot;" numArgs="3"
 		paramNames="self data">
