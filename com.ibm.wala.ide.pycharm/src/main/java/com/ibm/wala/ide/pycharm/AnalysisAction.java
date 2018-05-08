@@ -11,10 +11,12 @@
 package com.ibm.wala.ide.pycharm;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.MarkedString;
+import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
@@ -93,12 +95,16 @@ class AnalysisAction extends AnAction {
     						a.setPosition(p);
     						CompletableFuture<Hover> data = wala.wala.getTextDocumentService().hover(a);
     						Hover t = data.get();
-    						
      						java.lang.String m = "message: ";
-    						for(Either<java.lang.String, MarkedString> hd : t.getContents()) {
-    							m += hd.getLeft() + "\n";
-    						}
-    						
+     						Either<List<Either<java.lang.String, MarkedString>>, MarkupContent> contents = t.getContents();
+     						if (contents.isLeft()) {
+     							for(Either<java.lang.String, MarkedString> hd : contents.getLeft()) {
+     								m += (hd.isLeft()? hd.getLeft(): hd.getRight()) + "\n";
+     							}
+     						} else {
+     							m = contents.getRight().getKind() + ": " + contents.getRight().getValue();
+     						}
+     						
     						JBPopupFactory.getInstance()
     		                .createHtmlTextBalloonBuilder(m, MessageType.INFO, null)
     		                .setFadeoutTime(7500)
