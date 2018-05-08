@@ -12,7 +12,6 @@ package com.ibm.wala.ide.pycharm;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.MarkedString;
@@ -30,7 +29,12 @@ import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.MessageType;
+import com.intellij.openapi.ui.popup.Balloon;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.ui.awt.RelativePoint;
+import com.intellij.util.ui.PositionTracker.Static;
 
 /**
  * WALA Analysis Action
@@ -89,10 +93,19 @@ class AnalysisAction extends AnAction {
     						a.setPosition(p);
     						CompletableFuture<Hover> data = wala.wala.getTextDocumentService().hover(a);
     						Hover t = data.get();
+    						
+     						java.lang.String m = "message: ";
     						for(Either<java.lang.String, MarkedString> hd : t.getContents()) {
-    							editor.getDocument().insertString(0, "" + hd.getLeft() + "\n");
+    							m += hd.getLeft() + "\n";
     						}
-    					} catch (IOException | java.lang.IllegalArgumentException | InterruptedException | ExecutionException e) {
+    						
+    						JBPopupFactory.getInstance()
+    		                .createHtmlTextBalloonBuilder(m, MessageType.INFO, null)
+    		                .setFadeoutTime(7500)
+    		                .createBalloon()
+    		                .show(new Static<Balloon>(new RelativePoint(editor.logicalPositionToXY(editor.getCaretModel().getLogicalPosition()))),Balloon.Position.above);
+
+   					} catch (IOException | java.lang.IllegalArgumentException | InterruptedException | java.util.concurrent.ExecutionException e) {
     						editor.getDocument().insertString(0, e.toString());
     					}
     				}
