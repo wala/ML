@@ -117,6 +117,8 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
 		
 		tt.solve(new NullProgressMonitor());
 		
+		System.err.println(tt);
+		
 		return tt;
 	}
 

@@ -109,7 +109,7 @@ public class ClientDriver implements LanguageClient {
 		a.setTextDocument(id);
 		Position p = new Position();
 		p.setLine(42);
-		p.setCharacter(12);
+		p.setCharacter(23);
 		a.setPosition(p);
 		CompletableFuture<Hover> data = client.server.getTextDocumentService().hover(a);
 		Hover t = data.get();

@@ -414,9 +414,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			}
 			for(keyword k : arg0.getInternalKeywords()) {
 				args[i++] = 
-					Ast.makeNode(CAstNode.ARRAY_LITERAL, 
-						Ast.makeConstant(k.getInternalArg()), 
-						k.getInternalValue().accept(this));
+					notePosition(
+						Ast.makeNode(CAstNode.ARRAY_LITERAL, 
+							Ast.makeConstant(k.getInternalArg()), 
+							notePosition(k.getInternalValue().accept(this), k.getInternalValue())),
+						k);
 			}
 			
 			CAstNode f = notePosition(arg0.getInternalFunc().accept(this), arg0.getInternalFunc());

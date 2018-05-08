@@ -67,37 +67,37 @@ class AnalysisAction extends AnAction {
      * @param   event   Action system event
      */
     public void actionPerformed(@NotNull final AnActionEvent event) {
- 	CommandProcessor.getInstance().executeCommand(project, new java.lang.Runnable() {
-	    public void run() {
-		ApplicationManager.getApplication().runWriteAction(new java.lang.Runnable() {
-		    public void run() {
-		    	try {
-		    		int offset = editor.logicalPositionToOffset(editor.getCaretModel().getLogicalPosition());
-		    		java.lang.String text = editor.getDocument().getText();
-		    		int line = StringUtil.countNewLines(text.subSequence(0, offset)) + 1; // bad: copies text
-		    		int column = offset - StringUtil.lastIndexOf(text, '\n', 0, offset); 
-		    		
-		    		DocumentURLModule scriptModule = new DocumentURLModule(editor.getDocument());
-		    		wala.wala.analyze("python", scriptModule);
-		    		TextDocumentIdentifier id = new TextDocumentIdentifier();
-		    		TextDocumentPositionParams a = new TextDocumentPositionParams();
-		    		id.setUri(scriptModule.getURL().toString());
-		    		a.setTextDocument(id);
-		    		Position p = new Position();
-		    		p.setLine(line);
-		    		p.setCharacter(column);
-		    		a.setPosition(p);
-		    		CompletableFuture<Hover> data = wala.wala.getTextDocumentService().hover(a);
-		    		Hover t = data.get();
-		    		for(Either<java.lang.String, MarkedString> hd : t.getContents()) {
-			    		editor.getDocument().insertString(0, "" + hd.getLeft() + "\n");
-		    		}
-		    	} catch (IOException | java.lang.IllegalArgumentException | InterruptedException | ExecutionException e) {
-		    		editor.getDocument().insertString(0, e.toString());
-		    	}
-		    }
-		    });
-	    }
-	    }, "analyze "  + FileDocumentManager.getInstance().getFile(editor.getDocument()).getName(), null);
+    	CommandProcessor.getInstance().executeCommand(project, new java.lang.Runnable() {
+    		public void run() {
+    			ApplicationManager.getApplication().runWriteAction(new java.lang.Runnable() {
+    				public void run() {
+    					try {
+    						int offset = editor.logicalPositionToOffset(editor.getCaretModel().getLogicalPosition());
+    						java.lang.String text = editor.getDocument().getText();
+    						int line = StringUtil.countNewLines(text.subSequence(0, offset)) + 1; // bad: copies text
+    						int column = offset - StringUtil.lastIndexOf(text, '\n', 0, offset); 
+
+    						DocumentURLModule scriptModule = new DocumentURLModule(editor.getDocument());
+    						wala.wala.analyze("python", scriptModule);
+    						TextDocumentIdentifier id = new TextDocumentIdentifier();
+    						TextDocumentPositionParams a = new TextDocumentPositionParams();
+    						id.setUri(scriptModule.getURL().toString());
+    						a.setTextDocument(id);
+    						Position p = new Position();
+    						p.setLine(line);
+    						p.setCharacter(column);
+    						a.setPosition(p);
+    						CompletableFuture<Hover> data = wala.wala.getTextDocumentService().hover(a);
+    						Hover t = data.get();
+    						for(Either<java.lang.String, MarkedString> hd : t.getContents()) {
+    							editor.getDocument().insertString(0, "" + hd.getLeft() + "\n");
+    						}
+    					} catch (IOException | java.lang.IllegalArgumentException | InterruptedException | ExecutionException e) {
+    						editor.getDocument().insertString(0, e.toString());
+    					}
+    				}
+    			});
+    		}
+    	}, "analyze "  + FileDocumentManager.getInstance().getFile(editor.getDocument()).getName(), null);
     }
 }

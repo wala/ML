@@ -28,6 +28,7 @@ import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
+import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
@@ -251,16 +252,21 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 			int[] arguments) {
 		int pos = context.cfg().getCurrentInstruction();
 		CallSiteReference site = new DynamicCallSiteReference(PythonTypes.CodeBody, pos);
-		
+
+		List<Position> pospos = new ArrayList<Position>();
+		List<Position> keypos = new ArrayList<Position>();
 		List<Integer> posp = new ArrayList<Integer>();
 		List<Pair<String,Integer>> keyp = new ArrayList<Pair<String,Integer>>();
 		posp.add(receiver);
+		pospos.add(context.getSourceMap().getPosition(call.getChild(0)));
 		for(int i = 2; i < call.getChildCount(); i++) {
 			CAstNode cl = call.getChild(i);
 			if (cl.getKind() == CAstNode.ARRAY_LITERAL) {
 				keyp.add(Pair.make(String.valueOf(cl.getChild(0).getValue()), context.getValue(cl.getChild(1))));
+				keypos.add(context.getSourceMap().getPosition(cl));
 			} else {
 				posp.add(context.getValue(cl));
+				pospos.add(context.getSourceMap().getPosition(cl));
 			}
 		}
 		
@@ -274,6 +280,9 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		}
 		
 		context.cfg().addInstruction(new PythonInvokeInstruction(pos, result, exception, site, hack, keyp.toArray(new Pair[ keyp.size() ])));
+	
+		pospos.addAll(keypos);
+		context.cfg().noteOperands(pos, pospos.toArray(new Position[pospos.size()]));
 	}
 
 	  public static final CAstType Any = new CAstType() {
