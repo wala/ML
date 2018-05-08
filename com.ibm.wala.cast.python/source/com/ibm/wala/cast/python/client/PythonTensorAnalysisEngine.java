@@ -83,7 +83,6 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
 		Graph<PointsToSetVariable> dataflow = SlowSparseNumberedGraph.duplicate(builder.getPropagationSystem().getFlowGraphIncludingImplicitConstraints());
 
 		Set<PointsToSetVariable> sources = getDataflowSources(dataflow);
-		System.err.println(sources);
 		
 		TensorType mnistData = TensorType.mnistInput();
 		Map<PointsToSetVariable, TensorType> init = HashMapFactory.make();
@@ -107,17 +106,13 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
 			PointerKey setKey = builder.getPointerAnalysis().getHeapModel().getPointerKeyForLocal(setNode, call.getUse(0));
 			setCalls.put(builder.getPropagationSystem().findOrCreatePointsToSet(setKey), x.getValue());
 		}
-		System.err.println(setCalls);
 
 		Map<PointsToSetVariable, TensorType> shapeOps = HashMapFactory.make();
 		shapeOps.putAll(handleShapeSourceOp(builder, dataflow, reshape, 2));
-		System.err.println(shapeOps);
 		
 		TensorTypeAnalysis tt = new TensorTypeAnalysis(dataflow, init, shapeOps, setCalls);
 		
 		tt.solve(new NullProgressMonitor());
-		
-		System.err.println(tt);
 		
 		return tt;
 	}

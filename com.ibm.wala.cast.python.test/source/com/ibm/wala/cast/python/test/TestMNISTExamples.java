@@ -44,7 +44,6 @@ public class TestMNISTExamples extends TestPythonCallGraphShape {
 	@Test
 	public void testEx1CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		CallGraph CG = process(Ex1URL);
-		System.err.println(CG);
 		verifyGraphAssertions(CG, assertionsEx1);
 	}
 	
@@ -65,7 +64,6 @@ public class TestMNISTExamples extends TestPythonCallGraphShape {
 	@Test
 	public void testEx2CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		CallGraph CG = process(Ex2URL);
-		System.err.println(CG);
 	}
 
 	@Test
@@ -77,11 +75,6 @@ public class TestMNISTExamples extends TestPythonCallGraphShape {
 
 			in = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
 			checkTensorOp(cgBuilder, CG, result, "conv2d", in, null);
-			
-			CAstCallGraphUtil.AVOID_DUMP = false;
-			CAstCallGraphUtil.dumpCG((SSAContextInterpreter) cgBuilder.getContextInterpreter(), cgBuilder.getPointerAnalysis(), CG);
-			System.err.println(result);
-			System.err.println(CG.getClassHierarchy());
 
 			Set<SSAInstruction> goodFeeds = HashSetFactory.make();
 			checkDirectFeeddict(goodFeeds, cgBuilder, CG, result);
