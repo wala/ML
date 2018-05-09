@@ -20,9 +20,9 @@ public class ServerTest {
 
 	@Test
 	public void trivialClient() throws IOException, InterruptedException, ExecutionException {
-		ClientDriver.main(new String[0], (String s) -> { 
+		ClientDriver.main(new String[] {"42", "10", "45", "35"}, (String s) -> { 
 			System.err.println("found " + s);
-			assert s.contains("_pixel_[*n*][28 \\* 28]");
+			assert s.contains("_pixel_[*?*][28][28][1]");
 		});
 	}
 }

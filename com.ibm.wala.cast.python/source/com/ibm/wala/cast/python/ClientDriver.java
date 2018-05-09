@@ -107,19 +107,21 @@ public class ClientDriver implements LanguageClient {
 		TextDocumentPositionParams a = new TextDocumentPositionParams();
 		id.setUri(scriptUri);
 		a.setTextDocument(id);
-		Position p = new Position();
-		p.setLine(42);
-		p.setCharacter(23);
-		a.setPosition(p);
-		CompletableFuture<Hover> data = client.server.getTextDocumentService().hover(a);
-		Hover t = data.get();
-		Either<List<Either<String, MarkedString>>, MarkupContent> contents = t.getContents();
-		if(contents.isLeft()) {
-			for(Either<String, MarkedString> hd : contents.getLeft()) {
-				process.accept(hd.getLeft());			
+		for(int i = 0; i < args.length; i += 2) {
+			Position p = new Position();
+			p.setLine(Integer.parseInt(args[i]));
+			p.setCharacter(Integer.parseInt(args[i+1]));
+			a.setPosition(p);
+			CompletableFuture<Hover> data = client.server.getTextDocumentService().hover(a);
+			Hover t = data.get();
+			Either<List<Either<String, MarkedString>>, MarkupContent> contents = t.getContents();
+			if(contents.isLeft()) {
+				for(Either<String, MarkedString> hd : contents.getLeft()) {
+					process.accept(hd.getLeft());			
+				}
+			} else {
+				process.accept(contents.getRight().getValue());
 			}
-		} else {
-			process.accept(contents.getRight().getValue());
 		}
 	}
 }
