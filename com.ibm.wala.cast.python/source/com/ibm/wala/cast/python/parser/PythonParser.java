@@ -291,7 +291,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitAssign(Assign arg0) throws Exception {
-			CAstNode v = arg0.getInternalValue().accept(this);
+			CAstNode v = notePosition(arg0.getInternalValue().accept(this), arg0.getInternalValue());
 			if (context.entity().getKind() == CAstEntity.TYPE_ENTITY) {
 				for (expr lhs : arg0.getInternalTargets()) {
 					context.addScopedEntity(null, new AbstractFieldEntity(lhs.getText(), Collections.emptySet(), false, context.entity()) {
@@ -305,7 +305,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			} else {
 				java.util.List<CAstNode> nodes = new ArrayList<CAstNode>(); 
 				for (expr lhs : arg0.getInternalTargets()) {
-					nodes.add(notePosition(Ast.makeNode(CAstNode.ASSIGN, lhs.accept(this), v), arg0));
+					nodes.add(notePosition(Ast.makeNode(CAstNode.ASSIGN, notePosition(lhs.accept(this), lhs), v), lhs));
 				}
 				return Ast.makeNode(CAstNode.BLOCK_EXPR, nodes.toArray(new CAstNode[nodes.size()]));
 			}
