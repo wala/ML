@@ -79,11 +79,13 @@ class AnalysisAction extends AnAction {
     					try {
     						int offset = editor.logicalPositionToOffset(editor.getCaretModel().getLogicalPosition());
     						java.lang.String text = editor.getDocument().getText();
-    						int line = StringUtil.countNewLines(text.subSequence(0, offset)) + 1; // bad: copies text
+    						int line = StringUtil.countNewLines(text.subSequence(0, offset)); // bad: copies text
     						int column = offset - StringUtil.lastIndexOf(text, '\n', 0, offset); 
 
     						DocumentURLModule scriptModule = new DocumentURLModule(editor.getDocument());
-    						wala.wala.analyze("python", scriptModule);
+    						wala.wala.addSource("python", scriptModule);
+    						wala.wala.analyze("python");
+    						
     						TextDocumentIdentifier id = new TextDocumentIdentifier();
     						TextDocumentPositionParams a = new TextDocumentPositionParams();
     						id.setUri(scriptModule.getURL().toString());
