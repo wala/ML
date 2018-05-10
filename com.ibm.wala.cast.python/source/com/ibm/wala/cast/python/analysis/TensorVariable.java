@@ -12,7 +12,6 @@ package com.ibm.wala.cast.python.analysis;
 
 import java.util.Collections;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import com.ibm.wala.cast.python.types.TensorType;
@@ -50,7 +49,7 @@ public class TensorVariable implements IVariable<TensorVariable> {
 		return state
 		.stream()
 		.map(x -> x.toCString(useMarkdown))
-		.collect(Collectors.joining(" _or_ "));
+		.collect(Collectors.joining(delim));
 	}
 
 	public Set<TensorType> getTypes() {
