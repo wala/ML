@@ -162,7 +162,9 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	@Override
 	public void doArrayRead(WalkContext context, int result, int arrayValue, CAstNode arrayRef, int[] dimValues) {
 		if (dimValues.length == 1) {
-			context.cfg().addInstruction(((AstInstructionFactory) insts).PropertyRead(context.cfg().getCurrentInstruction(), result, arrayValue, dimValues[0]));
+			int currentInstruction = context.cfg().getCurrentInstruction();
+			context.cfg().addInstruction(((AstInstructionFactory) insts).PropertyRead(currentInstruction, result, arrayValue, dimValues[0]));
+		    context.cfg().noteOperands(currentInstruction, context.getSourceMap().getPosition(arrayRef));
 		}
 	}
 	
@@ -174,14 +176,16 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
 	@Override
 	protected void doFieldRead(WalkContext context, int result, int receiver, CAstNode elt, CAstNode parent) {
-	    if (elt.getKind() == CAstNode.CONSTANT && elt.getValue() instanceof String) {
+	    int currentInstruction = context.cfg().getCurrentInstruction();
+		if (elt.getKind() == CAstNode.CONSTANT && elt.getValue() instanceof String) {
 			FieldReference f = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), PythonTypes.Root);
-			context.cfg().addInstruction(Python.instructionFactory().GetInstruction(context.cfg().getCurrentInstruction(), result, receiver, f));
+			context.cfg().addInstruction(Python.instructionFactory().GetInstruction(currentInstruction, result, receiver, f));
 		} else {
 			visit(elt, context, this);		
 			assert context.getValue(elt) != -1;
-			context.cfg().addInstruction(((AstInstructionFactory) insts).PropertyRead(context.cfg().getCurrentInstruction(), result, receiver, context.getValue(elt)));
+			context.cfg().addInstruction(((AstInstructionFactory) insts).PropertyRead(currentInstruction, result, receiver, context.getValue(elt)));
 		}
+	    context.cfg().noteOperands(currentInstruction, context.getSourceMap().getPosition(parent.getChild(0)), context.getSourceMap().getPosition(elt));
 	}
 
 	@Override

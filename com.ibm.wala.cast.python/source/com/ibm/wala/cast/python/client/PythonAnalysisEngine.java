@@ -99,12 +99,13 @@ public abstract class PythonAnalysisEngine
 
 	private void addBypassLogic(AnalysisOptions options) {
 		IClassHierarchy cha = getClassHierarchy();
-		Map<Atom,IField> fields = HashMapFactory.make();
-	
+		
 		XMLMethodSummaryReader xml = new XMLMethodSummaryReader(getClass().getClassLoader().getResourceAsStream("tensorflow.xml"), scope);
 		for(TypeReference t : xml.getAllocatableClasses()) {
 			BypassSyntheticClassLoader ldr = (BypassSyntheticClassLoader) cha.getLoader(scope.getSyntheticLoader());
 			ldr.registerClass(t.getName(), new SyntheticClass(t, cha) {
+				private final Map<Atom,IField> fields = HashMapFactory.make();
+
 				@Override
 				public IClassLoader getClassLoader() {
 					return cha.getLoader(cha.getScope().getSyntheticLoader());
@@ -168,20 +169,17 @@ public abstract class PythonAnalysisEngine
 	
 				@Override
 				public Collection<IField> getAllInstanceFields() {
-					// TODO Auto-generated method stub
-					return null;
+					return fields.values();
 				}
 	
 				@Override
 				public Collection<IField> getAllStaticFields() {
-					// TODO Auto-generated method stub
-					return null;
+					return Collections.emptySet();
 				}
 	
 				@Override
 				public Collection<IField> getAllFields() {
-					// TODO Auto-generated method stub
-					return null;
+					return fields.values();
 				}
 	
 				@Override
@@ -192,20 +190,17 @@ public abstract class PythonAnalysisEngine
 	
 				@Override
 				public Collection<IField> getDeclaredInstanceFields() {
-					// TODO Auto-generated method stub
-					return null;
+					return fields.values();
 				}
 	
 				@Override
 				public Collection<IField> getDeclaredStaticFields() {
-					// TODO Auto-generated method stub
-					return null;
+					return Collections.emptySet();
 				}
 	
 				@Override
 				public boolean isReferenceType() {
-					// TODO Auto-generated method stub
-					return false;
+					return true;
 				}				
 			});
 		}
