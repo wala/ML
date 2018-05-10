@@ -21,6 +21,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.eclipse.lsp4j.MarkupKind;
 
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.lsp.WALAServer;
@@ -79,6 +80,8 @@ public class PythonDriver {
 						}
 					});
 
+					final String hoverMarkupKind = lsp.getHoverFormatRequested();
+					final boolean hoverKind = MarkupKind.MARKDOWN.equals(hoverMarkupKind);
 					lsp.addValueAnalysis(builder.getPointerAnalysis().getHeapGraph(), (PointerKey v) -> {
 						if (builder.getPropagationSystem().isImplicit(v)) {
 							return null;
@@ -87,7 +90,7 @@ public class PythonDriver {
 							if (tt.getProblem().getFlowGraph().containsNode(pts)) {
 								TensorVariable vv = tt.getOut(pts);
 								// TODO: make this configurable
-								String str = vv.toCString(true);
+								String str = vv.toCString(hoverKind);
 								return str;
 							} else {
 								return null;
