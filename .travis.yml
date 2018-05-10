@@ -15,10 +15,9 @@ install:
  - mvn clean install -DskipTests -B -q
  - popd
  - pushd /tmp/IDE/com.ibm.wala.cast.lsp
- - mvn clean install -DskipTests -B -q
+ - mvn clean install -DskipTests -B
  - popd
 script:
- - mvn clean install -B -q
  - mvn clean install -B -q
 sudo: false
 cache:
