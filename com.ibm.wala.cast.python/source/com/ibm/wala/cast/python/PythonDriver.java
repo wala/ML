@@ -12,6 +12,8 @@ package com.ibm.wala.cast.python;
 
 import java.io.IOException;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -78,7 +80,7 @@ public class PythonDriver {
 						}
 					});
 					final String hoverMarkupKind = lsp.getHoverFormatRequested();
-					final boolean hoverKind = MarkupKind.MARKDOWN.equals(hoverMarkupKind);
+					final boolean useMarkdown = MarkupKind.MARKDOWN.equals(hoverMarkupKind);
 					lsp.addValueAnalysis((PointerKey v) -> {
 						if (builder.getPropagationSystem().isImplicit(v)) {
 							return null;
@@ -86,9 +88,18 @@ public class PythonDriver {
 							PointsToSetVariable pts = builder.getPropagationSystem().findOrCreatePointsToSet(v);
 							if (tt.getProblem().getFlowGraph().containsNode(pts)) {
 								TensorVariable vv = tt.getOut(pts);
-								// TODO: make this configurable
-								String str = vv.toCString(hoverKind);
-								return str;
+								String str = vv.toCString(useMarkdown);
+								if(str != null) {
+									final String targetString;
+									if(useMarkdown) {
+										targetString = "_shape_: ";
+									} else {
+										targetString = "shape: ";
+									}
+									return targetString + str;
+								} else {
+									return null;
+								}
 							} else {
 								return null;
 							}
@@ -100,12 +111,29 @@ public class PythonDriver {
 						SSAInstruction inst = node.getIR().getInstructions()[instId[1]];
 						if (inst instanceof SSAAbstractInvokeInstruction) {
 							CallSiteReference ref = ((SSAAbstractInvokeInstruction)inst).getCallSite();
-							String targets = "targets[ ";
-							for(CGNode callee : builder.getCallGraph().getPossibleTargets(node, ref)) {
-								targets += callee.getMethod().getDeclaringClass().getName().toString() + " ";
+							final Set<CGNode> possibleTargets = builder.getCallGraph().getPossibleTargets(node, ref);
+
+							if(possibleTargets.isEmpty()) {
+								return null;
 							}
-							targets += "]";
-							return targets;
+
+							final String delim;
+							final String targetString;
+							if(useMarkdown) {
+								delim = "     _or_ ";
+								targetString = "_target_: ";
+							} else {
+								targetString = "target: ";
+								delim = "     or ";
+							}
+
+							final String targetStringList = possibleTargets
+							.stream()
+							.map(callee ->
+								callee.getMethod().getDeclaringClass().getName().toString())
+							.collect(Collectors.joining(delim));
+
+							return targetString + targetStringList;
 						} else {
 							return null;
 						}

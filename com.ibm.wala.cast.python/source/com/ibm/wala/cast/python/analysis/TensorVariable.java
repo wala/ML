@@ -36,7 +36,7 @@ public class TensorVariable implements IVariable<TensorVariable> {
 
 	public String toCString(boolean useMarkdown) {
 		if(state == null || state.isEmpty()) {
-			return "?";
+			return null;
 		}
 		
 		final String delim;
