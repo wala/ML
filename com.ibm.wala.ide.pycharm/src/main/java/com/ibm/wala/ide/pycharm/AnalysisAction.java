@@ -36,7 +36,6 @@ import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.awt.RelativePoint;
-import com.intellij.util.ui.PositionTracker.Static;
 
 /**
  * WALA Analysis Action
@@ -109,7 +108,7 @@ class AnalysisAction extends AnAction {
     		                .createHtmlTextBalloonBuilder(m, MessageType.INFO, null)
     		                .setFadeoutTime(7500)
     		                .createBalloon()
-    		                .show(new Static<Balloon>(new RelativePoint(editor.logicalPositionToXY(editor.getCaretModel().getLogicalPosition()))),Balloon.Position.above);
+    		                .show(new RelativePoint(editor.getContentComponent(), editor.logicalPositionToXY(editor.getCaretModel().getLogicalPosition())),Balloon.Position.above);
 
    					} catch (IOException | java.lang.IllegalArgumentException | InterruptedException | java.util.concurrent.ExecutionException e) {
     						editor.getDocument().insertString(0, e.toString());
