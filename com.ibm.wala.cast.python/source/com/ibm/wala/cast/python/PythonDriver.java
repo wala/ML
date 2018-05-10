@@ -13,6 +13,7 @@ package com.ibm.wala.cast.python;
 import java.io.IOException;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -43,7 +44,6 @@ import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.util.CancelException;
-import com.ibm.wala.util.collections.HashSetFactory;
 
 public class PythonDriver {
 	public static final Function<WALAServer, Function<String, AbstractAnalysisEngine<InstanceKey, ? extends PropagationCallGraphBuilder, ?>>> python = (WALAServer lsp) -> {
@@ -81,7 +81,7 @@ public class PythonDriver {
 					});
 
 					final String hoverMarkupKind = lsp.getHoverFormatRequested();
-					final boolean hoverKind = MarkupKind.MARKDOWN.equals(hoverMarkupKind);
+					final boolean useMarkdown = MarkupKind.MARKDOWN.equals(hoverMarkupKind);
 					lsp.addValueAnalysis(builder.getPointerAnalysis().getHeapGraph(), (PointerKey v) -> {
 						if (builder.getPropagationSystem().isImplicit(v)) {
 							return null;
@@ -89,9 +89,18 @@ public class PythonDriver {
 							PointsToSetVariable pts = builder.getPropagationSystem().findOrCreatePointsToSet(v);
 							if (tt.getProblem().getFlowGraph().containsNode(pts)) {
 								TensorVariable vv = tt.getOut(pts);
-								// TODO: make this configurable
-								String str = vv.toCString(hoverKind);
-								return str;
+								String str = vv.toCString(useMarkdown);
+								if(str != null) {
+									final String targetString;
+									if(useMarkdown) {
+										targetString = "_shape_: ";
+									} else {
+										targetString = "shape: ";
+									}
+									return targetString + str;
+								} else {
+									return null;
+								}
 							} else {
 								return null;
 							}
@@ -102,12 +111,30 @@ public class PythonDriver {
 						CGNode node = builder.getCallGraph().getNode(instId[0]);
 						SSAInstruction inst = node.getIR().getInstructions()[instId[1]];
 						if (inst instanceof SSAAbstractInvokeInstruction) {
-							Set<String> targets = HashSetFactory.make();
 							CallSiteReference ref = ((SSAAbstractInvokeInstruction)inst).getCallSite();
-							for(CGNode callee : builder.getCallGraph().getPossibleTargets(node, ref)) {
-								targets.add(callee.getMethod().getDeclaringClass().getName().toString());
+							final Set<CGNode> possibleTargets = builder.getCallGraph().getPossibleTargets(node, ref);
+
+							if(possibleTargets.isEmpty()) {
+								return null;
 							}
-							return "targets:" + targets;
+
+							final String delim;
+							final String targetString;
+							if(useMarkdown) {
+								delim = "     _or_ ";
+								targetString = "_target_: ";
+							} else {
+								targetString = "target: ";
+								delim = "     or ";
+							}
+
+							final String targetStringList = possibleTargets
+							.stream()
+							.map(callee ->
+								callee.getMethod().getDeclaringClass().getName().toString())
+							.collect(Collectors.joining(delim));
+
+							return targetString + targetStringList;
 						} else {
 							return null;
 						}
