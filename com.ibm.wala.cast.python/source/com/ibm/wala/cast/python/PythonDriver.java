@@ -11,6 +11,7 @@
 package com.ibm.wala.cast.python;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.apache.commons.cli.CommandLine;
@@ -41,6 +42,7 @@ import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.collections.HashSetFactory;
 
 public class PythonDriver {
 	public static final Function<WALAServer, Function<String, AbstractAnalysisEngine<InstanceKey, ? extends PropagationCallGraphBuilder, ?>>> python = (WALAServer lsp) -> {
@@ -77,7 +79,7 @@ public class PythonDriver {
 						}
 					});
 
-					lsp.addValueAnalysis((PointerKey v) -> {
+					lsp.addValueAnalysis(builder.getPointerAnalysis().getHeapGraph(), (PointerKey v) -> {
 						if (builder.getPropagationSystem().isImplicit(v)) {
 							return null;
 						} else {
@@ -97,13 +99,12 @@ public class PythonDriver {
 						CGNode node = builder.getCallGraph().getNode(instId[0]);
 						SSAInstruction inst = node.getIR().getInstructions()[instId[1]];
 						if (inst instanceof SSAAbstractInvokeInstruction) {
+							Set<String> targets = HashSetFactory.make();
 							CallSiteReference ref = ((SSAAbstractInvokeInstruction)inst).getCallSite();
-							String targets = "targets[ ";
 							for(CGNode callee : builder.getCallGraph().getPossibleTargets(node, ref)) {
-								targets += callee.getMethod().getDeclaringClass().getName().toString() + " ";
+								targets.add(callee.getMethod().getDeclaringClass().getName().toString());
 							}
-							targets += "]";
-							return targets;
+							return "targets:" + targets;
 						} else {
 							return null;
 						}
