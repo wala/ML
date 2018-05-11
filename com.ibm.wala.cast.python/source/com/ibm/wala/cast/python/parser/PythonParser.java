@@ -208,8 +208,8 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			this.parser = parser;
 		}
 		
-		private CAstNode notePosition(CAstNode n, PythonTree p) {
-			Position pos = new AbstractSourcePosition() {
+		private Position makePosition(PythonTree p) {
+			return new AbstractSourcePosition() {
 
 				@Override
 				public URL getURL() {
@@ -277,9 +277,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				}
 				
 			};
-			
+		}
+		
+		private CAstNode notePosition(CAstNode n, PythonTree p) {
+			Position pos = makePosition(p);
 			pushSourcePosition(context, n, pos);
-			
 			return n;
 		}
 		
@@ -826,6 +828,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				@Override
 				public Collection<CAstQualifier> getQualifiers() {
 					return Collections.emptySet();
+				}
+
+				@Override
+				public Position getPosition() {
+					return makePosition(arg0);
 				}		
 			};
 

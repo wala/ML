@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
+import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
@@ -21,6 +22,7 @@ import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
+import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
@@ -104,8 +106,9 @@ public class ClientDriver implements LanguageClient {
 		Thread.sleep(10000);
 		
 		TextDocumentIdentifier id = new TextDocumentIdentifier();
-		TextDocumentPositionParams a = new TextDocumentPositionParams();
 		id.setUri(scriptUri);
+
+		TextDocumentPositionParams a = new TextDocumentPositionParams();
 		a.setTextDocument(id);
 		for(int i = 0; i < args.length; i += 2) {
 			Position p = new Position();
@@ -124,6 +127,14 @@ public class ClientDriver implements LanguageClient {
 			} else {
 				process.accept(contents.getRight().getValue());
 			}
+		}
+	
+		DocumentSymbolParams ds = new DocumentSymbolParams();
+		ds.setTextDocument(id);
+		CompletableFuture<List<? extends SymbolInformation>> symbolFuture = client.server.getTextDocumentService().documentSymbol(ds);
+		System.err.println("symbols of " + ds.getTextDocument().getUri());
+		for(SymbolInformation sym : symbolFuture.get()) {
+			System.err.println(sym);
 		}
 	}
 }
