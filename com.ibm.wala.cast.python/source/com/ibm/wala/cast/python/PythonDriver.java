@@ -139,7 +139,36 @@ public class PythonDriver {
 						} else {
 							return null;
 						}
-					});		
+					});	
+					
+					lsp.setFindDefinitionAnalysis((int[] instId) -> {
+						CGNode node = builder.getCallGraph().getNode(instId[0]);
+						SSAInstruction inst = node.getIR().getInstructions()[instId[1]];
+						if (inst instanceof SSAAbstractInvokeInstruction) {
+							CallSiteReference ref = ((SSAAbstractInvokeInstruction)inst).getCallSite();
+								final Set<CGNode> possibleTargets = builder.getCallGraph().getPossibleTargets(node, ref);
+
+
+							final Set<Position> targetPositions = possibleTargets
+							.stream()
+							.map(callee -> {
+								IMethod method = callee.getMethod();
+								if (method instanceof AstMethod) {
+									AstMethod amethod = (AstMethod)method;
+									return amethod.getSourcePosition();
+								} else {
+									return null;
+								}
+							})
+							.filter(x -> x != null)
+							.distinct()
+							.collect(Collectors.toSet());
+
+							return targetPositions;
+						} else {
+							return null;
+						}
+					});	
 					
 					System.err.println(lsp);
 					
