@@ -33,9 +33,10 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
 
 	private static final MethodReference placeholder = MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/placeholder")), AstMethodReference.fnSelector);
 
-
 	private static final MethodReference set_shape = MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/set_shape")), AstMethodReference.fnSelector);
 
+	private final Map<PointerKey, String> errorLog = HashMapFactory.make();
+	
 	private static Set<PointsToSetVariable> getDataflowSources(Graph<PointsToSetVariable> dataflow) {
 		Set<PointsToSetVariable> sources = HashSetFactory.make();
 		for(PointsToSetVariable src : dataflow) {
@@ -110,7 +111,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
 		Map<PointsToSetVariable, TensorType> shapeOps = HashMapFactory.make();
 		shapeOps.putAll(handleShapeSourceOp(builder, dataflow, reshape, 2));
 		
-		TensorTypeAnalysis tt = new TensorTypeAnalysis(dataflow, init, shapeOps, setCalls);
+		TensorTypeAnalysis tt = new TensorTypeAnalysis(dataflow, init, shapeOps, setCalls, errorLog);
 		
 		tt.solve(new NullProgressMonitor());
 		
@@ -129,5 +130,9 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
 			dataflow.addEdge(builder.getPropagationSystem().findOrCreatePointsToSet(from), to);
 		}
 		return reshapeTypes;
+	}
+	
+	public Map<PointerKey, String> getErrors() {
+		return errorLog;
 	}
 }

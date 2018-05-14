@@ -9,8 +9,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.CodeLens;
+import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DocumentSymbolParams;
+import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
@@ -34,6 +37,7 @@ import org.eclipse.lsp4j.services.LanguageServer;
 
 public class ClientDriver implements LanguageClient {
 	private LanguageServer server;
+	private Consumer<Object> process;
 	
 	public ClientDriver() {
 		// TODO Auto-generated constructor stub
@@ -50,8 +54,7 @@ public class ClientDriver implements LanguageClient {
 
 	@Override
 	public void publishDiagnostics(PublishDiagnosticsParams diagnostics) {
-		// TODO Auto-generated method stub
-
+		process.accept(diagnostics);
 	}
 
 	@Override
@@ -71,14 +74,17 @@ public class ClientDriver implements LanguageClient {
 	}
 
 	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
-		main(args, (String s) -> { System.err.println(s); });
+		main(args, (Object s) -> { System.err.println(s); });
 	}
 	
-	public static void main(String[] args, Consumer<String> process) throws IOException, InterruptedException, ExecutionException {
+	public static void main(String[] args, Consumer<Object> process) throws IOException, InterruptedException, ExecutionException {
 		@SuppressWarnings("resource")
 		Socket s = new Socket(); 
 		s.connect(new InetSocketAddress("localhost", 6660));
+		
 		ClientDriver client = new ClientDriver();
+		client.process = process;
+		
 		Launcher<LanguageServer> launcher = LSPLauncher.createClientLauncher(client, s.getInputStream(), s.getOutputStream());
 		client.connect(launcher.getRemoteProxy());
 		launcher.startListening();	
@@ -94,7 +100,7 @@ public class ClientDriver implements LanguageClient {
 		InitializedParams z = new InitializedParams();
 		client.server.initialized(z);
 		
-		String scriptUri = "https://raw.githubusercontent.com/aymericdamien/TensorFlow-Examples/dd2e6dcd9603d5de008d8c766453162d0204affa/examples/3_NeuralNetworks/convolutional_network.py";
+		String scriptUri = args[0];
 		
 		DidOpenTextDocumentParams open = new DidOpenTextDocumentParams();
 		TextDocumentItem script = new TextDocumentItem();
@@ -110,7 +116,7 @@ public class ClientDriver implements LanguageClient {
 
 		TextDocumentPositionParams a = new TextDocumentPositionParams();
 		a.setTextDocument(id);
-		for(int i = 0; i < args.length; i += 2) {
+		for(int i = 1; i < args.length; i += 2) {
 			Position p = new Position();
 			p.setLine(Integer.parseInt(args[i]));
 			p.setCharacter(Integer.parseInt(args[i+1]));
@@ -134,7 +140,20 @@ public class ClientDriver implements LanguageClient {
 		CompletableFuture<List<? extends SymbolInformation>> symbolFuture = client.server.getTextDocumentService().documentSymbol(ds);
 		System.err.println("symbols of " + ds.getTextDocument().getUri());
 		for(SymbolInformation sym : symbolFuture.get()) {
-			System.err.println(sym);
+			process.accept(sym);
+		}
+		
+		CodeLensParams cs = new CodeLensParams();
+		cs.setTextDocument(id);
+		CompletableFuture<List<? extends CodeLens>> lensesFuture = client.server.getTextDocumentService().codeLens(cs);
+		System.err.println("lenses of " + ds.getTextDocument().getUri());
+		for(CodeLens sym : lensesFuture.get()) {
+			process.accept(sym);
+			ExecuteCommandParams params = new ExecuteCommandParams();
+			params.setCommand(sym.getCommand().getCommand());
+			params.setArguments(sym.getCommand().getArguments());
+			CompletableFuture<Object> result = client.server.getWorkspaceService().executeCommand(params);
+			process.accept(result.get());
 		}
 	}
 }

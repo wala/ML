@@ -170,7 +170,7 @@ public class PythonDriver {
 						}
 					});	
 					
-					System.err.println(lsp);
+					lsp.addValueErrors(this.getErrors());
 					
 					return tt;
 				}	
