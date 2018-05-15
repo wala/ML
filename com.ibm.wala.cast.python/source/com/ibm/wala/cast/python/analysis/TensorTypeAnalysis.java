@@ -13,6 +13,7 @@ package com.ibm.wala.cast.python.analysis;
 import java.util.Map;
 import java.util.Set;
 
+import com.ibm.wala.cast.lsp.AnalysisError;
 import com.ibm.wala.cast.python.types.TensorType;
 import com.ibm.wala.cast.python.types.TensorType.Dimension;
 import com.ibm.wala.dataflow.graph.AbstractMeetOperator;
@@ -25,8 +26,43 @@ import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.util.graph.Graph;
 
 public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, TensorVariable> {
-	
-	private static IKilldallFramework<PointsToSetVariable, TensorVariable> createProblem(Graph<PointsToSetVariable> G, Map<PointsToSetVariable,TensorType> reshapeNodes, Map<PointsToSetVariable, TensorType> set_shapes, Set<PointsToSetVariable> conv2ds, Set<PointsToSetVariable> conv3ds, Map<PointerKey, String> errorLog) {
+
+	static class ReshapeError implements AnalysisError {
+		ReshapeError(TensorType from, TensorType to) {
+			this.from = from;
+			this.to = to;
+		}
+		TensorType from, to;
+
+		public String toString() {
+			return toString(false);
+		}
+
+		public String toString(boolean useMarkdown) {
+			return "Cannot reshape " + from.toCString(useMarkdown) + " to " + to.toCString(useMarkdown);
+		}
+
+	}
+
+	static class ConvError implements AnalysisError {
+		ConvError(TensorType from, int dims) {
+			this.from = from;
+			this.dims = dims;
+		}
+		TensorType from;
+		int dims;
+
+		public String toString() {
+			return toString(false);
+		}
+
+		public String toString(boolean useMarkdown) {
+			return "bad type to convolve " + from.toCString(useMarkdown) + ", needs " + (dims+2) + " dimensions";
+		}
+
+	}
+
+	private static IKilldallFramework<PointsToSetVariable, TensorVariable> createProblem(Graph<PointsToSetVariable> G, Map<PointsToSetVariable,TensorType> reshapeNodes, Map<PointsToSetVariable, TensorType> set_shapes, Set<PointsToSetVariable> conv2ds, Set<PointsToSetVariable> conv3ds, Map<PointerKey, AnalysisError> errorLog) {
 		return new IKilldallFramework<PointsToSetVariable, TensorVariable>() {
 
 			@Override
@@ -87,7 +123,7 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 									if (dims == dimensions+2) {
 										changed |= lhs.state.add(t);
 									} else {
-										errorLog.put(v.getPointerKey(), "Wrong dimensions to convolve " + t);
+										errorLog.put(v.getPointerKey(), new ConvError(t, dimensions));
 									}
 								}
 							}
@@ -129,7 +165,7 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 									if (t.symbolicDims() == ssz && t.concreteSize() == csz) {
 										changed |= lhs.state.add(reshapeTo);
 									} else {
-										errorLog.put(v.getPointerKey(), "Cannot reshape " + t + " to " + reshapeTo);
+										errorLog.put(v.getPointerKey(), new ReshapeError(t, reshapeTo));
 									}
 								}
 							}
@@ -259,7 +295,7 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 			Map<PointsToSetVariable, TensorType> set_shapes,
 			Set<PointsToSetVariable> conv2ds, 
 			Set<PointsToSetVariable> conv3ds, 
-			Map<PointerKey, String> errorLog) {
+			Map<PointerKey, AnalysisError> errorLog) {
 		super(createProblem(G, reshapeTypes, set_shapes, conv2ds, conv3ds, errorLog));
 		this.init = init;
 	}

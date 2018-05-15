@@ -7,6 +7,7 @@ import java.util.Set;
 import com.ibm.wala.cast.python.analysis.TensorTypeAnalysis;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.python.types.TensorType;
+import com.ibm.wala.cast.lsp.AnalysisError;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.ipa.callgraph.CGNode;
@@ -39,7 +40,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
 
 	private static final MethodReference set_shape = MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/set_shape")), AstMethodReference.fnSelector);
 
-	private final Map<PointerKey, String> errorLog = HashMapFactory.make();
+	private final Map<PointerKey, AnalysisError> errorLog = HashMapFactory.make();
 	
 	private static Set<PointsToSetVariable> getDataflowSources(Graph<PointsToSetVariable> dataflow) {
 		Set<PointsToSetVariable> sources = HashSetFactory.make();
@@ -159,7 +160,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
 		return reshapeTypes;
 	}
 	
-	public Map<PointerKey, String> getErrors() {
+	public Map<PointerKey, AnalysisError> getErrors() {
 		return errorLog;
 	}
 }
