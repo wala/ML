@@ -112,7 +112,7 @@ class AnalysisAction extends AnAction {
     		                .createBalloon()
     		                .show(new RelativePoint(editor.getContentComponent(), editor.logicalPositionToXY(editor.getCaretModel().getLogicalPosition())),Balloon.Position.above);
 
-   					} catch (IOException | java.lang.IllegalArgumentException | InterruptedException | java.util.concurrent.ExecutionException e) {
+    					} catch (IOException | java.lang.IllegalArgumentException | InterruptedException | java.util.concurrent.ExecutionException e) {
     						editor.getDocument().insertString(0, e.toString());
     					}
     				}

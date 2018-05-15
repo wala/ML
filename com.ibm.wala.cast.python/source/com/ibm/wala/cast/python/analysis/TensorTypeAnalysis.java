@@ -11,8 +11,10 @@
 package com.ibm.wala.cast.python.analysis;
 
 import java.util.Map;
+import java.util.Set;
 
 import com.ibm.wala.cast.python.types.TensorType;
+import com.ibm.wala.cast.python.types.TensorType.Dimension;
 import com.ibm.wala.dataflow.graph.AbstractMeetOperator;
 import com.ibm.wala.dataflow.graph.DataflowSolver;
 import com.ibm.wala.dataflow.graph.IKilldallFramework;
@@ -24,7 +26,7 @@ import com.ibm.wala.util.graph.Graph;
 
 public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, TensorVariable> {
 	
-	private static IKilldallFramework<PointsToSetVariable, TensorVariable> createProblem(Graph<PointsToSetVariable> G, Map<PointsToSetVariable,TensorType> reshapeNodes, Map<PointsToSetVariable, TensorType> set_shapes, Map<PointerKey, String> errorLog) {
+	private static IKilldallFramework<PointsToSetVariable, TensorVariable> createProblem(Graph<PointsToSetVariable> G, Map<PointsToSetVariable,TensorType> reshapeNodes, Map<PointsToSetVariable, TensorType> set_shapes, Set<PointsToSetVariable> conv2ds, Set<PointsToSetVariable> conv3ds, Map<PointerKey, String> errorLog) {
 		return new IKilldallFramework<PointsToSetVariable, TensorVariable>() {
 
 			@Override
@@ -35,7 +37,7 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 			@Override
 			public ITransferFunctionProvider<PointsToSetVariable, TensorVariable> getTransferFunctionProvider() {
 				return new ITransferFunctionProvider<PointsToSetVariable, TensorVariable>() {
-
+					
 					final class SetShapeOp extends UnaryOperator<TensorVariable> {
 						private final TensorType setShapeTo;
 						
@@ -64,6 +66,49 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 						}
 					}
 					
+					final class ConvOp extends UnaryOperator<TensorVariable> {
+						private final PointsToSetVariable v;
+						private final int dimensions;
+						
+						public ConvOp(int dimensions, PointsToSetVariable v) {
+							this.v = v;
+							this.dimensions = dimensions;
+						}
+
+						@Override
+						public byte evaluate(TensorVariable lhs, TensorVariable rhs) {
+							boolean changed = false;
+							if (rhs != null && rhs.state != null) {
+								for(TensorType t : rhs.state) {
+									int dims = 0;
+									for(@SuppressWarnings("unused") Dimension<?> d : t) {
+										dims++;
+									}
+									if (dims == dimensions+2) {
+										changed |= lhs.state.add(t);
+									} else {
+										errorLog.put(v.getPointerKey(), "Wrong dimensions to convolve " + t);
+									}
+								}
+							}
+							return changed? CHANGED_AND_FIXED: NOT_CHANGED;
+						}
+
+						@Override
+						public int hashCode() {
+							return v.hashCode();
+						}
+
+						@Override
+						public boolean equals(Object o) {
+							return (o instanceof ConvOp) && ((ConvOp)o).v.equals(v);
+						}
+
+						@Override
+						public String toString() {
+							return "conv at " + v;
+						}
+					}
 					
 					final class ReshapeOp extends UnaryOperator<TensorVariable> {
 						private final TensorType reshapeTo;
@@ -143,6 +188,10 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 					public UnaryOperator<TensorVariable> getNodeTransferFunction(PointsToSetVariable node) {
 						if (reshapeNodes.containsKey(node)) {
 							return new ReshapeOp(reshapeNodes.get(node), node);
+						} else if (conv2ds.contains(node)) {
+							return new ConvOp(2, node);
+						} else if (conv3ds.contains(node)) {
+							return new ConvOp(3, node);
 						} else {
 							return nodeOp;
 						}
@@ -208,8 +257,10 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 			Map<PointsToSetVariable, TensorType> init, 
 			Map<PointsToSetVariable, TensorType> reshapeTypes, 
 			Map<PointsToSetVariable, TensorType> set_shapes,
+			Set<PointsToSetVariable> conv2ds, 
+			Set<PointsToSetVariable> conv3ds, 
 			Map<PointerKey, String> errorLog) {
-		super(createProblem(G, reshapeTypes, set_shapes, errorLog));
+		super(createProblem(G, reshapeTypes, set_shapes, conv2ds, conv3ds, errorLog));
 		this.init = init;
 	}
 	

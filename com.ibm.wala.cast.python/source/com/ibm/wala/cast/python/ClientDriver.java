@@ -4,10 +4,13 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
+import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
+import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
 import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
@@ -29,6 +32,7 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.launch.LSPLauncher;
@@ -50,6 +54,21 @@ public class ClientDriver implements LanguageClient {
 	@Override
 	public void telemetryEvent(Object object) {
 
+	}
+
+	@Override
+	public CompletableFuture<ApplyWorkspaceEditResponse> applyEdit(ApplyWorkspaceEditParams params) {
+		return CompletableFuture.supplyAsync(() -> {
+			for(Map.Entry<String, List<TextEdit>> change : params.getEdit().getChanges().entrySet()) {
+				System.err.println("for document " + change.getKey());
+				for(TextEdit edit : change.getValue()) {
+					System.err.println("text " + edit.getNewText() + " at " + edit.getRange());
+				}
+			}
+			ApplyWorkspaceEditResponse ret = new ApplyWorkspaceEditResponse();
+			ret.setApplied(true);
+			return ret;
+		});
 	}
 
 	@Override

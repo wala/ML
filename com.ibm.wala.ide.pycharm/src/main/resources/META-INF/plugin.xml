@@ -23,7 +23,10 @@ Ariadne is program analysis for Python using WALA
         </group>
     </actions>
 
-    <extensions defaultExtensionNs="com.ibm.wala.ide.pycharm"/>
-
+    <extensions defaultExtensionNs="com.ibm.wala.ide.pycharm">
+      <preloadingActivity implementation="com.github.gtache.lsp.rust.RustPreloadingActivity" id="com.github.gtache.lsp.rust.RustPreloadingActivity" />
+    </extensions>
+    
+    <depends>com.github.gtache.lsp</depends>
     <depends>com.intellij.modules.lang</depends>
 </idea-plugin>

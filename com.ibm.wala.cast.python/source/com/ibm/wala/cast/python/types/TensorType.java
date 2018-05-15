@@ -34,7 +34,7 @@ public class TensorType implements Iterable<Dimension<?>> {
 
 	enum DimensionType { Constant, Symbolic, Compound };
 	
-	abstract static class Dimension<T> {
+	public abstract static class Dimension<T> {
 		private final T v;
 
 		protected Dimension(T v) {

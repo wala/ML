@@ -294,35 +294,15 @@
       </class>
       
       <class name="conv2d" allocatable="true">
-	<method name="copy_data" descriptor="()LRoot;">
-          <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset"/>
-	  <return value="x"/>
-	</method>
-
-        <method name="do" descriptor="()LRoot;" numArgs="3">
-	  <call class="LRoot"
-		name="copy_data"
-		descriptor="()LRoot;"
-		type="virtual"
-		arg0="arg0"
-		def="x"/>
+        <method name="do" descriptor="()LRoot;" numArgs="3"
+		paramNames="self x y">
 	  <return value="x"/>
 	</method>
       </class>
 
       <class name="conv3d" allocatable="true">
-	<method name="copy_data" descriptor="()LRoot;">
-          <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset"/>
-	  <return value="x"/>
-	</method>
-
-        <method name="do" descriptor="()LRoot;" numArgs="3">
-	  <call class="LRoot"
-		name="copy_data"
-		descriptor="()LRoot;"
-		type="virtual"
-		arg0="arg0"
-		def="x"/>
+        <method name="do" descriptor="()LRoot;" numArgs="3"
+		paramNames="self x y">
 	  <return value="x"/>
 	</method>
       </class>

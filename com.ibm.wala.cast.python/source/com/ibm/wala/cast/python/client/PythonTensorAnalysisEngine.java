@@ -29,6 +29,10 @@ import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
 
 public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
+	private static final MethodReference conv2d = MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/conv2d")), AstMethodReference.fnSelector);
+	
+	private static final MethodReference conv3d = MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/conv3d")), AstMethodReference.fnSelector);
+
 	private static final MethodReference reshape = MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/reshape")), AstMethodReference.fnSelector);
 
 	private static final MethodReference placeholder = MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/placeholder")), AstMethodReference.fnSelector);
@@ -57,8 +61,12 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
 		return sources;
 	}
 
-	private Map<PointsToSetVariable,TensorType> getShapeSourceCalls(MethodReference op, PropagationCallGraphBuilder builder, int param) {
-		Map<PointsToSetVariable,TensorType> targets = HashMapFactory.make();
+	@FunctionalInterface
+	interface SourceCallHandler {
+		void handleCall(CGNode src, SSAAbstractInvokeInstruction call);
+	}
+	
+	private void getSourceCalls(MethodReference op, PropagationCallGraphBuilder builder, SourceCallHandler handler) {
 		for(CGNode n : builder.getCallGraph()) {
 			if (n.getMethod().getReference().equals(op)) {
 				for(Iterator<CGNode> srcs = builder.getCallGraph().getPredNodes(n); srcs.hasNext(); ) {
@@ -66,17 +74,32 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
 					for(Iterator<CallSiteReference> sites = builder.getCallGraph().getPossibleSites(src, n); sites.hasNext(); ) {
 						CallSiteReference site = sites.next();
 						for(SSAAbstractInvokeInstruction call : src.getIR().getCalls(site)) {
-							if (call.getNumberOfUses() > param) {
-							targets.put(
-								builder.getPropagationSystem().findOrCreatePointsToSet(builder.getPointerAnalysis().getHeapModel().getPointerKeyForLocal(src, call.getDef())),
-								TensorType.shapeArg(src, call.getUse(param)));
-							}
+							handler.handleCall(src, call);
 						}
 					}
 				}
 			}
 		}
+	}
+
+	private Map<PointsToSetVariable,TensorType> getShapeSourceCalls(MethodReference op, PropagationCallGraphBuilder builder, int param) {
+		Map<PointsToSetVariable,TensorType> targets = HashMapFactory.make();
+		getSourceCalls(op, builder, (CGNode src, SSAAbstractInvokeInstruction call) -> {
+			if (call.getNumberOfUses() > param) {
+			targets.put(
+				builder.getPropagationSystem().findOrCreatePointsToSet(builder.getPointerAnalysis().getHeapModel().getPointerKeyForLocal(src, call.getDef())),
+				TensorType.shapeArg(src, call.getUse(param)));
+			}
+		});
 		return targets;
+	}
+	
+	private Set<PointsToSetVariable> getKeysDefinedByCall(MethodReference op, PropagationCallGraphBuilder builder) {
+		Set<PointsToSetVariable> lvals = HashSetFactory.make();
+		getSourceCalls(op, builder, (CGNode src, SSAAbstractInvokeInstruction call) -> {
+			lvals.add(builder.getPropagationSystem().findOrCreatePointsToSet(builder.getPointerAnalysis().getHeapModel().getPointerKeyForLocal(src, call.getDef())));
+		});
+		return lvals;
 	}
 	
 	@Override
@@ -111,7 +134,11 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
 		Map<PointsToSetVariable, TensorType> shapeOps = HashMapFactory.make();
 		shapeOps.putAll(handleShapeSourceOp(builder, dataflow, reshape, 2));
 		
-		TensorTypeAnalysis tt = new TensorTypeAnalysis(dataflow, init, shapeOps, setCalls, errorLog);
+		Set<PointsToSetVariable> conv2ds = getKeysDefinedByCall(conv2d, builder);
+
+		Set<PointsToSetVariable> conv3ds = getKeysDefinedByCall(conv3d, builder);
+		
+		TensorTypeAnalysis tt = new TensorTypeAnalysis(dataflow, init, shapeOps, setCalls, conv2ds, conv3ds, errorLog);
 		
 		tt.solve(new NullProgressMonitor());
 		

@@ -41,10 +41,10 @@ def conv_net(x_dict, n_classes, dropout, reuse, is_training):
         # MNIST data input is a 1-D vector of 784 features (28*28 pixels)
         # Reshape to match picture format [Height x Width x Channel]
         # Tensor input become 4-D: [Batch Size, Height, Width, Channel]
-        x = tf.reshape(x, shape=[-1, 28, 28, 1])
+        z = tf.reshape(x, shape=[-1, 28, 28, 1])
 
         # Convolution Layer with 32 filters and a kernel size of 5
-        conv1 = tf.layers.conv2d(x, 32, 5, activation=tf.nn.relu)
+        conv1 = tf.layers.conv2d(z, 32, 5, activation=tf.nn.relu)
         # Max Pooling (down-sampling) with strides of 2 and kernel size of 2
         conv1 = tf.layers.max_pooling2d(conv1, 2, 2)
 
@@ -63,6 +63,8 @@ def conv_net(x_dict, n_classes, dropout, reuse, is_training):
 
         # Output layer, class prediction
         out = tf.layers.dense(fc1, n_classes)
+
+        bad_conv1 = tf.layers.conv2d(x, 32, 5, activation=tf.nn.relu)
 
     return out
 
