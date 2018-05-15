@@ -43,9 +43,18 @@ import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
+import com.ibm.wala.types.TypeName;
 import com.ibm.wala.util.CancelException;
 
 public class PythonDriver {
+	private static String getTypeNameString(TypeName typ) {
+		String str = typ.toString();
+		if(str.startsWith("L")) {
+			str = str.substring(1);
+		}
+		str = str.replaceAll("/", ".");
+		return str;
+	}
 	public static final Function<WALAServer, Function<String, AbstractAnalysisEngine<InstanceKey, ? extends PropagationCallGraphBuilder, ?>>> python = (WALAServer lsp) -> {
 		return (String url) -> {
 			PythonTensorAnalysisEngine engine = new PythonTensorAnalysisEngine() {
@@ -121,7 +130,7 @@ public class PythonDriver {
 							final String targetStringList = possibleTargets
 							.stream()
 							.map(callee ->
-								callee.getMethod().getDeclaringClass().getName().toString())
+								getTypeNameString(callee.getMethod().getDeclaringClass().getName()))
 							.distinct()
 							.collect(Collectors.joining(delim));
 
