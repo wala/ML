@@ -90,17 +90,7 @@ public class PythonDriver {
 							if (tt.getProblem().getFlowGraph().containsNode(pts)) {
 								TensorVariable vv = tt.getOut(pts);
 								String str = vv.toCString(useMarkdown);
-								if(str != null) {
-									final String targetString;
-									if(useMarkdown) {
-										targetString = "_shape_: ";
-									} else {
-										targetString = "shape: ";
-									}
-									return targetString + str;
-								} else {
-									return null;
-								}
+								return str;
 							} else {
 								return null;
 							}
