@@ -3,8 +3,10 @@ package com.ibm.wala.cast.python;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -12,8 +14,11 @@ import java.util.function.Consumer;
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
 import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.CodeActionContext;
+import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
+import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DocumentSymbolParams;
@@ -40,9 +45,13 @@ import org.eclipse.lsp4j.launch.LSPLauncher;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageServer;
 
+import com.ibm.wala.util.collections.HashSetFactory;
+
 public class ClientDriver implements LanguageClient {
 	private LanguageServer server;
 	private Consumer<Object> process;
+	
+	private Set<PublishDiagnosticsParams> diags = HashSetFactory.make();
 	
 	public ClientDriver() {
 		// TODO Auto-generated constructor stub
@@ -74,10 +83,8 @@ public class ClientDriver implements LanguageClient {
 
 	@Override
 	public void publishDiagnostics(PublishDiagnosticsParams diagnostics) {
-		for(Diagnostic d : diagnostics.getDiagnostics()) {
-			
-		}
 		process.accept(diagnostics);
+		diags.add(diagnostics);
 	}
 
 	@Override
@@ -177,6 +184,32 @@ public class ClientDriver implements LanguageClient {
 			params.setArguments(sym.getCommand().getArguments());
 			CompletableFuture<Object> result = client.server.getWorkspaceService().executeCommand(params);
 			process.accept(result.get());
+		}
+		
+		for(PublishDiagnosticsParams diagnostics : client.diags) {
+		for(Diagnostic d : diagnostics.getDiagnostics()) {
+			CodeActionParams act = new CodeActionParams();
+			act.setRange(d.getRange());
+			TextDocumentIdentifier did = new TextDocumentIdentifier();
+			did.setUri(d.getSource());
+			act.setTextDocument(did);
+			CodeActionContext ctxt = new CodeActionContext();
+			ctxt.setDiagnostics(Collections.singletonList(d));
+			act.setContext(ctxt);
+			CompletableFuture<List<? extends Command>> codeFuture = client.server.getTextDocumentService().codeAction(act);
+			try {
+				for(Command cmd : codeFuture.get()) {
+					ExecuteCommandParams p = new ExecuteCommandParams();
+					p.setCommand(cmd.getCommand());
+					p.setArguments(cmd.getArguments());
+					CompletableFuture<Object> resultFuture = client.server.getWorkspaceService().executeCommand(p);
+					process.accept(resultFuture.get());
+				}
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+				assert false;
+			}
+		}
 		}
 	}
 }

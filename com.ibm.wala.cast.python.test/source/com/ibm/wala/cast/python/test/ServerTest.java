@@ -32,6 +32,9 @@ public class ServerTest {
 		Set<String> checks = HashSetFactory.make();
 		ClientDriver.main(new String[] {fileName, "43", "10", "46", "35"}, (Object s) -> { 
 			System.err.println("found " + s);
+			if (s == null) {
+				return;
+			}
 			if (s.toString().contains("pixel[?][28][28][1]")) {
 				checks.add("tensor");
 			} else if (s instanceof PublishDiagnosticsParams) {
