@@ -89,9 +89,7 @@ public class PythonDriver {
 						}
 					});
 
-					final String hoverMarkupKind = lsp.getHoverFormatRequested();
-					final boolean useMarkdown = MarkupKind.MARKDOWN.equals(hoverMarkupKind);
-					lsp.addValueAnalysis(builder.getPointerAnalysis().getHeapGraph(), (PointerKey v) -> {
+					lsp.addValueAnalysis("type", builder.getPointerAnalysis().getHeapGraph(), (Boolean useMarkdown, PointerKey v) -> {
 						if (builder.getPropagationSystem().isImplicit(v)) {
 							return null;
 						} else {
@@ -106,7 +104,7 @@ public class PythonDriver {
 						}
 					});
 
-					lsp.addInstructionAnalysis((int[] instId) -> {
+					lsp.addInstructionAnalysis("target", (Boolean useMarkdown, int[] instId) -> {
 						CGNode node = builder.getCallGraph().getNode(instId[0]);
 						SSAInstruction inst = node.getIR().getInstructions()[instId[1]];
 						if (inst instanceof SSAAbstractInvokeInstruction) {
@@ -121,9 +119,7 @@ public class PythonDriver {
 							final String targetString;
 							if(useMarkdown) {
 								delim = "     _or_ ";
-								targetString = "_target_: ";
 							} else {
-								targetString = "target: ";
 								delim = "     or ";
 							}
 
@@ -134,7 +130,7 @@ public class PythonDriver {
 							.distinct()
 							.collect(Collectors.joining(delim));
 
-							return targetString + targetStringList;
+							return targetStringList;
 						} else {
 							return null;
 						}
