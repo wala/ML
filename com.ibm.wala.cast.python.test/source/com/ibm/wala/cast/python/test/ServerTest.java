@@ -52,8 +52,7 @@ public class ServerTest {
 				checks.contains("error") &&
 				checks.contains("Lconv_net") &&
 				checks.contains("Lmodel_fn") &&
-				checks.contains("TYPES") &&
-				checks.contains("CALLS"));
+				checks.contains("TYPES"));
 	}
 
 	private String getScript(String script) throws URISyntaxException, IOException {
