@@ -116,7 +116,6 @@ public class PythonDriver {
 							}
 
 							final String delim;
-							final String targetString;
 							if(useMarkdown) {
 								delim = "     _or_ ";
 							} else {
