@@ -14,6 +14,7 @@ import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
 import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
+import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.ExecuteCommandParams;
@@ -73,6 +74,9 @@ public class ClientDriver implements LanguageClient {
 
 	@Override
 	public void publishDiagnostics(PublishDiagnosticsParams diagnostics) {
+		for(Diagnostic d : diagnostics.getDiagnostics()) {
+			
+		}
 		process.accept(diagnostics);
 	}
 
