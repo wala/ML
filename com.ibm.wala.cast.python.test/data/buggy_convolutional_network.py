@@ -69,10 +69,11 @@ def conv_net(x_dict, n_classes, dropout, reuse, is_training):
     return out
 
 
+make_net = conv_net
+   
+# Build the neural network
 # Define the model function (following TF Estimator Template)
 def model_fn(features, labels, mode):
-    make_net = conv_net
-    # Build the neural network
     # Because Dropout have different behavior at training and prediction time, we
     # need to create 2 distinct computation graphs that still share the same weights.
     logits_train = conv_net(features, num_classes, dropout, reuse=False,
