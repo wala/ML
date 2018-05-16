@@ -27,12 +27,14 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.InitializedParams;
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MessageActionItem;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
+import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
@@ -187,29 +189,38 @@ public class ClientDriver implements LanguageClient {
 		}
 		
 		for(PublishDiagnosticsParams diagnostics : client.diags) {
-		for(Diagnostic d : diagnostics.getDiagnostics()) {
-			CodeActionParams act = new CodeActionParams();
-			act.setRange(d.getRange());
-			TextDocumentIdentifier did = new TextDocumentIdentifier();
-			did.setUri(d.getSource());
-			act.setTextDocument(did);
-			CodeActionContext ctxt = new CodeActionContext();
-			ctxt.setDiagnostics(Collections.singletonList(d));
-			act.setContext(ctxt);
-			CompletableFuture<List<? extends Command>> codeFuture = client.server.getTextDocumentService().codeAction(act);
-			try {
-				for(Command cmd : codeFuture.get()) {
-					ExecuteCommandParams p = new ExecuteCommandParams();
-					p.setCommand(cmd.getCommand());
-					p.setArguments(cmd.getArguments());
-					CompletableFuture<Object> resultFuture = client.server.getWorkspaceService().executeCommand(p);
-					process.accept(resultFuture.get());
+			for(Diagnostic d : diagnostics.getDiagnostics()) {
+				CodeActionParams act = new CodeActionParams();
+				act.setRange(d.getRange());
+				TextDocumentIdentifier did = new TextDocumentIdentifier();
+				did.setUri(d.getSource());
+				act.setTextDocument(did);
+				CodeActionContext ctxt = new CodeActionContext();
+				ctxt.setDiagnostics(Collections.singletonList(d));
+				act.setContext(ctxt);
+				CompletableFuture<List<? extends Command>> codeFuture = client.server.getTextDocumentService().codeAction(act);
+				try {
+					for(Command cmd : codeFuture.get()) {
+						ExecuteCommandParams p = new ExecuteCommandParams();
+						p.setCommand(cmd.getCommand());
+						p.setArguments(cmd.getArguments());
+						CompletableFuture<Object> resultFuture = client.server.getWorkspaceService().executeCommand(p);
+						process.accept(resultFuture.get());
+					}
+				} catch (InterruptedException | ExecutionException e) {
+					e.printStackTrace();
+					assert false;
 				}
-			} catch (InterruptedException | ExecutionException e) {
-				e.printStackTrace();
-				assert false;
 			}
 		}
-		}
+		
+		ReferenceParams rp = new ReferenceParams();
+		rp.setTextDocument(id);
+		Position p = new Position();
+		p.setLine(32);
+		p.setCharacter(0);
+		rp.setPosition(p);
+		CompletableFuture<List<? extends Location>> refsFuture = client.server.getTextDocumentService().references(rp);
+		System.err.println(refsFuture.get());
 	}
 }
