@@ -53,6 +53,8 @@ def conv_net(x_dict, n_classes, dropout, reuse, is_training):
         # Max Pooling (down-sampling) with strides of 2 and kernel size of 2
         conv2 = tf.layers.max_pooling2d(conv2, 2, 2)
 
+        bad_conv1 = tf.layers.conv2d(x, 32, 5, activation=tf.nn.relu)
+
         # Flatten the data to a 1-D vector for the fully connected layer
         fc1 = tf.contrib.layers.flatten(conv2)
 
@@ -63,8 +65,6 @@ def conv_net(x_dict, n_classes, dropout, reuse, is_training):
 
         # Output layer, class prediction
         out = tf.layers.dense(fc1, n_classes)
-
-        bad_conv1 = tf.layers.conv2d(x, 32, 5, activation=tf.nn.relu)
 
     return out
 

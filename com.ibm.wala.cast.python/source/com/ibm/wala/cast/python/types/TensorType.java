@@ -51,7 +51,7 @@ public class TensorType implements Iterable<Dimension<?>> {
 
 		abstract String toCString(boolean useMarkdown);
 
-		T value() {
+		public T value() {
 			return v;
 		}
 
@@ -86,7 +86,7 @@ public class TensorType implements Iterable<Dimension<?>> {
 		}
 	}
 	
-	static class SymbolicDim extends Dimension<String> {
+	public static class SymbolicDim extends Dimension<String> {
 		SymbolicDim(String name) {
 			super(name);
 		}
@@ -154,7 +154,7 @@ public class TensorType implements Iterable<Dimension<?>> {
 
 	}
 
-	static class CompoundDim extends Dimension<List<Dimension<?>>> {
+	public static class CompoundDim extends Dimension<List<Dimension<?>>> {
 		CompoundDim(List<Dimension<?>> v) {
 			super(v);
 		}

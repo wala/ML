@@ -10,30 +10,45 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.analysis;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
+import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.lsp.AnalysisError;
 import com.ibm.wala.cast.python.types.TensorType;
+import com.ibm.wala.cast.python.types.TensorType.CompoundDim;
 import com.ibm.wala.cast.python.types.TensorType.Dimension;
+import com.ibm.wala.cast.python.types.TensorType.SymbolicDim;
+import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
+import com.ibm.wala.cast.util.SourceBuffer;
 import com.ibm.wala.dataflow.graph.AbstractMeetOperator;
 import com.ibm.wala.dataflow.graph.DataflowSolver;
 import com.ibm.wala.dataflow.graph.IKilldallFramework;
 import com.ibm.wala.dataflow.graph.ITransferFunctionProvider;
 import com.ibm.wala.fixpoint.UnaryOperator;
+import com.ibm.wala.ipa.callgraph.propagation.LocalPointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
+import com.ibm.wala.ssa.DefUse;
+import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.util.graph.Graph;
 
 public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, TensorVariable> {
 
 	static class ReshapeError implements AnalysisError {
-		ReshapeError(TensorType from, TensorType to) {
+		ReshapeError(TensorType from, TensorType to, Position pos) {
 			this.from = from;
 			this.to = to;
+			this.pos = pos;
 		}
 		TensorType from, to;
+		Position pos;
 
+		public Position position() {
+			return pos;
+		}
+		
 		public String toString() {
 			return toString(false);
 		}
@@ -45,19 +60,64 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 	}
 
 	static class ConvError implements AnalysisError {
-		ConvError(TensorType from, int dims) {
+		ConvError(TensorType from, int dims, Position pos) {
 			this.from = from;
 			this.dims = dims;
+			this.pos = pos;
 		}
 		TensorType from;
 		int dims;
+		Position pos;
 
 		public String toString() {
 			return toString(false);
 		}
 
+		public Position position() {
+			return pos;
+		}
+		
+		private String checkReshape() {
+			boolean first = true;
+			int n = 0;
+			String shape = "";
+			for(Dimension<?> d : from) {
+				if (d instanceof CompoundDim) {
+					for(Dimension<?> dd : ((CompoundDim)d).value()) {
+						shape = shape + (!first? ", ": "")  + dd.value();
+						first = false;
+					}
+					n += ((CompoundDim)d).value().size();
+				} else {
+					shape = shape + (!first? ", ": "") + ((d instanceof SymbolicDim)? "-1": d.value());
+					first = false;
+					n++;
+				}
+			}
+			if (n == dims + 1) {
+				n++;
+				shape = shape + ", 1";
+			}
+			if (n == dims + 2) {
+				try {
+					SourceBuffer s = new SourceBuffer(pos);
+					return "tf.reshape(" + s.toString() + ", [" + shape + "])";
+				} catch (IOException e) {
+					e.printStackTrace();
+					return null;
+				}
+			} else {
+				return null;
+			}
+		}
+		
 		public String toString(boolean useMarkdown) {
-			return "bad type to convolve " + from.toCString(useMarkdown) + ", needs " + (dims+2) + " dimensions";
+			String msg = "bad type to convolve " + from.toCString(useMarkdown) + ", needs " + (dims+2) + " dimensions";
+			String newDims = checkReshape();
+			if (newDims != null) {
+				msg = msg + " (possible fix: " + newDims + ")";
+			}
+			return msg;
 		}
 
 	}
@@ -73,6 +133,19 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 			@Override
 			public ITransferFunctionProvider<PointsToSetVariable, TensorVariable> getTransferFunctionProvider() {
 				return new ITransferFunctionProvider<PointsToSetVariable, TensorVariable>() {
+
+					private Position getTargetPos(PointerKey pk) {
+						if (pk instanceof LocalPointerKey) {
+							LocalPointerKey lpk = (LocalPointerKey)pk;
+							DefUse du = lpk.getNode().getDU();
+							SSAInstruction inst = du.getDef(lpk.getValueNumber());
+							if (lpk.getNode().getMethod() instanceof AstMethod) {
+								return ((AstMethod)lpk.getNode().getMethod()).debugInfo().getOperandPosition(inst.iindex, 1);
+							}	
+						}
+						
+						return null;
+					}
 					
 					final class SetShapeOp extends UnaryOperator<TensorVariable> {
 						private final TensorType setShapeTo;
@@ -123,7 +196,8 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 									if (dims == dimensions+2) {
 										changed |= lhs.state.add(t);
 									} else {
-										errorLog.put(v.getPointerKey(), new ConvError(t, dimensions));
+										Position pos = getTargetPos(v.getPointerKey());
+										errorLog.put(v.getPointerKey(), new ConvError(t, dimensions, pos));
 									}
 								}
 							}
@@ -165,7 +239,9 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 									if (t.symbolicDims() == ssz && t.concreteSize() == csz) {
 										changed |= lhs.state.add(reshapeTo);
 									} else {
-										errorLog.put(v.getPointerKey(), new ReshapeError(t, reshapeTo));
+										Position pos = getTargetPos(v.getPointerKey());
+										assert pos != null;
+										errorLog.put(v.getPointerKey(), new ReshapeError(t, reshapeTo, pos));
 									}
 								}
 							}
