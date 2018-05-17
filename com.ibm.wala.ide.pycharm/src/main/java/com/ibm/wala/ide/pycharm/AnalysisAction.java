@@ -44,6 +44,8 @@ class AnalysisAction extends AnAction {
 
 	private WALAClient wala;
 	
+	private boolean firstTime = true;
+	
 	AnalysisAction() throws IOException {
 		wala = new WALAClient();
 	}
@@ -81,10 +83,13 @@ class AnalysisAction extends AnAction {
     						java.lang.String text = editor.getDocument().getText();
     						int line = StringUtil.countNewLines(text.subSequence(0, offset)); // bad: copies text
     						int column = offset - StringUtil.lastIndexOf(text, '\n', 0, offset); 
+							DocumentURLModule scriptModule = new DocumentURLModule(editor.getDocument());
 
-    						DocumentURLModule scriptModule = new DocumentURLModule(editor.getDocument());
-    						wala.wala.addSource("python", scriptModule);
-    						wala.wala.analyze("python");
+    						if (firstTime) {
+    							firstTime = false;
+    							wala.wala.addSource("python", scriptModule);
+    							wala.wala.analyze("python");
+    						}
     						
     						TextDocumentIdentifier id = new TextDocumentIdentifier();
     						TextDocumentPositionParams a = new TextDocumentPositionParams();
@@ -96,7 +101,7 @@ class AnalysisAction extends AnAction {
     						a.setPosition(p);
     						CompletableFuture<Hover> data = wala.wala.getTextDocumentService().hover(a);
     						Hover t = data.get();
-     						java.lang.String m = "message: ";
+     						java.lang.String m = "";
      						Either<List<Either<java.lang.String, MarkedString>>, MarkupContent> contents = t.getContents();
      						if (contents.isLeft()) {
      							for(Either<java.lang.String, MarkedString> hd : contents.getLeft()) {

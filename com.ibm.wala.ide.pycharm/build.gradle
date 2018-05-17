@@ -14,7 +14,7 @@ apply plugin: 'org.jetbrains.intellij'
 apply plugin: 'java'
 
 intellij {
-    version 'IC-2017.3'
+    version 'IC-2018.1'
     pluginName 'com.ibm.wala.ide.pycharm.Ariadne'
 }
 
