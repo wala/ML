@@ -112,7 +112,7 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 		}
 		
 		public String toString(boolean useMarkdown) {
-			String msg = "bad type to convolve " + from.toCString(useMarkdown) + ", needs " + (dims+2) + " dimensions";
+			String msg = "Bad type to convolve " + from.toCString(useMarkdown) + ", needs " + (dims+2) + " dimensions";
 			String newDims = checkReshape();
 			if (newDims != null) {
 				msg = msg + " (possible fix: " + newDims + ")";
