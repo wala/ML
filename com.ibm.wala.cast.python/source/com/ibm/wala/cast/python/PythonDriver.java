@@ -269,7 +269,7 @@ public class PythonDriver {
 				final WALAServer server = WALAServer.launchOnServerPort(serverPort, python, runAsDaemon);
 				if(serverPort == 0) {
 					final Integer actualPort = server.getServerPort();
-					System.out.println("Server up, listening on port: " + actualPort);
+					System.err.println("Server up, listening on port: " + actualPort);
 				}
 			}
 		} else {
