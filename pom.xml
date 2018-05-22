@@ -21,44 +21,6 @@
     </repository>
   </distributionManagement>
 
-  <build>
-    <plugins>
-      <plugin>
-	<artifactId>maven-deploy-plugin</artifactId>
-	<version>2.8.1</version>
-	<configuration>
-          <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
-	</configuration>
-      </plugin>
-      <plugin>
-        <groupId>com.github.github</groupId>
-        <artifactId>site-maven-plugin</artifactId>
-        <version>0.11</version>
-        <configuration>
-          <message>Maven artifacts for ${project.version}</message>  <!-- git commit message -->
-          <noJekyll>true</noJekyll>                                  <!-- disable webpage processing -->
-          <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory> <!-- matches distribution management repository url above -->
-          <branch>refs/heads/mvn-repo</branch>                       <!-- remote branch name -->
-          <merge>true</merge>
-	  <includes><include>**/*</include></includes>
-          <repositoryName>WALA</repositoryName>      <!-- github repo name -->
-          <repositoryOwner>juliandolby</repositoryOwner>    <!-- github username  -->
-	  <host>github.com</host>
-	  <oauth2Token>e3e348f45aace289c4684a98ced9a898a4759ef2</oauth2Token>
-        </configuration>
-        <executions>
-          <!-- run site-maven-plugin's 'site' target as part of the build's normal 'deploy' phase -->
-          <execution>
-            <goals>
-              <goal>site</goal>
-            </goals>
-            <phase>deploy</phase>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
-  
   <modules>
     <module>com.ibm.wala.cast.python</module>
     <module>com.ibm.wala.cast.python.test</module>
