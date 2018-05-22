@@ -1,25 +1,44 @@
-package com.ibm.wala.cast.python.client;
+package com.ibm.wala.cast.python.ml.client;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import com.ibm.wala.cast.python.analysis.TensorTypeAnalysis;
-import com.ibm.wala.cast.python.types.PythonTypes;
-import com.ibm.wala.cast.python.types.TensorType;
+import com.ibm.wala.cast.loader.AstDynamicField;
 import com.ibm.wala.cast.lsp.AnalysisError;
+import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
+import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
+import com.ibm.wala.cast.python.ml.types.TensorType;
+import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.classLoader.CallSiteReference;
+import com.ibm.wala.classLoader.IClass;
+import com.ibm.wala.classLoader.IClassLoader;
+import com.ibm.wala.classLoader.IField;
+import com.ibm.wala.classLoader.IMethod;
+import com.ibm.wala.classLoader.SyntheticClass;
+import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.CGNode;
+import com.ibm.wala.ipa.callgraph.ClassTargetSelector;
+import com.ibm.wala.ipa.callgraph.MethodTargetSelector;
 import com.ibm.wala.ipa.callgraph.propagation.LocalPointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
+import com.ibm.wala.ipa.cha.IClassHierarchy;
+import com.ibm.wala.ipa.summaries.BypassClassTargetSelector;
+import com.ibm.wala.ipa.summaries.BypassMethodTargetSelector;
+import com.ibm.wala.ipa.summaries.BypassSyntheticClassLoader;
+import com.ibm.wala.ipa.summaries.XMLMethodSummaryReader;
+import com.ibm.wala.shrikeBT.Constants;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.types.MethodReference;
+import com.ibm.wala.types.Selector;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
@@ -28,8 +47,9 @@ import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
+import com.ibm.wala.util.strings.Atom;
 
-public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
+public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeAnalysis> {
 	private static final MethodReference conv2d = MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/conv2d")), AstMethodReference.fnSelector);
 	
 	private static final MethodReference conv3d = MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/conv3d")), AstMethodReference.fnSelector);
@@ -163,4 +183,127 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine {
 	public Map<PointerKey, AnalysisError> getErrors() {
 		return errorLog;
 	}
+	
+	protected void addBypassLogic(AnalysisOptions options) {
+		super.addBypassLogic(options);
+		
+		IClassHierarchy cha = getClassHierarchy();
+		
+		XMLMethodSummaryReader xml = new XMLMethodSummaryReader(getClass().getClassLoader().getResourceAsStream("tensorflow.xml"), scope);
+		for(TypeReference t : xml.getAllocatableClasses()) {
+			BypassSyntheticClassLoader ldr = (BypassSyntheticClassLoader) cha.getLoader(scope.getSyntheticLoader());
+			ldr.registerClass(t.getName(), new SyntheticClass(t, cha) {
+				private final Map<Atom,IField> fields = HashMapFactory.make();
+
+				@Override
+				public IClassLoader getClassLoader() {
+					return cha.getLoader(cha.getScope().getSyntheticLoader());
+				}
+	
+				@Override
+				public boolean isPublic() {
+					return true;
+				}
+	
+				@Override
+				public boolean isPrivate() {
+					return false;
+				}
+	
+				@Override
+				public int getModifiers() throws UnsupportedOperationException {
+					return Constants.ACC_PUBLIC;
+				}
+	
+				@Override
+				public IClass getSuperclass() {
+					return cha.lookupClass(PythonTypes.CodeBody);
+				}
+	
+				@Override
+				public Collection<? extends IClass> getDirectInterfaces() {
+					return Collections.emptySet();
+				}
+	
+				@Override
+				public Collection<IClass> getAllImplementedInterfaces() {
+					return Collections.emptySet();
+				}
+	
+				@Override
+				public IMethod getMethod(Selector selector) {
+					// TODO Auto-generated method stub
+					return null;
+				}
+	
+				@Override
+				public IField getField(Atom name) {
+					if (! fields.containsKey(name)) {
+						fields.put(name, new AstDynamicField(false, cha.lookupClass(PythonTypes.Root), name, PythonTypes.Root));
+					}
+					return fields.get(name);
+				}
+	
+				@Override
+				public IMethod getClassInitializer() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+	
+				@Override
+				public Collection<? extends IMethod> getDeclaredMethods() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+	
+				@Override
+				public Collection<IField> getAllInstanceFields() {
+					return fields.values();
+				}
+	
+				@Override
+				public Collection<IField> getAllStaticFields() {
+					return Collections.emptySet();
+				}
+	
+				@Override
+				public Collection<IField> getAllFields() {
+					return fields.values();
+				}
+	
+				@Override
+				public Collection<? extends IMethod> getAllMethods() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+	
+				@Override
+				public Collection<IField> getDeclaredInstanceFields() {
+					return fields.values();
+				}
+	
+				@Override
+				public Collection<IField> getDeclaredStaticFields() {
+					return Collections.emptySet();
+				}
+	
+				@Override
+				public boolean isReferenceType() {
+					return true;
+				}				
+			});
+		}
+	
+		MethodTargetSelector targetSelector = options.getMethodTargetSelector();
+		targetSelector = new BypassMethodTargetSelector(targetSelector, xml.getSummaries(), xml.getIgnoredPackages(), cha);
+		options.setSelector(targetSelector);
+	
+		ClassTargetSelector cs = 
+			new BypassClassTargetSelector(options.getClassTargetSelector(), 
+					xml.getAllocatableClasses(), 
+					cha, 
+					cha.getLoader(scope.getSyntheticLoader()));
+		options.setSelector(cs);
+	}
+
 }

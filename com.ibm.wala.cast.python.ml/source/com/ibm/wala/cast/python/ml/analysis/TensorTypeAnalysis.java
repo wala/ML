@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *****************************************************************************/
-package com.ibm.wala.cast.python.analysis;
+package com.ibm.wala.cast.python.ml.analysis;
 
 import java.io.IOException;
 import java.util.Map;
@@ -16,10 +16,10 @@ import java.util.Set;
 
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.lsp.AnalysisError;
-import com.ibm.wala.cast.python.types.TensorType;
-import com.ibm.wala.cast.python.types.TensorType.CompoundDim;
-import com.ibm.wala.cast.python.types.TensorType.Dimension;
-import com.ibm.wala.cast.python.types.TensorType.SymbolicDim;
+import com.ibm.wala.cast.python.ml.types.TensorType;
+import com.ibm.wala.cast.python.ml.types.TensorType.CompoundDim;
+import com.ibm.wala.cast.python.ml.types.TensorType.Dimension;
+import com.ibm.wala.cast.python.ml.types.TensorType.SymbolicDim;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.util.SourceBuffer;
 import com.ibm.wala.dataflow.graph.AbstractMeetOperator;
@@ -45,14 +45,17 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 		TensorType from, to;
 		Position pos;
 
+		@Override
 		public Position position() {
 			return pos;
 		}
 		
+		@Override
 		public String toString() {
 			return toString(false);
 		}
 
+		@Override
 		public String toString(boolean useMarkdown) {
 			return "Cannot reshape " + from.toCString(useMarkdown) + " to " + to.toCString(useMarkdown);
 		}
@@ -69,10 +72,12 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 		int dims;
 		Position pos;
 
+		@Override
 		public String toString() {
 			return toString(false);
 		}
 
+		@Override
 		public Position position() {
 			return pos;
 		}
@@ -111,6 +116,7 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 			}
 		}
 		
+		@Override
 		public String toString(boolean useMarkdown) {
 			String msg = "Bad type to convolve " + from.toCString(useMarkdown) + ", needs " + (dims+2) + " dimensions";
 			String newDims = checkReshape();

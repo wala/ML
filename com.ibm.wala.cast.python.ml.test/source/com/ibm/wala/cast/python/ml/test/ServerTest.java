@@ -1,4 +1,4 @@
-package com.ibm.wala.cast.python.test;
+package com.ibm.wala.cast.python.ml.test;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,8 +14,8 @@ import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Test;
 
-import com.ibm.wala.cast.python.ClientDriver;
-import com.ibm.wala.cast.python.PythonDriver;
+import com.ibm.wala.cast.python.ml.driver.ClientDriver;
+import com.ibm.wala.cast.python.ml.driver.PythonDriver;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashSetFactory;

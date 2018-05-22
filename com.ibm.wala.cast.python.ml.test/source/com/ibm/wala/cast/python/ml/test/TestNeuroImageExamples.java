@@ -1,16 +1,16 @@
-package com.ibm.wala.cast.python.test;
+package com.ibm.wala.cast.python.ml.test;
 
 import java.io.IOException;
 
 import org.junit.Test;
 
-import com.ibm.wala.cast.python.analysis.TensorTypeAnalysis;
+import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 
-public class TestNeuroImageExamples extends TestPythonCallGraphShape {
+public class TestNeuroImageExamples extends TestPythonMLCallGraphShape {
 
 	private static final String Ex1URL = "https://raw.githubusercontent.com/corticometrics/neuroimage-tensorflow/master/train.py";
 	

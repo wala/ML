@@ -8,13 +8,13 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *****************************************************************************/
-package com.ibm.wala.cast.python.analysis;
+package com.ibm.wala.cast.python.ml.analysis;
 
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.ibm.wala.cast.python.types.TensorType;
+import com.ibm.wala.cast.python.ml.types.TensorType;
 import com.ibm.wala.fixpoint.IVariable;
 import com.ibm.wala.util.collections.HashSetFactory;
 

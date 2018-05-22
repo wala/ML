@@ -1,4 +1,4 @@
-package com.ibm.wala.cast.python.test;
+package com.ibm.wala.cast.python.ml.test;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -11,7 +11,7 @@ import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 
-public class TestTensorflowModel extends TestPythonCallGraphShape {
+public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 
 	@Test
 	public void testTf1() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {

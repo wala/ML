@@ -5,9 +5,19 @@
     <artifactId>ML</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>com.ibm.wala.cast.python.test</artifactId>
+  <artifactId>com.ibm.wala.cast.python.ml.test</artifactId>
   
   <dependencies>
+    <dependency>
+      <groupId>com.ibm.wala</groupId>
+      <artifactId>com.ibm.wala.cast.python.test</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ibm.wala</groupId>
+      <artifactId>com.ibm.wala.cast.python.ml</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
     <dependency>
       <groupId>com.ibm.wala</groupId>
       <artifactId>com.ibm.wala.cast.python</artifactId>
@@ -72,8 +82,7 @@
   </dependencies>
 
   <build>
-    <sourceDirectory>source</sourceDirectory>
-    <testSourceDirectory>test-source</testSourceDirectory>
+    <testSourceDirectory>source</testSourceDirectory>
     <resources>
       <resource>
       <directory>data</directory>
