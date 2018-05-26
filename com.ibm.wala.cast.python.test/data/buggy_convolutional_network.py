@@ -68,9 +68,6 @@ def conv_net(x_dict, n_classes, dropout, reuse, is_training):
 
     return out
 
-
-make_net = conv_net
-   
 # Build the neural network
 # Define the model function (following TF Estimator Template)
 def model_fn(features, labels, mode):
@@ -109,6 +106,8 @@ def model_fn(features, labels, mode):
         eval_metric_ops={'accuracy': acc_op})
 
     return estim_specs
+
+make_net = conv_net
 
 # Build the Estimator
 model = tf.estimator.Estimator(model_fn)

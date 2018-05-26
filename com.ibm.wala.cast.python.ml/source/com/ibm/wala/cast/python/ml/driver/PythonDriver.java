@@ -55,7 +55,8 @@ public class PythonDriver {
 		return str;
 	}
 	public static final Function<WALAServer, Function<String, AbstractAnalysisEngine<InstanceKey, ? extends PropagationCallGraphBuilder, ?>>> python = (WALAServer lsp) -> {
-		return (String url) -> {
+		return (String language) -> {
+			assert "python".equals(language) : language;
 			PythonTensorAnalysisEngine engine = new PythonTensorAnalysisEngine() {
 
 				@Override
@@ -163,7 +164,7 @@ public class PythonDriver {
 						}
 					});	
 					
-					lsp.addValueErrors(this.getErrors());
+					lsp.addValueErrors(language, this.getErrors());
 					
 					return tt;
 				}	

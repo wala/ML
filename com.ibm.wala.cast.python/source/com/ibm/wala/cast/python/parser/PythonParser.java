@@ -1352,18 +1352,26 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			CAstEntity script = new AbstractScriptEntity(scriptName(), CAstType.DYNAMIC) {
 
 				private final WalkContext context;
+				private final CAstVisitor visitor;
 				private final CAstNode cast;
 				
 				{
-					context = new PythonParser.FunctionContext(root, this, pythonAst);			
-					cast = pythonAst.accept(new CAstVisitor(context, parser));
+					context = new PythonParser.FunctionContext(root, this, pythonAst);		
+					visitor = new CAstVisitor(context, parser);
+					cast = pythonAst.accept(visitor);
 				}
 				
 				@Override
 				public CAstNode getAST() {
 					return cast;
 				}
+
+				@Override
+				public Position getPosition() {
+					return visitor.makePosition(pythonAst);
+				}
 			};
+			
 			return script;
 		} catch (Exception e) {
 			throw new Error(Collections.singleton(new Warning(Warning.SEVERE) {
