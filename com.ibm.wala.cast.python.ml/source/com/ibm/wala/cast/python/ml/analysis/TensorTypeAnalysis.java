@@ -11,6 +11,7 @@
 package com.ibm.wala.cast.python.ml.analysis;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,18 +33,24 @@ import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.SSAInstruction;
+import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.graph.Graph;
 
 public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, TensorVariable> {
 
 	static class ReshapeError implements AnalysisError {
-		ReshapeError(TensorType from, TensorType to, Position pos) {
+		ReshapeError(TensorType from, TensorType to, Position pos, Position definer) {
+			this.definer = definer;
 			this.from = from;
 			this.to = to;
 			this.pos = pos;
 		}
 		TensorType from, to;
-		Position pos;
+		Position pos, definer;
+
+		public Iterable<Pair<Position,String>> related() {
+			return Collections.singleton(Pair.make(definer, "definition"));
+		}
 
 		@Override
 		public Position position() {
@@ -63,14 +70,20 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 	}
 
 	static class ConvError implements AnalysisError {
-		ConvError(TensorType from, int dims, Position pos) {
+		ConvError(TensorType from, int dims, Position pos, Position definer) {
+			this.definer = definer;
 			this.from = from;
 			this.dims = dims;
 			this.pos = pos;
 		}
+		Position definer;
 		TensorType from;
 		int dims;
 		Position pos;
+
+		public Iterable<Pair<Position,String>> related() {
+			return Collections.singleton(Pair.make(definer, "definition"));
+		}
 
 		@Override
 		public String toString() {
@@ -153,6 +166,21 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 						return null;
 					}
 					
+					private Position getTargetDef(PointerKey pk) {
+						if (pk instanceof LocalPointerKey) {
+							LocalPointerKey lpk = (LocalPointerKey)pk;
+							DefUse du = lpk.getNode().getDU();
+							SSAInstruction inst = du.getDef(lpk.getValueNumber());
+							if (lpk.getNode().getMethod() instanceof AstMethod) {
+								SSAInstruction def = du.getDef(inst.getUse(1));
+								if (def != null) {
+									return ((AstMethod)lpk.getNode().getMethod()).debugInfo().getInstructionPosition(def.iindex);
+								}
+							}	
+						}
+						
+						return null;
+					}
 					final class SetShapeOp extends UnaryOperator<TensorVariable> {
 						private final TensorType setShapeTo;
 						
@@ -189,7 +217,7 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 							this.v = v;
 							this.dimensions = dimensions;
 						}
-
+						
 						@Override
 						public byte evaluate(TensorVariable lhs, TensorVariable rhs) {
 							boolean changed = false;
@@ -203,7 +231,7 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 										changed |= lhs.state.add(t);
 									} else {
 										Position pos = getTargetPos(v.getPointerKey());
-										errorLog.put(v.getPointerKey(), new ConvError(t, dimensions, pos));
+										errorLog.put(v.getPointerKey(), new ConvError(t, dimensions, pos, getTargetDef(v.getPointerKey())));
 									}
 								}
 							}
@@ -247,7 +275,7 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 									} else {
 										Position pos = getTargetPos(v.getPointerKey());
 										assert pos != null;
-										errorLog.put(v.getPointerKey(), new ReshapeError(t, reshapeTo, pos));
+										errorLog.put(v.getPointerKey(), new ReshapeError(t, reshapeTo, pos, getTargetDef(v.getPointerKey())));
 									}
 								}
 							}
