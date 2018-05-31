@@ -16,6 +16,7 @@ apply plugin: 'java'
 intellij {
     version 'IC-2018.1'
     pluginName 'com.ibm.wala.ide.pycharm.Ariadne'
+    alternativeIdePath "/Applications/PyCharm.app"
 }
 
   dependencies {
