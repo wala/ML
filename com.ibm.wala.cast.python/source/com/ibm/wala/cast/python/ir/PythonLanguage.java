@@ -23,6 +23,8 @@ import com.ibm.wala.cast.ir.ssa.AstPropertyWrite;
 import com.ibm.wala.cast.ir.ssa.EachElementGetInstruction;
 import com.ibm.wala.cast.java.loader.JavaSourceLoaderImpl;
 import com.ibm.wala.cast.python.cfg.PythonInducedCFG;
+import com.ibm.wala.cast.python.modref.PythonModRef.PythonModVisitor;
+import com.ibm.wala.cast.python.modref.PythonModRef.PythonRefVisitor;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.ssa.PythonPropertyRead;
 import com.ibm.wala.cast.python.ssa.PythonPropertyWrite;
@@ -34,12 +36,19 @@ import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.Language;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
+import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.Context;
 import com.ibm.wala.ipa.callgraph.IAnalysisCacheView;
 import com.ibm.wala.ipa.callgraph.impl.AbstractRootMethod;
 import com.ibm.wala.ipa.callgraph.impl.FakeRootClass;
 import com.ibm.wala.ipa.callgraph.impl.FakeRootMethod;
+import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
+import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
+import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
+import com.ibm.wala.ipa.modref.ExtendedHeapModel;
+import com.ibm.wala.ipa.modref.ModRef.ModVisitor;
+import com.ibm.wala.ipa.modref.ModRef.RefVisitor;
 import com.ibm.wala.shrikeCT.BootstrapMethodsReader.BootstrapMethod;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
@@ -275,5 +284,17 @@ public class PythonLanguage implements Language {
 	  public boolean modelConstant(Object o) {
 	    return true;
 	  }
+
+	    @Override
+	    public <T extends InstanceKey> RefVisitor<T, ? extends ExtendedHeapModel> makeRefVisitor(CGNode n,
+	        Collection<PointerKey> result, PointerAnalysis<T> pa, ExtendedHeapModel h) {
+	      return new PythonRefVisitor<>(n, result, pa, h);
+	    }
+
+	    @Override
+	    public <T extends InstanceKey> ModVisitor<T, ? extends ExtendedHeapModel> makeModVisitor(CGNode n, Collection<PointerKey> result,
+	        PointerAnalysis<T> pa, ExtendedHeapModel h, boolean ignoreAllocHeapDefs) {
+	      return new PythonModVisitor<>(n, result, h, pa, ignoreAllocHeapDefs);
+	    }
 
 }

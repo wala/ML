@@ -15,6 +15,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.lsp4j.DiagnosticSeverity;
+
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.lsp.AnalysisError;
 import com.ibm.wala.cast.python.ml.types.TensorType;
@@ -65,6 +67,11 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 		@Override
 		public String toString(boolean useMarkdown) {
 			return "Cannot reshape " + from.toCString(useMarkdown) + " to " + to.toCString(useMarkdown);
+		}
+
+		@Override
+		public DiagnosticSeverity severity() {
+			return DiagnosticSeverity.Warning;
 		}
 
 	}
@@ -137,6 +144,11 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 				msg = msg + " (possible fix: " + newDims + ")";
 			}
 			return msg;
+		}
+
+		@Override
+		public DiagnosticSeverity severity() {
+			return DiagnosticSeverity.Error;
 		}
 
 	}
