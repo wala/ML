@@ -112,7 +112,6 @@ import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriter.CopyKey;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriter.RewriteContext;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriterFactory;
-import com.ibm.wala.util.collections.EmptyIterator;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.ReverseIterator;
@@ -300,6 +299,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 						@Override
 						public CAstNode getAST() {
 							return v;
+						}
+
+						@Override
+						public Position getPosition(int arg) {
+							return null;
 						}
 					});
 				}
@@ -490,6 +494,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				@Override
 				public Map<CAstNode, Collection<CAstEntity>> getAllScopedEntities() {
 					return Collections.singletonMap(null, members);
+				}
+
+				@Override
+				public Position getPosition(int arg) {
+					return null;
 				}
 				
 			};
@@ -773,6 +782,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 					@Override
 					public CAstType getDeclaringType() {
 						return context.entity().getType();
+					}
+
+					@Override
+					public boolean isStatic() {
+						return false;
 					}					
 				};
 				
@@ -834,6 +848,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				public Position getPosition() {
 					return makePosition(arg0);
 				}		
+				
+				@Override
+				public Position getPosition(int arg) {
+					return makePosition(arg0.getInternalArgs().getInternalArgs().get(arg));
+				}
 			};
 
 			PythonParser.FunctionContext child = new PythonParser.FunctionContext(context, fun, arg0);	
@@ -841,7 +860,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			for(stmt s : arg0.getInternalBody()) {
 				nodes[i++] = s.accept(cv);
 			}
-						
+
 			if (context.entity().getKind() == CAstEntity.TYPE_ENTITY) {
 				context.addScopedEntity(null, fun);
 				return null;
@@ -1370,6 +1389,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				public Position getPosition() {
 					return visitor.makePosition(pythonAst);
 				}
+				
+				public Position getPosition(int arg) {
+					return null;
+				}
+
 			};
 			
 			return script;
