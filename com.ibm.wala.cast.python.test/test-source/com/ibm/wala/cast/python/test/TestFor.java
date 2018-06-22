@@ -14,7 +14,7 @@ public class TestFor extends TestPythonCallGraphShape {
 		    new Object[] { ROOT, new String[] { "script for1.py" } },
 		    new Object[] {
 		        "script for1.py",
-		        new String[] { "f1", "f2", "f3" } }
+		        new String[] { "script for1.py/f1", "script for1.py/f2", "script for1.py/f3" } }
 	 };
 
 	 @Test
@@ -27,10 +27,10 @@ public class TestFor extends TestPythonCallGraphShape {
 		    new Object[] { ROOT, new String[] { "script for2.py" } },
 		    new Object[] {
 			        "script for2.py",
-			        new String[] { "doit" } },
+			        new String[] { "script for2.py/doit" } },
 		    new Object[] {
-		        "doit",
-		        new String[] { "f1", "f2", "f3" } }
+		        "script for2.py/doit",
+		        new String[] { "script for2.py/f1", "script for2.py/f2", "script for2.py/f3" } }
 	 };
 	
 	@Test
@@ -43,7 +43,7 @@ public class TestFor extends TestPythonCallGraphShape {
 		    new Object[] { ROOT, new String[] { "script comp1.py" } },
 		    new Object[] {
 		        "script comp1.py",
-		        new String[] { "f1", "f2", "f3" } }
+		        new String[] { "script comp1.py/f1", "script comp1.py/f2", "script comp1.py/f3" } }
 	 };
 
 	 @Test

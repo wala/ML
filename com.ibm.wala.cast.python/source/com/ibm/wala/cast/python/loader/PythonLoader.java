@@ -143,7 +143,7 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 
 	CoreClass list = new CoreClass(PythonTypes.list.getName(), PythonTypes.rootTypeName, this, null);
 
-	CoreClass trampoline = new CoreClass(PythonTypes.trampoline.getName(), PythonTypes.rootTypeName, this, null);
+	CoreClass trampoline = new CoreClass(PythonTypes.trampoline.getName(), PythonTypes.CodeBody.getName(), this, null);
 
 	public IClass makeCodeBodyType(String name, TypeReference P, CAstSourcePositionMap.Position sourcePosition, CAstEntity entity, WalkContext context) {
 		return new DynamicCodeBody(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName(name)), P, this,
@@ -154,13 +154,12 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 		return makeCodeBodyType(name, PythonTypes.CodeBody, pos, entity, context);
 	}
 
-	public IClass defineMethodType(String name, CAstSourcePositionMap.Position pos, CAstEntity entity, CAstType type, WalkContext context) {
+	public IClass defineMethodType(String name, CAstSourcePositionMap.Position pos, CAstEntity entity, TypeName typeName, WalkContext context) {
 		IClass fun = makeCodeBodyType(name, PythonTypes.CodeBody, pos, entity, context);
 		
-		TypeName cls = TypeName.findOrCreate("L" + type.getName());
-		assert types.containsKey(cls);
+		assert types.containsKey(typeName);
 		MethodReference me = MethodReference.findOrCreate(fun.getReference(), Atom.findOrCreateUnicodeAtom(entity.getType().getName()), AstMethodReference.fnDesc);
-		((PythonClass)types.get(cls)).methodTypes.add(me);
+		((PythonClass)types.get(typeName)).methodTypes.add(me);
 
 		return fun;
 	}

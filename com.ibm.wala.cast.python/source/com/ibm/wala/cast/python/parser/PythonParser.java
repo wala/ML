@@ -866,9 +866,12 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				return null;
 				
 			} else {
-				CAstNode stmt = Ast.makeNode(CAstNode.FUNCTION_STMT, Ast.makeConstant(fun));
+				CAstNode stmt = Ast.makeNode(CAstNode.FUNCTION_EXPR, Ast.makeConstant(fun));
 				context.addScopedEntity(stmt, fun);
-				return stmt;
+				return 
+				   Ast.makeNode(CAstNode.DECL_STMT,
+					  Ast.makeConstant(new CAstSymbolImpl(fun.getName(), PythonCAstToIRTranslator.Any)),
+					  stmt);
 			}
 		}
 
@@ -1060,7 +1063,8 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				"open",
 				"hasattr",
 				"BaseException",
-				"abs"
+				"abs",
+				"range"
 		};
 		
 		private void defaultImports(Collection<CAstNode> elts) {
@@ -1309,10 +1313,12 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				blk[i++] = s.accept(this);
 			}
 		
+			String tmpName = "tmp_" + tmpIndex++;
+			
 			Supplier<CAstNode> v = () -> { 
 				try {
 					return arg0.getInternalOptional_vars() == null?
-							Ast.makeNode(CAstNode.VAR, Ast.makeConstant("tmp_" + tmpIndex++)):
+							Ast.makeNode(CAstNode.VAR, Ast.makeConstant(tmpName)):
 								arg0.getInternalOptional_vars().accept(this);
 				} catch (Exception e) {
 					assert false : e.toString();
@@ -1321,6 +1327,8 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			};
 			
 			return Ast.makeNode(CAstNode.BLOCK_STMT,
+					Ast.makeNode(CAstNode.DECL_STMT,
+							Ast.makeConstant(new CAstSymbolImpl(tmpName, PythonCAstToIRTranslator.Any))),
 					Ast.makeNode(CAstNode.DECL_STMT,
 							Ast.makeConstant(new CAstSymbolImpl(v.get().getChild(0).getValue().toString(), PythonCAstToIRTranslator.Any)),
 							arg0.getInternalContext_expr().accept(this)),

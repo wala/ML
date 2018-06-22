@@ -4,7 +4,7 @@ Build and train a convolutional neural network with TensorFlow.
 This example is using the MNIST database of handwritten digits
 (http://yann.lecun.com/exdb/mnist/)
 
-This example is using TensorFlow layers API, see 'convolutional_network_raw' 
+This example is using TensorFlow layers API, see 'convolutional_network_raw'
 example for a raw implementation with variables.
 
 Author: Aymeric Damien
@@ -27,7 +27,6 @@ batch_size = 128
 num_input = 784 # MNIST data input (img shape: 28*28)
 num_classes = 10 # MNIST total classes (0-9 digits)
 dropout = 0.75 # Dropout, probability to keep units
-
 
 # Create the neural network
 def conv_net(x_dict, n_classes, dropout, reuse, is_training):

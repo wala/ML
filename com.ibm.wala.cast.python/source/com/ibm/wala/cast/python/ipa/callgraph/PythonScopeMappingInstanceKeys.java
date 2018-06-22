@@ -6,6 +6,7 @@ import java.util.Collections;
 import com.ibm.wala.cast.ipa.callgraph.ScopeMappingInstanceKeys;
 import com.ibm.wala.cast.loader.AstMethod.LexicalParent;
 import com.ibm.wala.cast.loader.CAstAbstractModuleLoader.DynamicMethodObject;
+import com.ibm.wala.cast.python.ipa.summaries.PythonInstanceMethodTrampoline;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.classLoader.IClass;
@@ -28,11 +29,17 @@ public class PythonScopeMappingInstanceKeys extends ScopeMappingInstanceKeys {
 	}
 
 	 protected LexicalParent[] getParents(InstanceKey base) {
-		    DynamicMethodObject function = (DynamicMethodObject)
-		      base.getConcreteType().getMethod(AstMethodReference.fnSelector);
+		 IClass cls = base.getConcreteType();
+		 
+		 if (cls instanceof PythonInstanceMethodTrampoline) {
+			 cls = ((PythonInstanceMethodTrampoline)cls).getRealClass();
+		 }
+		 
+		DynamicMethodObject function = (DynamicMethodObject)
+			cls.getMethod(AstMethodReference.fnSelector);
 
-		    return function==null? new LexicalParent[0]: function.getParents();
-		  }
+		 return function==null? new LexicalParent[0]: function.getParents();
+	 }
 
 	 @Override
 	  protected boolean needsScopeMappingKey(InstanceKey base) {

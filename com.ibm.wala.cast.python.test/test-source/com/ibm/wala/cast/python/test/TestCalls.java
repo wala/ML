@@ -19,19 +19,19 @@ public class TestCalls extends TestPythonCallGraphShape {
 		    new Object[] { ROOT, new String[] { "script calls1.py" } },
 		    new Object[] {
 		        "script calls1.py",
-		        new String[] { "Foo/foo", "foo", "$Foo/foo:trampoline3", "id", "nothing" } },
+		        new String[] { "script calls1.py/Foo", "script calls1.py/foo", "$script calls1.py/Foo/foo:trampoline3", "script calls1.py/id", "script calls1.py/nothing" } },
 		    new Object[] {
-		    	"$Foo/foo:trampoline3",
-		    	new String[] { "Foo/foo" } },
+		    	"$script calls1.py/Foo/foo:trampoline3",
+		    	new String[] { "script calls1.py/Foo/foo" } },
 		    new Object[] {
-			    "call",
-			    new String[] { "id" } },
+			    "script calls1.py/call",
+			    new String[] { "script calls1.py/id" } },
 		    new Object[] {
-		    	"Foo/foo",
-		    	new String[] { "id" } },
+		    	"script calls1.py/Foo/foo",
+		    	new String[] { "script calls1.py/id" } },
 		    new Object[] {
-		    	"foo",
-			    new String[] { "call" } }
+		    	"script calls1.py/foo",
+			    new String[] { "script calls1.py/call" } }
 	 };
 	 
 	@Test
@@ -44,16 +44,16 @@ public class TestCalls extends TestPythonCallGraphShape {
 		    new Object[] { ROOT, new String[] { "script calls2.py" } },
 		    new Object[] {
 		        "script calls2.py",
-		        new String[] { "Foo/foo", "foo", "$Foo/foo:trampoline3" } },
+		        new String[] { "script calls2.py/Foo/foo", "script calls2.py/foo", "$script calls2.py/Foo/foo:trampoline3" } },
 		    new Object[] {
-		    	"$Foo/foo:trampoline3",
-		    	new String[] { "Foo/foo" } },
+		    	"$script calls2.py/Foo/foo:trampoline3",
+		    	new String[] { "script calls2.py/Foo/foo" } },
 		    new Object[] {
-			    "call",
-			    new String[] { "id" } },
+			    "script calls2.py/call",
+			    new String[] { "script calls2.py/id" } },
 		    new Object[] {
-		    	"foo",
-			    new String[] { "call" } }
+		    	"script calls2.py/foo",
+			    new String[] { "script calls2.py/call" } }
 	 };
 	 
 	@Test
@@ -66,13 +66,13 @@ public class TestCalls extends TestPythonCallGraphShape {
 		    new Object[] { ROOT, new String[] { "script calls3.py" } },
 		    new Object[] {
 		        "script calls3.py",
-		        new String[] { "nothing", "id", "foo" } },
+		        new String[] { "script calls3.py/nothing", "script calls3.py/id", "script calls3.py/foo" } },
 		    new Object[] {
-			    "call",
-			    new String[] { "id" } },
+			    "script calls3.py/call",
+			    new String[] { "script calls3.py/id" } },
 		    new Object[] {
-		    	"foo",
-			    new String[] { "call" } }
+		    	"script calls3.py/foo",
+			    new String[] { "script calls3.py/call" } }
 	 };
 
 	@Test
@@ -85,7 +85,7 @@ public class TestCalls extends TestPythonCallGraphShape {
 		    new Object[] { ROOT, new String[] { "script calls4.py" } },
 		    new Object[] {
 		        "script calls4.py",
-		        new String[] { "bad", "id", "foo" } }
+		        new String[] { "script calls4.py/bad", "script calls4.py/id", "script calls4.py/foo" } }
 	 };
 
 	 @Test
@@ -98,13 +98,13 @@ public class TestCalls extends TestPythonCallGraphShape {
 		    new Object[] { ROOT, new String[] { "script calls5.py" } },
 		    new Object[] {
 		        "script calls5.py",
-		        new String[] { "Foo", "$Foo/foo:trampoline3", "bad" } },
+		        new String[] { "script calls5.py/Foo", "$script calls5.py/Foo/foo:trampoline3", "script calls5.py/bad" } },
 		    new Object[] {
-		    	"$Foo/foo:trampoline3",
-		    	new String[] { "Foo/foo" } },
+		    	"$script calls5.py/Foo/foo:trampoline3",
+		    	new String[] { "script calls5.py/Foo/foo" } },
 		    new Object[] {
-		    	"Foo/foo",
-		    	new String[] { "id" } }
+		    	"script calls5.py/Foo/foo",
+		    	new String[] { "script calls5.py/id" } }
 	 };
 
 	 @Test
@@ -117,13 +117,13 @@ public class TestCalls extends TestPythonCallGraphShape {
 		    new Object[] { ROOT, new String[] { "script calls6.py" } },
 		    new Object[] {
 		        "script calls6.py",
-		        new String[] { "Foo", "$Foo/foo:trampoline3", "bad" } },
+		        new String[] { "script calls6.py/Foo", "$script calls6.py/Foo/foo:trampoline3", "script calls6.py/bad" } },
 		    new Object[] {
-		    	"$Foo/foo:trampoline3",
-		    	new String[] { "Foo/foo" } },
+		    	"$script calls6.py/Foo/foo:trampoline3",
+		    	new String[] { "script calls6.py/Foo/foo" } },
 		    new Object[] {
-		    	"Foo/foo",
-		    	new String[] { "id" } }
+		    	"script calls6.py/Foo/foo",
+		    	new String[] { "script calls6.py/id" } }
 	 };
 
 	 @Test

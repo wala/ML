@@ -17,7 +17,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 	public void testTf1() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		CallGraph CG = process("tf1.py");
 		
-		Collection<CGNode> nodes = getNodes(CG, "model_fn");
+		Collection<CGNode> nodes = getNodes(CG, "script tf1.py/model_fn");
 		assert ! nodes.isEmpty() : "model_fn should be called";
 		check: {
 			for(CGNode node : nodes) {

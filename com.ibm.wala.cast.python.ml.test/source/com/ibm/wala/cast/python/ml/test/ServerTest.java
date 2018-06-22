@@ -50,9 +50,19 @@ public class ServerTest {
 		System.err.println(checks);
 		assert (checks.contains("tensor") && 
 				checks.contains("error") &&
-				checks.contains("Lconv_net") &&
-				checks.contains("Lmodel_fn") &&
 				checks.contains("TYPES"));
+		
+		for(String fun : new String[] {"model_fn", "conv_net" }) {
+			boolean model_fn = false;
+			for(String c : checks) {
+				if (c.endsWith(fun)) {
+					model_fn = true;
+				}
+			}
+			
+			assert model_fn : "cannot find " + fun + " in assertions";
+		}
+		
 	}
 
 	private String getScript(String script) throws URISyntaxException, IOException {

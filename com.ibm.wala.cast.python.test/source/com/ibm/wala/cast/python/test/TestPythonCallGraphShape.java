@@ -5,11 +5,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.test.TestCallGraphShape;
 import com.ibm.wala.cast.types.AstMethodReference;
+import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.classLoader.SourceURLModule;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
@@ -19,6 +21,7 @@ import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.strings.Atom;
 
 public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
@@ -43,7 +46,7 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 		}
 	}
 	
-	protected CallGraph process(String name) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+	protected CallGraph process(String... name) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		PythonAnalysisEngine<?> engine = new PythonAnalysisEngine<Void>() {
 			@Override
 			public Void performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
@@ -51,7 +54,13 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 				return null;
 			}
 		};
-		engine.setModuleFiles(Collections.singleton(getScript(name)));
+		
+		Set<Module> modules = HashSetFactory.make();
+		for(String n : name) {
+			modules.add(getScript(n));
+		}
+		engine.setModuleFiles(modules);
+		
 		return engine.buildDefaultCallGraph();
 	}
 	

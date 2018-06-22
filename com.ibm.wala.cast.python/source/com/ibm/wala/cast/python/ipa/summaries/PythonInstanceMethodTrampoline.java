@@ -39,8 +39,11 @@ public class PythonInstanceMethodTrampoline extends PythonSyntheticClass {
 		return TypeReference.findOrCreate(x.getClassLoader(), "L$" + x.getName().toString().substring(1));
 	}
 	
+	private final IClass realClass;
+	
 	public PythonInstanceMethodTrampoline(TypeReference functionType, IClassHierarchy cha) {
 		super(trampoline(functionType), cha);
+		realClass = cha.lookupClass(functionType);
 		fields.put(selfName, new IField() {
 			@Override
 			public IClass getDeclaringClass() {
@@ -115,4 +118,7 @@ public class PythonInstanceMethodTrampoline extends PythonSyntheticClass {
 		return getClassHierarchy().lookupClass(PythonTypes.trampoline);
 	}
 
+	public IClass getRealClass() {
+		return realClass;
+	}
 }

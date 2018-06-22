@@ -106,33 +106,35 @@ public class PythonDriver {
 
 					lsp.addInstructionAnalysis("target", (Boolean useMarkdown, int[] instId) -> {
 						CGNode node = builder.getCallGraph().getNode(instId[0]);
-						SSAInstruction inst = node.getIR().getInstructions()[instId[1]];
-						if (inst instanceof SSAAbstractInvokeInstruction) {
-							CallSiteReference ref = ((SSAAbstractInvokeInstruction)inst).getCallSite();
-							final Set<CGNode> possibleTargets = builder.getCallGraph().getPossibleTargets(node, ref);
+						SSAInstruction[] insts = node.getIR().getInstructions();
+						if (insts.length > instId[1]) {
+							SSAInstruction inst = insts[instId[1]];
+							if (inst instanceof SSAAbstractInvokeInstruction) {
+								CallSiteReference ref = ((SSAAbstractInvokeInstruction)inst).getCallSite();
+								final Set<CGNode> possibleTargets = builder.getCallGraph().getPossibleTargets(node, ref);
 
-							if(possibleTargets.isEmpty()) {
-								return null;
+								if(possibleTargets.isEmpty()) {
+									return null;
+								}
+
+								final String delim;
+								if(useMarkdown) {
+									delim = "     _or_ ";
+								} else {
+									delim = "     or ";
+								}
+
+								final String targetStringList = possibleTargets
+										.stream()
+										.map(callee ->
+										getTypeNameString(callee.getMethod().getDeclaringClass().getName()))
+										.distinct()
+										.collect(Collectors.joining(delim));
+
+								return targetStringList;
 							}
-
-							final String delim;
-							if(useMarkdown) {
-								delim = "     _or_ ";
-							} else {
-								delim = "     or ";
-							}
-
-							final String targetStringList = possibleTargets
-							.stream()
-							.map(callee ->
-								getTypeNameString(callee.getMethod().getDeclaringClass().getName()))
-							.distinct()
-							.collect(Collectors.joining(delim));
-
-							return targetStringList;
-						} else {
-							return null;
 						}
+						return null;
 					});	
 					
 					lsp.setFindDefinitionAnalysis((int[] instId) -> {

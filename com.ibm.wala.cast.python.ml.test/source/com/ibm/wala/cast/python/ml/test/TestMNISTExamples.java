@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
 import com.ibm.wala.cast.python.ml.analysis.TensorVariable;
 import com.ibm.wala.cast.python.ml.types.TensorType;
@@ -20,6 +21,7 @@ import com.ibm.wala.ipa.callgraph.propagation.PointerKeyFactory;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationSystem;
+import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
@@ -35,8 +37,8 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
 
 	 protected static final Object[][] assertionsEx1 = new Object[][] {
 		    new Object[] {
-		        "model_fn",
-		        new String[] { "conv_net" } }
+		        "script convolutional_network.py/model_fn",
+		        new String[] { "script convolutional_network.py/conv_net" } }
 	 };
 
 	@Test
@@ -67,6 +69,9 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
 	@Test
 	public void testEx2Tensors() throws IllegalArgumentException, CancelException, IOException {
 		checkTensorOps(Ex2URL, (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
+			CAstCallGraphUtil.AVOID_DUMP = false;
+			CAstCallGraphUtil.dumpCG((SSAContextInterpreter) cgBuilder.getContextInterpreter(), cgBuilder.getPointerAnalysis(), CG);
+			
 			String in = "[{[D:Symbolic,?, D:Constant,784] of pixel}]";
 			String out = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
 			checkTensorOp(cgBuilder, CG, result, "reshape", in, out);
@@ -161,7 +166,7 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
 			String out = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
 			checkTensorOp(cgBuilder, CG, result, "reshape", in, out);
 			
-			TypeReference feedDictClass = TypeReference.findOrCreate(PythonTypes.pythonLoader, "Lfeed_dict");
+			TypeReference feedDictClass = TypeReference.findOrCreate(PythonTypes.pythonLoader, "Lscript mnist_with_summaries.py/train/feed_dict");
 			MethodReference feedDictCode = MethodReference.findOrCreate(feedDictClass, AstMethodReference.fnSelector);
 			Set<CGNode> feedDictNodes = CG.getNodes(feedDictCode);
 			Set<SSAInstruction> goodFeeds = HashSetFactory.make();

@@ -21,6 +21,7 @@ import java.util.Map;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.translator.ArrayOpHandler;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
+import com.ibm.wala.cast.ir.translator.AstTranslator.WalkContext;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.loader.PythonLoader;
@@ -48,11 +49,14 @@ import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
+import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.strings.Atom;
 
 public class PythonCAstToIRTranslator extends AstTranslator {
 
+	private final Map<CAstType, TypeName> walaTypeNames = HashMapFactory.make();
+	
 	public PythonCAstToIRTranslator(IClassLoader loader, Map<Object, CAstEntity> namedEntityResolver,
 			ArrayOpHandler arrayOpHandler) {
 		super(loader, namedEntityResolver, arrayOpHandler);
@@ -64,6 +68,11 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
 	public PythonCAstToIRTranslator(IClassLoader loader) {
 		super(loader);
+	}
+
+	@Override	
+	protected boolean liftDeclarationsForLexicalScoping() {
+		return true;
 	}
 
 	@Override
@@ -94,14 +103,18 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	@Override
 	protected boolean defineType(CAstEntity type, WalkContext wc) {
 		CAstType cls = type.getType();
-		wc.getGlobalScope().declare(new CAstSymbolImpl(cls.getName(), cls));
-			
+		scriptScope(wc.currentScope()).declare(new CAstSymbolImpl(cls.getName(), cls));
+
+	    String typeNameStr = composeEntityName(wc, type);
+	    TypeName typeName = TypeName.findOrCreate("L" + typeNameStr);
+	    walaTypeNames.put(cls, typeName);
+
 		((PythonLoader)loader)
 		    .defineType(
-		    		TypeName.findOrCreate("L" + cls.getName()), 
+		    		typeName, 
 		    		cls.getSupertypes().isEmpty()?
 		    			PythonTypes.object.getName():
-		    			TypeName.findOrCreate("L" + cls.getSupertypes().iterator().next().getName()));
+		    			walaTypeNames.get(cls.getSupertypes().iterator().next()));
 		
 		return true;
 	}
@@ -115,6 +128,13 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		}
 	}
 
+	private Scope scriptScope(Scope s) {
+		if (s.getEntity().getKind() == CAstEntity.SCRIPT_ENTITY) {
+			return s;
+		} else {
+			return scriptScope(s.getParent());
+		}
+	}
 	@Override
 	protected void declareFunction(CAstEntity N, WalkContext context) {
 		for (String s : N.getArgumentNames()) {
@@ -123,7 +143,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		
 	    String fnName = composeEntityName(context, N);
 	    if (N.getType() instanceof CAstType.Method) {
-	    		((PythonLoader) loader).defineMethodType("L" + fnName, N.getPosition(), N, ((CAstType.Method)N.getType()).getDeclaringType(), context);	    	
+	    		((PythonLoader) loader).defineMethodType("L" + fnName, N.getPosition(), N, walaTypeNames.get(((CAstType.Method)N.getType()).getDeclaringType()), context);	    	
 	    } else {
 	    		((PythonLoader) loader).defineFunctionType("L" + fnName, N.getPosition(), N, context);
 	    }
@@ -142,9 +162,10 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
 	@Override
 	protected void defineField(CAstEntity topEntity, WalkContext context, CAstEntity fieldEntity) {
-		((PythonLoader)loader).defineField(TypeName.findOrCreate("L" + topEntity.getType().getName()), fieldEntity);
+		((PythonLoader)loader).defineField(walaTypeNames.get(topEntity.getType()), fieldEntity);
 	}
 
+	/*
 	@Override
 	protected String composeEntityName(WalkContext parent, CAstEntity f) {
 		if (f.getType() instanceof CAstType.Method) {
@@ -153,6 +174,23 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 			return f.getName();
 		}
 	}
+*/
+	
+	  @Override
+	  protected String composeEntityName(WalkContext parent, CAstEntity f) {
+	    if (f.getKind() == CAstEntity.SCRIPT_ENTITY)
+	      return f.getName();
+	    else {
+	    	String name;
+	    	//if (f.getType() instanceof CAstType.Method) {
+			//	name = ((CAstType.Method)f.getType()).getDeclaringType().getName() + "/" + f.getName();
+			//} else {
+				name = f.getName();
+			//}
+
+	    	return parent.getName() + "/" + name;
+	    }
+	  }
 
 	@Override
 	protected void doThrow(WalkContext context, int exception) {
@@ -221,7 +259,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	    TypeReference type = cls.getReference();
 	    context.cfg().addInstruction(Python.instructionFactory().NewInstruction(idx, v, NewSiteReference.make(idx, type)));
 	
-	    doGlobalWrite(context, fnName, type, v);
+	    doLocalWrite(context, n.getType().getName(), type, v);
 
 	    for(CAstEntity field : n.getAllScopedEntities().get(null)) {
    			FieldReference fr = FieldReference.findOrCreate(type, Atom.findOrCreateUnicodeAtom(field.getName()), PythonTypes.Root);
@@ -232,7 +270,12 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	    		} else {
 	    			assert (field.getKind() == CAstEntity.FUNCTION_ENTITY);
 	    			val = context.currentScope().allocateTempValue();
-	    			doMaterializeFunction(null, context, val, -1, field);	    			
+	    			
+	    		    String methodName = composeEntityName(typeContext, field);
+	    		    IClass methodCls = loader.lookupClass(TypeName.findOrCreate("L" + methodName));
+	    		    TypeReference methodType = methodCls.getReference();
+	    		    int codeIdx = context.cfg().getCurrentInstruction();
+	    		    context.cfg().addInstruction(Python.instructionFactory().NewInstruction(codeIdx, val, NewSiteReference.make(codeIdx, methodType)));
 	    		}
 	    		context.cfg().addInstruction(Python.instructionFactory().PutInstruction(context.cfg().getCurrentInstruction(), v, val, fr));
 	    }
