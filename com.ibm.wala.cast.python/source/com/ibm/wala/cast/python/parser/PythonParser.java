@@ -500,6 +500,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				public Position getPosition(int arg) {
 					return null;
 				}
+
+				@Override
+				public Position getPosition() {
+					return makePosition(arg0);
+				}
 				
 			};
 

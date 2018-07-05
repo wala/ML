@@ -195,8 +195,8 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 		}
 	}
 	
-	public void defineType(TypeName cls, TypeName parent) {
-		new PythonClass(cls, parent, this, null);
+	public void defineType(TypeName cls, TypeName parent, Position sourcePosition) {
+		new PythonClass(cls, parent, this, sourcePosition);
 	}
 	
 	public void defineField(TypeName cls, CAstEntity field) {
