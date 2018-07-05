@@ -1,8 +1,11 @@
 package com.ibm.wala.cast.python.ml.driver;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -121,7 +124,7 @@ public class ClientDriver implements LanguageClient {
 		client.connect(launcher.getRemoteProxy());
 		launcher.startListening();	
 		System.err.println("started");
-		System.err.println(client.server.getTextDocumentService());
+		//System.err.println(client.server.getTextDocumentService());
 		
 		InitializeParams x = new InitializeParams();
 		ClientCapabilities c = new ClientCapabilities();
@@ -134,11 +137,19 @@ public class ClientDriver implements LanguageClient {
 		
 		String scriptUri = args[0];
 		
-		DidOpenTextDocumentParams open = new DidOpenTextDocumentParams();
+		BufferedReader br = new BufferedReader(new InputStreamReader(new URL(scriptUri).openStream()));
+		StringBuffer fileData = new StringBuffer();
+		String line;
+	    while((line = br.readLine()) != null) {
+	    	fileData.append(line).append("\n");
+	    }
+
+	    DidOpenTextDocumentParams open = new DidOpenTextDocumentParams();
 		TextDocumentItem script = new TextDocumentItem();
 		open.setTextDocument(script);
 		script.setLanguageId("python");
 		script.setUri(scriptUri);
+		script.setText(fileData.toString());
 		client.server.getTextDocumentService().didOpen(open);
 		
 		Thread.sleep(10000);

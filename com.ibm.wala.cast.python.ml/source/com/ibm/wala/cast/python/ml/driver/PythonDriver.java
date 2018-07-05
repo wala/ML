@@ -187,6 +187,12 @@ public class PythonDriver {
 				.required(false).build();
 		options.addOption(runAsDaemonOpt);
 
+		final Option webSocketOpt = Option.builder().longOpt("web-socket")
+				.hasArg().argName("websocket")
+				.desc("Run server using WebSockets")
+				.required(false).build();
+		options.addOption(webSocketOpt);
+
 		final Option serverPortOpt = Option.builder().longOpt("server-port")
 			.hasArg().argName("server-port")
 			.desc("Specify the port that the server should start listening on.")
@@ -206,6 +212,7 @@ public class PythonDriver {
 		int serverPort = -1;
 		int clientPort = -1;
 		boolean runAsDaemon = false;
+		boolean webSockets = false;
 		
 		try {
 			/* Parse command line */
@@ -219,6 +226,9 @@ public class PythonDriver {
 			final String clientPortString = cmd.getOptionValue("client-port");
 			if (cmd.hasOption("daemon")) {
 				runAsDaemon = Boolean.parseBoolean(cmd.getOptionValue("daemon"));
+			}
+			if (cmd.hasOption("websocket")) {
+				webSockets = Boolean.parseBoolean(cmd.getOptionValue("websocket"));
 			}
 			
 			if(serverPortString == null) {
@@ -268,7 +278,8 @@ public class PythonDriver {
 			if(serverPort < 0) {
 				WALAServer.launchOnStdio(python);
 			} else {
-				final WALAServer server = WALAServer.launchOnServerPort(serverPort, python, runAsDaemon);
+				final WALAServer server = 
+					WALAServer.launchOnServerPort(serverPort, python, runAsDaemon);
 				if(serverPort == 0) {
 					final Integer actualPort = server.getServerPort();
 					System.err.println("Server up, listening on port: " + actualPort);

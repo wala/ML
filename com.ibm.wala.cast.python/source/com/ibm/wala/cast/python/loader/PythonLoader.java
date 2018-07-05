@@ -34,7 +34,6 @@ import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
-import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
 import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
 import com.ibm.wala.cast.tree.rewrite.AstConstantFolder;
@@ -50,7 +49,7 @@ import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.Language;
 import com.ibm.wala.classLoader.ModuleEntry;
-import com.ibm.wala.classLoader.SourceURLModule;
+import com.ibm.wala.classLoader.SourceModule;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInstructionFactory;
@@ -92,7 +91,7 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 
 	@Override
 	protected TranslatorToCAst getTranslatorToCAst(CAst ast, ModuleEntry M) throws IOException {
-		RewritingTranslatorToCAst x = new RewritingTranslatorToCAst(M, new PythonModuleParser((SourceURLModule)M, typeDictionary) {
+		RewritingTranslatorToCAst x = new RewritingTranslatorToCAst(M, new PythonModuleParser((SourceModule)M, typeDictionary) {
 			@Override
 			public CAstEntity translateToCAst() throws Error, IOException {
 				CAstEntity ce =  super.translateToCAst();

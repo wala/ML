@@ -69,9 +69,6 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
 	@Test
 	public void testEx2Tensors() throws IllegalArgumentException, CancelException, IOException {
 		checkTensorOps(Ex2URL, (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
-			CAstCallGraphUtil.AVOID_DUMP = false;
-			CAstCallGraphUtil.dumpCG((SSAContextInterpreter) cgBuilder.getContextInterpreter(), cgBuilder.getPointerAnalysis(), CG);
-			
 			String in = "[{[D:Symbolic,?, D:Constant,784] of pixel}]";
 			String out = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
 			checkTensorOp(cgBuilder, CG, result, "reshape", in, out);

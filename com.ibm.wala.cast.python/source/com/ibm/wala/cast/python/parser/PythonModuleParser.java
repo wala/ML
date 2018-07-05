@@ -23,11 +23,12 @@ import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
 import com.ibm.wala.cast.util.CAstPrinter;
 import com.ibm.wala.classLoader.ModuleEntry;
+import com.ibm.wala.classLoader.SourceModule;
 import com.ibm.wala.classLoader.SourceURLModule;
 
 public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
-	private final SourceURLModule fileName;
+	private final SourceModule fileName;
 	
 	protected URL getParsedURL() throws IOException {
 		return fileName.getURL();
@@ -38,7 +39,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 		return new WalaPythonParser(file, fileName.getName(), null);
 	}
 
-	public PythonModuleParser(SourceURLModule fileName, CAstTypeDictionaryImpl<PyObject> types) {
+	public PythonModuleParser(SourceModule fileName, CAstTypeDictionaryImpl<PyObject> types) {
 		super(types);
 		this.fileName = fileName;
 	}
