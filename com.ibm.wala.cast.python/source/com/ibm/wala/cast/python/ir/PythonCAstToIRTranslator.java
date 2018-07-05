@@ -114,7 +114,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		    		typeName, 
 		    		cls.getSupertypes().isEmpty()?
 		    			PythonTypes.object.getName():
-		    			walaTypeNames.get(cls.getSupertypes().iterator().next()));
+		    			walaTypeNames.get(cls.getSupertypes().iterator().next()), type.getPosition());
 		
 		return true;
 	}
