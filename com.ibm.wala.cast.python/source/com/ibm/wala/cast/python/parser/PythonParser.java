@@ -1133,7 +1133,10 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitReturn(Return arg0) throws Exception {
-			return Ast.makeNode(CAstNode.RETURN, arg0.getInternalValue().accept(this));
+			if(arg0.getInternalValue() == null)
+				return Ast.makeNode(CAstNode.RETURN, Ast.makeNode(CAstNode.VAR, Ast.makeConstant("None")));
+			else
+				return Ast.makeNode(CAstNode.RETURN, arg0.getInternalValue().accept(this));
 		}
 
 		@Override
