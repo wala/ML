@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<!DOCTYPE summary-spec>
+<!-- Pandas model -->
+<summary-spec>
+  <classloader name="PythonLoader">
+    <class name="pandas" allocatable="true">
+      <method name="import"
+	      static="true"
+	      descriptor="()Lpandas;">
+        <new def="x" class="Lpandas"/>
+
+	<new def="read_excel" class="Lpandas/functions/read_excel"/>
+	<putfield class="LRoot"
+                  field="read_excel"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="read_excel"/>
+
+	<return value="x"/>
+      </method>
+    </class>
+
+    <package name="pandas/functions">
+
+      <class name="read_excel" allocatable="true">
+	<method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self file sheet">
+	  <new def="v" class="Lobject"/>
+	  <return vaue="v"/>
+	</method>
+      </class>
+      
+    </package>
+  </classloader>
+</summary-spec>
