@@ -5,9 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
-
-import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
+import com.ibm.wala.cast.python.ml.analysis.PandasReadExcelAnalysis;
 import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
 import com.ibm.wala.cast.python.ssa.PythonInstructionVisitor;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
@@ -19,7 +18,6 @@ import com.ibm.wala.ipa.callgraph.CallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.propagation.HeapModel;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
-import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAGetInstruction;
@@ -42,32 +40,7 @@ public class TestPandasModel extends TestPythonMLCallGraphShape {
 		PointerAnalysis<? extends InstanceKey> PA = engine.getPointerAnalysis();
 		HeapModel H = PA.getHeapModel();
 		
-		CGNode script = getNodes(CG, "script pandas1.py").iterator().next();
-		Set<CGNode> read_excel = CG.getNodes(MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, "Lpandas/functions/read_excel"), AstMethodReference.fnSelector));
-		
-		Map<InstanceKey, Set<String>> excelTableFields = HashMapFactory.make();
-		
-		IR ir = script.getIR();		
-		ir.visitAllInstructions(new PythonInstructionVisitor() {
-			@Override
-			public void visitPythonInvoke(PythonInvokeInstruction inst) {
-				if (! Collections.disjoint(CG.getPossibleTargets(script, inst.getCallSite()), read_excel)) {
-					PA.getPointsToSet(H.getPointerKeyForLocal(script, inst.getDef())).forEach((InstanceKey obj) -> {
-						excelTableFields.put(obj, HashSetFactory.make());
-					});
-				}
-			} 	
-		});
-		ir.visitAllInstructions(new PythonInstructionVisitor() {
-			@Override
-			public void visitGet(SSAGetInstruction instruction) {
-				PA.getPointsToSet(H.getPointerKeyForLocal(script, instruction.getRef())).forEach((InstanceKey obj) -> {
-					if (excelTableFields.containsKey(obj)) {
-						excelTableFields.get(obj).add(instruction.getDeclaredField().getName().toString());
-					}
-				});
-			}
-		});
+		Map<InstanceKey, Set<String>> excelTableFields = PandasReadExcelAnalysis.readExcelAnalysis(CG, PA, H);
 
 		System.out.println(excelTableFields);
 	

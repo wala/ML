@@ -1,4 +1,5 @@
 /******************************************************************************
+
  * Copyright (c) 2018 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,6 +12,7 @@
 package com.ibm.wala.cast.python.ml.driver;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -25,6 +27,7 @@ import org.apache.commons.cli.ParseException;
 
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.lsp.WALAServer;
+import com.ibm.wala.cast.python.ml.analysis.PandasReadExcelAnalysis;
 import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
 import com.ibm.wala.cast.python.ml.analysis.TensorVariable;
 import com.ibm.wala.cast.python.ml.client.PythonTensorAnalysisEngine;
@@ -34,7 +37,9 @@ import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.client.AbstractAnalysisEngine;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
+import com.ibm.wala.ipa.callgraph.propagation.HeapModel;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
+import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
@@ -44,6 +49,7 @@ import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.collections.HashSetFactory;
 
 public class PythonDriver {
 	private static String getTypeNameString(TypeName typ) {
@@ -66,6 +72,9 @@ public class PythonDriver {
 					TensorTypeAnalysis tt = super.performAnalysis(builder);
 
 					CallGraph CG = builder.getCallGraph();
+					PointerAnalysis<InstanceKey> PA = builder.getPointerAnalysis();
+					HeapModel H = PA.getHeapModel();
+
 					CG.iterator().forEachRemaining((CGNode n) -> { 
 						IMethod M = n.getMethod();
 						if (M instanceof AstMethod) {
@@ -77,7 +86,7 @@ public class PythonDriver {
 										lsp.add(pos, new int[] {CG.getNumber(n), inst.iindex});
 									}
 									if (inst.hasDef()) {
-										PointerKey v = builder.getPointerAnalysis().getHeapModel().getPointerKeyForLocal(n, inst.getDef());
+										PointerKey v = H.getPointerKeyForLocal(n, inst.getDef());
 										if (M instanceof AstMethod) {
 											if (pos != null) {
 												lsp.add(pos, v);
@@ -167,6 +176,21 @@ public class PythonDriver {
 					});	
 					
 					lsp.addValueErrors(language, this.getErrors());
+					
+					Map<InstanceKey, Set<String>> excelReads = PandasReadExcelAnalysis.readExcelAnalysis(CG, PA, H);
+					lsp.addValueAnalysis("type", builder.getPointerAnalysis().getHeapGraph(), (Boolean useMarkdown, PointerKey v) -> {
+						Set<String> fields = HashSetFactory.make();
+						PA.getPointsToSet(v).forEach((InstanceKey o) -> {
+							if (excelReads.containsKey(o)) {
+								fields.addAll(excelReads.get(o));
+							}
+						});
+						if (fields.isEmpty()) {
+							return null;
+						} else {
+							return fields.toString();
+						}
+					});
 					
 					return tt;
 				}	
