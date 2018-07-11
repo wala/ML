@@ -25,7 +25,7 @@
       <class name="read_excel" allocatable="true">
 	<method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self file sheet">
 	  <new def="v" class="Lobject"/>
-	  <return vaue="v"/>
+	  <return value="v"/>
 	</method>
       </class>
       
