@@ -178,7 +178,7 @@ public class PythonDriver {
 					lsp.addValueErrors(language, this.getErrors());
 					
 					Map<InstanceKey, Set<String>> excelReads = PandasReadExcelAnalysis.readExcelAnalysis(CG, PA, H);
-					lsp.addValueAnalysis("type", builder.getPointerAnalysis().getHeapGraph(), (Boolean useMarkdown, PointerKey v) -> {
+					lsp.addValueAnalysis("columns", builder.getPointerAnalysis().getHeapGraph(), (Boolean useMarkdown, PointerKey v) -> {
 						Set<String> fields = HashSetFactory.make();
 						PA.getPointsToSet(v).forEach((InstanceKey o) -> {
 							if (excelReads.containsKey(o)) {
