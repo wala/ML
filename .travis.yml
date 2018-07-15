@@ -20,6 +20,15 @@ install:
 script:
  - mvn clean install -B -q
 sudo: false
+deploy:
+  provider: pages
+  skip_cleanup: true
+  file:
+    com.ibm.wala.cast.python.ml/target/com.ibm.wala.cast.python.ml*.jar
+  on:
+    branch: master
+  github_token:
+    secure: "QjGnK8Olrp/JsAd0ssORIZXiNkDv4hKinL/5vqyrGVRqLx93ywer9GmwQ3zCbK8JQUA8VH1ekGHk2XwGQY1sOaV7CSSZG3N87NZioySczdVQwgGAnjijN0Xnm8KVKbFWt+nsT8vE1SozOm9vvf4JuUWQerTW1N05gj1tnDEgQEUh9Xw8GPPbN32PNwv6PqAsi5bRiajlnnc37/bzveO/kXiBpL2Z5wsETflLxZzk0y3Jg4tpvumkQNupGXI38n33xYqCr0BSApcNC0mM0qAEiHZoTq1JmpY4gXWhGnrEP6m6K75d6eAVkpLqke0jtFjLZrDJc9fTR7zrog1qtYW0KKmbKFiSLPXT7lzR6HdGp+nJ1MNzGBsW2mK8nKn/oEW4qJJvOZq9oowAMKQppakFfJ25764HjwolnGqomxYLsuZGCV4udcgUvWeKKdax/gwI0T4KX0nySwK4VcIrwJDNIpKMJVraYsl+nbKy+dlLGFgR9bfq0+IKHCHyB0pTzW7OmFROAAu4L4C9D88HgnfhjgwaxRgO0jvKv1I4FFfbF10RacQbji98t16MW/x2Zk+3PpYsdy75m93F+goiJOjhwCef+51v7yywPtO7IU12ejqBtI45HCT98s3J2SDtAZ+fSToJ+aZ21D4jtW6mHhd6YsUzWLxzswMHOrEHNse/Kxg="
 cache:
   directories:
     - $HOME/.m2
