@@ -44,6 +44,11 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 
 import com.ibm.wala.cast.lsp.WALAServer;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
 import com.ibm.wala.cast.lsp.Util;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
@@ -147,44 +152,75 @@ public class PythonLinter {
 	public static Map<String, List<Diagnostic>> getDiagnostics(Map<String,String> uriTextPairs) {
 		return getDiagnostics("python", uriTextPairs);
 	}
+	
+	public static JsonObject positionToJson(Position pos) {
+		JsonObject opos = new JsonObject();
+		opos.addProperty("line", pos.getLine());
+		opos.addProperty("character", pos.getCharacter());
+		return opos;
+	}
+	
+	public static JsonObject rangeToJson(Range range) {
+		JsonObject orange = new JsonObject();
+		orange.add("start", positionToJson(range.getStart()));
+		orange.add("start", positionToJson(range.getEnd()));
+		return orange;
+	}
+	
+	public static JsonObject locationToJson(Location loc) {
+		JsonObject oloc = new JsonObject();
+		oloc.addProperty("uri", loc.getUri());
+		oloc.add("range", rangeToJson(loc.getRange()));
+		return oloc;
+	}
 
+	public static JsonObject diagnosticToJson(Diagnostic diagnostic, int relatedCount) {
+		JsonObject odiag = new JsonObject();
+		odiag.addProperty("severity", diagnostic.getSeverity().toString());
+		odiag.addProperty("source", diagnostic.getSource());
+		odiag.addProperty("message", diagnostic.getMessage());
+		odiag.add("range", rangeToJson(diagnostic.getRange()));
+		List<DiagnosticRelatedInformation> relatedInformation = diagnostic.getRelatedInformation();
+		JsonArray orelated = new JsonArray();
+		if(relatedCount != 0) {
+			for(DiagnosticRelatedInformation info : relatedInformation) {
+				if(relatedCount == 0) {
+					break;
+				}
+				if(relatedCount > 0) {
+					relatedCount--;
+				}
+				JsonObject oinfo = new JsonObject();
+				oinfo.addProperty("message", info.getMessage());
+				oinfo.add("location", locationToJson(info.getLocation()));
+				orelated.add(oinfo);
+			}
+		}
+		odiag.add("relatedInformation", orelated);
+		return odiag;
+	}
+		
 	static enum FORMAT {
 		json{
+			public JsonObject toJson(Map<String, List<Diagnostic>> diagnostics, int relatedCount) {
+				JsonObject odiagMap = new JsonObject();
+				for(Entry<String, List<Diagnostic>> entry : diagnostics.entrySet()) {
+					JsonArray odiags = new JsonArray();
+					for(Diagnostic diag : entry.getValue()) {
+						odiags.add(diagnosticToJson(diag, relatedCount));
+					}
+					odiagMap.add(entry.getKey(), odiags);
+				}
+				return odiagMap;
+			}
+			
+			
 			@Override
 			public void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics, int related) {
-				if(diagnostics == null || diagnostics.isEmpty()) {
-					out.println("{}");
-					return;
-				}
-				
-				out.println("{");
-				boolean pastFirst = false;
-				for(Entry<String, List<Diagnostic>> entry : diagnostics.entrySet()) {
-					if(pastFirst) {
-						out.println();
-						out.print(", ");
-					} else {
-						pastFirst = true;
-					}
-					out.print("\"");
-					out.print(entry.getKey());
-					out.print("\": [");
-					List<Diagnostic> diags = entry.getValue();
-					if(diags != null) {
-						boolean pastFirstArr = false;
-						for(Diagnostic diag : diags) {
-							if(pastFirstArr) {
-								out.println();
-								out.print(", ");
-							} else {
-								pastFirstArr = true;
-							}
-							out.print(diags.toString());
-						}
-					}
-					out.println("]");
-				}
-				out.println("}");
+				JsonObject json = toJson(diagnostics, related);
+				Gson gson = new GsonBuilder().setPrettyPrinting().create();
+				String jsonString = gson.toJson(json);
+				out.println(jsonString);
 			}
 		},
 		pretty{
