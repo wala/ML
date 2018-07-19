@@ -104,7 +104,7 @@
     	      <transformers>
     		<!-- add Main-Class to manifest file -->
 		<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-    		  <mainClass>com.ibm.wala.cast.python.ml.driver.PythonDriver</mainClass>
+    		  <mainClass>com.ibm.wala.cast.python.ml.driver.PythonServer</mainClass>
     		</transformer>
     	      </transformers>
     	    </configuration>
