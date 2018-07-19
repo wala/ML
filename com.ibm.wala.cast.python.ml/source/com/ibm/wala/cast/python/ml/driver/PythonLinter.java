@@ -14,11 +14,12 @@ package com.ibm.wala.cast.python.ml.driver;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Function;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.io.PrintStream;
@@ -37,10 +38,10 @@ import org.apache.commons.cli.ParseException;
 
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticRelatedInformation;
+import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.python.icu.util.UResourceBundleIterator;
 
 import com.ibm.wala.cast.lsp.WALAServer;
 import com.ibm.wala.cast.lsp.Util;
@@ -49,6 +50,7 @@ import com.ibm.wala.util.CancelException;
 import com.ibm.wala.cast.python.ml.driver.PythonDriver;
 
 public class PythonLinter {
+
 	public static String positionToString(Position pos) {
 		return "" + (pos.getLine()+1) + ":" + (pos.getCharacter()+1);
 	}
@@ -103,7 +105,7 @@ public class PythonLinter {
 		out.print(pre);
 		out.print(locationToString(uri, diagnostic.getRange()));
 		out.print(":    [");
-		out.print(diagnostic.getSeverity().toString().toLowerCase());
+		out.print(diagnostic.getSeverity().toString());
 		out.print("] ");
 		out.println(diagnostic.getMessage());
 		if(lines.containsKey(uri)) {
@@ -205,6 +207,7 @@ public class PythonLinter {
 	
 		public abstract void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics);
 	};
+	
 	private final static FORMAT default_format = FORMAT.pretty;
 
 	static private String getFormatList() {
@@ -212,6 +215,21 @@ public class PythonLinter {
 		.map(x -> x.toString())
 		.collect(Collectors.joining(","));
 	}
+	
+	static private String getSeverityList() {
+		return severityArrayToString(EnumSet.allOf(DiagnosticSeverity.class));
+	}
+	
+	private static Set<DiagnosticSeverity> default_severityList =
+			EnumSet.of(DiagnosticSeverity.Error, DiagnosticSeverity.Warning);
+	
+	
+	private static String severityArrayToString(Set<DiagnosticSeverity> allSeverityLevels) {
+		return allSeverityLevels.stream()
+		.map(x -> x.toString())
+		.collect(Collectors.joining(","));
+	}
+
 
 	public static void main(String args[]) throws ClassHierarchyException, IOException, IllegalArgumentException, CancelException {
 		final CommandLineParser optionParser = new DefaultParser();
@@ -219,16 +237,23 @@ public class PythonLinter {
 		final Options options = new Options();
 
 		final Option formatOption = Option.builder().longOpt("format")
-		.hasArg().argName("format")
-		.desc("Format of output (" + getFormatList() + ").  Default: " + default_format.toString())
-		.required(false).build();
+				.hasArg().argName("format")
+				.desc("Format of output (" + getFormatList() + ").  Default: " + default_format.toString())
+				.required(false).build();
 		options.addOption(formatOption);
+
+		final Option severityOption = Option.builder().longOpt("severity")
+				.hasArgs().valueSeparator(',').argName("severity")
+				.desc("List of diagnostic severity levels to emit.  Can be a list of (" + getSeverityList() + ").  Default: " + severityArrayToString(default_severityList))
+				.required(false).build();
+		options.addOption(severityOption);
 
 		final Option helpOpt = Option.builder().longOpt("help").argName("help")
 			.desc("Print usage information").required(false).build();
 	    options.addOption(helpOpt);
 		
 		FORMAT format = default_format;
+		Set<DiagnosticSeverity> severityList = default_severityList;
 
 		try {
 			/* Parse command line */
@@ -248,6 +273,22 @@ public class PythonLinter {
 
 					printUsage(options);
 					System.exit(1);
+				}
+			}
+			
+			String[] severityStrings = cmd.getOptionValues("severity");
+			if(severityStrings != null) {
+				severityList = EnumSet.noneOf(DiagnosticSeverity.class);
+				for(int i = 0; i < severityStrings.length; i++) {
+					final String sevStr = severityStrings[i];
+					try {
+						severityList.add(DiagnosticSeverity.valueOf(sevStr));
+					} catch(IllegalArgumentException e) {
+						System.err.println("Error: severity passed to --severity option is not valid.  Please specify some of (" + getSeverityList() + ")");
+
+						printUsage(options);
+						System.exit(1);
+					}
 				}
 			}
 
@@ -274,13 +315,30 @@ public class PythonLinter {
 					System.err.println("There was an error generating diagnostics");
 					System.exit(1);
 				}
-				format.print(System.out, uriTextPairs, diagnostics);
+				Map<String, List<Diagnostic>> filteredDiagnostics = filterSeverity(diagnostics, severityList);
+				format.print(System.out, uriTextPairs, filteredDiagnostics);
 			}
 		} catch (final ParseException e) {
 			printUsage(options);
 			System.err.println(e.getMessage());
 			System.exit(-1);
 		}
+	}
+
+
+	private static Map<String, List<Diagnostic>> filterSeverity(Map<String, List<Diagnostic>> diagnostics,
+			Set<DiagnosticSeverity> severityList) {
+		
+		Map<String, List<Diagnostic>> ret = new HashMap<String, List<Diagnostic>>(diagnostics.size());
+		for(Entry<String, List<Diagnostic>> entries : diagnostics.entrySet()) {
+			List<Diagnostic> vals = entries.getValue().stream()
+					.filter(e -> severityList.contains(e.getSeverity()))
+					.collect(Collectors.toList());
+			if(vals != null && ! vals.isEmpty()) {
+				ret.put(entries.getKey(), vals);
+			}
+		}
+		return ret;
 	}
 
 	private static final String APP_NAME = "wala-lsp-linter-python-ml";
