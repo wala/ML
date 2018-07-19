@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.ibm.wala.analysis.typeInference.PrimitiveType;
+import com.ibm.wala.cast.ir.ssa.AstEchoInstruction;
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.ir.ssa.AstGlobalWrite;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
@@ -188,6 +189,11 @@ public class PythonLanguage implements Language {
 	public AstInstructionFactory instructionFactory() {
 		return new JavaSourceLoaderImpl.InstructionFactory() {
 	        @Override
+			public AstEchoInstruction EchoInstruction(int iindex, int[] rvals) {
+				return new AstEchoInstruction(iindex, rvals);
+			}
+
+			@Override
 	        public AstPropertyRead PropertyRead(int iindex, int result, int objectRef, int memberRef) {
 	          return new PythonPropertyRead(iindex, result, objectRef, memberRef);
 	        }

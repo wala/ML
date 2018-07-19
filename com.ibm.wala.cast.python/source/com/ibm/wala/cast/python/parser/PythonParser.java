@@ -1114,7 +1114,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			for(expr e : arg0.getInternalValues()) {
 				elts[i++] = e.accept(this);
 			}
-			return Ast.makeNode(CAstNode.PRIMITIVE, Ast.makeConstant("print"), elts);
+			return Ast.makeNode(CAstNode.ECHO, elts);
 		}
 
 		@Override
