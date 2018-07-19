@@ -101,7 +101,7 @@ public class PythonLinter {
 		}
 	}
 	
-	public static void displayDiagnostic(String pre, PrintStream out, String uri, Diagnostic diagnostic, Map<String,String[]> lines) {
+	public static void displayDiagnostic(String pre, PrintStream out, String uri, Diagnostic diagnostic, Map<String,String[]> lines, int relatedCount) {
 		out.print(pre);
 		out.print(locationToString(uri, diagnostic.getRange()));
 		out.print(":    [");
@@ -115,23 +115,30 @@ public class PythonLinter {
 		
 		List<DiagnosticRelatedInformation> relatedInfos = diagnostic.getRelatedInformation();
 		String relatedPre = "    " + pre;
-		for(DiagnosticRelatedInformation related : relatedInfos) {
-			final Location loc = related.getLocation();
-			if(loc == null) {
-				 continue;
-			}
-			
-			out.print(relatedPre);
-			out.print(locationToString(loc));
-			out.print(":    [related] ");
-			out.println(related.getMessage());
-			final String relatedUri = loc.getUri();
-			if(lines.containsKey(relatedUri)) {
-				displayTextRange(relatedPre, out, uri, lines.get(relatedUri), loc.getRange());
+		if(relatedCount != 0) {
+			for(DiagnosticRelatedInformation related : relatedInfos) {
+				if(relatedCount == 0) {
+					break;
+				}
+				if(relatedCount > 0) {
+					relatedCount--;
+				}
+				final Location loc = related.getLocation();
+				if(loc == null) {
+					 continue;
+				}
+				
+				out.print(relatedPre);
+				out.print(locationToString(loc));
+				out.print(":    [related] ");
+				out.println(related.getMessage());
+				final String relatedUri = loc.getUri();
+				if(lines.containsKey(relatedUri)) {
+					displayTextRange(relatedPre, out, uri, lines.get(relatedUri), loc.getRange());
+				}
 			}
 		}
-	}		
-	
+	}
 		
 	public static Map<String, List<Diagnostic>> getDiagnostics(String language, Map<String,String> uriTextPairs) {
 		return WALAServer.getDiagnostics(PythonDriver.python, language, uriTextPairs);
@@ -144,7 +151,7 @@ public class PythonLinter {
 	static enum FORMAT {
 		json{
 			@Override
-			public void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics) {
+			public void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics, int related) {
 				if(diagnostics == null || diagnostics.isEmpty()) {
 					out.println("{}");
 					return;
@@ -182,7 +189,7 @@ public class PythonLinter {
 		},
 		pretty{
 			@Override
-			public void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics) {
+			public void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics, int related) {
 				final Map<String, String[]> lines = new HashMap<String, String[]>(texts.size());
 				for(Map.Entry<String, String> kv : texts.entrySet()) {
 					lines.put(kv.getKey(), 
@@ -196,7 +203,7 @@ public class PythonLinter {
 					String uri = kv.getKey();
 					if(kv.getValue() != null) {
 						for(Diagnostic diagnostic : kv.getValue()) {
-							displayDiagnostic(pre, out, uri, diagnostic, lines);
+							displayDiagnostic(pre, out, uri, diagnostic, lines, related);
 						}
 					}
 					
@@ -205,7 +212,7 @@ public class PythonLinter {
 
 		};
 	
-		public abstract void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics);
+		public abstract void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics, int related);
 	};
 	
 	private final static FORMAT default_format = FORMAT.pretty;
@@ -248,12 +255,19 @@ public class PythonLinter {
 				.required(false).build();
 		options.addOption(severityOption);
 
+		final Option relatedOption = Option.builder().longOpt("related")
+				.hasArgs().argName("related")
+				.desc("The maximum number of related items to print.  (either a number or \"unlimited\").  Default: \"unlimited\"")
+				.required(false).build();
+		options.addOption(relatedOption);
+
 		final Option helpOpt = Option.builder().longOpt("help").argName("help")
 			.desc("Print usage information").required(false).build();
 	    options.addOption(helpOpt);
 		
 		FORMAT format = default_format;
 		Set<DiagnosticSeverity> severityList = default_severityList;
+		int related = -1;
 
 		try {
 			/* Parse command line */
@@ -291,6 +305,25 @@ public class PythonLinter {
 					}
 				}
 			}
+			
+			final String relatedString = cmd.getOptionValue("related");
+			if(relatedString != null) {
+				if(relatedString.equalsIgnoreCase("unlimited") || relatedString.equalsIgnoreCase("all")) {
+					related = -1;
+				} else {
+					try {
+						related = Integer.parseInt(relatedString);
+						if(related < 0) {
+							related = -1;
+						}
+					} catch(IllegalArgumentException e) {
+						System.err.println("Error: related count passed to --related option is not valid.  Please specify either a number of the string \"unlimited\"");
+	
+						printUsage(options);
+						System.exit(1);
+					}
+				}
+			}
 
 			List<String> files = cmd.getArgList();
 			Map<String,String> uriTextPairs = new HashMap<String,String>();
@@ -316,7 +349,7 @@ public class PythonLinter {
 					System.exit(1);
 				}
 				Map<String, List<Diagnostic>> filteredDiagnostics = filterSeverity(diagnostics, severityList);
-				format.print(System.out, uriTextPairs, filteredDiagnostics);
+				format.print(System.out, uriTextPairs, filteredDiagnostics, related);
 			}
 		} catch (final ParseException e) {
 			printUsage(options);
