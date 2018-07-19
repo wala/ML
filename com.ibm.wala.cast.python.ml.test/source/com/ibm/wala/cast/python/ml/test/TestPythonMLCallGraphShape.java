@@ -32,12 +32,16 @@ public abstract class TestPythonMLCallGraphShape extends TestPythonCallGraphShap
 			void check(PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result);
 		}
 	
-	protected CallGraph process(String name) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+	protected PythonAnalysisEngine<TensorTypeAnalysis> builder(String name) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		PythonAnalysisEngine<TensorTypeAnalysis> engine = new PythonTensorAnalysisEngine();
 		engine.setModuleFiles(Collections.singleton(getScript(name)));
-		return engine.buildDefaultCallGraph();
+		return engine;
 	}
-	
+
+	protected CallGraph process(String name) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		return builder(name).buildDefaultCallGraph();
+	}
+
 	protected void checkTensorOp(PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result, String fn, String in, String out) {
 		boolean found = false;
 		Set<CGNode> nodes = CG.getNodes(MethodReference.findOrCreate(TypeReference.findOrCreate(PythonTypes.pythonLoader, "Ltensorflow/functions/" + fn), AstMethodReference.fnSelector));

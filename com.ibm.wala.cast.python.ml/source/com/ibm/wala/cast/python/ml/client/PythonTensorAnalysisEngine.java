@@ -186,10 +186,13 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 	
 	protected void addBypassLogic(AnalysisOptions options) {
 		super.addBypassLogic(options);
-		
+		addSummaryBypassLogic(options, "tensorflow.xml");
+		addSummaryBypassLogic(options, "pandas.xml");
+	}
+
+	private void addSummaryBypassLogic(AnalysisOptions options, String summary) {
 		IClassHierarchy cha = getClassHierarchy();
-		
-		XMLMethodSummaryReader xml = new XMLMethodSummaryReader(getClass().getClassLoader().getResourceAsStream("tensorflow.xml"), scope);
+		XMLMethodSummaryReader xml = new XMLMethodSummaryReader(getClass().getClassLoader().getResourceAsStream(summary), scope);
 		for(TypeReference t : xml.getAllocatableClasses()) {
 			BypassSyntheticClassLoader ldr = (BypassSyntheticClassLoader) cha.getLoader(scope.getSyntheticLoader());
 			ldr.registerClass(t.getName(), new SyntheticClass(t, cha) {

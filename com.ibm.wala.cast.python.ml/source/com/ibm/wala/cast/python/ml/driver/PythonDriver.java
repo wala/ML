@@ -1,4 +1,5 @@
 /******************************************************************************
+
  * Copyright (c) 2018 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,21 +11,15 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.ml.driver;
 
-import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.lsp.WALAServer;
+import com.ibm.wala.cast.python.ml.analysis.PandasReadExcelAnalysis;
 import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
 import com.ibm.wala.cast.python.ml.analysis.TensorVariable;
 import com.ibm.wala.cast.python.ml.client.PythonTensorAnalysisEngine;
@@ -34,18 +29,21 @@ import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.client.AbstractAnalysisEngine;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
+import com.ibm.wala.ipa.callgraph.propagation.HeapModel;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
+import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
-import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.collections.HashSetFactory;
 
 public class PythonDriver {
+
 	private static String getTypeNameString(TypeName typ) {
 		String str = typ.toString();
 		if(str.startsWith("L")) {
@@ -66,6 +64,9 @@ public class PythonDriver {
 					TensorTypeAnalysis tt = super.performAnalysis(builder);
 
 					CallGraph CG = builder.getCallGraph();
+					PointerAnalysis<InstanceKey> PA = builder.getPointerAnalysis();
+					HeapModel H = PA.getHeapModel();
+
 					CG.iterator().forEachRemaining((CGNode n) -> { 
 						IMethod M = n.getMethod();
 						if (M instanceof AstMethod) {
@@ -77,7 +78,7 @@ public class PythonDriver {
 										lsp.add(pos, new int[] {CG.getNumber(n), inst.iindex});
 									}
 									if (inst.hasDef()) {
-										PointerKey v = builder.getPointerAnalysis().getHeapModel().getPointerKeyForLocal(n, inst.getDef());
+										PointerKey v = H.getPointerKeyForLocal(n, inst.getDef());
 										if (M instanceof AstMethod) {
 											if (pos != null) {
 												lsp.add(pos, v);
@@ -168,6 +169,21 @@ public class PythonDriver {
 					
 					lsp.addValueErrors(language, this.getErrors());
 					
+					Map<InstanceKey, Set<String>> excelReads = PandasReadExcelAnalysis.readExcelAnalysis(CG, PA, H);
+					lsp.addValueAnalysis("columns", builder.getPointerAnalysis().getHeapGraph(), (Boolean useMarkdown, PointerKey v) -> {
+						Set<String> fields = HashSetFactory.make();
+						PA.getPointsToSet(v).forEach((InstanceKey o) -> {
+							if (excelReads.containsKey(o)) {
+								fields.addAll(excelReads.get(o));
+							}
+						});
+						if (fields.isEmpty()) {
+							return null;
+						} else {
+							return fields.toString();
+						}
+					});
+					
 					return tt;
 				}	
 			};
@@ -175,136 +191,4 @@ public class PythonDriver {
 			return engine;
 		};
 	};
-
-	public static void main(String args[]) throws ClassHierarchyException, IOException, IllegalArgumentException, CancelException {
-		final CommandLineParser optionParser = new DefaultParser();
-		/* Command line options */
-		final Options options = new Options();
-
-		final Option runAsDaemonOpt = Option.builder().longOpt("daemon")
-				.hasArg().argName("daemon")
-				.desc("Run server as daemon thread")
-				.required(false).build();
-		options.addOption(runAsDaemonOpt);
-
-		final Option webSocketOpt = Option.builder().longOpt("web-socket")
-				.hasArg().argName("websocket")
-				.desc("Run server using WebSockets")
-				.required(false).build();
-		options.addOption(webSocketOpt);
-
-		final Option serverPortOpt = Option.builder().longOpt("server-port")
-			.hasArg().argName("server-port")
-			.desc("Specify the port that the server should start listening on.")
-			.required(false).build();
-		options.addOption(serverPortOpt);
-
-		final Option clientPortOpt = Option.builder().longOpt("client-port")
-		.hasArg().argName("client-port")
-		.desc("Specify the exiting client port that the server should connect to")
-		.required(false).build();
-		options.addOption(clientPortOpt);
-
-		final Option helpOpt = Option.builder().longOpt("help").argName("help")
-			.desc("Print usage information").required(false).build();
-	    options.addOption(helpOpt);
-
-		int serverPort = -1;
-		int clientPort = -1;
-		boolean runAsDaemon = false;
-		boolean webSockets = false;
-		
-		try {
-			/* Parse command line */
-			final CommandLine cmd = optionParser.parse(options, args);
-			if (cmd.hasOption("help")) {
-			  printUsage(options);
-			  return;
-			}
-
-			final String serverPortString = cmd.getOptionValue("server-port");
-			final String clientPortString = cmd.getOptionValue("client-port");
-			if (cmd.hasOption("daemon")) {
-				runAsDaemon = Boolean.parseBoolean(cmd.getOptionValue("daemon"));
-			}
-			if (cmd.hasOption("websocket")) {
-				webSockets = Boolean.parseBoolean(cmd.getOptionValue("websocket"));
-			}
-			
-			if(serverPortString == null) {
-				serverPort = -1;
-			} else {
-				final String trimmedString = serverPortString.trim();
-				if(trimmedString.isEmpty()) {
-					serverPort = 0;
-				} else if(trimmedString.equals("-") || trimmedString.equals("--")) {
-					serverPort = -1;
-				} else {
-					try {
-						serverPort = Integer.parseInt(trimmedString);
-					} catch(NumberFormatException e) {
-						System.err.println("Error: port value of '" + serverPortString + "' specified, which"
-						+ " is neither a valid port number (integer) nor the special - indicating that standard io should be used");
-						printUsage(options);
-						System.exit(1);
-					}
-				}
-			}
-
-			if(clientPortString == null) {
-				clientPort = -1;
-			} else {
-				final String trimmedString = clientPortString.trim();
-				if(trimmedString.isEmpty()) {
-					clientPort = -1;
-				} else {
-					try {
-						clientPort = Integer.parseInt(trimmedString);
-					} catch(NumberFormatException e) {
-						System.err.println("Error: client port value of '" + clientPortString + "' specified, which"
-						+ " is not a valid port number (integer)");
-						printUsage(options);
-						System.exit(1);
-					}
-				}
-			}
-		} catch (final ParseException e) {
-			printUsage(options);
-			System.err.println(e.getMessage());
-			System.exit(-1);
-		}
-
-		if(clientPort < 0) {
-			if(serverPort < 0) {
-				WALAServer.launchOnStdio(python);
-			} else {
-				final WALAServer server = 
-					WALAServer.launchOnServerPort(serverPort, python, runAsDaemon);
-				if(serverPort == 0) {
-					final Integer actualPort = server.getServerPort();
-					System.err.println("Server up, listening on port: " + actualPort);
-				}
-			}
-		} else {
-			if(serverPort < 0) {
-				@SuppressWarnings("unused")
-				final WALAServer server = WALAServer.launchOnClientPort(null, clientPort, python);
-			} else {
-				System.err.println("Both of the mutually exclusive options --server-port ("
-				+ serverPort + ") and --client-port (" + clientPort
-				+ ") where specified.  Please pick.  ");
-				printUsage(options);
-				System.exit(-1);
-			}
-		}
-	}
-
-	private static final String APP_NAME = "wala-lsp-server-python-ml";
-	private static final String APP_DESCRIPTION = "A Language Server Protocol server for WALA Python/ML analysis";
-
-	private static void printUsage(final Options options) {
-		final HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp(APP_NAME, APP_DESCRIPTION, options, null);
-	}
-
 }

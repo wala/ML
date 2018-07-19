@@ -51,7 +51,7 @@
     <dependency>
       <groupId>org.eclipse.lsp4j</groupId>
       <artifactId>org.eclipse.lsp4j</artifactId>
-      <version>0.4.0</version>
+      <version>0.4.1</version>
     </dependency>
     <dependency>
       <groupId>commons-cli</groupId>
@@ -72,8 +72,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.5.1</version>
         <configuration>
-`          <source>1.8</source>
-  `        <target>1.8</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
       </plugin>
       <plugin>
@@ -104,7 +104,7 @@
     	      <transformers>
     		<!-- add Main-Class to manifest file -->
 		<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-    		  <mainClass>com.ibm.wala.cast.python.ml.driver.PythonDriver</mainClass>
+    		  <mainClass>com.ibm.wala.cast.python.ml.driver.PythonServer</mainClass>
     		</transformer>
     	      </transformers>
     	    </configuration>
