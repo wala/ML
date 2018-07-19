@@ -11,14 +11,18 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.ml.driver;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,6 +36,11 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticRelatedInformation;
+import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
+import org.python.icu.util.UResourceBundleIterator;
 
 import com.ibm.wala.cast.lsp.WALAServer;
 import com.ibm.wala.cast.lsp.Util;
@@ -40,7 +49,88 @@ import com.ibm.wala.util.CancelException;
 import com.ibm.wala.cast.python.ml.driver.PythonDriver;
 
 public class PythonLinter {
+	public static String positionToString(Position pos) {
+		return "" + (pos.getLine()+1) + ":" + (pos.getCharacter()+1);
+	}
+	
+	public static String rangeToString(Range range) {
+		return positionToString(range.getStart()) + "-" + positionToString(range.getEnd());
+		
+	}
+	
+	public static String locationToString(String uri, Range range) {
+		return uri + ":" + rangeToString(range);
+	}
 
+	public static String locationToString(Location loc) {
+		return locationToString(loc.getUri(), loc.getRange());
+	}
+	
+	public static void displayTextRange(String pre, PrintStream out, String uri, String[] lines, Range range) {
+		final Position start = range.getStart();
+		final Position end = range.getEnd();
+		if(start.getLine() > end.getLine()) {
+			throw new IllegalArgumentException("Invalid range: end line " + end.getLine() + " before start line " + start.getLine() + " of " + uri);
+		}
+		if(end.getLine() >= lines.length) {
+			throw new IllegalArgumentException("Invalid range: end line " + end.getLine() + " after the last line " + lines.length + " of " + uri);			
+		}
+		for(int i = start.getLine(); i <= end.getLine(); i++) {
+			out.print(pre);
+			String prefix = uri + ":" + (i+1) + ":    ";
+			out.print(prefix);
+			String line = lines[i];
+			out.println(line);
+			int skipStart = 0;
+			if(i == start.getLine()) {
+				skipStart = start.getCharacter();
+			}
+			int numArrows = line.length();
+			if(i == end.getLine()) {
+				numArrows = end.getCharacter();
+			}
+			numArrows = numArrows - skipStart;
+			
+			out.print(pre);
+			out.print(Stream.generate(()->" ").limit(prefix.length() + skipStart).collect(Collectors.joining()));
+			if(numArrows >= 0) {
+				out.println(Stream.generate(()->"^").limit(numArrows).collect(Collectors.joining()));
+			}
+		}
+	}
+	
+	public static void displayDiagnostic(String pre, PrintStream out, String uri, Diagnostic diagnostic, Map<String,String[]> lines) {
+		out.print(pre);
+		out.print(locationToString(uri, diagnostic.getRange()));
+		out.print(":    [");
+		out.print(diagnostic.getSeverity().toString().toLowerCase());
+		out.print("] ");
+		out.println(diagnostic.getMessage());
+		if(lines.containsKey(uri)) {
+			displayTextRange(pre, out, uri, lines.get(uri), diagnostic.getRange());
+
+		}
+		
+		List<DiagnosticRelatedInformation> relatedInfos = diagnostic.getRelatedInformation();
+		String relatedPre = "    " + pre;
+		for(DiagnosticRelatedInformation related : relatedInfos) {
+			final Location loc = related.getLocation();
+			if(loc == null) {
+				 continue;
+			}
+			
+			out.print(relatedPre);
+			out.print(locationToString(loc));
+			out.print(":    [related] ");
+			out.println(related.getMessage());
+			final String relatedUri = loc.getUri();
+			if(lines.containsKey(relatedUri)) {
+				displayTextRange(relatedPre, out, uri, lines.get(relatedUri), loc.getRange());
+			}
+		}
+	}		
+	
+		
 	public static Map<String, List<Diagnostic>> getDiagnostics(String language, Map<String,String> uriTextPairs) {
 		return WALAServer.getDiagnostics(PythonDriver.python, language, uriTextPairs);
 	}
@@ -52,7 +142,7 @@ public class PythonLinter {
 	static enum FORMAT {
 		json{
 			@Override
-			public void print(PrintStream out, Map<String, List<Diagnostic>> diagnostics) {
+			public void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics) {
 				if(diagnostics == null || diagnostics.isEmpty()) {
 					out.println("{}");
 					return;
@@ -90,14 +180,30 @@ public class PythonLinter {
 		},
 		pretty{
 			@Override
-			public void print(PrintStream out, Map<String, List<Diagnostic>> diagnostics) {
-				System.err.println("Warning: pretty printing not yet supported.  Using json formatting instead");
-				json.print(out, diagnostics);
+			public void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics) {
+				final Map<String, String[]> lines = new HashMap<String, String[]>(texts.size());
+				for(Map.Entry<String, String> kv : texts.entrySet()) {
+					lines.put(kv.getKey(), 
+	            	new BufferedReader(new StringReader(kv.getValue()))
+	            		.lines()
+	            		.toArray(String[]::new));
+				}
+				
+				final String pre = "";
+				for(Map.Entry<String, List<Diagnostic>> kv : diagnostics.entrySet()) {
+					String uri = kv.getKey();
+					if(kv.getValue() != null) {
+						for(Diagnostic diagnostic : kv.getValue()) {
+							displayDiagnostic(pre, out, uri, diagnostic, lines);
+						}
+					}
+					
+				}				
 			}
 
 		};
 	
-		public abstract void print(PrintStream out, Map<String, List<Diagnostic>> diagnostics);
+		public abstract void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics);
 	};
 	private final static FORMAT default_format = FORMAT.pretty;
 
@@ -133,7 +239,7 @@ public class PythonLinter {
 			}
 
 
-			final String formatString = cmd.getOptionValue("formatString");
+			final String formatString = cmd.getOptionValue("format");
 			if(formatString != null) {
 				try {
 					format = FORMAT.valueOf(formatString);
@@ -155,7 +261,7 @@ public class PythonLinter {
 					if(uriTextPairs.containsKey(uri)) {
 						System.err.println("WARNING: ignoring repeated filename: " + fileName);
 					} else {
-						uriTextPairs.put(uri, text);
+						uriTextPairs.put(fileName, text);
 					}
 				} catch(IOException e) {
 					System.err.println("Failed to read file: " + fileName);
@@ -168,7 +274,7 @@ public class PythonLinter {
 					System.err.println("There was an error generating diagnostics");
 					System.exit(1);
 				}
-				format.print(System.out, diagnostics);
+				format.print(System.out, uriTextPairs, diagnostics);
 			}
 		} catch (final ParseException e) {
 			printUsage(options);
