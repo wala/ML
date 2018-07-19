@@ -15,7 +15,7 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Test;
 
 import com.ibm.wala.cast.python.ml.driver.ClientDriver;
-import com.ibm.wala.cast.python.ml.driver.PythonDriver;
+import com.ibm.wala.cast.python.ml.driver.PythonServer;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashSetFactory;
@@ -26,7 +26,7 @@ public class ServerTest {
 
 	@Test
 	public void trivialClient() throws IOException, InterruptedException, ExecutionException, ClassHierarchyException, IllegalArgumentException, CancelException, URISyntaxException {
-		PythonDriver.main(new String[] {"-server-port", "6660", "-daemon", "true"});
+		PythonServer.main(new String[] {"-server-port", "6660", "-daemon", "true"});
 		String script = "buggy_convolutional_network.py";
 		String fileName = getScript(script);
 		Set<String> checks = HashSetFactory.make();
