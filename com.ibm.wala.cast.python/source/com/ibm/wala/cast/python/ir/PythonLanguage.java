@@ -15,11 +15,13 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.ibm.wala.analysis.typeInference.PrimitiveType;
+import com.ibm.wala.cast.ir.ssa.AstEchoInstruction;
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.ir.ssa.AstGlobalWrite;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.ssa.AstPropertyRead;
 import com.ibm.wala.cast.ir.ssa.AstPropertyWrite;
+import com.ibm.wala.cast.ir.ssa.AstYieldInstruction;
 import com.ibm.wala.cast.ir.ssa.EachElementGetInstruction;
 import com.ibm.wala.cast.java.loader.JavaSourceLoaderImpl;
 import com.ibm.wala.cast.python.cfg.PythonInducedCFG;
@@ -188,6 +190,11 @@ public class PythonLanguage implements Language {
 	public AstInstructionFactory instructionFactory() {
 		return new JavaSourceLoaderImpl.InstructionFactory() {
 	        @Override
+			public AstEchoInstruction EchoInstruction(int iindex, int[] rvals) {
+				return new AstEchoInstruction(iindex, rvals);
+			}
+
+			@Override
 	        public AstPropertyRead PropertyRead(int iindex, int result, int objectRef, int memberRef) {
 	          return new PythonPropertyRead(iindex, result, objectRef, memberRef);
 	        }
@@ -236,6 +243,11 @@ public class PythonLanguage implements Language {
 				public EachElementGetInstruction EachElementGetInstruction(int iindex, int value, int objectRef, int prevProp) {
 					return new EachElementGetInstruction(iindex, value, objectRef, prevProp);
 				} 
+				
+		        @Override
+		        public AstYieldInstruction YieldInstruction(int iindex, int[] rvals) {
+		          return new AstYieldInstruction(iindex, rvals);
+		        }
 		};
 	}
 

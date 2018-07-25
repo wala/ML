@@ -14,11 +14,12 @@ package com.ibm.wala.cast.python.ml.driver;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Function;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.io.PrintStream;
@@ -37,18 +38,24 @@ import org.apache.commons.cli.ParseException;
 
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticRelatedInformation;
+import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.python.icu.util.UResourceBundleIterator;
 
 import com.ibm.wala.cast.lsp.WALAServer;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
 import com.ibm.wala.cast.lsp.Util;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.cast.python.ml.driver.PythonDriver;
 
 public class PythonLinter {
+
 	public static String positionToString(Position pos) {
 		return "" + (pos.getLine()+1) + ":" + (pos.getCharacter()+1);
 	}
@@ -99,11 +106,11 @@ public class PythonLinter {
 		}
 	}
 	
-	public static void displayDiagnostic(String pre, PrintStream out, String uri, Diagnostic diagnostic, Map<String,String[]> lines) {
+	public static void displayDiagnostic(String pre, PrintStream out, String uri, Diagnostic diagnostic, Map<String,String[]> lines, int relatedCount) {
 		out.print(pre);
 		out.print(locationToString(uri, diagnostic.getRange()));
 		out.print(":    [");
-		out.print(diagnostic.getSeverity().toString().toLowerCase());
+		out.print(diagnostic.getSeverity().toString());
 		out.print("] ");
 		out.println(diagnostic.getMessage());
 		if(lines.containsKey(uri)) {
@@ -113,23 +120,30 @@ public class PythonLinter {
 		
 		List<DiagnosticRelatedInformation> relatedInfos = diagnostic.getRelatedInformation();
 		String relatedPre = "    " + pre;
-		for(DiagnosticRelatedInformation related : relatedInfos) {
-			final Location loc = related.getLocation();
-			if(loc == null) {
-				 continue;
-			}
-			
-			out.print(relatedPre);
-			out.print(locationToString(loc));
-			out.print(":    [related] ");
-			out.println(related.getMessage());
-			final String relatedUri = loc.getUri();
-			if(lines.containsKey(relatedUri)) {
-				displayTextRange(relatedPre, out, uri, lines.get(relatedUri), loc.getRange());
+		if(relatedCount != 0) {
+			for(DiagnosticRelatedInformation related : relatedInfos) {
+				if(relatedCount == 0) {
+					break;
+				}
+				if(relatedCount > 0) {
+					relatedCount--;
+				}
+				final Location loc = related.getLocation();
+				if(loc == null) {
+					 continue;
+				}
+				
+				out.print(relatedPre);
+				out.print(locationToString(loc));
+				out.print(":    [related] ");
+				out.println(related.getMessage());
+				final String relatedUri = loc.getUri();
+				if(lines.containsKey(relatedUri)) {
+					displayTextRange(relatedPre, out, uri, lines.get(relatedUri), loc.getRange());
+				}
 			}
 		}
-	}		
-	
+	}
 		
 	public static Map<String, List<Diagnostic>> getDiagnostics(String language, Map<String,String> uriTextPairs) {
 		return WALAServer.getDiagnostics(PythonDriver.python, language, uriTextPairs);
@@ -138,49 +152,80 @@ public class PythonLinter {
 	public static Map<String, List<Diagnostic>> getDiagnostics(Map<String,String> uriTextPairs) {
 		return getDiagnostics("python", uriTextPairs);
 	}
+	
+	public static JsonObject positionToJson(Position pos) {
+		JsonObject opos = new JsonObject();
+		opos.addProperty("line", pos.getLine());
+		opos.addProperty("character", pos.getCharacter());
+		return opos;
+	}
+	
+	public static JsonObject rangeToJson(Range range) {
+		JsonObject orange = new JsonObject();
+		orange.add("start", positionToJson(range.getStart()));
+		orange.add("start", positionToJson(range.getEnd()));
+		return orange;
+	}
+	
+	public static JsonObject locationToJson(Location loc) {
+		JsonObject oloc = new JsonObject();
+		oloc.addProperty("uri", loc.getUri());
+		oloc.add("range", rangeToJson(loc.getRange()));
+		return oloc;
+	}
 
+	public static JsonObject diagnosticToJson(Diagnostic diagnostic, int relatedCount) {
+		JsonObject odiag = new JsonObject();
+		odiag.addProperty("severity", diagnostic.getSeverity().toString());
+		odiag.addProperty("source", diagnostic.getSource());
+		odiag.addProperty("message", diagnostic.getMessage());
+		odiag.add("range", rangeToJson(diagnostic.getRange()));
+		List<DiagnosticRelatedInformation> relatedInformation = diagnostic.getRelatedInformation();
+		JsonArray orelated = new JsonArray();
+		if(relatedCount != 0) {
+			for(DiagnosticRelatedInformation info : relatedInformation) {
+				if(relatedCount == 0) {
+					break;
+				}
+				if(relatedCount > 0) {
+					relatedCount--;
+				}
+				JsonObject oinfo = new JsonObject();
+				oinfo.addProperty("message", info.getMessage());
+				oinfo.add("location", locationToJson(info.getLocation()));
+				orelated.add(oinfo);
+			}
+		}
+		odiag.add("relatedInformation", orelated);
+		return odiag;
+	}
+		
 	static enum FORMAT {
 		json{
-			@Override
-			public void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics) {
-				if(diagnostics == null || diagnostics.isEmpty()) {
-					out.println("{}");
-					return;
-				}
-				
-				out.println("{");
-				boolean pastFirst = false;
+			public JsonObject toJson(Map<String, List<Diagnostic>> diagnostics, int relatedCount) {
+				JsonObject odiagMap = new JsonObject();
 				for(Entry<String, List<Diagnostic>> entry : diagnostics.entrySet()) {
-					if(pastFirst) {
-						out.println();
-						out.print(", ");
-					} else {
-						pastFirst = true;
+					JsonArray odiags = new JsonArray();
+					for(Diagnostic diag : entry.getValue()) {
+						odiags.add(diagnosticToJson(diag, relatedCount));
 					}
-					out.print("\"");
-					out.print(entry.getKey());
-					out.print("\": [");
-					List<Diagnostic> diags = entry.getValue();
-					if(diags != null) {
-						boolean pastFirstArr = false;
-						for(Diagnostic diag : diags) {
-							if(pastFirstArr) {
-								out.println();
-								out.print(", ");
-							} else {
-								pastFirstArr = true;
-							}
-							out.print(diags.toString());
-						}
-					}
-					out.println("]");
+					odiagMap.add(entry.getKey(), odiags);
 				}
-				out.println("}");
+				return odiagMap;
+			}
+			
+			
+			@Override
+			public void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics, int related) {
+				JsonObject json = toJson(diagnostics, related);
+				Gson gson = new GsonBuilder().setPrettyPrinting().create();
+				String jsonString = gson.toJson(json);
+				out.println(jsonString);
 			}
 		},
 		pretty{
 			@Override
-			public void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics) {
+			public void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics, int related) {
 				final Map<String, String[]> lines = new HashMap<String, String[]>(texts.size());
 				for(Map.Entry<String, String> kv : texts.entrySet()) {
 					lines.put(kv.getKey(), 
@@ -194,7 +239,7 @@ public class PythonLinter {
 					String uri = kv.getKey();
 					if(kv.getValue() != null) {
 						for(Diagnostic diagnostic : kv.getValue()) {
-							displayDiagnostic(pre, out, uri, diagnostic, lines);
+							displayDiagnostic(pre, out, uri, diagnostic, lines, related);
 						}
 					}
 					
@@ -203,8 +248,9 @@ public class PythonLinter {
 
 		};
 	
-		public abstract void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics);
+		public abstract void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics, int related);
 	};
+	
 	private final static FORMAT default_format = FORMAT.pretty;
 
 	static private String getFormatList() {
@@ -212,6 +258,21 @@ public class PythonLinter {
 		.map(x -> x.toString())
 		.collect(Collectors.joining(","));
 	}
+	
+	static private String getSeverityList() {
+		return severityArrayToString(EnumSet.allOf(DiagnosticSeverity.class));
+	}
+	
+	private static Set<DiagnosticSeverity> default_severityList =
+			EnumSet.of(DiagnosticSeverity.Error, DiagnosticSeverity.Warning);
+	
+	
+	private static String severityArrayToString(Set<DiagnosticSeverity> allSeverityLevels) {
+		return allSeverityLevels.stream()
+		.map(x -> x.toString())
+		.collect(Collectors.joining(","));
+	}
+
 
 	public static void main(String args[]) throws ClassHierarchyException, IOException, IllegalArgumentException, CancelException {
 		final CommandLineParser optionParser = new DefaultParser();
@@ -219,16 +280,30 @@ public class PythonLinter {
 		final Options options = new Options();
 
 		final Option formatOption = Option.builder().longOpt("format")
-		.hasArg().argName("format")
-		.desc("Format of output (" + getFormatList() + ").  Default: " + default_format.toString())
-		.required(false).build();
+				.hasArg().argName("format")
+				.desc("Format of output (" + getFormatList() + ").  Default: " + default_format.toString())
+				.required(false).build();
 		options.addOption(formatOption);
+
+		final Option severityOption = Option.builder().longOpt("severity")
+				.hasArgs().valueSeparator(',').argName("severity")
+				.desc("List of diagnostic severity levels to emit.  Can be a list of (" + getSeverityList() + ").  Default: " + severityArrayToString(default_severityList))
+				.required(false).build();
+		options.addOption(severityOption);
+
+		final Option relatedOption = Option.builder().longOpt("related")
+				.hasArgs().argName("related")
+				.desc("The maximum number of related items to print.  (either a number or \"unlimited\").  Default: \"unlimited\"")
+				.required(false).build();
+		options.addOption(relatedOption);
 
 		final Option helpOpt = Option.builder().longOpt("help").argName("help")
 			.desc("Print usage information").required(false).build();
 	    options.addOption(helpOpt);
 		
 		FORMAT format = default_format;
+		Set<DiagnosticSeverity> severityList = default_severityList;
+		int related = -1;
 
 		try {
 			/* Parse command line */
@@ -248,6 +323,41 @@ public class PythonLinter {
 
 					printUsage(options);
 					System.exit(1);
+				}
+			}
+			
+			String[] severityStrings = cmd.getOptionValues("severity");
+			if(severityStrings != null) {
+				severityList = EnumSet.noneOf(DiagnosticSeverity.class);
+				for(int i = 0; i < severityStrings.length; i++) {
+					final String sevStr = severityStrings[i];
+					try {
+						severityList.add(DiagnosticSeverity.valueOf(sevStr));
+					} catch(IllegalArgumentException e) {
+						System.err.println("Error: severity passed to --severity option is not valid.  Please specify some of (" + getSeverityList() + ")");
+
+						printUsage(options);
+						System.exit(1);
+					}
+				}
+			}
+			
+			final String relatedString = cmd.getOptionValue("related");
+			if(relatedString != null) {
+				if(relatedString.equalsIgnoreCase("unlimited") || relatedString.equalsIgnoreCase("all")) {
+					related = -1;
+				} else {
+					try {
+						related = Integer.parseInt(relatedString);
+						if(related < 0) {
+							related = -1;
+						}
+					} catch(IllegalArgumentException e) {
+						System.err.println("Error: related count passed to --related option is not valid.  Please specify either a number of the string \"unlimited\"");
+	
+						printUsage(options);
+						System.exit(1);
+					}
 				}
 			}
 
@@ -274,13 +384,30 @@ public class PythonLinter {
 					System.err.println("There was an error generating diagnostics");
 					System.exit(1);
 				}
-				format.print(System.out, uriTextPairs, diagnostics);
+				Map<String, List<Diagnostic>> filteredDiagnostics = filterSeverity(diagnostics, severityList);
+				format.print(System.out, uriTextPairs, filteredDiagnostics, related);
 			}
 		} catch (final ParseException e) {
 			printUsage(options);
 			System.err.println(e.getMessage());
 			System.exit(-1);
 		}
+	}
+
+
+	private static Map<String, List<Diagnostic>> filterSeverity(Map<String, List<Diagnostic>> diagnostics,
+			Set<DiagnosticSeverity> severityList) {
+		
+		Map<String, List<Diagnostic>> ret = new HashMap<String, List<Diagnostic>>(diagnostics.size());
+		for(Entry<String, List<Diagnostic>> entries : diagnostics.entrySet()) {
+			List<Diagnostic> vals = entries.getValue().stream()
+					.filter(e -> severityList.contains(e.getSeverity()))
+					.collect(Collectors.toList());
+			if(vals != null && ! vals.isEmpty()) {
+				ret.put(entries.getKey(), vals);
+			}
+		}
+		return ret;
 	}
 
 	private static final String APP_NAME = "wala-lsp-linter-python-ml";
