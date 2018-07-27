@@ -11,11 +11,13 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.ml.driver;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.Diagnostic;
 
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.lsp.WALAServer;
@@ -43,6 +45,14 @@ import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashSetFactory;
 
 public class PythonDriver {
+
+	public static Map<String, List<Diagnostic>> getDiagnostics(String language, Map<String,String> uriTextPairs) {
+		return WALAServer.getDiagnostics(python, language, uriTextPairs);
+	}
+
+	public static Map<String, List<Diagnostic>> getDiagnostics(Map<String,String> uriTextPairs) {
+		return getDiagnostics("python", uriTextPairs);
+	}
 
 	private static String getTypeNameString(TypeName typ) {
 		String str = typ.toString();
