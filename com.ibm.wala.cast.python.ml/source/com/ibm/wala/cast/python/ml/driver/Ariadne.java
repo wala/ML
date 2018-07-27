@@ -304,7 +304,7 @@ public class Ariadne {
 
 	private static void printUsage(final Options options) {
 		final HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp(APP_NAME, APP_DESCRIPTION, options, null);
+		formatter.printHelp(APP_NAME + " [arguments] [filenames]", APP_DESCRIPTION, options, null);
 	}
 
 }
