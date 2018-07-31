@@ -9,7 +9,8 @@ import org.eclipse.lsp4j.Diagnostic;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.ibm.wala.cast.python.ml.driver.PythonLinter;
+import com.ibm.wala.cast.python.ml.driver.DiagnosticsFormatter;
+import com.ibm.wala.cast.python.ml.driver.PythonDriver;
 
 
 public class CloudFunction {
@@ -29,7 +30,7 @@ public class CloudFunction {
 		}
 		Map<String,String> uriTextPairs = new HashMap<String,String>();
 		uriTextPairs.put("fakecode.py", code);
-		Map<String, List<Diagnostic>> diagnostics = PythonLinter.getDiagnostics(uriTextPairs);
+		Map<String, List<Diagnostic>> diagnostics = PythonDriver.getDiagnostics(uriTextPairs);
 		if(diagnostics == null) {
 			System.err.println("There was an error generating diagnostics");
 			return "Error";
@@ -39,7 +40,7 @@ public class CloudFunction {
 		for(Entry<String, List<Diagnostic>> entry : diagnostics.entrySet()) {
 			JsonArray odiags = new JsonArray();
 			for(Diagnostic diag : entry.getValue()) {
-				odiags.add(PythonLinter.diagnosticToJson(diag, 0));
+				odiags.add(DiagnosticsFormatter.diagnosticToJson(diag, 0));
 			}
 			odiagMap.add(entry.getKey(), odiags);
 		}
