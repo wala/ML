@@ -1,40 +1,15 @@
-/******************************************************************************
-
- * Copyright (c) 2018 IBM Corporation.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *****************************************************************************/
 package com.ibm.wala.cast.python.ml.driver;
 
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.EnumSet;
+import java.io.PrintStream;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.io.PrintStream;
-import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticRelatedInformation;
@@ -43,18 +18,13 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 
-import com.ibm.wala.cast.lsp.WALAServer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonWriter;
-import com.ibm.wala.cast.lsp.Util;
-import com.ibm.wala.ipa.cha.ClassHierarchyException;
-import com.ibm.wala.util.CancelException;
-import com.ibm.wala.cast.python.ml.driver.PythonDriver;
+import com.ibm.wala.cast.lsp.WALAServer;
 
-public class PythonLinter {
+public class DiagnosticsFormatter {
 
 	public static String positionToString(Position pos) {
 		return "" + (pos.getLine()+1) + ":" + (pos.getCharacter()+1);
@@ -143,14 +113,6 @@ public class PythonLinter {
 				}
 			}
 		}
-	}
-		
-	public static Map<String, List<Diagnostic>> getDiagnostics(String language, Map<String,String> uriTextPairs) {
-		return WALAServer.getDiagnostics(PythonDriver.python, language, uriTextPairs);
-	}
-
-	public static Map<String, List<Diagnostic>> getDiagnostics(Map<String,String> uriTextPairs) {
-		return getDiagnostics("python", uriTextPairs);
 	}
 	
 	public static JsonObject positionToJson(Position pos) {
@@ -251,151 +213,7 @@ public class PythonLinter {
 		public abstract void print(PrintStream out, Map<String, String> texts, Map<String, List<Diagnostic>> diagnostics, int related);
 	};
 	
-	private final static FORMAT default_format = FORMAT.pretty;
-
-	static private String getFormatList() {
-		return Arrays.stream(FORMAT.values())
-		.map(x -> x.toString())
-		.collect(Collectors.joining(","));
-	}
-	
-	static private String getSeverityList() {
-		return severityArrayToString(EnumSet.allOf(DiagnosticSeverity.class));
-	}
-	
-	private static Set<DiagnosticSeverity> default_severityList =
-			EnumSet.of(DiagnosticSeverity.Error, DiagnosticSeverity.Warning);
-	
-	
-	private static String severityArrayToString(Set<DiagnosticSeverity> allSeverityLevels) {
-		return allSeverityLevels.stream()
-		.map(x -> x.toString())
-		.collect(Collectors.joining(","));
-	}
-
-
-	public static void main(String args[]) throws ClassHierarchyException, IOException, IllegalArgumentException, CancelException {
-		final CommandLineParser optionParser = new DefaultParser();
-		/* Command line options */
-		final Options options = new Options();
-
-		final Option formatOption = Option.builder().longOpt("format")
-				.hasArg().argName("format")
-				.desc("Format of output (" + getFormatList() + ").  Default: " + default_format.toString())
-				.required(false).build();
-		options.addOption(formatOption);
-
-		final Option severityOption = Option.builder().longOpt("severity")
-				.hasArgs().valueSeparator(',').argName("severity")
-				.desc("List of diagnostic severity levels to emit.  Can be a list of (" + getSeverityList() + ").  Default: " + severityArrayToString(default_severityList))
-				.required(false).build();
-		options.addOption(severityOption);
-
-		final Option relatedOption = Option.builder().longOpt("related")
-				.hasArgs().argName("related")
-				.desc("The maximum number of related items to print.  (either a number or \"unlimited\").  Default: \"unlimited\"")
-				.required(false).build();
-		options.addOption(relatedOption);
-
-		final Option helpOpt = Option.builder().longOpt("help").argName("help")
-			.desc("Print usage information").required(false).build();
-	    options.addOption(helpOpt);
-		
-		FORMAT format = default_format;
-		Set<DiagnosticSeverity> severityList = default_severityList;
-		int related = -1;
-
-		try {
-			/* Parse command line */
-			final CommandLine cmd = optionParser.parse(options, args);
-			if (cmd.hasOption("help")) {
-			  printUsage(options);
-			  return;
-			}
-
-
-			final String formatString = cmd.getOptionValue("format");
-			if(formatString != null) {
-				try {
-					format = FORMAT.valueOf(formatString);
-				} catch(IllegalArgumentException e) {
-					System.err.println("Error: format passed to --format option is not valid.  Please specify one of (" + getFormatList() + ")");
-
-					printUsage(options);
-					System.exit(1);
-				}
-			}
-			
-			String[] severityStrings = cmd.getOptionValues("severity");
-			if(severityStrings != null) {
-				severityList = EnumSet.noneOf(DiagnosticSeverity.class);
-				for(int i = 0; i < severityStrings.length; i++) {
-					final String sevStr = severityStrings[i];
-					try {
-						severityList.add(DiagnosticSeverity.valueOf(sevStr));
-					} catch(IllegalArgumentException e) {
-						System.err.println("Error: severity passed to --severity option is not valid.  Please specify some of (" + getSeverityList() + ")");
-
-						printUsage(options);
-						System.exit(1);
-					}
-				}
-			}
-			
-			final String relatedString = cmd.getOptionValue("related");
-			if(relatedString != null) {
-				if(relatedString.equalsIgnoreCase("unlimited") || relatedString.equalsIgnoreCase("all")) {
-					related = -1;
-				} else {
-					try {
-						related = Integer.parseInt(relatedString);
-						if(related < 0) {
-							related = -1;
-						}
-					} catch(IllegalArgumentException e) {
-						System.err.println("Error: related count passed to --related option is not valid.  Please specify either a number of the string \"unlimited\"");
-	
-						printUsage(options);
-						System.exit(1);
-					}
-				}
-			}
-
-			List<String> files = cmd.getArgList();
-			Map<String,String> uriTextPairs = new HashMap<String,String>();
-			for(String fileName : files) {
-				try {
-					final Path path = Paths.get(fileName);
-					String uri = Util.mangleUri(path.toUri().toString());
-					String text = new String(Files.readAllBytes(path));
-					if(uriTextPairs.containsKey(uri)) {
-						System.err.println("WARNING: ignoring repeated filename: " + fileName);
-					} else {
-						uriTextPairs.put(fileName, text);
-					}
-				} catch(IOException e) {
-					System.err.println("Failed to read file: " + fileName);
-					System.exit(1);
-				}
-			}
-			if(! uriTextPairs.isEmpty()) {
-				Map<String, List<Diagnostic>> diagnostics = getDiagnostics(uriTextPairs);
-				if(diagnostics == null) {
-					System.err.println("There was an error generating diagnostics");
-					System.exit(1);
-				}
-				Map<String, List<Diagnostic>> filteredDiagnostics = filterSeverity(diagnostics, severityList);
-				format.print(System.out, uriTextPairs, filteredDiagnostics, related);
-			}
-		} catch (final ParseException e) {
-			printUsage(options);
-			System.err.println(e.getMessage());
-			System.exit(-1);
-		}
-	}
-
-
-	private static Map<String, List<Diagnostic>> filterSeverity(Map<String, List<Diagnostic>> diagnostics,
+	public static Map<String, List<Diagnostic>> filterSeverity(Map<String, List<Diagnostic>> diagnostics,
 			Set<DiagnosticSeverity> severityList) {
 		
 		Map<String, List<Diagnostic>> ret = new HashMap<String, List<Diagnostic>>(diagnostics.size());
@@ -409,13 +227,4 @@ public class PythonLinter {
 		}
 		return ret;
 	}
-
-	private static final String APP_NAME = "wala-lsp-linter-python-ml";
-	private static final String APP_DESCRIPTION = "A Linter for WALA Python/ML analysis";
-
-	private static void printUsage(final Options options) {
-		final HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp(APP_NAME, APP_DESCRIPTION, options, null);
-	}
-
 }

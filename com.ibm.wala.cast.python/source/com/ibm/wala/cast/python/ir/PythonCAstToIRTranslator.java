@@ -21,7 +21,6 @@ import java.util.Map;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.translator.ArrayOpHandler;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
-import com.ibm.wala.cast.ir.translator.AstTranslator.WalkContext;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.loader.PythonLoader;
@@ -245,6 +244,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	    TypeReference type = cls.getReference();
 	    int idx = context.cfg().getCurrentInstruction();
 	    context.cfg().addInstruction(Python.instructionFactory().NewInstruction(idx, result, NewSiteReference.make(idx, type)));
+	    doGlobalWrite(context, fnName, PythonTypes.Root, result);
 	}
 
 	@Override
@@ -260,6 +260,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	    context.cfg().addInstruction(Python.instructionFactory().NewInstruction(idx, v, NewSiteReference.make(idx, type)));
 	
 	    doLocalWrite(context, n.getType().getName(), type, v);
+	    doGlobalWrite(context, fnName, PythonTypes.Root, v);
 
 	    for(CAstEntity field : n.getAllScopedEntities().get(null)) {
    			FieldReference fr = FieldReference.findOrCreate(type, Atom.findOrCreateUnicodeAtom(field.getName()), PythonTypes.Root);
