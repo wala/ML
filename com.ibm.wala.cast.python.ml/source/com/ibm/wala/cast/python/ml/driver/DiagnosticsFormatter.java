@@ -125,7 +125,7 @@ public class DiagnosticsFormatter {
 	public static JsonObject rangeToJson(Range range) {
 		JsonObject orange = new JsonObject();
 		orange.add("start", positionToJson(range.getStart()));
-		orange.add("start", positionToJson(range.getEnd()));
+		orange.add("end", positionToJson(range.getEnd()));
 		return orange;
 	}
 	
