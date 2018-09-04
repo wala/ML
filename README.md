@@ -1,3 +1,7 @@
+# [Ariadne](https://wala.github.io/ariadne/)
+
+This is the top level repository for creating the Ariadne framework.  More information on Ariadne can be found [here](https://wala.github.io/ariadne/)
+
 # ML
 
 This repository is for code to analyze machine learning code using WALA.  Currently, the code consists of the 

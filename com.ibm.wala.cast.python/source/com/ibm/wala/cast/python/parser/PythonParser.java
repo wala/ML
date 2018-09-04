@@ -240,16 +240,15 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				int last_col;
 				
 				private void setLast() {
-					String s = parser.getText(p.getTokenStartIndex(), p.getTokenStopIndex());
+					String s = parser.getText(p.getCharStartIndex(), p.getCharStopIndex());
 					String[] lines = s.split("\n");
 					last_line = getFirstLine() + lines.length - 1;
-					if (lines.length == 0) {
-						last_col = getFirstCol();
-					} else if (lines.length > 1) {
-						last_col = lines[lines.length-1].length();
+					if ("".equals(s) || lines.length <= 1) {
+						last_col = getFirstCol() + (getLastOffset() - getFirstOffset());
 					} else {
-						last_col = getFirstCol() + lines[0].length();
-					}
+						assert (lines.length > 1);
+						last_col = lines[lines.length-1].length();
+					} 
 					set_last = true;
 				}
 				

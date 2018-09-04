@@ -36,10 +36,12 @@ import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MessageActionItem;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.PublishDiagnosticsCapabilities;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.TextDocumentClientCapabilities;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
@@ -128,6 +130,11 @@ public class ClientDriver implements LanguageClient {
 		
 		InitializeParams x = new InitializeParams();
 		ClientCapabilities c = new ClientCapabilities();
+		TextDocumentClientCapabilities tc = new TextDocumentClientCapabilities();
+		PublishDiagnosticsCapabilities pc = new PublishDiagnosticsCapabilities();
+		pc.setRelatedInformation(true);
+		tc.setPublishDiagnostics(pc);
+		c.setTextDocument(tc);
 		x.setCapabilities(c);
 		CompletableFuture<InitializeResult> y = client.server.initialize(x);
 		System.err.println(y.get());

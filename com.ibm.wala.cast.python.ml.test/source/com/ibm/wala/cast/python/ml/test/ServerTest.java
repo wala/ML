@@ -10,7 +10,9 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.lsp4j.CodeLens;
+import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Test;
 
@@ -40,6 +42,15 @@ public class ServerTest {
 			} else if (s instanceof PublishDiagnosticsParams) {
 				if (((PublishDiagnosticsParams)s).getDiagnostics().size() > 0) {
 					checks.add("error");
+					for(Diagnostic d : ((PublishDiagnosticsParams) s).getDiagnostics()) {
+						Range r = d.getRange();
+						if (r.getStart().getLine() == 37 &&
+							r.getStart().getCharacter() == 27 &&
+							r.getEnd().getLine() == 37 &&
+							r.getEnd().getCharacter() == 30) {
+							checks.add("xxx");
+						}
+					}
 				}
 			} else if (s instanceof SymbolInformation) {
 				checks.add(((SymbolInformation)s).getName());
@@ -50,6 +61,7 @@ public class ServerTest {
 		System.err.println(checks);
 		assert (checks.contains("tensor") && 
 				checks.contains("error") &&
+				checks.contains("xxx") &&
 				checks.contains("TYPES"));
 		
 		for(String fun : new String[] {"model_fn", "conv_net" }) {

@@ -19,6 +19,9 @@ import java.util.stream.Collectors;
 
 import org.python.core.PyObject;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.python.ml.types.TensorType.Dimension;
 import com.ibm.wala.cast.python.util.PythonUtil;
@@ -31,6 +34,8 @@ import com.ibm.wala.ssa.SSAPutInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 
 public class TensorType implements Iterable<Dimension<?>> {
+
+	public enum Format { CString, MCString, MDString, JsonSchema };
 
 	enum DimensionType { Constant, Symbolic, Compound };
 	
@@ -46,10 +51,26 @@ public class TensorType implements Iterable<Dimension<?>> {
 		abstract int symbolicDims();
 		
 		abstract int concreteSize();
-		
+
 		abstract String toMDString();
 
 		abstract String toCString(boolean useMarkdown);
+
+		JsonElement toJsonSchema(JsonElement inner) {
+			JsonObject obj = new JsonObject();
+			obj.addProperty("type", "array");
+			if(inner != null) {
+				obj.add("items", inner);
+			}
+			final int size = concreteSize();
+
+			if(size >= 0) {
+				obj.addProperty("minItems", size);
+				obj.addProperty("maxItems", size);
+				obj.addProperty("description", "Array of dimension " + this.toCString(false));
+			}
+			return obj;
+		}
 
 		public T value() {
 			return v;
@@ -98,7 +119,7 @@ public class TensorType implements Iterable<Dimension<?>> {
 
 		@Override
 		int concreteSize() {
-			return 1;
+			return -1;
 		}
 
 		@Override
@@ -166,9 +187,16 @@ public class TensorType implements Iterable<Dimension<?>> {
 
 		@Override
 		int concreteSize() {
-			int size = 1;
+			int size = -1;
 			for(Dimension<?> x : value()) {
-				size *= x.concreteSize();
+				final int xs = x.concreteSize();
+				if(xs >= 0) {
+					if(size >= 0) {
+						size *= xs;
+					} else {
+						size = xs;
+					}
+				}
 			}
 			return size;
 		}
@@ -211,7 +239,36 @@ public class TensorType implements Iterable<Dimension<?>> {
 		this.cellType = cellType;
 		this.dims = dims;
 	}
+
+	String toFormattedString(Format fmt) {
+		switch(fmt) {
+		case CString:
+			return toCString(false);
+		case MCString:
+			return toCString(true);
+		case MDString:
+			return toMDString();
+		case JsonSchema:
+			return new Gson().toJson(toJsonSchema());
+		default:
+			throw new IllegalArgumentException("unknown format type: " + fmt);
+		}
+	}
 	
+	public JsonElement toJsonSchema() {
+		JsonObject cellType = null;
+		if(this.cellType != null) {
+			cellType = new JsonObject();
+			cellType.addProperty("description", "Elements of type " + this.cellType);
+		}
+
+		JsonElement inner = cellType;
+		for (Dimension<?> dim : this.dims) {
+			inner = dim.toJsonSchema(inner);
+		}
+		return inner;
+	}
+
 	public String toMDString() {
 		final String dimString = dims
 		.stream()
@@ -334,11 +391,17 @@ public class TensorType implements Iterable<Dimension<?>> {
 	}
 	
 	public int concreteSize() {
-		int sz = 1;
-		for(Dimension<?> d : this) {
-			sz *= d.concreteSize();
+		int size = -1;
+		for(Dimension<?> x : this) {
+			final int xs = x.concreteSize();
+			if(xs >= 0) {
+				if(size >= 0) {
+					size *= xs;
+				} else {
+					size = xs;
+				}
+			}
 		}
-		return sz;
+		return size;
 	}
-
 }

@@ -33,14 +33,14 @@ def conv_net(x_dict, n_classes, dropout, reuse, is_training):
     # Define a scope for reusing the variables
     with tf.variable_scope('ConvNet', reuse=reuse):
         # TF Estimator input is a dict, in case of multiple inputs
-        x = x_dict['images']
+        xxx = x_dict['images']
 
-        bad_x = tf.reshape(x, shape=[-1, 11, 28, 1])
+        bad_x = tf.reshape(xxx, shape=[-1, 11, 28, 1])
 
         # MNIST data input is a 1-D vector of 784 features (28*28 pixels)
         # Reshape to match picture format [Height x Width x Channel]
         # Tensor input become 4-D: [Batch Size, Height, Width, Channel]
-        z = tf.reshape(x, shape=[-1, 28, 28, 1])
+        z = tf.reshape(xxx, shape=[-1, 28, 28, 1])
 
         # Convolution Layer with 32 filters and a kernel size of 5
         conv1 = tf.layers.conv2d(z, 32, 5, activation=tf.nn.relu)
@@ -52,7 +52,7 @@ def conv_net(x_dict, n_classes, dropout, reuse, is_training):
         # Max Pooling (down-sampling) with strides of 2 and kernel size of 2
         conv2 = tf.layers.max_pooling2d(conv2, 2, 2)
 
-        bad_conv1 = tf.layers.conv2d(x, 32, 5, activation=tf.nn.relu)
+        bad_conv1 = tf.layers.conv2d(xxx, 32, 5, activation=tf.nn.relu)
 
         # Flatten the data to a 1-D vector for the fully connected layer
         fc1 = tf.contrib.layers.flatten(conv2)
