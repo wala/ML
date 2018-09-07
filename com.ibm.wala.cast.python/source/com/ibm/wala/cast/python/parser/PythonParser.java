@@ -1096,13 +1096,20 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				return Ast.makeConstant(false);
 			else if(name.equals("None"))
 				return Ast.makeConstant(null);
-			
+
 			return notePosition(Ast.makeNode(CAstNode.VAR, Ast.makeConstant(name)), arg0);
 		}
 
 		@Override
 		public CAstNode visitNum(Num arg0) throws Exception {
-			return Ast.makeConstant(Double.parseDouble(arg0.getInternalN().toString()));
+			String numStr = arg0.getInternalN().toString();
+
+			if(numStr.contains("l") | numStr.contains("L"))
+				return Ast.makeConstant(Long.parseLong(numStr.substring(0, numStr.length() - 1)));
+			//else if(numStr.contains("j") | numStr.contains("J")) //Placeholder for implementation/modeling of imaginary numbers
+			//	return Ast.makeConstant();
+			else
+				return Ast.makeConstant(Double.parseDouble(numStr));
 		}
 
 		@Override
