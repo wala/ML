@@ -1058,9 +1058,6 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				"float",
 				"int",
 				"__name__",
-				"False",
-				"True",
-				"None",
 				"print",
 				"super",
 				"len",
@@ -1092,7 +1089,15 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitName(Name arg0) throws Exception {
-			return notePosition(Ast.makeNode(CAstNode.VAR, Ast.makeConstant(arg0.getText())), arg0);
+			String name = arg0.getText();
+			if(name.equals("True"))
+				return Ast.makeConstant(true);
+			else if(name.equals("False"))
+				return Ast.makeConstant(false);
+			else if(name.equals("None"))
+				return Ast.makeConstant(null);
+			
+			return notePosition(Ast.makeNode(CAstNode.VAR, Ast.makeConstant(name)), arg0);
 		}
 
 		@Override
