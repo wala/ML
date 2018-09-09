@@ -19,6 +19,7 @@ install:
  - mvn clean install -DskipTests -B
  - popd
  - pushd /tmp/lsp4j
+ - git checkout websockets
  - gradle install
  - popd
 script:
