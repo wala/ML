@@ -2,6 +2,7 @@ package com.ibm.wala.cast.python.ml.test;
 
 import java.io.IOException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
@@ -44,6 +45,7 @@ public class TestNeuroImageExamples extends TestPythonMLCallGraphShape {
 	
 	public static final String Ex4URL = "https://raw.githubusercontent.com/zsdonghao/u-net-brain-tumor/master/prepare_data_with_valid.py";
 
+	@Ignore
 	@Test
 	public void testEx4CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		CallGraph CG = process(Ex4URL);
