@@ -888,7 +888,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitGlobal(Global arg0) throws Exception {
-			return fail(arg0);
+			java.util.List <Name> internalNames = arg0.getInternalNameNodes();
+			CAstNode[] x = new CAstNode[arg0.getInternalNameNodes().size()];
+			for(int i = 0; i < x.length; i++)
+				x[i] = internalNames.get(i).accept(this);
+			return Ast.makeNode(CAstNode.GLOBAL_DECL, x);
 		}
 
 		private CAstNode block(java.util.List<stmt> block) throws Exception {

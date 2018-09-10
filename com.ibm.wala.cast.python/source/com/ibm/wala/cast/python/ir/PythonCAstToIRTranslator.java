@@ -12,11 +12,7 @@ package com.ibm.wala.cast.python.ir;
 
 import static com.ibm.wala.cast.python.ir.PythonLanguage.Python;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.ibm.wala.cast.ir.ssa.AssignInstruction;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
@@ -57,6 +53,7 @@ import com.ibm.wala.util.strings.Atom;
 public class PythonCAstToIRTranslator extends AstTranslator {
 
 	private final Map<CAstType, TypeName> walaTypeNames = HashMapFactory.make();
+	private final Set<Pair<Scope,String>> globalDeclSet = new HashSet<>();
 	
 	public PythonCAstToIRTranslator(IClassLoader loader, Map<Object, CAstEntity> namedEntityResolver,
 			ArrayOpHandler arrayOpHandler) {
@@ -258,7 +255,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		assert s != null : "cannot find symbol for " + nm + " at " + CAstPrinter.print(n, context.getSourceMap());
 		assert s.type() != null : "no type for " + nm + " at " + CAstPrinter.print(n, context.getSourceMap());
 		TypeReference type = makeType(s.type());
-		if (context.currentScope().isGlobal(s) || context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY) {
+		if (context.currentScope().isGlobal(s) || context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY || isGlobal(context.currentScope(),nm)) {
 			c.setValue(n, doGlobalRead(n, context, nm, type));
 		} else if (context.currentScope().isLexicallyScoped(s)) {
 			c.setValue(n, doLexicallyScopedRead(n, context, nm, type));
@@ -279,7 +276,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
 	@Override
 	protected void assignValue(CAstNode n, WalkContext context, Symbol ls, String nm, int rval) {
-		if (context.currentScope().isGlobal(ls) || context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY)
+		if (context.currentScope().isGlobal(ls) || context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY || isGlobal(context.currentScope(),nm))
 			doGlobalWrite(context, nm, makeType(ls.type()), rval);
 		else if (context.currentScope().isLexicallyScoped(ls)) {
 			doLexicallyScopedWrite(context, nm, makeType(ls.type()), rval);
@@ -297,7 +294,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		TypeReference type = makeType(ls.type());
 		int temp;
 
-		if (context.currentScope().isGlobal(ls) || context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY)
+		if (context.currentScope().isGlobal(ls) || context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY || isGlobal(context.currentScope(),nm))
 			temp = doGlobalRead(n, context, nm, type);
 		else if (context.currentScope().isLexicallyScoped(ls)) {
 			temp = doLexicallyScopedRead(n, context, nm, type);
@@ -319,7 +316,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 			c.setValue(n, rval);
 		}
 
-		if (context.currentScope().isGlobal(ls) || context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY) {
+		if (context.currentScope().isGlobal(ls) || context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY || isGlobal(context.currentScope(),nm)) {
 			doGlobalWrite(context, nm, type, rval);
 		} else if (context.currentScope().isLexicallyScoped(ls)) {
 			doLexicallyScopedWrite(context, nm, type, rval);
@@ -497,12 +494,34 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		}
 	}
 
+	boolean isGlobal(Scope scope, String varName){
+		  	Pair<Scope,String> pair = Pair.make(scope,varName);
+		  	if(globalDeclSet.contains(pair))
+		  		return true;
+		  	else
+		  		return false;
+	}
+
+	void addGlobal(Scope scope,String varName){
+		Pair<Scope,String> pair = Pair.make(scope,varName);
+		globalDeclSet.add(pair);
+	}
 	@Override
 	protected boolean doVisit(CAstNode n, WalkContext context, CAstVisitor<WalkContext> visitor) {
 		if (n.getKind() == CAstNode.COMPREHENSION_EXPR) {
 			context.setValue(n, context.currentScope().getConstantValue(null));
 			return true;
-		} else {
+		}
+		else if(n.getKind() == CAstNode.GLOBAL_DECL){
+			int numOfChildren = n.getChildCount();
+			for(int i = 0;i < numOfChildren; i++){
+				String val = (String) n.getChild(i).getChild(0).getValue();
+				System.out.println("Hey " + val);
+				addGlobal(context.currentScope(),val);
+			}
+			return true;
+		}
+		else {
 			return super.doVisit(n, context, visitor);
 		}
 	}
