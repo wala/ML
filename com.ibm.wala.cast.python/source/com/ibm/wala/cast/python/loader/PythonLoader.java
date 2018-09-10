@@ -64,7 +64,7 @@ import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.strings.Atom;
 
 public class PythonLoader extends CAstAbstractModuleLoader {
-	private final CAstTypeDictionaryImpl<PyObject> typeDictionary = new CAstTypeDictionaryImpl<PyObject>();
+	private final CAstTypeDictionaryImpl<String> typeDictionary = new CAstTypeDictionaryImpl<String>();
 	
 	public PythonLoader(IClassHierarchy cha, IClassLoader parent) {
 		super(cha, parent);

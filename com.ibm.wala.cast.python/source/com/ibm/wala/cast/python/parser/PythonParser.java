@@ -116,6 +116,7 @@ import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.ReverseIterator;
 import com.ibm.wala.util.warnings.Warning;
+import org.python.core.PyString;
 
 abstract public class PythonParser<T> implements TranslatorToCAst {
 
@@ -441,8 +442,9 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				public Collection<CAstType> getSupertypes() {
 					Collection<CAstType> supertypes = HashSetFactory.make();
 					for(expr e : arg0.getInternalBases()) {
+						System.out.println(arg0.getInternalName() + " " + arg0.getType()+ " extends "  + e.getText() + " " + e.getType());
 						try {
-							CAstType type = types.getCAstTypeFor(e.accept(visitor));
+							CAstType type = types.getCAstTypeFor(e.getText());
 							if (type != null) {
 								supertypes.add(type);
 							}
@@ -468,8 +470,8 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 					return Collections.emptySet();
 				}
 			};
-			
-			types.map(arg0.getType(), cls);
+			//TODO: CURRENTLY THIS WILL NOT BE CORRECT FOR EXTENDING CLASSES IMPORTED FROM ANOTHER MODULE
+			types.map(arg0.getInternalName(), cls);
 			
 			Collection<CAstEntity> members = HashSetFactory.make();
 			
@@ -1376,9 +1378,9 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 	protected abstract URL getParsedURL() throws IOException;
 
-	private final CAstTypeDictionaryImpl<PyObject> types;
+	private final CAstTypeDictionaryImpl<String> types;
 	
-	protected PythonParser(CAstTypeDictionaryImpl<PyObject> types) {
+	protected PythonParser(CAstTypeDictionaryImpl<String> types) {
 		this.types = types;
 	}
 	

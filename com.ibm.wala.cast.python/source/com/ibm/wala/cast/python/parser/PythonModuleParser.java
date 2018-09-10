@@ -39,7 +39,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 		return new WalaPythonParser(file, fileName.getName(), null);
 	}
 
-	public PythonModuleParser(SourceModule fileName, CAstTypeDictionaryImpl<PyObject> types) {
+	public PythonModuleParser(SourceModule fileName, CAstTypeDictionaryImpl<String> types) {
 		super(types);
 		this.fileName = fileName;
 	}
@@ -51,7 +51,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
 	public static void main(String[] args) throws Exception {
 		URL url = new URL(args[0]);
-		PythonParser<ModuleEntry> p = new PythonModuleParser(new SourceURLModule(url), new CAstTypeDictionaryImpl<PyObject>());
+		PythonParser<ModuleEntry> p = new PythonModuleParser(new SourceURLModule(url), new CAstTypeDictionaryImpl<String>());
 		CAstEntity script = p.translateToCAst();
 		System.err.println(script);
 		System.err.println(CAstPrinter.print(script));
