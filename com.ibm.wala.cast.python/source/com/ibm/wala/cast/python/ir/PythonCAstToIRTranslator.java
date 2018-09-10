@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.ibm.wala.cast.ir.ssa.AssignInstruction;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.translator.ArrayOpHandler;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
@@ -33,6 +34,7 @@ import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
 import com.ibm.wala.cast.tree.visit.CAstVisitor;
+import com.ibm.wala.cast.util.CAstPrinter;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.classLoader.CallSiteReference;
@@ -245,6 +247,85 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	    int idx = context.cfg().getCurrentInstruction();
 	    context.cfg().addInstruction(Python.instructionFactory().NewInstruction(idx, result, NewSiteReference.make(idx, type)));
 	    doGlobalWrite(context, fnName, PythonTypes.Root, result);
+	}
+
+	@Override
+	protected void leaveVar(CAstNode n, WalkContext c, CAstVisitor<WalkContext> visitor) {
+		WalkContext context = c;
+		String nm = (String) n.getChild(0).getValue();
+		assert nm != null : "cannot find var for " + CAstPrinter.print(n, context.getSourceMap());
+		Symbol s = context.currentScope().lookup(nm);
+		assert s != null : "cannot find symbol for " + nm + " at " + CAstPrinter.print(n, context.getSourceMap());
+		assert s.type() != null : "no type for " + nm + " at " + CAstPrinter.print(n, context.getSourceMap());
+		TypeReference type = makeType(s.type());
+		if (context.currentScope().isGlobal(s) || context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY) {
+			c.setValue(n, doGlobalRead(n, context, nm, type));
+		} else if (context.currentScope().isLexicallyScoped(s)) {
+			c.setValue(n, doLexicallyScopedRead(n, context, nm, type));
+		} else {
+			c.setValue(n, doLocalRead(context, nm, type));
+		}
+	}
+
+//	@Override
+//	protected void leaveVarAssign(CAstNode n, CAstNode v, CAstNode a, WalkContext c, CAstVisitor<WalkContext> visitor) {
+//		WalkContext context = c;
+//		int rval = c.getValue(v);
+//		String nm = (String) n.getChild(0).getValue();
+//		Symbol ls = context.currentScope().lookup(nm);
+//		c.setValue(n, rval);
+//		assignValue(n, context, ls, nm, rval);
+//	}
+
+	@Override
+	protected void assignValue(CAstNode n, WalkContext context, Symbol ls, String nm, int rval) {
+		if (context.currentScope().isGlobal(ls) || context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY)
+			doGlobalWrite(context, nm, makeType(ls.type()), rval);
+		else if (context.currentScope().isLexicallyScoped(ls)) {
+			doLexicallyScopedWrite(context, nm, makeType(ls.type()), rval);
+		} else {
+			assert rval != -1 : CAstPrinter.print(n, context.top().getSourceMap());
+			doLocalWrite(context, nm, makeType(ls.type()), rval);
+		}
+	}
+
+	@Override
+	protected void leaveVarAssignOp(CAstNode n, CAstNode v, CAstNode a, boolean pre, WalkContext c, CAstVisitor<WalkContext> visitor) {
+		WalkContext context = c;
+		String nm = (String) n.getChild(0).getValue();
+		Symbol ls = context.currentScope().lookup(nm);
+		TypeReference type = makeType(ls.type());
+		int temp;
+
+		if (context.currentScope().isGlobal(ls) || context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY)
+			temp = doGlobalRead(n, context, nm, type);
+		else if (context.currentScope().isLexicallyScoped(ls)) {
+			temp = doLexicallyScopedRead(n, context, nm, type);
+		} else {
+			temp = doLocalRead(context, nm, type);
+		}
+
+		if (!pre) {
+			int ret = context.currentScope().allocateTempValue();
+			int currentInstruction = context.cfg().getCurrentInstruction();
+			context.cfg().addInstruction(new AssignInstruction(currentInstruction, ret, temp));
+			context.cfg().noteOperands(currentInstruction, context.getSourceMap().getPosition(n.getChild(0)));
+			c.setValue(n, ret);
+		}
+
+		int rval = processAssignOp(v, a, temp, c);
+
+		if (pre) {
+			c.setValue(n, rval);
+		}
+
+		if (context.currentScope().isGlobal(ls) || context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY) {
+			doGlobalWrite(context, nm, type, rval);
+		} else if (context.currentScope().isLexicallyScoped(ls)) {
+			doLexicallyScopedWrite(context, nm, type, rval);
+		} else {
+			doLocalWrite(context, nm, type, rval);
+		}
 	}
 
 	@Override
