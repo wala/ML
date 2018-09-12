@@ -174,14 +174,16 @@ public class ClientDriver implements LanguageClient {
 			CompletableFuture<Hover> data = client.server.getTextDocumentService().hover(a);
 			Hover t = data.get();
 			Either<List<Either<String, MarkedString>>, MarkupContent> contents = t.getContents();
-			if(contents.isLeft()) {
-				String xx = "";
-				for(Either<String, MarkedString> hd : contents.getLeft()) {
-					xx += hd.getLeft();			
+			if (contents != null) {
+				if(contents.isLeft()) {
+					String xx = "";
+					for(Either<String, MarkedString> hd : contents.getLeft()) {
+						xx += hd.getLeft();			
+					}
+					process.accept(xx);
+				} else {
+					process.accept(contents.getRight().getValue());
 				}
-				process.accept(xx);
-			} else {
-				process.accept(contents.getRight().getValue());
 			}
 		}
 	
