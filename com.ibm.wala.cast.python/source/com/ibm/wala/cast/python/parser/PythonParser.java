@@ -610,6 +610,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			case In:
 				return CAstOperator.OP_IN;
 			case NotIn:
+				return CAstOperator.OP_NOT_IN;
 			case UNDEFINED:
 			default:
  				assert false : next;

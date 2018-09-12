@@ -119,7 +119,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
 	@Override
 	protected IOperator translateBinaryOpcode(CAstNode op) {
-		if (CAstOperator.OP_IN == op || CAstOperator.OP_POW == op) {
+		if (CAstOperator.OP_IN == op || CAstOperator.OP_NOT_IN == op || CAstOperator.OP_POW == op) {
 			return IBinaryOpInstruction.Operator.ADD;
 		} else {
 			return super.translateBinaryOpcode(op);
