@@ -9,7 +9,8 @@ import org.python.antlr.runtime.CommonTokenStream;
 import org.python.antlr.runtime.TokenRewriteStream;
 
 public class WalaPythonParser extends AnalyzingParser {
-
+	private String text = null;
+	
 	public WalaPythonParser(CharStream stream, String filename, String encoding) {
 		super(stream, filename, encoding);
 	}
@@ -17,7 +18,10 @@ public class WalaPythonParser extends AnalyzingParser {
 	private TokenRewriteStream tokens;
 	
 	public String getText(int start, int end) {
-		return tokens.toOriginalString(start, end);
+		if (text == null) {
+			text = tokens.toOriginalString();
+		}
+		return text.substring(start, end);
 	}
 
     protected PythonParser setupParser(boolean single) {
