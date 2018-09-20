@@ -43,7 +43,6 @@ public class ServerTest extends WalaTestCase {
 		String fileName = getScript(script);
 		Set<String> checks = HashSetFactory.make();
 		ClientDriver.main(new String[] {fileName, "43", "10", "46", "35"}, p.getInputStream(), p.getOutputStream(), (Object s) -> { 
-			System.err.println("found " + s);
 			if (s == null) {
 				return;
 			}
