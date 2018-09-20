@@ -1,5 +1,3 @@
-os: osx
-osx_image: xcode8.3
 language: android
 android:
   components:
@@ -8,6 +6,7 @@ addons:
   apt:
     packages:
     - jython
+jdk: oraclejdk8
 before_install:
  - git clone --depth=50 https://github.com/wala/WALA /tmp/WALA
  - git clone --depth=50 https://github.com/wala/IDE /tmp/IDE
