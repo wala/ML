@@ -5,8 +5,6 @@ import static org.junit.Assume.assumeThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -21,9 +19,7 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Test;
 
-import com.ibm.wala.cast.lsp.WALAServer;
 import com.ibm.wala.cast.python.ml.driver.ClientDriver;
-import com.ibm.wala.cast.python.ml.driver.PythonDriver;
 import com.ibm.wala.core.tests.util.WalaTestCase;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
@@ -34,7 +30,7 @@ public class ServerTest extends WalaTestCase {
 
 	@Test
 	public void trivialClient() throws IOException, InterruptedException, ExecutionException, ClassHierarchyException, IllegalArgumentException, CancelException, URISyntaxException {		
-		// assumeThat("not running on Travis CI", System.getenv("TRAVIS"), nullValue());
+	    assumeThat("not running on Travis CI", System.getenv("TRAVIS"), nullValue());
 
 		String mlFullJar = getClasspathEntry("com.ibm.wala.cast.python.ml-0.0.1");
 		Process p = Runtime.getRuntime().exec("nice -n 0 java -jar " + mlFullJar + " -mode stdio");
