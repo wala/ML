@@ -40,8 +40,19 @@ public class ServerTest {
 		testIn.connect(serverOut);
 		testOut.connect(serverIn);
 		
-		WALAServer.launchOnStream(PythonDriver.python, serverIn, serverOut);
-				
+		Thread server = new Thread() {
+			public void run() {
+				try {
+					WALAServer.launchOnStream(PythonDriver.python, serverIn, serverOut);
+				} catch (IOException e) {
+					assert false;
+				}
+			}
+		};
+		
+		server.setDaemon(true);
+		server.start();
+		
 		String script = "buggy_convolutional_network.py";
 		String fileName = getScript(script);
 		Set<String> checks = HashSetFactory.make();
