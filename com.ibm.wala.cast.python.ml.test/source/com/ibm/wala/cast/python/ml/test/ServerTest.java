@@ -31,10 +31,10 @@ public class ServerTest {
 
 	@Test
 	public void trivialClient() throws IOException, InterruptedException, ExecutionException, ClassHierarchyException, IllegalArgumentException, CancelException, URISyntaxException {
-		PipedInputStream testIn = new PipedInputStream();
+		PipedInputStream testIn = new PipedInputStream(1024 * 1024);
 		PipedOutputStream testOut = new PipedOutputStream();
 
-		PipedInputStream serverIn = new PipedInputStream();
+		PipedInputStream serverIn = new PipedInputStream(1024 * 1024);
 		PipedOutputStream serverOut = new PipedOutputStream();
 
 		testIn.connect(serverOut);
@@ -88,6 +88,10 @@ public class ServerTest {
 			assert model_fn : "cannot find " + fun + " in assertions";
 		}
 		
+		testIn.close();
+		testOut.close();
+		serverIn.close();
+		serverOut.close();
 	}
 
 	private String getScript(String script) throws URISyntaxException, IOException {
