@@ -37,7 +37,7 @@ public class ServerTest extends WalaTestCase {
 		// assumeThat("not running on Travis CI", System.getenv("TRAVIS"), nullValue());
 
 		String mlFullJar = getClasspathEntry("com.ibm.wala.cast.python.ml-0.0.1");
-		Process p = Runtime.getRuntime().exec("java -jar " + mlFullJar + " -mode stdio");
+		Process p = Runtime.getRuntime().exec("nice -n 0 java -jar " + mlFullJar + " -mode stdio");
 		
 		String script = "buggy_convolutional_network.py";
 		String fileName = getScript(script);
