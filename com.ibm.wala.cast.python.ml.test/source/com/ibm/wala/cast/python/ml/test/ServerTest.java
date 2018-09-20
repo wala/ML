@@ -30,7 +30,7 @@ public class ServerTest {
 
 
 	@Test
-	public void trivialClient() throws IOException, InterruptedException, ExecutionException, ClassHierarchyException, IllegalArgumentException, CancelException, URISyntaxException {
+	public void trivialClient() throws IOException, InterruptedException, ExecutionException, ClassHierarchyException, IllegalArgumentException, CancelException, URISyntaxException {		
 		PipedInputStream testIn = new PipedInputStream(1024 * 1024);
 		PipedOutputStream testOut = new PipedOutputStream();
 
