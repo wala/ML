@@ -24,43 +24,25 @@ import org.junit.Test;
 import com.ibm.wala.cast.lsp.WALAServer;
 import com.ibm.wala.cast.python.ml.driver.ClientDriver;
 import com.ibm.wala.cast.python.ml.driver.PythonDriver;
+import com.ibm.wala.core.tests.util.WalaTestCase;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.io.TemporaryFile;
 
-public class ServerTest {
+public class ServerTest extends WalaTestCase {
 
 	@Test
 	public void trivialClient() throws IOException, InterruptedException, ExecutionException, ClassHierarchyException, IllegalArgumentException, CancelException, URISyntaxException {		
-	    assumeThat("not running on Travis CI", System.getenv("TRAVIS"), nullValue());
+		// assumeThat("not running on Travis CI", System.getenv("TRAVIS"), nullValue());
 
-	    PipedInputStream testIn = new PipedInputStream(1024 * 1024);
-		PipedOutputStream testOut = new PipedOutputStream();
-
-		PipedInputStream serverIn = new PipedInputStream(1024 * 1024);
-		PipedOutputStream serverOut = new PipedOutputStream();
-
-		testIn.connect(serverOut);
-		testOut.connect(serverIn);
-		
-		Thread server = new Thread() {
-			public void run() {
-				try {
-					WALAServer.launchOnStream(PythonDriver.python, serverIn, serverOut);
-				} catch (IOException e) {
-					assert false;
-				}
-			}
-		};
-		
-		server.setDaemon(true);
-		server.start();
+		String mlFullJar = getClasspathEntry("com.ibm.wala.cast.python.ml-0.0.1");
+		Process p = Runtime.getRuntime().exec("java -jar " + mlFullJar + " -mode stdio");
 		
 		String script = "buggy_convolutional_network.py";
 		String fileName = getScript(script);
 		Set<String> checks = HashSetFactory.make();
-		ClientDriver.main(new String[] {fileName, "43", "10", "46", "35"}, testIn, testOut, (Object s) -> { 
+		ClientDriver.main(new String[] {fileName, "43", "10", "46", "35"}, p.getInputStream(), p.getOutputStream(), (Object s) -> { 
 			System.err.println("found " + s);
 			if (s == null) {
 				return;
@@ -102,11 +84,8 @@ public class ServerTest {
 			
 			assert model_fn : "cannot find " + fun + " in assertions";
 		}
-		
-		testIn.close();
-		testOut.close();
-		serverIn.close();
-		serverOut.close();
+
+		p.destroy();
 	}
 
 	private String getScript(String script) throws URISyntaxException, IOException {
