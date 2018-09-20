@@ -2,6 +2,8 @@ package com.ibm.wala.cast.python.ml.test;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -16,8 +18,9 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Test;
 
+import com.ibm.wala.cast.lsp.WALAServer;
 import com.ibm.wala.cast.python.ml.driver.ClientDriver;
-import com.ibm.wala.cast.python.ml.driver.Ariadne;
+import com.ibm.wala.cast.python.ml.driver.PythonDriver;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashSetFactory;
@@ -28,11 +31,21 @@ public class ServerTest {
 
 	@Test
 	public void trivialClient() throws IOException, InterruptedException, ExecutionException, ClassHierarchyException, IllegalArgumentException, CancelException, URISyntaxException {
-		Ariadne.main(new String[] {"-mode", "daemon", "-port", "6660"});
+		PipedInputStream testIn = new PipedInputStream();
+		PipedOutputStream testOut = new PipedOutputStream();
+
+		PipedInputStream serverIn = new PipedInputStream();
+		PipedOutputStream serverOut = new PipedOutputStream();
+
+		testIn.connect(serverOut);
+		testOut.connect(serverIn);
+		
+		WALAServer.launchOnStream(PythonDriver.python, serverIn, serverOut);
+				
 		String script = "buggy_convolutional_network.py";
 		String fileName = getScript(script);
 		Set<String> checks = HashSetFactory.make();
-		ClientDriver.main(new String[] {fileName, "43", "10", "46", "35"}, (Object s) -> { 
+		ClientDriver.main(new String[] {fileName, "43", "10", "46", "35"}, testIn, testOut, (Object s) -> { 
 			System.err.println("found " + s);
 			if (s == null) {
 				return;

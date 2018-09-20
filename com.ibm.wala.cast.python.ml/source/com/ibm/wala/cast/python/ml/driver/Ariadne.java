@@ -270,18 +270,16 @@ public class Ariadne {
 		case server: {
 			final WALAServer server = 
 					WALAServer.launchOnServerPort(port, PythonDriver.python, false);
-			if(port == 0) {
-				final Integer actualPort = server.getServerPort();
-				System.err.println("Server up, listening on port: " + actualPort);
-			}
+			final Integer actualPort = server.getServerPort();
+			System.err.println("Server up, listening on port: " + actualPort);
+			break;
 		}
 		case daemon: {
 			final WALAServer server = 
 					WALAServer.launchOnServerPort(port, PythonDriver.python, true);
-			if(port == 0) {
-				final Integer actualPort = server.getServerPort();
-				System.err.println("Server up, listening on port: " + actualPort);
-			}
+			final Integer actualPort = server.getServerPort();
+			System.err.println("Server up, listening on port: " + actualPort);
+			break;
 		}
 		case linter: {
 			if(! uriTextPairs.isEmpty()) {
@@ -293,6 +291,7 @@ public class Ariadne {
 				Map<String, List<Diagnostic>> filteredDiagnostics = DiagnosticsFormatter.filterSeverity(diagnostics, severityList);
 				format.print(System.out, uriTextPairs, filteredDiagnostics, related);
 			}
+			break;
 		}
 		}
 
