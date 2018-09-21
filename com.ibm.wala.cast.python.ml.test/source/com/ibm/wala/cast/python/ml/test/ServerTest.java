@@ -31,7 +31,7 @@ public class ServerTest extends WalaTestCase {
 
 	@Test
 	public void trivialClient() throws IOException, InterruptedException, ExecutionException, ClassHierarchyException, IllegalArgumentException, CancelException, URISyntaxException {		
-	    //assumeThat("not running on Travis CI", System.getenv("TRAVIS"), nullValue());
+	    assumeThat("not running on Travis CI", System.getenv("TRAVIS"), nullValue());
 
 		String mlFullJar = getClasspathEntry("com.ibm.wala.cast.python.ml-0.0.1");
 		Process p = Runtime.getRuntime().exec("java -jar " + mlFullJar + " -mode stdio");
