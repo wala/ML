@@ -5,6 +5,7 @@ import static org.junit.Assume.assumeThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -30,7 +31,7 @@ public class ServerTest extends WalaTestCase {
 
 	@Test
 	public void trivialClient() throws IOException, InterruptedException, ExecutionException, ClassHierarchyException, IllegalArgumentException, CancelException, URISyntaxException {		
-	    assumeThat("not running on Travis CI", System.getenv("TRAVIS"), nullValue());
+	    //assumeThat("not running on Travis CI", System.getenv("TRAVIS"), nullValue());
 
 		String mlFullJar = getClasspathEntry("com.ibm.wala.cast.python.ml-0.0.1");
 		Process p = Runtime.getRuntime().exec("java -jar " + mlFullJar + " -mode stdio");
@@ -38,7 +39,7 @@ public class ServerTest extends WalaTestCase {
 		String script = "buggy_convolutional_network.py";
 		String fileName = getScript(script);
 		Set<String> checks = HashSetFactory.make();
-		ClientDriver.main(new String[] {fileName, "43", "10", "46", "35"}, p.getInputStream(), p.getOutputStream(), (Object s) -> { 
+		ClientDriver.main(new String[] {fileName, "43", "10", "46", "35"}, p.getInputStream(), new PrintStream(p.getOutputStream(), true), (Object s) -> { 
 			if (s == null) {
 				return;
 			}
