@@ -78,6 +78,7 @@ import org.python.antlr.ast.While;
 import org.python.antlr.ast.With;
 import org.python.antlr.ast.Yield;
 import org.python.antlr.ast.alias;
+import org.python.antlr.ast.arguments;
 import org.python.antlr.ast.cmpopType;
 import org.python.antlr.ast.comprehension;
 import org.python.antlr.ast.keyword;
@@ -668,7 +669,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 					  Ast.makeNode(CAstNode.DECL_STMT, 
 					    Ast.makeConstant(new CAstSymbolImpl(dictName, PythonCAstToIRTranslator.Any)),
 					    Ast.makeNode(CAstNode.NEW, Ast.makeConstant(PythonTypes.object))),
-					  visitGenerators(arg0.getInternalGenerators(), body),
+					  doGenerators(arg0.getInternalGenerators(), body),
 					  Ast.makeNode(CAstNode.VAR, Ast.makeConstant(dictName)));
 					  
 		}
@@ -733,7 +734,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			
 			return 
 			  Ast.makeNode(CAstNode.BLOCK_EXPR,
-			    visitGenerators(
+			    doGenerators(
 			      Collections.singletonList(g),
 				  Ast.makeNode(CAstNode.BLOCK_EXPR, 
 					Ast.makeNode(CAstNode.BLOCK_EXPR, body),
@@ -743,10 +744,15 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitFunctionDef(FunctionDef arg0) throws Exception {
+			return defineFunction(arg0.getInternalName(), arg0.getInternalArgs().getInternalArgs(), arg0.getInternalBody(), arg0);
+		}
+		
+		private <S extends PythonTree> CAstNode defineFunction(String functionName, java.util.List<expr> arguments, java.util.List<S> body, PythonTree function) throws Exception {
 			int i = 0;
-			CAstNode[] nodes = new CAstNode[ arg0.getInternalBody().size() ];
+			CAstNode[] nodes = new CAstNode[ body.size() ];
 			
-			class PythonCode implements CAstType {				
+			class PythonCodeType implements CAstType {
+				
 				@Override
 				public Collection<CAstType> getSupertypes() {
 					return Collections.emptySet();
@@ -754,7 +760,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				
 				@Override
 				public String getName() {
-					return arg0.getInternalName();
+					return functionName;
 				}
 				
 				public CAstType getReturnType() {
@@ -774,7 +780,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				}
 				
 				public int getArgumentCount() {
-					return arg0.getInternalArgs().getInternalArgs().size()+1;
+					return arguments.size()+1;
 				}		
 				
 				@Override
@@ -785,7 +791,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			
 			CAstType functionType;
 			if (context.entity().getKind() == CAstEntity.TYPE_ENTITY) {
-				class PythonMethod extends PythonCode implements CAstType.Method {
+				class PythonMethod extends PythonCodeType implements CAstType.Method {
 					@Override
 					public CAstType getDeclaringType() {
 						return context.entity().getType();
@@ -799,7 +805,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				
 				functionType = new PythonMethod();
 			} else {
-				class PythonFunction extends PythonCode implements CAstType.Function {
+				class PythonFunction extends PythonCodeType implements CAstType.Function {
 					
 				};
 				
@@ -807,9 +813,9 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			}
 			
 			int x = 0;
-			String[] argumentNames = new String[ arg0.getInternalArgs().getInternalArgs().size()+1 ];
+			String[] argumentNames = new String[ arguments.size()+1 ];
 			argumentNames[x++] = "the function";
-			for(expr a : arg0.getInternalArgs().getInternalArgs()) {
+			for(expr a : arguments) {
 				String name = a.accept(this).getChild(0).getValue().toString();
 				argumentNames[x++] = name;		
 			}
@@ -827,7 +833,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 				@Override
 				public String getName() {
-					return arg0.getInternalName();
+					return functionName;
 				}
 
 				@Override
@@ -842,7 +848,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 				@Override
 				public int getArgumentCount() {
-					return arg0.getInternalArgs().getInternalArgs().size()+1;
+					return arguments.size()+1;
 
 				}
 
@@ -853,18 +859,18 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 				@Override
 				public Position getPosition() {
-					return makePosition(arg0);
+					return makePosition(function);
 				}		
 				
 				@Override
 				public Position getPosition(int arg) {
-					return makePosition(arg0.getInternalArgs().getInternalArgs().get(arg));
+					return makePosition(arguments.get(arg));
 				}
 			};
 
-			PythonParser.FunctionContext child = new PythonParser.FunctionContext(context, fun, arg0);	
+			PythonParser.FunctionContext child = new PythonParser.FunctionContext(context, fun, function);	
 			CAstVisitor cv = new CAstVisitor(child, parser);
-			for(stmt s : arg0.getInternalBody()) {
+			for(S s : body) {
 				nodes[i++] = s.accept(cv);
 			}
 
@@ -876,9 +882,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				CAstNode stmt = Ast.makeNode(CAstNode.FUNCTION_EXPR, Ast.makeConstant(fun));
 				context.addScopedEntity(stmt, fun);
 				return 
-				   Ast.makeNode(CAstNode.DECL_STMT,
-					  Ast.makeConstant(new CAstSymbolImpl(fun.getName(), PythonCAstToIRTranslator.Any)),
-					  stmt);
+				   function instanceof Lambda?
+					  stmt:
+					  Ast.makeNode(CAstNode.DECL_STMT,
+					    Ast.makeConstant(new CAstSymbolImpl(fun.getName(), PythonCAstToIRTranslator.Any)),
+					    stmt);
 			}
 		}
 
@@ -970,7 +978,9 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitLambda(Lambda arg0) throws Exception {
-			return fail(arg0);
+			arguments lambdaArgs = arg0.getInternalArgs();
+			expr lambdaBody = arg0.getInternalBody();
+			return defineFunction("lambda" + (++tmpIndex), lambdaArgs.getInternalArgs(), Collections.singletonList(lambdaBody), arg0);
 		}
 
 		@Override
@@ -1011,11 +1021,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			  Ast.makeNode(CAstNode.DECL_STMT, 
 			    Ast.makeConstant(new CAstSymbolImpl(indexName, PythonCAstToIRTranslator.Any)),
 				Ast.makeConstant(0)),
-			  visitGenerators(arg0.getInternalGenerators(), body),
+			  doGenerators(arg0.getInternalGenerators(), body),
 			  Ast.makeNode(CAstNode.VAR, Ast.makeConstant(listName)));
 		}
 
-		private CAstNode visitGenerators(java.util.List<comprehension> generators, CAstNode body) throws Exception {
+		private CAstNode doGenerators(java.util.List<comprehension> generators, CAstNode body) throws Exception {
 			CAstNode result = body;
 									
 			for(comprehension c : generators)  {

@@ -2,7 +2,9 @@ package com.ibm.wala.cast.python.ml.driver;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URL;
@@ -17,6 +19,7 @@ import java.util.function.Consumer;
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
 import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.CodeLens;
@@ -24,6 +27,7 @@ import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.Hover;
@@ -38,6 +42,7 @@ import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsCapabilities;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
+import org.eclipse.lsp4j.ReferenceContext;
 import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
 import org.eclipse.lsp4j.SymbolInformation;
@@ -113,16 +118,19 @@ public class ClientDriver implements LanguageClient {
 	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
 		main(args, (Object s) -> { System.err.println(s); });
 	}
-	
+
 	public static void main(String[] args, Consumer<Object> process) throws IOException, InterruptedException, ExecutionException {
 		@SuppressWarnings("resource")
 		Socket s = new Socket(); 
-		s.connect(new InetSocketAddress("localhost", 6660));
-		
+		s.connect(new InetSocketAddress("localhost", 6661));
+		main(args, s.getInputStream(), s.getOutputStream(), process);
+	}
+	
+	public static void main(String[] args, InputStream in, OutputStream out, Consumer<Object> process) throws IOException, InterruptedException, ExecutionException {		
 		ClientDriver client = new ClientDriver();
 		client.process = process;
 		
-		Launcher<LanguageServer> launcher = LSPLauncher.createClientLauncher(client, s.getInputStream(), s.getOutputStream());
+		Launcher<LanguageServer> launcher = LSPLauncher.createClientLauncher(client, in, out);
 		client.connect(launcher.getRemoteProxy());
 		launcher.startListening();	
 		System.err.println("started");
@@ -159,7 +167,9 @@ public class ClientDriver implements LanguageClient {
 		script.setText(fileData.toString());
 		client.server.getTextDocumentService().didOpen(open);
 		
-		Thread.sleep(10000);
+		while (client.diags.isEmpty()) {
+			Thread.sleep(100);
+		}
 		
 		TextDocumentIdentifier id = new TextDocumentIdentifier();
 		id.setUri(scriptUri);
@@ -189,10 +199,10 @@ public class ClientDriver implements LanguageClient {
 	
 		DocumentSymbolParams ds = new DocumentSymbolParams();
 		ds.setTextDocument(id);
-		CompletableFuture<List<? extends SymbolInformation>> symbolFuture = client.server.getTextDocumentService().documentSymbol(ds);
+		CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> symbolFuture = client.server.getTextDocumentService().documentSymbol(ds);
 		System.err.println("symbols of " + ds.getTextDocument().getUri());
-		for(SymbolInformation sym : symbolFuture.get()) {
-			process.accept(sym);
+		for(Either<SymbolInformation, DocumentSymbol> sym : symbolFuture.get()) {
+			process.accept(sym.getLeft());
 		}
 		
 		CodeLensParams cs = new CodeLensParams();
@@ -218,9 +228,10 @@ public class ClientDriver implements LanguageClient {
 				CodeActionContext ctxt = new CodeActionContext();
 				ctxt.setDiagnostics(Collections.singletonList(d));
 				act.setContext(ctxt);
-				CompletableFuture<List<? extends Command>> codeFuture = client.server.getTextDocumentService().codeAction(act);
+				CompletableFuture<List<Either<Command, CodeAction>>> codeFuture = client.server.getTextDocumentService().codeAction(act);
 				try {
-					for(Command cmd : codeFuture.get()) {
+					for(Either<Command, CodeAction> ecmd : codeFuture.get()) {
+						Command cmd = ecmd.getLeft();
 						ExecuteCommandParams p = new ExecuteCommandParams();
 						p.setCommand(cmd.getCommand());
 						p.setArguments(cmd.getArguments());
@@ -237,9 +248,12 @@ public class ClientDriver implements LanguageClient {
 		ReferenceParams rp = new ReferenceParams();
 		rp.setTextDocument(id);
 		Position p = new Position();
-		p.setLine(32);
+		p.setLine(31);
 		p.setCharacter(0);
 		rp.setPosition(p);
+		ReferenceContext rc = new ReferenceContext();
+		rc.setIncludeDeclaration(false);
+		rp.setContext(rc);
 		CompletableFuture<List<? extends Location>> refsFuture = client.server.getTextDocumentService().references(rp);
 		System.err.println(refsFuture.get());
 	}
