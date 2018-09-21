@@ -54,6 +54,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
 	private final Map<CAstType, TypeName> walaTypeNames = HashMapFactory.make();
 	private final Set<Pair<Scope,String>> globalDeclSet = new HashSet<>();
+	private static boolean signleFileAnalysis = true;
 	
 	public PythonCAstToIRTranslator(IClassLoader loader, Map<Object, CAstEntity> namedEntityResolver,
 			ArrayOpHandler arrayOpHandler) {
@@ -66,6 +67,14 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
 	public PythonCAstToIRTranslator(IClassLoader loader) {
 		super(loader);
+	}
+
+	public static boolean isSingleFileAnalysis() {
+		return signleFileAnalysis;
+	}
+
+	public static void setSingleFileAnalysis(boolean singleFile) {
+		PythonCAstToIRTranslator.signleFileAnalysis = singleFile;
 	}
 
 	@Override	
@@ -255,7 +264,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		assert s != null : "cannot find symbol for " + nm + " at " + CAstPrinter.print(n, context.getSourceMap());
 		assert s.type() != null : "no type for " + nm + " at " + CAstPrinter.print(n, context.getSourceMap());
 		TypeReference type = makeType(s.type());
-		if (context.currentScope().isGlobal(s) || context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY || isGlobal(context.currentScope(),nm)) {
+		if (context.currentScope().isGlobal(s) || isGlobal(context, nm)) {
 			c.setValue(n, doGlobalRead(n, context, nm, type));
 		} else if (context.currentScope().isLexicallyScoped(s)) {
 			c.setValue(n, doLexicallyScopedRead(n, context, nm, type));
@@ -276,7 +285,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
 	@Override
 	protected void assignValue(CAstNode n, WalkContext context, Symbol ls, String nm, int rval) {
-		if (context.currentScope().isGlobal(ls) || context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY || isGlobal(context.currentScope(),nm))
+		if (context.currentScope().isGlobal(ls) || isGlobal(context, nm))
 			doGlobalWrite(context, nm, makeType(ls.type()), rval);
 		else if (context.currentScope().isLexicallyScoped(ls)) {
 			doLexicallyScopedWrite(context, nm, makeType(ls.type()), rval);
@@ -294,7 +303,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		TypeReference type = makeType(ls.type());
 		int temp;
 
-		if (context.currentScope().isGlobal(ls) || context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY || isGlobal(context.currentScope(),nm))
+		if (context.currentScope().isGlobal(ls) || isGlobal(context,nm))
 			temp = doGlobalRead(n, context, nm, type);
 		else if (context.currentScope().isLexicallyScoped(ls)) {
 			temp = doLexicallyScopedRead(n, context, nm, type);
@@ -316,7 +325,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 			c.setValue(n, rval);
 		}
 
-		if (context.currentScope().isGlobal(ls) || context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY || isGlobal(context.currentScope(),nm)) {
+		if (context.currentScope().isGlobal(ls) || isGlobal(context, nm)) {
 			doGlobalWrite(context, nm, type, rval);
 		} else if (context.currentScope().isLexicallyScoped(ls)) {
 			doLexicallyScopedWrite(context, nm, type, rval);
@@ -494,12 +503,20 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		}
 	}
 
-	boolean isGlobal(Scope scope, String varName){
-		  	Pair<Scope,String> pair = Pair.make(scope,varName);
-		  	if(globalDeclSet.contains(pair))
-		  		return true;
-		  	else
+	boolean isGlobal(WalkContext context, String varName){
+		  	if(signleFileAnalysis)
 		  		return false;
+		  	else {
+		  		if(context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY)
+		  			return true;
+		  		else {
+					Pair<Scope, String> pair = Pair.make(context.currentScope(), varName);
+					if (globalDeclSet.contains(pair))
+						return true;
+					else
+						return false;
+				}
+			}
 	}
 
 	void addGlobal(Scope scope,String varName){
