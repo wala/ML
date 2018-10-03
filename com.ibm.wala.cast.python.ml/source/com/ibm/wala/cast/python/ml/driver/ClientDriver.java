@@ -60,6 +60,7 @@ import org.eclipse.lsp4j.services.LanguageServer;
 import com.ibm.wala.util.collections.HashSetFactory;
 
 public class ClientDriver implements LanguageClient {
+	private String[] args;
 	private LanguageServer server;
 	private Consumer<Object> process;
 	
@@ -84,6 +85,7 @@ public class ClientDriver implements LanguageClient {
 			for(Map.Entry<String, List<TextEdit>> change : params.getEdit().getChanges().entrySet()) {
 				System.err.println("for document " + change.getKey());
 				for(TextEdit edit : change.getValue()) {
+					process.accept(edit);
 					System.err.println("text " + edit.getNewText() + " at " + edit.getRange());
 				}
 			}
@@ -97,6 +99,97 @@ public class ClientDriver implements LanguageClient {
 	public void publishDiagnostics(PublishDiagnosticsParams diagnostics) {
 		process.accept(diagnostics);
 		diags.add(diagnostics);
+		for(Diagnostic d : diagnostics.getDiagnostics()) {
+			CodeActionParams act = new CodeActionParams();
+			act.setRange(d.getRange());
+			TextDocumentIdentifier did = new TextDocumentIdentifier();
+			did.setUri(d.getSource());
+			act.setTextDocument(did);
+			CodeActionContext ctxt = new CodeActionContext();
+			ctxt.setDiagnostics(Collections.singletonList(d));
+			act.setContext(ctxt);
+			CompletableFuture<List<Either<Command, CodeAction>>> codeFuture = server.getTextDocumentService().codeAction(act);
+			codeFuture.thenAccept((List<Either<Command, CodeAction>> data) -> {
+				for(Either<Command, CodeAction> ecmd : data) {
+					Command cmd = ecmd.getLeft();
+					process.accept(cmd);
+					// System.err.println(cmd);
+					ExecuteCommandParams p = new ExecuteCommandParams();
+					p.setCommand(cmd.getCommand());
+					p.setArguments(cmd.getArguments());
+					CompletableFuture<Object> resultFuture = server.getWorkspaceService().executeCommand(p);
+					resultFuture.thenAccept((Object o) -> { 
+						process.accept(o); 
+						System.err.println(o); 
+					});
+				}
+			});
+		}
+		
+		TextDocumentIdentifier id = new TextDocumentIdentifier();
+		id.setUri(args[0]);
+		TextDocumentPositionParams a = new TextDocumentPositionParams();
+		a.setTextDocument(id);
+		for(int i = 1; i < args.length; i += 2) {
+			Position p = new Position();
+			p.setLine(Integer.parseInt(args[i]));
+			p.setCharacter(Integer.parseInt(args[i+1]));
+			a.setPosition(p);
+			CompletableFuture<Hover> data = server.getTextDocumentService().hover(a);
+			data.thenAccept((Hover t) -> {
+				Either<List<Either<String, MarkedString>>, MarkupContent> contents = t.getContents();
+				if (contents != null) {
+					if(contents.isLeft()) {
+						String xx = "";
+						for(Either<String, MarkedString> hd : contents.getLeft()) {
+							xx += hd.getLeft();			
+						}
+						process.accept(xx);
+					} else {
+						process.accept(contents.getRight().getValue());
+					}
+				}
+			});
+		}
+	
+		DocumentSymbolParams ds = new DocumentSymbolParams();
+		ds.setTextDocument(id);
+		CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> symbolFuture = server.getTextDocumentService().documentSymbol(ds);
+		symbolFuture.thenAccept((List<Either<SymbolInformation, DocumentSymbol>> xx) -> {
+			System.err.println("symbols of " + ds.getTextDocument().getUri());
+			for(Either<SymbolInformation, DocumentSymbol> sym : xx) {
+				System.err.println(sym.getLeft());
+				process.accept(sym.getLeft());
+			}
+		});
+		
+		CodeLensParams cs = new CodeLensParams();
+		cs.setTextDocument(id);
+		CompletableFuture<List<? extends CodeLens>> lensesFuture = server.getTextDocumentService().codeLens(cs);
+		lensesFuture.thenAccept((List<? extends CodeLens> xx) -> {
+			System.err.println("lenses of " + ds.getTextDocument().getUri());
+			for(CodeLens sym : xx) {
+				process.accept(sym);
+				System.err.println(sym);
+				ExecuteCommandParams params = new ExecuteCommandParams();
+				params.setCommand(sym.getCommand().getCommand());
+				params.setArguments(sym.getCommand().getArguments());
+				CompletableFuture<Object> result = server.getWorkspaceService().executeCommand(params);
+				result.thenAccept((Object xxx) -> {  process.accept(xxx); });
+			}
+		});
+				
+		ReferenceParams rp = new ReferenceParams();
+		rp.setTextDocument(id);
+		Position p = new Position();
+		p.setLine(31);
+		p.setCharacter(0);
+		rp.setPosition(p);
+		ReferenceContext rc = new ReferenceContext();
+		rc.setIncludeDeclaration(false);
+		rp.setContext(rc);
+		CompletableFuture<List<? extends Location>> refsFuture = server.getTextDocumentService().references(rp);
+		refsFuture.thenAccept((List<? extends Location> xx) -> { System.err.println(xx); });
 	}
 
 	@Override
@@ -126,16 +219,7 @@ public class ClientDriver implements LanguageClient {
 		main(args, s.getInputStream(), s.getOutputStream(), process);
 	}
 	
-	public static void main(String[] args, InputStream in, OutputStream out, Consumer<Object> process) throws IOException, InterruptedException, ExecutionException {		
-		ClientDriver client = new ClientDriver();
-		client.process = process;
-		
-		Launcher<LanguageServer> launcher = LSPLauncher.createClientLauncher(client, in, out);
-		client.connect(launcher.getRemoteProxy());
-		launcher.startListening();	
-		System.err.println("started");
-		//System.err.println(client.server.getTextDocumentService());
-		
+	private void sendClientStuff(String[] args) {
 		InitializeParams x = new InitializeParams();
 		ClientCapabilities c = new ClientCapabilities();
 		TextDocumentClientCapabilities tc = new TextDocumentClientCapabilities();
@@ -144,20 +228,37 @@ public class ClientDriver implements LanguageClient {
 		tc.setPublishDiagnostics(pc);
 		c.setTextDocument(tc);
 		x.setCapabilities(c);
-		CompletableFuture<InitializeResult> y = client.server.initialize(x);
-		System.err.println(y.get());
-		
-		InitializedParams z = new InitializedParams();
-		client.server.initialized(z);
-		
+		CompletableFuture<InitializeResult> y = server.initialize(x);
+		y.thenAccept((InitializeResult xx) -> { 
+			System.err.println(xx);
+			
+			InitializedParams z = new InitializedParams();
+			server.initialized(z);
+
+			sendFile(args);
+		});
+	}
+	
+	private void sendFile(String[] args) {
 		String scriptUri = args[0];
 		
-		BufferedReader br = new BufferedReader(new InputStreamReader(new URL(scriptUri).openStream()));
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new InputStreamReader(new URL(scriptUri).openStream()));
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			assert false;
+		}
 		StringBuffer fileData = new StringBuffer();
 		String line;
-	    while((line = br.readLine()) != null) {
-	    	fileData.append(line).append("\n");
-	    }
+	    try {
+			while((line = br.readLine()) != null) {
+				fileData.append(line).append("\n");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			assert false;
+		}
 
 	    DidOpenTextDocumentParams open = new DidOpenTextDocumentParams();
 		TextDocumentItem script = new TextDocumentItem();
@@ -165,96 +266,19 @@ public class ClientDriver implements LanguageClient {
 		script.setLanguageId("python");
 		script.setUri(scriptUri);
 		script.setText(fileData.toString());
-		client.server.getTextDocumentService().didOpen(open);
-		
-		while (client.diags.isEmpty()) {
-			Thread.sleep(100);
-		}
-		
-		TextDocumentIdentifier id = new TextDocumentIdentifier();
-		id.setUri(scriptUri);
-
-		TextDocumentPositionParams a = new TextDocumentPositionParams();
-		a.setTextDocument(id);
-		for(int i = 1; i < args.length; i += 2) {
-			Position p = new Position();
-			p.setLine(Integer.parseInt(args[i]));
-			p.setCharacter(Integer.parseInt(args[i+1]));
-			a.setPosition(p);
-			CompletableFuture<Hover> data = client.server.getTextDocumentService().hover(a);
-			Hover t = data.get();
-			Either<List<Either<String, MarkedString>>, MarkupContent> contents = t.getContents();
-			if (contents != null) {
-				if(contents.isLeft()) {
-					String xx = "";
-					for(Either<String, MarkedString> hd : contents.getLeft()) {
-						xx += hd.getLeft();			
-					}
-					process.accept(xx);
-				} else {
-					process.accept(contents.getRight().getValue());
-				}
-			}
-		}
+		server.getTextDocumentService().didOpen(open);	
+	}
 	
-		DocumentSymbolParams ds = new DocumentSymbolParams();
-		ds.setTextDocument(id);
-		CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> symbolFuture = client.server.getTextDocumentService().documentSymbol(ds);
-		System.err.println("symbols of " + ds.getTextDocument().getUri());
-		for(Either<SymbolInformation, DocumentSymbol> sym : symbolFuture.get()) {
-			process.accept(sym.getLeft());
-		}
+	public static void main(String[] args, InputStream in, OutputStream out, Consumer<Object> process) throws IOException, InterruptedException, ExecutionException {		
+		ClientDriver client = new ClientDriver();
+		client.args = args;
+		client.process = process;
 		
-		CodeLensParams cs = new CodeLensParams();
-		cs.setTextDocument(id);
-		CompletableFuture<List<? extends CodeLens>> lensesFuture = client.server.getTextDocumentService().codeLens(cs);
-		System.err.println("lenses of " + ds.getTextDocument().getUri());
-		for(CodeLens sym : lensesFuture.get()) {
-			process.accept(sym);
-			ExecuteCommandParams params = new ExecuteCommandParams();
-			params.setCommand(sym.getCommand().getCommand());
-			params.setArguments(sym.getCommand().getArguments());
-			CompletableFuture<Object> result = client.server.getWorkspaceService().executeCommand(params);
-			process.accept(result.get());
-		}
-		
-		for(PublishDiagnosticsParams diagnostics : client.diags) {
-			for(Diagnostic d : diagnostics.getDiagnostics()) {
-				CodeActionParams act = new CodeActionParams();
-				act.setRange(d.getRange());
-				TextDocumentIdentifier did = new TextDocumentIdentifier();
-				did.setUri(d.getSource());
-				act.setTextDocument(did);
-				CodeActionContext ctxt = new CodeActionContext();
-				ctxt.setDiagnostics(Collections.singletonList(d));
-				act.setContext(ctxt);
-				CompletableFuture<List<Either<Command, CodeAction>>> codeFuture = client.server.getTextDocumentService().codeAction(act);
-				try {
-					for(Either<Command, CodeAction> ecmd : codeFuture.get()) {
-						Command cmd = ecmd.getLeft();
-						ExecuteCommandParams p = new ExecuteCommandParams();
-						p.setCommand(cmd.getCommand());
-						p.setArguments(cmd.getArguments());
-						CompletableFuture<Object> resultFuture = client.server.getWorkspaceService().executeCommand(p);
-						process.accept(resultFuture.get());
-					}
-				} catch (InterruptedException | ExecutionException e) {
-					e.printStackTrace();
-					assert false;
-				}
-			}
-		}
-		
-		ReferenceParams rp = new ReferenceParams();
-		rp.setTextDocument(id);
-		Position p = new Position();
-		p.setLine(31);
-		p.setCharacter(0);
-		rp.setPosition(p);
-		ReferenceContext rc = new ReferenceContext();
-		rc.setIncludeDeclaration(false);
-		rp.setContext(rc);
-		CompletableFuture<List<? extends Location>> refsFuture = client.server.getTextDocumentService().references(rp);
-		System.err.println(refsFuture.get());
+		Launcher<LanguageServer> launcher = LSPLauncher.createClientLauncher(client, in, out);
+		client.connect(launcher.getRemoteProxy());
+		launcher.startListening();	
+		System.err.println("started");
+
+		client.sendClientStuff(args);
 	}
 }

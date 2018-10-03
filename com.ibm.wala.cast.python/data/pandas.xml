@@ -16,6 +16,13 @@
                   ref="x"
                   value="read_excel"/>
 
+	<new def="merge" class="Lpandas/functions/merge"/>
+	<putfield class="LRoot"
+                  field="merge"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="merge"/>
+
 	<return value="x"/>
       </method>
     </class>
@@ -28,7 +35,14 @@
 	  <return value="v"/>
 	</method>
       </class>
-      
+
+      <class name="merge" allocatable="true">
+        <method name="do" descriptor="()LRoot;" numArgs="5"
+		paramNames="self left right on how">
+	  <return value="left"/>
+	  <return value="right"/>
+	</method>
+      </class>
     </package>
   </classloader>
 </summary-spec>

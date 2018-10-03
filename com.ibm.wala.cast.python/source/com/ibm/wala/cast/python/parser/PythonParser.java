@@ -113,6 +113,7 @@ import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriter.CopyKey;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriter.RewriteContext;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriterFactory;
+import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.ReverseIterator;
@@ -976,20 +977,28 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			return defineFunction("lambda" + (++tmpIndex), lambdaArgs.getInternalArgs(), Collections.singletonList(lambdaBody), arg0);
 		}
 
-		@Override
-		public CAstNode visitList(List arg0) throws Exception {
+		private CAstNode collectObjects(java.util.List<expr> eltList, String type) throws Exception {
 			int i = 0, j = 0;
-			CAstNode[] elts = new CAstNode[ 2*arg0.getInternalElts().size()+1 ];
-			elts[i++] = Ast.makeNode(CAstNode.NEW, Ast.makeConstant("list"));
-			for(expr e : arg0.getInternalElts()) {
+			CAstNode[] elts = new CAstNode[ 2*eltList.size()+1 ];
+			elts[i++] = Ast.makeNode(CAstNode.NEW, Ast.makeConstant(type));
+			for(expr e : eltList) {
 				elts[i++] = Ast.makeConstant("" + j++);
 				elts[i++] = e.accept(this);
 			}
 			return Ast.makeNode(CAstNode.OBJECT_LITERAL, elts);
 		}
+		
+		@Override
+		public CAstNode visitList(List arg0) throws Exception {
+			return collectObjects(arg0.getInternalElts(), "list");
+		}
 
 		@Override
 		public CAstNode visitListComp(ListComp arg0) throws Exception {
+			return visitComp(arg0.getInternalElt(), arg0.getInternalGenerators(), PythonTypes.list);
+		}
+		
+		private CAstNode visitComp(expr value, java.util.List<comprehension> gen, TypeReference type) throws Exception {
 			String listName = "temp " + tmpIndex++;
 			String indexName = "temp " + tmpIndex++;
 			CAstNode body = 
@@ -999,7 +1008,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			        Ast.makeNode(CAstNode.VAR, Ast.makeConstant(listName)),
 			        Ast.makeConstant(PythonTypes.Root),
 			        Ast.makeNode(CAstNode.VAR, Ast.makeConstant(indexName))),
-			      arg0.getInternalElt().accept(this)),
+			      value.accept(this)),
 			    Ast.makeNode(CAstNode.ASSIGN,
 			      Ast.makeNode(CAstNode.VAR, Ast.makeConstant(indexName)),
 			      Ast.makeNode(CAstNode.BINARY_EXPR, 
@@ -1010,11 +1019,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			return Ast.makeNode(CAstNode.BLOCK_EXPR,
 			  Ast.makeNode(CAstNode.DECL_STMT, 
 			    Ast.makeConstant(new CAstSymbolImpl(listName, PythonCAstToIRTranslator.Any)),
-			    Ast.makeNode(CAstNode.NEW, Ast.makeConstant(PythonTypes.list))),
+			    Ast.makeNode(CAstNode.NEW, Ast.makeConstant(type))),
 			  Ast.makeNode(CAstNode.DECL_STMT, 
 			    Ast.makeConstant(new CAstSymbolImpl(indexName, PythonCAstToIRTranslator.Any)),
 				Ast.makeConstant(0)),
-			  doGenerators(arg0.getInternalGenerators(), body),
+			  doGenerators(gen, body),
 			  Ast.makeNode(CAstNode.VAR, Ast.makeConstant(listName)));
 		}
 
@@ -1147,12 +1156,12 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitSet(Set arg0) throws Exception {
-			return fail(arg0);
+			return collectObjects(arg0.getInternalElts(), "set");
 		}
 
 		@Override
 		public CAstNode visitSetComp(SetComp arg0) throws Exception {
-			return fail(arg0);
+			return visitComp(arg0.getInternalElt(), arg0.getInternalGenerators(), PythonTypes.set);
 		}
 
 		private CAstNode acceptOrNull(PythonTree x) throws Exception {
@@ -1181,7 +1190,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitSuite(Suite arg0) throws Exception {
-			return fail(arg0);
+			return block(arg0.getInternalBody());
 		}
 	
 		private class TryCatchContext extends TranslatorToCAst.TryCatchContext<WalkContext, PythonTree> implements WalkContext {

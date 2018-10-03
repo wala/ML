@@ -22,7 +22,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 		check: {
 			for(CGNode node : nodes) {
 				for(Iterator<CGNode> ns = CG.getPredNodes(node); ns.hasNext(); ) {
-					if (ns.next().getMethod().isSynthetic()) {
+					if (ns.next().getMethod().isWalaSynthetic()) {
 						break check;
 					}
 				}

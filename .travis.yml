@@ -23,7 +23,7 @@ install:
  - mvn clean install -DskipTests -B
  - popd
 script:
- - mvn clean install -B -q
+ - mvn clean install -B
 sudo: false
 deploy:
   provider: pages

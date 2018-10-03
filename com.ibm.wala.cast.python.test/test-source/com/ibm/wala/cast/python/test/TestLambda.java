@@ -47,4 +47,27 @@ public class TestLambda extends TestPythonCallGraphShape {
 		CallGraph CG = process("lambda2.py");
 		verifyGraphAssertions(CG, assertionsLambda2);
 	}
+
+	 protected static final Object[][] assertionsLambda3 = new Object[][] {
+		    new Object[] { ROOT, new String[] { "script lambda3.py" } },
+		    new Object[] {
+		        "script lambda3.py",
+		        new String[] { "script lambda3.py/Foo", "$script lambda3.py/Foo/foo:trampoline3" } },
+		    new Object[] {
+		    	"$script lambda3.py/Foo/foo:trampoline3",
+		    	new String[] { "script lambda3.py/Foo/foo" } },
+		    new Object[] {
+		    	"script lambda3.py/Foo/foo",
+		    	new String[] { "script lambda3.py/lambda3" } },
+		    new Object[] {
+		    	"script lambda3.py/lambda3",
+		    	new String[] { "script lambda3.py/lambda1", "script lambda3.py/lambda2" } }
+	 };
+
+	 @Test
+	public void testLambda3() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		CallGraph CG = process("lambda3.py");
+		System.err.println(CG);
+		verifyGraphAssertions(CG, assertionsLambda3);
+	}
 }

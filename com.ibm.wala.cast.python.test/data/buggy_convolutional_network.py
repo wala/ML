@@ -69,10 +69,10 @@ def conv_net(x_dict, n_classes, dropout, reuse, is_training):
 
 # Build the neural network
 # Define the model function (following TF Estimator Template)
-def model_fn(features, labels, mode):
+def model_fn(features, labels, mode, make_net):
     # Because Dropout have different behavior at training and prediction time, we
     # need to create 2 distinct computation graphs that still share the same weights.
-    logits_train = conv_net(features, num_classes, dropout, reuse=False,
+    logits_train = make_net(features, num_classes, dropout, reuse=False,
                             is_training=True)
     logits_test = make_net(features, num_classes, dropout, reuse=True,
                            is_training=False)
@@ -106,10 +106,8 @@ def model_fn(features, labels, mode):
 
     return estim_specs
 
-make_net = conv_net
-
 # Build the Estimator
-model = tf.estimator.Estimator(model_fn)
+model = tf.estimator.Estimator(lambda features, labels, mode: model_fn(features, labels, mode, conv_net))
 
 # Define the input function for training
 input_fn = tf.estimator.inputs.numpy_input_fn(

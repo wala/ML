@@ -26,6 +26,8 @@ import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKeyFactory;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
+import com.ibm.wala.ssa.SSAArrayLoadInstruction;
+import com.ibm.wala.ssa.SSAArrayStoreInstruction;
 import com.ibm.wala.ssa.SSABinaryOpInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.util.strings.Atom;
@@ -75,6 +77,16 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 
 		@Override
 		public void visitPythonStoreProperty(PythonStoreProperty inst) {
+			newFieldWrite(node, inst.getArrayRef(), inst.getIndex(), inst.getValue());
+		}
+
+		@Override
+		public void visitArrayLoad(SSAArrayLoadInstruction inst) {
+			newFieldRead(node, inst.getArrayRef(), inst.getIndex(), inst.getDef());			
+		}
+
+		@Override
+		public void visitArrayStore(SSAArrayStoreInstruction inst) {
 			newFieldWrite(node, inst.getArrayRef(), inst.getIndex(), inst.getValue());
 		}
 		
