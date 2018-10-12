@@ -306,6 +306,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 						public Position getPosition(int arg) {
 							return null;
 						}
+
+						@Override
+						public Position getNamePosition() {
+							return makePosition(lhs);
+						}
 					});
 				}
 				return Ast.makeNode(CAstNode.EMPTY);
@@ -505,6 +510,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				@Override
 				public Position getPosition() {
 					return makePosition(arg0);
+				}
+
+				@Override
+				public Position getNamePosition() {
+					return makePosition(arg0.getInternalNameNode());
 				}
 				
 			};
@@ -742,10 +752,10 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitFunctionDef(FunctionDef arg0) throws Exception {
-			return defineFunction(arg0.getInternalName(), arg0.getInternalArgs().getInternalArgs(), arg0.getInternalBody(), arg0);
+			return defineFunction(arg0.getInternalName(), arg0.getInternalArgs().getInternalArgs(), arg0.getInternalBody(), arg0, makePosition(arg0.getInternalNameNode()));
 		}
 		
-		private <S extends PythonTree> CAstNode defineFunction(String functionName, java.util.List<expr> arguments, java.util.List<S> body, PythonTree function) throws Exception {
+		private <S extends PythonTree> CAstNode defineFunction(String functionName, java.util.List<expr> arguments, java.util.List<S> body, PythonTree function, Position namePos) throws Exception {
 			int i = 0;
 			CAstNode[] nodes = new CAstNode[ body.size() ];
 			
@@ -864,6 +874,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				public Position getPosition(int arg) {
 					return makePosition(arguments.get(arg));
 				}
+
+				@Override
+				public Position getNamePosition() {
+					return namePos;
+				}
 			};
 
 			PythonParser.FunctionContext child = new PythonParser.FunctionContext(context, fun, function);	
@@ -974,7 +989,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		public CAstNode visitLambda(Lambda arg0) throws Exception {
 			arguments lambdaArgs = arg0.getInternalArgs();
 			expr lambdaBody = arg0.getInternalBody();
-			return defineFunction("lambda" + (++tmpIndex), lambdaArgs.getInternalArgs(), Collections.singletonList(lambdaBody), arg0);
+			return defineFunction("lambda" + (++tmpIndex), lambdaArgs.getInternalArgs(), Collections.singletonList(lambdaBody), arg0, makePosition(arg0.getChildren().get(0)));
 		}
 
 		private CAstNode collectObjects(java.util.List<expr> eltList, String type) throws Exception {
@@ -1422,6 +1437,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				}
 				
 				public Position getPosition(int arg) {
+					return null;
+				}
+
+				@Override
+				public Position getNamePosition() {
 					return null;
 				}
 

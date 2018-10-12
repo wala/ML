@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<!DOCTYPE summary-spec>
+<!-- Pandas model -->
+<summary-spec>
+  <classloader name="PythonLoader">
+    <class name="numpy" allocatable="true">
+      <method name="import"
+	      static="true"
+	      descriptor="()Lnumpy;">
+        <new def="x" class="Lturtle"/>
+ 		<putfield class="Lturtle"
+                  field="any"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="x"/>
+        <return value="x"/>
+      </method>
+    </class>
+  </classloader>
+</summary-spec>
+
