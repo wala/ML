@@ -12,12 +12,9 @@ package com.ibm.wala.cast.python.ir;
 
 import static com.ibm.wala.cast.python.ir.PythonLanguage.Python;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import com.ibm.wala.cast.ir.ssa.AssignInstruction;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.translator.ArrayOpHandler;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
@@ -33,6 +30,7 @@ import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
 import com.ibm.wala.cast.tree.visit.CAstVisitor;
+import com.ibm.wala.cast.util.CAstPrinter;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.classLoader.CallSiteReference;
@@ -55,6 +53,8 @@ import com.ibm.wala.util.strings.Atom;
 public class PythonCAstToIRTranslator extends AstTranslator {
 
 	private final Map<CAstType, TypeName> walaTypeNames = HashMapFactory.make();
+	private final Set<Pair<Scope,String>> globalDeclSet = new HashSet<>();
+	private static boolean signleFileAnalysis = true;
 	
 	public PythonCAstToIRTranslator(IClassLoader loader, Map<Object, CAstEntity> namedEntityResolver,
 			ArrayOpHandler arrayOpHandler) {
@@ -67,6 +67,14 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
 	public PythonCAstToIRTranslator(IClassLoader loader) {
 		super(loader);
+	}
+
+	public static boolean isSingleFileAnalysis() {
+		return signleFileAnalysis;
+	}
+
+	public static void setSingleFileAnalysis(boolean singleFile) {
+		PythonCAstToIRTranslator.signleFileAnalysis = singleFile;
 	}
 
 	@Override	
@@ -120,7 +128,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
 	@Override
 	protected IOperator translateBinaryOpcode(CAstNode op) {
-		if (CAstOperator.OP_IN == op || CAstOperator.OP_POW == op) {
+		if (CAstOperator.OP_IN == op || CAstOperator.OP_NOT_IN == op || CAstOperator.OP_POW == op) {
 			return IBinaryOpInstruction.Operator.ADD;
 		} else {
 			return super.translateBinaryOpcode(op);
@@ -245,6 +253,85 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	    int idx = context.cfg().getCurrentInstruction();
 	    context.cfg().addInstruction(Python.instructionFactory().NewInstruction(idx, result, NewSiteReference.make(idx, type)));
 	    doGlobalWrite(context, fnName, PythonTypes.Root, result);
+	}
+
+	@Override
+	protected void leaveVar(CAstNode n, WalkContext c, CAstVisitor<WalkContext> visitor) {
+		WalkContext context = c;
+		String nm = (String) n.getChild(0).getValue();
+		assert nm != null : "cannot find var for " + CAstPrinter.print(n, context.getSourceMap());
+		Symbol s = context.currentScope().lookup(nm);
+		assert s != null : "cannot find symbol for " + nm + " at " + CAstPrinter.print(n, context.getSourceMap());
+		assert s.type() != null : "no type for " + nm + " at " + CAstPrinter.print(n, context.getSourceMap());
+		TypeReference type = makeType(s.type());
+		if (context.currentScope().isGlobal(s) || isGlobal(context, nm)) {
+			c.setValue(n, doGlobalRead(n, context, nm, type));
+		} else if (context.currentScope().isLexicallyScoped(s)) {
+			c.setValue(n, doLexicallyScopedRead(n, context, nm, type));
+		} else {
+			c.setValue(n, doLocalRead(context, nm, type));
+		}
+	}
+
+//	@Override
+//	protected void leaveVarAssign(CAstNode n, CAstNode v, CAstNode a, WalkContext c, CAstVisitor<WalkContext> visitor) {
+//		WalkContext context = c;
+//		int rval = c.getValue(v);
+//		String nm = (String) n.getChild(0).getValue();
+//		Symbol ls = context.currentScope().lookup(nm);
+//		c.setValue(n, rval);
+//		assignValue(n, context, ls, nm, rval);
+//	}
+
+	@Override
+	protected void assignValue(CAstNode n, WalkContext context, Symbol ls, String nm, int rval) {
+		if (context.currentScope().isGlobal(ls) || isGlobal(context, nm))
+			doGlobalWrite(context, nm, makeType(ls.type()), rval);
+		else if (context.currentScope().isLexicallyScoped(ls)) {
+			doLexicallyScopedWrite(context, nm, makeType(ls.type()), rval);
+		} else {
+			assert rval != -1 : CAstPrinter.print(n, context.top().getSourceMap());
+			doLocalWrite(context, nm, makeType(ls.type()), rval);
+		}
+	}
+
+	@Override
+	protected void leaveVarAssignOp(CAstNode n, CAstNode v, CAstNode a, boolean pre, WalkContext c, CAstVisitor<WalkContext> visitor) {
+		WalkContext context = c;
+		String nm = (String) n.getChild(0).getValue();
+		Symbol ls = context.currentScope().lookup(nm);
+		TypeReference type = makeType(ls.type());
+		int temp;
+
+		if (context.currentScope().isGlobal(ls) || isGlobal(context,nm))
+			temp = doGlobalRead(n, context, nm, type);
+		else if (context.currentScope().isLexicallyScoped(ls)) {
+			temp = doLexicallyScopedRead(n, context, nm, type);
+		} else {
+			temp = doLocalRead(context, nm, type);
+		}
+
+		if (!pre) {
+			int ret = context.currentScope().allocateTempValue();
+			int currentInstruction = context.cfg().getCurrentInstruction();
+			context.cfg().addInstruction(new AssignInstruction(currentInstruction, ret, temp));
+			context.cfg().noteOperands(currentInstruction, context.getSourceMap().getPosition(n.getChild(0)));
+			c.setValue(n, ret);
+		}
+
+		int rval = processAssignOp(v, a, temp, c);
+
+		if (pre) {
+			c.setValue(n, rval);
+		}
+
+		if (context.currentScope().isGlobal(ls) || isGlobal(context, nm)) {
+			doGlobalWrite(context, nm, type, rval);
+		} else if (context.currentScope().isLexicallyScoped(ls)) {
+			doLexicallyScopedWrite(context, nm, type, rval);
+		} else {
+			doLocalWrite(context, nm, type, rval);
+		}
 	}
 
 	@Override
@@ -416,12 +503,42 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		}
 	}
 
+	boolean isGlobal(WalkContext context, String varName){
+		  	if(signleFileAnalysis)
+		  		return false;
+		  	else {
+		  		if(context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY)
+		  			return true;
+		  		else {
+					Pair<Scope, String> pair = Pair.make(context.currentScope(), varName);
+					if (globalDeclSet.contains(pair))
+						return true;
+					else
+						return false;
+				}
+			}
+	}
+
+	void addGlobal(Scope scope,String varName){
+		Pair<Scope,String> pair = Pair.make(scope,varName);
+		globalDeclSet.add(pair);
+	}
 	@Override
 	protected boolean doVisit(CAstNode n, WalkContext context, CAstVisitor<WalkContext> visitor) {
 		if (n.getKind() == CAstNode.COMPREHENSION_EXPR) {
 			context.setValue(n, context.currentScope().getConstantValue(null));
 			return true;
-		} else {
+		}
+		else if(n.getKind() == CAstNode.GLOBAL_DECL){
+			int numOfChildren = n.getChildCount();
+			for(int i = 0;i < numOfChildren; i++){
+				String val = (String) n.getChild(i).getChild(0).getValue();
+				System.out.println("Hey " + val);
+				addGlobal(context.currentScope(),val);
+			}
+			return true;
+		}
+		else {
 			return super.doVisit(n, context, visitor);
 		}
 	}

@@ -27,7 +27,7 @@ public class PythonFileParser extends PythonParser<File> {
 
 	private final File fileName;
 	
-	public PythonFileParser(File fileName, CAstTypeDictionaryImpl<PyObject> types) {
+	public PythonFileParser(File fileName, CAstTypeDictionaryImpl<String> types) {
 		super(types);
 		this.fileName  = fileName;
 	}
@@ -46,7 +46,7 @@ public class PythonFileParser extends PythonParser<File> {
 	}
 
 	public static void main(String[] args) throws Exception {
-		PythonParser<File> p = new PythonFileParser(new File(args[0]), new CAstTypeDictionaryImpl<PyObject>());
+		PythonParser<File> p = new PythonFileParser(new File(args[0]), new CAstTypeDictionaryImpl<String>());
 		CAstEntity script = p.translateToCAst();
 		System.err.println(script);
 		System.err.println(CAstPrinter.print(script));

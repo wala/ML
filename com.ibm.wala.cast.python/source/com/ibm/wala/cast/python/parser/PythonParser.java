@@ -118,6 +118,7 @@ import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.ReverseIterator;
 import com.ibm.wala.util.warnings.Warning;
+import org.python.core.PyString;
 
 abstract public class PythonParser<T> implements TranslatorToCAst {
 
@@ -448,8 +449,9 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				public Collection<CAstType> getSupertypes() {
 					Collection<CAstType> supertypes = HashSetFactory.make();
 					for(expr e : arg0.getInternalBases()) {
+						System.out.println(arg0.getInternalName() + " " + arg0.getType()+ " extends "  + e.getText() + " " + e.getType());
 						try {
-							CAstType type = types.getCAstTypeFor(e.accept(visitor));
+							CAstType type = types.getCAstTypeFor(e.getText());
 							if (type != null) {
 								supertypes.add(type);
 							}
@@ -475,8 +477,8 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 					return Collections.emptySet();
 				}
 			};
-			
-			types.map(arg0.getType(), cls);
+			//TODO: CURRENTLY THIS WILL NOT BE CORRECT FOR EXTENDING CLASSES IMPORTED FROM ANOTHER MODULE
+			types.map(arg0.getInternalName(), cls);
 			
 			Collection<CAstEntity> members = HashSetFactory.make();
 			
@@ -620,6 +622,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			case In:
 				return CAstOperator.OP_IN;
 			case NotIn:
+				return CAstOperator.OP_NOT_IN;
 			case UNDEFINED:
 			default:
  				assert false : next;
@@ -910,7 +913,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitGlobal(Global arg0) throws Exception {
-			return fail(arg0);
+			java.util.List <Name> internalNames = arg0.getInternalNameNodes();
+			CAstNode[] x = new CAstNode[arg0.getInternalNameNodes().size()];
+			for(int i = 0; i < x.length; i++)
+				x[i] = internalNames.get(i).accept(this);
+			return Ast.makeNode(CAstNode.GLOBAL_DECL, x);
 		}
 
 		private CAstNode block(java.util.List<stmt> block) throws Exception {
@@ -1092,9 +1099,6 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				"float",
 				"int",
 				"__name__",
-				"False",
-				"True",
-				"None",
 				"print",
 				"super",
 				"len",
@@ -1126,12 +1130,29 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitName(Name arg0) throws Exception {
-			return notePosition(Ast.makeNode(CAstNode.VAR, Ast.makeConstant(arg0.getText())), arg0);
+			String name = arg0.getText();
+			if(name.equals("True"))
+				return Ast.makeConstant(true);
+			else if(name.equals("False"))
+				return Ast.makeConstant(false);
+			else if(name.equals("None"))
+				return Ast.makeConstant(null);
+
+			return notePosition(Ast.makeNode(CAstNode.VAR, Ast.makeConstant(name)), arg0);
 		}
 
 		@Override
 		public CAstNode visitNum(Num arg0) throws Exception {
-			return Ast.makeConstant(Double.parseDouble(arg0.getInternalN().toString()));
+			String numStr = arg0.getInternalN().toString();
+
+			if(numStr.contains("l") | numStr.contains("L"))
+				return Ast.makeConstant(Long.parseLong(numStr.substring(0, numStr.length() - 1)));
+			else if(!numStr.contains("."))
+				return Ast.makeConstant(Long.parseLong(numStr));
+			//else if(numStr.contains("j") | numStr.contains("J")) //Placeholder for implementation/modeling of imaginary numbers
+			//	return Ast.makeConstant();
+			else
+				return Ast.makeConstant(Double.parseDouble(numStr));
 		}
 
 		@Override
@@ -1166,7 +1187,10 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitReturn(Return arg0) throws Exception {
-			return Ast.makeNode(CAstNode.RETURN, arg0.getInternalValue().accept(this));
+			if(arg0.getInternalValue() == null)
+				return Ast.makeNode(CAstNode.RETURN, Ast.makeNode(CAstNode.VAR, Ast.makeConstant("None")));
+			else
+				return Ast.makeNode(CAstNode.RETURN, arg0.getInternalValue().accept(this));
 		}
 
 		@Override
@@ -1395,9 +1419,9 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 	protected abstract URL getParsedURL() throws IOException;
 
-	private final CAstTypeDictionaryImpl<PyObject> types;
+	private final CAstTypeDictionaryImpl<String> types;
 	
-	protected PythonParser(CAstTypeDictionaryImpl<PyObject> types) {
+	protected PythonParser(CAstTypeDictionaryImpl<String> types) {
 		this.types = types;
 	}
 	
