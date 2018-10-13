@@ -347,7 +347,7 @@ public class TensorType implements Iterable<Dimension<?>> {
 			SSAInstruction use = uses.next();
 			if (use instanceof SSAPutInstruction && ((SSAPutInstruction)use).getRef() == literalVn) {
 				int val = ((SSAPutInstruction)use).getVal();
-				if (S.isConstant(val)) {
+				if (S.isNumberConstant(val)) {
 					int v = ((Number) S.getConstantValue(val)).intValue();
 					System.err.println("value: " + v);
 					r.add(v >=0? new NumericDim((Integer)v): new SymbolicDim("?")); 

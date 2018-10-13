@@ -490,16 +490,18 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		int rval = c.getValue(v);
 		for(int i = 1; i < n.getChildCount(); i++) {
 			CAstNode var = n.getChild(i);
-			String name = (String) var.getChild(0).getValue();
-			c.currentScope().declare(new CAstSymbolImpl(name, topType()));
-		    Symbol ls = c.currentScope().lookup(name);
+			if (var.getKind() == CAstNode.VAR) {
+				String name = (String) var.getChild(0).getValue();
+				c.currentScope().declare(new CAstSymbolImpl(name, topType()));
+				Symbol ls = c.currentScope().lookup(name);
 		    
-		    int rvi = c.currentScope().allocateTempValue();
-		    int idx = c.currentScope().getConstantValue(i-1);
-		    c.cfg().addInstruction(Python.instructionFactory().PropertyRead(c.cfg().getCurrentInstruction(), rvi, rval, idx));
+				int rvi = c.currentScope().allocateTempValue();
+				int idx = c.currentScope().getConstantValue(i-1);
+				c.cfg().addInstruction(Python.instructionFactory().PropertyRead(c.cfg().getCurrentInstruction(), rvi, rval, idx));
 		    
-		    c.setValue(n, rvi);
-		    assignValue(n, c, ls, name, rvi);
+				c.setValue(n, rvi);
+				assignValue(n, c, ls, name, rvi);
+			}
 		}
 	}
 
