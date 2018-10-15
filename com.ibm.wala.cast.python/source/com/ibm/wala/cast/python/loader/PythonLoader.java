@@ -132,17 +132,23 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 		return new PythonCAstToIRTranslator(this);
 	}
 
-	CoreClass Root = new CoreClass(PythonTypes.rootTypeName, null, this, null);
+	final CoreClass Root = new CoreClass(PythonTypes.rootTypeName, null, this, null);
 
-	CoreClass Exception = new CoreClass(PythonTypes.Exception.getName(), PythonTypes.rootTypeName, this, null);
+	final CoreClass Exception = new CoreClass(PythonTypes.Exception.getName(), PythonTypes.rootTypeName, this, null);
 
-	CoreClass CodeBody = new CoreClass(PythonTypes.CodeBody.getName(), PythonTypes.rootTypeName, this, null);
+	final CoreClass CodeBody = new CoreClass(PythonTypes.CodeBody.getName(), PythonTypes.rootTypeName, this, null);
 
-	CoreClass object = new CoreClass(PythonTypes.object.getName(), PythonTypes.rootTypeName, this, null);
+	final CoreClass object = new CoreClass(PythonTypes.object.getName(), PythonTypes.rootTypeName, this, null);
 
-	CoreClass list = new CoreClass(PythonTypes.list.getName(), PythonTypes.rootTypeName, this, null);
+	final CoreClass list = new CoreClass(PythonTypes.list.getName(), PythonTypes.object.getName(), this, null);
 
-	CoreClass trampoline = new CoreClass(PythonTypes.trampoline.getName(), PythonTypes.CodeBody.getName(), this, null);
+	final CoreClass set = new CoreClass(PythonTypes.set.getName(), PythonTypes.object.getName(), this, null);
+
+	final CoreClass dict = new CoreClass(PythonTypes.dict.getName(), PythonTypes.object.getName(), this, null);
+
+	final CoreClass tuple = new CoreClass(PythonTypes.tuple.getName(), PythonTypes.object.getName(), this, null);
+
+	final CoreClass trampoline = new CoreClass(PythonTypes.trampoline.getName(), PythonTypes.CodeBody.getName(), this, null);
 
 	public IClass makeCodeBodyType(String name, TypeReference P, CAstSourcePositionMap.Position sourcePosition, CAstEntity entity, WalkContext context) {
 		return new DynamicCodeBody(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName(name)), P, this,

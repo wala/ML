@@ -657,7 +657,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			CAstNode args[] = new CAstNode[ arg0.getInternalKeys().size() * 2 + 1 ];
 			Iterator<expr> keys = arg0.getInternalKeys().iterator();
 			Iterator<expr> vals = arg0.getInternalValues().iterator();
-			args[i++] = Ast.makeNode(CAstNode.NEW, Ast.makeConstant("object"));
+			args[i++] = Ast.makeNode(CAstNode.NEW, Ast.makeConstant("dict"));
 			while (keys.hasNext()) {
 				args[i++] = keys.next().accept(this);
 				args[i++] = vals.next().accept(this);
@@ -1289,7 +1289,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			int i = 0;
 			CAstNode[] elts = new CAstNode[ arg0.getInternalElts().size()+1 ];
 			
-			elts[i++] = Ast.makeNode(CAstNode.NEW, Ast.makeConstant("list"));
+			elts[i++] = Ast.makeNode(CAstNode.NEW, Ast.makeConstant("tuple"));
 			for(expr e : arg0.getInternalElts()) {
 				elts[i++] = e.accept(this);
 			}
