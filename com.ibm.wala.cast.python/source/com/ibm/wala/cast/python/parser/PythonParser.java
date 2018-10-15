@@ -679,7 +679,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			return Ast.makeNode(CAstNode.BLOCK_EXPR,
 					  Ast.makeNode(CAstNode.DECL_STMT, 
 					    Ast.makeConstant(new CAstSymbolImpl(dictName, PythonCAstToIRTranslator.Any)),
-					    Ast.makeNode(CAstNode.NEW, Ast.makeConstant(PythonTypes.object))),
+					    Ast.makeNode(CAstNode.NEW, Ast.makeConstant(PythonTypes.dict))),
 					  doGenerators(arg0.getInternalGenerators(), body),
 					  Ast.makeNode(CAstNode.VAR, Ast.makeConstant(dictName)));
 					  
