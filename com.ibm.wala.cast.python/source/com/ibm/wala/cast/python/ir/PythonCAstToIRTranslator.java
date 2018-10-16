@@ -18,6 +18,7 @@ import com.ibm.wala.cast.ir.ssa.AssignInstruction;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.translator.ArrayOpHandler;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
+import com.ibm.wala.cast.ir.translator.AstTranslator.WalkContext;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.loader.PythonLoader;
@@ -505,6 +506,27 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		}
 	}
 
+	@Override
+	protected void leaveObjectLiteralAssign(CAstNode n, CAstNode v, CAstNode a, WalkContext c,
+			CAstVisitor<WalkContext> visitor) {
+		int rval = c.getValue(v);
+		for(int i = 1; i < n.getChildCount(); i+=2) {
+			int idx = c.getValue(n.getChild(i));
+			CAstNode var = n.getChild(i+1);
+			if (var.getKind() == CAstNode.VAR) {
+				String name = (String) var.getChild(0).getValue();
+				c.currentScope().declare(new CAstSymbolImpl(name, topType()));
+				Symbol ls = c.currentScope().lookup(name);
+		    
+				int rvi = c.currentScope().allocateTempValue();
+				c.cfg().addInstruction(Python.instructionFactory().PropertyRead(c.cfg().getCurrentInstruction(), rvi, rval, idx));
+		    
+				c.setValue(n, rvi);
+				assignValue(n, c, ls, name, rvi);
+			}
+		}
+	}
+
 	boolean isGlobal(WalkContext context, String varName){
 		  	if(signleFileAnalysis)
 		  		return false;
@@ -543,6 +565,13 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		else {
 			return super.doVisit(n, context, visitor);
 		}
+	}
+
+	@Override
+	protected boolean doVisitAssignNodes(CAstNode n, WalkContext context, CAstNode v, CAstNode a,
+			CAstVisitor<WalkContext> visitor) {
+		// TODO Auto-generated method stub
+		return super.doVisitAssignNodes(n, context, v, a, visitor);
 	}
 
 	@Override

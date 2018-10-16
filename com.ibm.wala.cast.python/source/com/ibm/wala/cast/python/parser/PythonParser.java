@@ -1004,7 +1004,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			CAstNode[] elts = new CAstNode[ 2*eltList.size()+1 ];
 			elts[i++] = Ast.makeNode(CAstNode.NEW, Ast.makeConstant(type));
 			for(expr e : eltList) {
-				elts[i++] = Ast.makeConstant("" + j++);
+				elts[i++] = Ast.makeConstant(j++);
 				elts[i++] = e.accept(this);
 			}
 			return Ast.makeNode(CAstNode.OBJECT_LITERAL, elts);
@@ -1286,6 +1286,8 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitTuple(Tuple arg0) throws Exception {
+			return collectObjects(arg0.getInternalElts(), "tuple");
+/*
 			int i = 0;
 			CAstNode[] elts = new CAstNode[ arg0.getInternalElts().size()+1 ];
 			
@@ -1294,6 +1296,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				elts[i++] = e.accept(this);
 			}
 			return Ast.makeNode(CAstNode.ARRAY_LITERAL, elts);
+*/
 		}
 
 		@Override

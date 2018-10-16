@@ -24,6 +24,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.python.ml.types.TensorType.Dimension;
+import com.ibm.wala.cast.python.ssa.PythonPropertyWrite;
 import com.ibm.wala.cast.python.util.PythonUtil;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.util.SourceBuffer;
@@ -339,39 +340,51 @@ public class TensorType implements Iterable<Dimension<?>> {
 		return new TensorType("pixel", Arrays.asList(batch, vec));
 	}
 	
+	
 	public static TensorType shapeArg(CGNode node, int literalVn) {
+		System.err.println(node.getIR());
 		ArrayList<Dimension<?>> r = new ArrayList<>();
 		DefUse du = node.getDU();
 		SymbolTable S = node.getIR().getSymbolTable();
 		for(Iterator<SSAInstruction> uses = du.getUses(literalVn); uses.hasNext(); ) {
 			SSAInstruction use = uses.next();
-			if (use instanceof SSAPutInstruction && ((SSAPutInstruction)use).getRef() == literalVn) {
-				int val = ((SSAPutInstruction)use).getVal();
-				if (S.isNumberConstant(val)) {
-					int v = ((Number) S.getConstantValue(val)).intValue();
-					System.err.println("value: " + v);
-					r.add(v >=0? new NumericDim((Integer)v): new SymbolicDim("?")); 
-				} else {
-					if (du.getDef(val) !=  null && node.getMethod() instanceof AstMethod) {
-						Position p = ((AstMethod)node.getMethod()).debugInfo().getInstructionPosition(du.getDef(val).iindex);
-						System.err.println(p);
-						try {
-							SourceBuffer b = new SourceBuffer(p);
-							String expr = b.toString();
-							System.err.println(expr);
-							PyObject value = PythonUtil.getInterp().eval(expr);
-							System.err.println(value);
-							if (value.isInteger() ) {
-								r.add(new NumericDim(value.asInt()));
-								continue;
-							}
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+			int val, ref;
+			if (use instanceof SSAPutInstruction) {
+				val = ((SSAPutInstruction)use).getVal();
+				ref = ((SSAPutInstruction)use).getRef();
+			} else if (use instanceof PythonPropertyWrite) {
+				val = ((PythonPropertyWrite)use).getValue();
+				ref = ((PythonPropertyWrite)use).getObjectRef();
+			} else {
+				continue;
+			}
+			if (ref != literalVn) {
+				continue;
+			}
+			if (S.isNumberConstant(val)) {
+				int v = ((Number) S.getConstantValue(val)).intValue();
+				System.err.println("value: " + v);
+				r.add(v >=0? new NumericDim((Integer)v): new SymbolicDim("?")); 
+			} else {
+				if (du.getDef(val) !=  null && node.getMethod() instanceof AstMethod) {
+					Position p = ((AstMethod)node.getMethod()).debugInfo().getInstructionPosition(du.getDef(val).iindex);
+					System.err.println(p);
+					try {
+						SourceBuffer b = new SourceBuffer(p);
+						String expr = b.toString();
+						System.err.println(expr);
+						PyObject value = PythonUtil.getInterp().eval(expr);
+						System.err.println(value);
+						if (value.isInteger() ) {
+							r.add(new NumericDim(value.asInt()));
+							continue;
 						}
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-					r.add(new SymbolicDim("?"));
 				}
+				r.add(new SymbolicDim("?"));
 			}
 		}
 		return new TensorType("pixel", r);
