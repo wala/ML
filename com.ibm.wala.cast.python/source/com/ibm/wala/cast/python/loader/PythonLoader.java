@@ -170,17 +170,22 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 	}
 
 	public IMethod defineCodeBodyCode(String clsName, AbstractCFG<?, ?> cfg, SymbolTable symtab, boolean hasCatchBlock,
-			Map<IBasicBlock<SSAInstruction>, TypeReference[]> caughtTypes, boolean hasMonitorOp, AstLexicalInformation lexicalInfo, DebuggingInformation debugInfo) {
+			Map<IBasicBlock<SSAInstruction>, TypeReference[]> caughtTypes, boolean hasMonitorOp, AstLexicalInformation lexicalInfo, DebuggingInformation debugInfo, int defaultArgs) {
 		DynamicCodeBody C = (DynamicCodeBody) lookupClass(clsName, cha);
 		assert C != null : clsName;
-		return C.setCodeBody(makeCodeBodyCode(cfg, symtab, hasCatchBlock, caughtTypes, hasMonitorOp, lexicalInfo, debugInfo, C));
+		return C.setCodeBody(makeCodeBodyCode(cfg, symtab, hasCatchBlock, caughtTypes, hasMonitorOp, lexicalInfo, debugInfo, C, defaultArgs));
 	}
 
 	public DynamicMethodObject makeCodeBodyCode(AbstractCFG<?, ?> cfg, SymbolTable symtab, boolean hasCatchBlock,
 			Map<IBasicBlock<SSAInstruction>, TypeReference[]> caughtTypes, boolean hasMonitorOp, AstLexicalInformation lexicalInfo, DebuggingInformation debugInfo,
-			IClass C) {
+			IClass C, int defaultArgs) {
 		return new DynamicMethodObject(C, Collections.emptySet(), cfg, symtab, hasCatchBlock, caughtTypes, hasMonitorOp, lexicalInfo,
-				debugInfo);
+				debugInfo) {
+					@Override
+					public int getNumberOfDefaultParameters() {
+						return defaultArgs;
+					}			
+		};
 	}
 
 	public class PythonClass extends CoreClass {

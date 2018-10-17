@@ -12,13 +12,18 @@ package com.ibm.wala.cast.python.ir;
 
 import static com.ibm.wala.cast.python.ir.PythonLanguage.Python;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.ibm.wala.cast.ir.ssa.AssignInstruction;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.translator.ArrayOpHandler;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
-import com.ibm.wala.cast.ir.translator.AstTranslator.WalkContext;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.loader.PythonLoader;
@@ -165,7 +170,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	      String fnName = composeEntityName(definingContext, N);
 
 	      ((PythonLoader) loader).defineCodeBodyCode("L" + fnName, cfg, symtab, hasCatchBlock, catchTypes, hasMonitorOp, lexicalInfo,
-	          debugInfo);
+	          debugInfo, N.getArgumentDefaults().length);
 	}
 
 	@Override
@@ -254,6 +259,23 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	    int idx = context.cfg().getCurrentInstruction();
 	    context.cfg().addInstruction(Python.instructionFactory().NewInstruction(idx, result, NewSiteReference.make(idx, type)));
 	    doGlobalWrite(context, fnName, PythonTypes.Root, result);
+	}
+
+	
+	@Override
+	protected void leaveFunctionEntity(CAstEntity n, WalkContext context, WalkContext codeContext,
+			CAstVisitor<WalkContext> visitor) {
+		super.leaveFunctionEntity(n, context, codeContext, visitor);
+
+		String fnName = composeEntityName(context, n) + "_defaults";		
+		if (n.getArgumentDefaults() != null) {
+			int first = n.getArgumentCount() - n.getArgumentDefaults().length;
+			for(int i = first; i < n.getArgumentCount(); i++) {
+				CAstNode dflt = n.getArgumentDefaults()[i - first];
+				visitor.visit(dflt, context, visitor);
+			    doGlobalWrite(context, "L" + fnName + "_" + i, PythonTypes.Root, context.getValue(dflt));
+			}
+		}
 	}
 
 	@Override

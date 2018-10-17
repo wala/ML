@@ -148,4 +148,33 @@ public class TestCalls extends TestPythonCallGraphShape {
 			CAstCallGraphUtil.dumpCG((SSAContextInterpreter)cgBuilder.getContextInterpreter(), cgBuilder.getPointerAnalysis(), CG);
 	}
 
+	 protected static final Object[][] assertionsDefaultValues = new Object[][] {
+		    new Object[] { ROOT, new String[] { "script defaultValuesTest.py" } },
+		    new Object[] {
+		        "script defaultValuesTest.py",
+		        new String[] { "script defaultValuesTest.py/defValTest" } },
+		    new Object[] {
+		    	"script defaultValuesTest.py/defValTest",
+		    	new String[] { "script defaultValuesTest.py/lambda1" } },
+		    new Object[] {
+		    	"script defaultValuesTest.py/defValTest",
+		    	new String[] { "script defaultValuesTest.py/lambda2" } }
+	 };
+
+	 @Test
+	public void testDefaultValues() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+			PythonAnalysisEngine<?> e = new PythonAnalysisEngine<Void>() {
+				@Override
+				public Void performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
+					assert false;
+					return null;
+				}
+			};
+			e.setModuleFiles(Collections.singleton(getScript("defaultValuesTest.py")));
+			PropagationCallGraphBuilder cgBuilder = (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
+			CallGraph CG = cgBuilder.getCallGraph();	
+			//CAstCallGraphUtil.AVOID_DUMP = false;
+			//CAstCallGraphUtil.dumpCG((SSAContextInterpreter)cgBuilder.getContextInterpreter(), cgBuilder.getPointerAnalysis(), CG);
+			verifyGraphAssertions(CG, assertionsDefaultValues);
+	 }
 }

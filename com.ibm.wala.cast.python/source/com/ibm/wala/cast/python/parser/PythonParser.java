@@ -118,7 +118,6 @@ import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.ReverseIterator;
 import com.ibm.wala.util.warnings.Warning;
-import org.python.core.PyString;
 
 abstract public class PythonParser<T> implements TranslatorToCAst {
 
@@ -755,13 +754,31 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitFunctionDef(FunctionDef arg0) throws Exception {
-			return defineFunction(arg0.getInternalName(), arg0.getInternalArgs().getInternalArgs(), arg0.getInternalBody(), arg0, makePosition(arg0.getInternalNameNode()));
+			return defineFunction(arg0.getInternalName(), arg0.getInternalArgs(), arg0.getInternalBody(), arg0, makePosition(arg0.getInternalNameNode()));
 		}
 		
-		private <S extends PythonTree> CAstNode defineFunction(String functionName, java.util.List<expr> arguments, java.util.List<S> body, PythonTree function, Position namePos) throws Exception {
+		private <S extends PythonTree> CAstNode defineFunction(String functionName, arguments arguments, java.util.List<S> body, PythonTree function, Position namePos) throws Exception {
 			int i = 0;
 			CAstNode[] nodes = new CAstNode[ body.size() ];
-			
+
+			CAstNode[] defaultVars;
+			CAstNode[] defaultCode;
+			if (arguments.getInternalDefaults() != null && arguments.getInternalDefaults().size() > 0) {
+				int arg = 0;
+				defaultVars = new CAstNode[ arguments.getInternalDefaults().size() ];
+				defaultCode = new CAstNode[ arguments.getInternalDefaults().size() ];
+				for(expr dflt : arguments.getInternalDefaults()) {
+					String name = functionName + "_default_" + arg;
+					defaultCode[arg] = 
+					    Ast.makeNode(CAstNode.DECL_STMT,
+							Ast.makeConstant(new CAstSymbolImpl(name, PythonCAstToIRTranslator.Any)),
+						    dflt.accept(this));
+					defaultVars[arg++] = Ast.makeNode(CAstNode.VAR, Ast.makeConstant(name));
+				}
+			} else {
+				defaultVars = defaultCode = new CAstNode[0];
+			}
+
 			class PythonCodeType implements CAstType {
 				
 				@Override
@@ -791,7 +808,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				}
 				
 				public int getArgumentCount() {
-					return arguments.size()+1;
+					return arguments.getInternalArgs().size()+1;
 				}		
 				
 				@Override
@@ -824,13 +841,14 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			}
 			
 			int x = 0;
-			String[] argumentNames = new String[ arguments.size()+1 ];
+			String[] argumentNames = new String[ arguments.getInternalArgs().size()+1 ];
 			argumentNames[x++] = "the function";
-			for(expr a : arguments) {
+			for(expr a : arguments.getInternalArgs()) {
 				String name = a.accept(this).getChild(0).getValue().toString();
+				
 				argumentNames[x++] = name;		
 			}
-
+			
 			AbstractCodeEntity fun = new AbstractCodeEntity(functionType) {
 				@Override
 				public int getKind() {					
@@ -854,12 +872,12 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 				@Override
 				public CAstNode[] getArgumentDefaults() {
-					return new CAstNode[0];
+					return defaultVars;
 				}
 
 				@Override
 				public int getArgumentCount() {
-					return arguments.size()+1;
+					return arguments.getInternalArgs().size()+1;
 
 				}
 
@@ -875,7 +893,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				
 				@Override
 				public Position getPosition(int arg) {
-					return makePosition(arguments.get(arg));
+					return makePosition(arguments.getInternalArgs().get(arg));
 				}
 
 				@Override
@@ -897,12 +915,20 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			} else {
 				CAstNode stmt = Ast.makeNode(CAstNode.FUNCTION_EXPR, Ast.makeConstant(fun));
 				context.addScopedEntity(stmt, fun);
-				return 
+				CAstNode val = 
 				   function instanceof Lambda?
 					  stmt:
 					  Ast.makeNode(CAstNode.DECL_STMT,
 					    Ast.makeConstant(new CAstSymbolImpl(fun.getName(), PythonCAstToIRTranslator.Any)),
 					    stmt);
+				
+				if (defaultCode.length == 0) {
+					return val;
+				} else {
+					return Ast.makeNode(CAstNode.BLOCK_EXPR, 
+						Ast.makeNode(CAstNode.BLOCK_EXPR, defaultCode),
+						val);
+				}
 			}
 		}
 
@@ -996,7 +1022,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		public CAstNode visitLambda(Lambda arg0) throws Exception {
 			arguments lambdaArgs = arg0.getInternalArgs();
 			expr lambdaBody = arg0.getInternalBody();
-			return defineFunction("lambda" + (++tmpIndex), lambdaArgs.getInternalArgs(), Collections.singletonList(lambdaBody), arg0, makePosition(arg0.getChildren().get(0)));
+			return defineFunction("lambda" + (++tmpIndex), lambdaArgs, Collections.singletonList(lambdaBody), arg0, makePosition(arg0.getChildren().get(0)));
 		}
 
 		private CAstNode collectObjects(java.util.List<expr> eltList, String type) throws Exception {

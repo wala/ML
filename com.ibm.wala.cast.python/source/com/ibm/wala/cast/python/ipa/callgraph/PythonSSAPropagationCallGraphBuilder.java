@@ -17,6 +17,7 @@ import com.ibm.wala.cast.python.ssa.PythonInstructionVisitor;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.ssa.PythonStoreProperty;
 import com.ibm.wala.cast.python.types.PythonTypes;
+import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.IAnalysisCacheView;
@@ -24,12 +25,16 @@ import com.ibm.wala.ipa.callgraph.propagation.AbstractFieldPointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKeyFactory;
+import com.ibm.wala.ipa.callgraph.propagation.StaticFieldKey;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAArrayLoadInstruction;
 import com.ibm.wala.ssa.SSAArrayStoreInstruction;
 import com.ibm.wala.ssa.SSABinaryOpInstruction;
 import com.ibm.wala.ssa.SymbolTable;
+import com.ibm.wala.types.FieldReference;
+import com.ibm.wala.util.intset.IntSetUtil;
+import com.ibm.wala.util.intset.MutableIntSet;
 import com.ibm.wala.util.strings.Atom;
 
 public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallGraphBuilder {
@@ -104,10 +109,14 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 		if (! (instruction instanceof PythonInvokeInstruction)) {
 			super.processCallingConstraints(caller, instruction, target, constParams, uniqueCatchKey);
 		} else {
+			MutableIntSet args = IntSetUtil.make();
+			
 			// positional parameters
 			PythonInvokeInstruction call = (PythonInvokeInstruction) instruction;
 			for(int i = 0; i < call.getNumberOfPositionalParameters(); i++) {
 				PointerKey lval = getPointerKeyForLocal(target, i+1);
+				args.add(i);
+				
 				if (constParams != null && constParams[i] != null) {
 					InstanceKey[] ik = constParams[i];
 					for (InstanceKey element : ik) {
@@ -129,6 +138,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 						for(String destName : paramNames) {
 							if (argName.equals(destName)) {
 								PointerKey lval = getPointerKeyForLocal(target, i+1);
+								args.add(i);
 								int p = paramNumber;
 								if (constParams != null && constParams[p] != null) {
 									InstanceKey[] ik = constParams[p];
@@ -146,7 +156,18 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 					}	
 				}
 			}
-			
+
+			int dflts = target.getMethod().getNumberOfParameters() - target.getMethod().getNumberOfDefaultParameters();
+			for(int i = dflts; i < target.getMethod().getNumberOfParameters(); i++) {
+				if (! args.contains(i)) {
+					String name = target.getMethod().getDeclaringClass().getName() + "_defaults_" + i;
+					FieldReference global = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("global " + name), PythonTypes.Root);
+					IField f = getClassHierarchy().resolveField(global);
+					PointerKey lval = getPointerKeyForLocal(target, i+1);
+					getSystem().newConstraint(lval, assignOperator, new StaticFieldKey(f));
+				}
+			}
+
 			// return values
 			PointerKey rret = getPointerKeyForReturnValue(target);
 			PointerKey lret = getPointerKeyForLocal(caller, call.getReturnValue(0));
