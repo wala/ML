@@ -36,6 +36,7 @@ import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
 import com.ibm.wala.cast.tree.visit.CAstVisitor;
+import com.ibm.wala.cast.util.CAstPattern;
 import com.ibm.wala.cast.util.CAstPrinter;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
@@ -592,7 +593,6 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	@Override
 	protected boolean doVisitAssignNodes(CAstNode n, WalkContext context, CAstNode v, CAstNode a,
 			CAstVisitor<WalkContext> visitor) {
-		// TODO Auto-generated method stub
 		return super.doVisitAssignNodes(n, context, v, a, visitor);
 	}
 

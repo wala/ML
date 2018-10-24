@@ -39,6 +39,8 @@ public class TestPythonTurtleCallGraphShape extends TestPythonCallGraphShape {
 		CallGraphBuilder<? super InstanceKey> builder = E.defaultCallGraphBuilder();
 		CallGraph CG = builder.makeCallGraph(E.getOptions(), new NullProgressMonitor());
 		
+		E.performAnalysis((SSAPropagationCallGraphBuilder)builder);
+		
 		System.err.println(CG);
 		
 		CAstCallGraphUtil.AVOID_DUMP = false;

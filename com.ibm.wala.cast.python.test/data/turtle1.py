@@ -1,5 +1,7 @@
 import numpy as np
 
-a = np.arange(15).reshape(3, 5)
+a = np.arange(6).reshape(3, 2)
 
-print(a)
+b = np.reshape(np.ravel(a, order='F'), (2, 3), order='F')
+
+print(b)

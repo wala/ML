@@ -32,15 +32,20 @@ import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.python.util.PythonUtil;
 import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstEntity;
+import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
+import com.ibm.wala.cast.tree.impl.CAstImpl;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
 import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
 import com.ibm.wala.cast.tree.rewrite.AstConstantFolder;
 import com.ibm.wala.cast.tree.rewrite.CAstBasicRewriter.NoKey;
 import com.ibm.wala.cast.tree.rewrite.CAstBasicRewriter.NonCopyingContext;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriterFactory;
+import com.ibm.wala.cast.tree.rewrite.PatternBasedRewriter;
 import com.ibm.wala.cast.types.AstMethodReference;
+import com.ibm.wala.cast.util.CAstPattern;
+import com.ibm.wala.cast.util.CAstPattern.Segments;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.classLoader.IClass;
@@ -89,6 +94,21 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 		return getLanguage().instructionFactory();
 	}
 
+	private final CAst Ast = new CAstImpl();
+	
+	private final CAstPattern slice = CAstPattern.parse("<top>ASSIGN(CALL(VAR(\"slice\"),<args>**),<value>*)");
+
+	private CAstNode rewriteSubscriptAssign(Segments s) {
+		int i = 0;
+		CAstNode[] args = new CAstNode[ s.getMultiple("args").size() + 1];
+		for(CAstNode arg : s.getMultiple("args")) {
+			args[i++] = arg;
+		}
+		args[i++] = s.getSingle("value");
+		
+		return Ast.makeNode(CAstNode.CALL, Ast.makeNode(CAstNode.VAR, Ast.makeConstant("slice")), args);	
+	}
+	
 	@Override
 	protected TranslatorToCAst getTranslatorToCAst(CAst ast, ModuleEntry M) throws IOException {
 		RewritingTranslatorToCAst x = new RewritingTranslatorToCAst(M, new PythonModuleParser((SourceModule)M, typeDictionary) {
@@ -98,6 +118,14 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 				return AstConstantFolder.fold(ce);
 			}
 		});
+		
+		x.addRewriter(new CAstRewriterFactory<NonCopyingContext,NoKey>() {
+			@Override
+			public PatternBasedRewriter createCAstRewriter(CAst ast) {
+				return new PatternBasedRewriter(ast, slice, (Segments s) -> { return rewriteSubscriptAssign(s); });
+			}
+		}, false);
+		
 		x.addRewriter(new CAstRewriterFactory<NonCopyingContext,NoKey>() {
 			@Override
 			public ConstantFoldingRewriter createCAstRewriter(CAst ast) {

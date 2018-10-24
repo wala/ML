@@ -463,6 +463,10 @@ public class TurtleSummary {
 		
 	}
 	
+	public IMethod getCode() {
+		return code;
+	}
+
 	public void analyzeTurtles(AnalysisOptions options) {
 		options.setSelector(new PythonMethodTurtleTargetSelector(options.getMethodTargetSelector()));
 		options.setSelector(new PythonClassTurtleTargetSelector(options.getClassTargetSelector()));

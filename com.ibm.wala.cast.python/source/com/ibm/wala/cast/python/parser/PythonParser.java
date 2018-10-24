@@ -647,7 +647,16 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitDelete(Delete arg0) throws Exception {
-				return fail(arg0);
+			int i = 0;
+			CAstNode[] dels = new CAstNode[ arg0.getInternalTargets().size() ];
+			for(expr e : arg0.getInternalTargets()) {
+				dels[i++] = notePosition(
+				Ast.makeNode(CAstNode.CALL, 
+					Ast.makeNode(CAstNode.VAR, Ast.makeConstant("__delete__")), 
+					e.accept(this)), e);
+			}
+			
+			return Ast.makeNode(CAstNode.BLOCK_EXPR, dels);
 		}
 
 		@Override
@@ -1132,7 +1141,9 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				"hasattr",
 				"BaseException",
 				"abs",
-				"range"
+				"range",
+				"slice",
+				"del"
 		};
 		
 		private void defaultImports(Collection<CAstNode> elts) {
@@ -1230,7 +1241,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		}
 
 		private CAstNode acceptOrNull(PythonTree x) throws Exception {
-			return (x==null)? Ast.makeConstant(CAstNode.EMPTY): x.accept(this);
+			return (x==null)? Ast.makeNode(CAstNode.EMPTY): notePosition(x.accept(this), x);
 		}
 		
 		@Override
@@ -1248,11 +1259,25 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitSubscript(Subscript arg0) throws Exception {
-			return notePosition(Ast.makeNode(CAstNode.OBJECT_REF, 
-					notePosition(arg0.getInternalValue().accept(this), arg0.getInternalValue()), 
-					notePosition(arg0.getInternalSlice().accept(this), arg0.getInternalSlice())), arg0);
+			slice s = arg0.getInternalSlice();
+			if (s instanceof Index) {
+				return notePosition(Ast.makeNode(CAstNode.OBJECT_REF,
+					acceptOrNull(arg0.getInternalValue()), 
+					acceptOrNull(arg0.getInternalSlice())), arg0);
+			} else if (s instanceof Slice) {
+				Slice S = (Slice) s;
+				return notePosition(Ast.makeNode(CAstNode.CALL,
+					Ast.makeNode(CAstNode.VAR, Ast.makeConstant("slice")),
+					Ast.makeNode(CAstNode.EMPTY),
+					acceptOrNull(arg0.getInternalValue()), 
+					acceptOrNull(S.getInternalLower()), 		
+					acceptOrNull(S.getInternalUpper()), 		
+					acceptOrNull(S.getInternalStep())), arg0);				
+			} else {
+				return Ast.makeNode(CAstNode.EMPTY);
+			}
 		}
-
+		
 		@Override
 		public CAstNode visitSuite(Suite arg0) throws Exception {
 			return block(arg0.getInternalBody());
