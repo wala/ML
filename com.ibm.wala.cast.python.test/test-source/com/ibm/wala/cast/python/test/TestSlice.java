@@ -16,7 +16,7 @@ import com.ibm.wala.util.CancelException;
 
 public class TestSlice extends TestPythonCallGraphShape {
 
-	private SSAAbstractInvokeInstruction find(IR ir, Function<SSAAbstractInvokeInstruction,Boolean> filter) {
+	private static SSAAbstractInvokeInstruction find(IR ir, Function<SSAAbstractInvokeInstruction,Boolean> filter) {
 		for(SSAInstruction inst : ir.getInstructions()) {
 			if (inst instanceof SSAAbstractInvokeInstruction && filter.apply((SSAAbstractInvokeInstruction)inst)) {
 				return (SSAAbstractInvokeInstruction)inst;
@@ -52,5 +52,4 @@ public class TestSlice extends TestPythonCallGraphShape {
 		});
 	}
 	
-
 }
