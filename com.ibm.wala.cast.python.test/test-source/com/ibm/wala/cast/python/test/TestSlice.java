@@ -45,11 +45,10 @@ public class TestSlice extends TestPythonCallGraphShape {
 		
 		assert null != find(script, (SSAAbstractInvokeInstruction inst) -> {
 			return inst.getNumberOfUses() > 0 && inst.getUse(0) == sliceVn && inst.getNumberOfPositionalParameters() == 5;
-		});
+		});   
 
 		assert null != find(script, (SSAAbstractInvokeInstruction inst) -> {
 			return inst.getNumberOfUses() > 0 && inst.getUse(0) == sliceVn && inst.getNumberOfPositionalParameters() == 6;
 		});
-	}
-	
+	}	
 }
