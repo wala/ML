@@ -1003,18 +1003,30 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitImportFrom(ImportFrom arg0) throws Exception {
-			int i = 0;
 			CAstNode[] elts = new CAstNode[ arg0.getInternalNames().size() ];
+			int i = 0;
 			for(alias n : arg0.getInternalNames()) {
 				elts[i++] = Ast.makeNode(CAstNode.DECL_STMT,
 						Ast.makeConstant(new CAstSymbolImpl(name(n), PythonCAstToIRTranslator.Any)),
 						Ast.makeNode(CAstNode.OBJECT_REF,
-								Ast.makeNode(CAstNode.PRIMITIVE, 
-									Ast.makeConstant("import"), 
-									Ast.makeConstant(arg0.getInternalModule().replaceAll("[.]", "/"))),
+								importAst(arg0),
 								Ast.makeConstant(n.getInternalName())));
 			}
+			
 			return Ast.makeNode(CAstNode.BLOCK_STMT, elts);
+		}
+
+		private CAstNode importAst(ImportFrom arg0) {
+			java.util.List<Name> names = arg0.getInternalModuleNames();
+			CAstNode importAst = Ast.makeNode(CAstNode.PRIMITIVE, 
+				Ast.makeConstant("import"), 
+				Ast.makeConstant(names.get(0).getInternalId()));
+			for(int i = 1; i < names.size(); i++) {
+				importAst = Ast.makeNode(CAstNode.OBJECT_REF,
+					importAst,
+					Ast.makeConstant(names.get(i).getInternalId()));
+			}
+			return importAst;
 		}
 
 		@Override

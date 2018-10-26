@@ -165,6 +165,37 @@
                   fieldType="LRoot"
                   ref="x"
                   value="placeholder"/>
+
+	<new def="examples"  class="Lobject"/>
+	<putfield class="LRoot"
+                  field="examples"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="examples"/>
+	<new def="tutorials"  class="Lobject"/>
+	<putfield class="LRoot"
+                  field="tutorials"
+                  fieldType="LRoot"
+                  ref="examples"
+                  value="tutorials"/>
+	<new def="mnist"  class="Lobject"/>
+	<putfield class="LRoot"
+                  field="mnist"
+                  fieldType="LRoot"
+                  ref="tutorials"
+                  value="mnist"/>
+          <new def="id" class="Ltensorflow/examples/tutorials/mnist/input_data"/>
+          <putfield class="LRoot"
+                    field="input_data"
+                    fieldType="LRoot"
+                    ref="mnist"
+                    value="id"/>
+          <new def="rds" class="Ltensorflow/examples/tutorials/mnist/read_data_sets"/>
+          <putfield class="LRoot"
+                    field="read_data_sets"
+                    fieldType="LRoot"
+                    ref="id"
+                    value="rds"/>
 	
 	<return value="x"/>
       </method>
