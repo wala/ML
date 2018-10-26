@@ -1,4 +1,4 @@
-rootProject.name = 'com.ibm.wala'
+rootProject.name = 'com.ibm.wala.ml'
 
 include(
   'com.ibm.wala.cast.python',
