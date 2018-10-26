@@ -467,7 +467,7 @@ public class TurtleSummary {
 		return code;
 	}
 
-	public void analyzeTurtles(AnalysisOptions options) {
+	public void analyzeWithTurtles(AnalysisOptions options) {
 		options.setSelector(new PythonMethodTurtleTargetSelector(options.getMethodTargetSelector()));
 		options.setSelector(new PythonClassTurtleTargetSelector(options.getClassTargetSelector()));
 	}

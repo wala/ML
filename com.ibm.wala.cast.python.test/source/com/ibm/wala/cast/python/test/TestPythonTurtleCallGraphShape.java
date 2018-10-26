@@ -6,6 +6,7 @@ import java.util.Set;
 import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.client.PythonTurtleAnalysisEngine;
+import com.ibm.wala.cast.python.client.PythonTurtleAnalysisEngine.TurtlePath;
 import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.CallGraphBuilder;
@@ -19,8 +20,8 @@ import com.ibm.wala.util.collections.HashSetFactory;
 public class TestPythonTurtleCallGraphShape extends TestPythonCallGraphShape {
 
 	@Override
-	protected PythonAnalysisEngine<Void> makeEngine(String... name) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		PythonAnalysisEngine<Void> engine = new PythonTurtleAnalysisEngine();
+	protected PythonAnalysisEngine<Set<TurtlePath>> makeEngine(String... name) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		PythonAnalysisEngine<Set<TurtlePath>> engine = new PythonTurtleAnalysisEngine();
 		Set<Module> modules = HashSetFactory.make();
 		for(String n : name) {
 			modules.add(getScript(n));
@@ -29,6 +30,7 @@ public class TestPythonTurtleCallGraphShape extends TestPythonCallGraphShape {
 		return engine;
 	}
 
+	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		TestPythonCallGraphShape driver = new TestPythonTurtleCallGraphShape() {
 			
@@ -39,9 +41,9 @@ public class TestPythonTurtleCallGraphShape extends TestPythonCallGraphShape {
 		CallGraphBuilder<? super InstanceKey> builder = E.defaultCallGraphBuilder();
 		CallGraph CG = builder.makeCallGraph(E.getOptions(), new NullProgressMonitor());
 		
-		E.performAnalysis((SSAPropagationCallGraphBuilder)builder);
-		
-		System.err.println(CG);
+		for(TurtlePath p : (Set<TurtlePath>)E.performAnalysis((SSAPropagationCallGraphBuilder)builder)) {
+			System.err.println(p);
+		}
 		
 		CAstCallGraphUtil.AVOID_DUMP = false;
 		CAstCallGraphUtil.dumpCG(((SSAPropagationCallGraphBuilder)builder).getCFAContextInterpreter(), E.getPointerAnalysis(), CG);
