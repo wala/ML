@@ -3,6 +3,8 @@ package com.ibm.wala.cast.python.test;
 import java.io.IOException;
 import java.util.Set;
 
+import org.json.JSONArray;
+
 import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.client.PythonTurtleAnalysisEngine;
@@ -10,6 +12,7 @@ import com.ibm.wala.cast.python.client.PythonTurtleAnalysisEngine.TurtlePath;
 import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.CallGraphBuilder;
+import com.ibm.wala.ipa.callgraph.propagation.HeapModel;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
@@ -37,13 +40,16 @@ public class TestPythonTurtleCallGraphShape extends TestPythonCallGraphShape {
 		};
 		
 		PythonAnalysisEngine<?> E = driver.makeEngine(args[0]);
-		
+
 		CallGraphBuilder<? super InstanceKey> builder = E.defaultCallGraphBuilder();
 		CallGraph CG = builder.makeCallGraph(E.getOptions(), new NullProgressMonitor());
 		
+		HeapModel H = builder.getPointerAnalysis().getHeapModel();
+		JSONArray data = new JSONArray();
 		for(TurtlePath p : (Set<TurtlePath>)E.performAnalysis((SSAPropagationCallGraphBuilder)builder)) {
-			System.err.println(p);
+			data.put(p.toJSON());
 		}
+		System.err.println(data);
 		
 		CAstCallGraphUtil.AVOID_DUMP = false;
 		CAstCallGraphUtil.dumpCG(((SSAPropagationCallGraphBuilder)builder).getCFAContextInterpreter(), E.getPointerAnalysis(), CG);
