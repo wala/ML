@@ -14,7 +14,6 @@ import com.ibm.wala.classLoader.IClassLoader;
 import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.NewSiteReference;
-import com.ibm.wala.classLoader.SyntheticClass;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.ClassTargetSelector;
@@ -32,9 +31,9 @@ import com.ibm.wala.types.annotations.Annotation;
 import com.ibm.wala.util.strings.Atom;
 
 public class TurtleSummary {
-	private final TypeReference turtleClassRef = TypeReference.findOrCreate(PythonTypes.pythonLoader, "Lturtle");
-	private final MethodReference turtleMethodRef = MethodReference.findOrCreate(turtleClassRef, Atom.findOrCreateUnicodeAtom("turtle"), AstMethodReference.fnDesc);
-	private final FieldReference turtleFieldRef = FieldReference.findOrCreate(turtleClassRef, Atom.findOrCreateUnicodeAtom("turtle"), PythonTypes.Root);
+	public static final TypeReference turtleClassRef = TypeReference.findOrCreate(PythonTypes.pythonLoader, "Lturtle");
+	public static final MethodReference turtleMethodRef = MethodReference.findOrCreate(turtleClassRef, Atom.findOrCreateUnicodeAtom("turtle"), AstMethodReference.fnDesc);
+	public static final FieldReference turtleFieldRef = FieldReference.findOrCreate(turtleClassRef, Atom.findOrCreateUnicodeAtom("turtle"), PythonTypes.Root);
 	
 	private final IClassHierarchy cha;
 	

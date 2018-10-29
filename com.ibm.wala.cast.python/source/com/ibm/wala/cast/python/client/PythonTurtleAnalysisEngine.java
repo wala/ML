@@ -6,6 +6,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.python.ipa.summaries.TurtleSummary;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
@@ -14,6 +18,9 @@ import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
+import com.ibm.wala.ipa.callgraph.propagation.HeapModel;
+import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
+import com.ibm.wala.ipa.callgraph.propagation.LocalPointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import com.ibm.wala.ssa.DefUse;
@@ -22,8 +29,10 @@ import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAGetInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.types.MemberReference;
+import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashSetFactory;
+import com.ibm.wala.util.intset.OrdinalSet;
 
 public class PythonTurtleAnalysisEngine extends PythonAnalysisEngine<Set<PythonTurtleAnalysisEngine.TurtlePath>> {
 
@@ -32,7 +41,7 @@ public class PythonTurtleAnalysisEngine extends PythonAnalysisEngine<Set<PythonT
 	@Override
 	protected void addBypassLogic(AnalysisOptions options) {
 		super.addBypassLogic(options);
-		addSummaryBypassLogic(options, "numpy_turtle.xml");
+		addSummaryBypassLogic(options, "turtles.xml");
 		
 		turtles = new TurtleSummary(getClassHierarchy());
 		
@@ -56,10 +65,52 @@ public class PythonTurtleAnalysisEngine extends PythonAnalysisEngine<Set<PythonT
 		return Collections.emptyList();
 	}
 	
+	private static String toPathElement(MemberReference ref) {
+		if (ref instanceof MethodReference) {
+			return ref.getDeclaringClass().getName().toString().substring(1);					
+		} else {
+			return ref.getName().toString();
+		}
+	}
+	
 	public static interface TurtlePath {
 		PointerKey value();
 		List<MemberReference> path();
 		Position position();
+		List<List<MemberReference>> argument(int i);
+		int arguments();
+		
+		default JSONObject toJSON() {
+			JSONArray path = new JSONArray();
+			for(MemberReference ref : path()) {
+				path.put(toPathElement(ref));
+			}
+			
+			JSONObject json = new JSONObject();
+			json.put("path", path);
+			try {
+				json.put("expr", new SourceBuffer(position()).toString());
+			} catch (JSONException | IOException e) {
+				e.printStackTrace();
+				assert false;
+			}
+
+			JSONArray args = new JSONArray();
+			for(int i = 0; i < arguments(); i++) {
+				JSONArray arg = new JSONArray();
+				argument(i).forEach((elt) -> {
+					JSONArray eltJson = new JSONArray();
+					elt.forEach((name) -> {
+						eltJson.put(toPathElement(name));
+					});
+					arg.put(eltJson);
+				});
+				args.put(arg);
+			}
+			json.put("args", args);
+			
+			return json;
+		}
 		
 		default boolean hasSuffix(List<MemberReference> suffix) {
 			List<MemberReference> path = path();
@@ -82,6 +133,7 @@ public class PythonTurtleAnalysisEngine extends PythonAnalysisEngine<Set<PythonT
 	public Set<TurtlePath> performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
 		Set<TurtlePath> turtlePaths = HashSetFactory.make();
 		CallGraph CG = builder.getCallGraph();
+		HeapModel H = builder.getPointerAnalysis().getHeapModel();
 		CG.getNodes(turtles.getCode().getReference()).forEach((CGNode turtle) -> {
 			CG.getPredNodes(turtle).forEachRemaining((CGNode caller) -> {
 				IR callerIR = caller.getIR();
@@ -90,6 +142,34 @@ public class PythonTurtleAnalysisEngine extends PythonAnalysisEngine<Set<PythonT
 					 for(SSAAbstractInvokeInstruction inst : callerIR.getCalls(site)) {
 						 turtlePaths.add(new TurtlePath() {
 							private final List<MemberReference> path = makePath(CG, caller, DU, inst.getDef());
+
+							public int arguments() {
+								return inst.getNumberOfUses();
+							}
+							
+							public List<List<MemberReference>> argument(int i) {
+								List<List<MemberReference>> result = new LinkedList<>();
+								PointerKey k = value();
+								if (i <= inst.getNumberOfUses() && k instanceof LocalPointerKey) {
+									LocalPointerKey lk = (LocalPointerKey)k;
+									PointerKey ak = H.getPointerKeyForLocal(lk.getNode(), inst.getUse(i));
+									OrdinalSet<? extends InstanceKey> ptrs = getPointerAnalysis().getPointsToSet(ak);
+									for(InstanceKey ptr : ptrs) {
+										if (ptr.getConcreteType().getReference().equals(TurtleSummary.turtleClassRef)) {
+											ptr.getCreationSites(CG).forEachRemaining((site) -> {
+												CG.getPredNodes(site.fst).forEachRemaining((caller) -> {
+													CG.getPossibleSites(caller, site.fst).forEachRemaining((cs) -> {
+														for(SSAAbstractInvokeInstruction call : caller.getIR().getCalls(cs)) {
+															result.add(makePath(CG, caller, caller.getDU(), call.getDef()));
+														}
+													});
+												});
+											});
+										}
+									}
+								}
+								return result;
+							}
 							
 							@Override
 							public PointerKey value() {
