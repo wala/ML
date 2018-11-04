@@ -17,7 +17,7 @@ install:
  - gradle install
  - popd
  - pushd /tmp/WALA
- - gradle build publishToMavenLocal -x test
+ - ./gradlew build publishToMavenLocal -x test
  - popd
  - pushd /tmp/IDE
  - gradle build publishToMavenLocal -x test
