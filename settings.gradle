@@ -6,4 +6,3 @@ include(
   'com.ibm.wala.cast.python.ml',
   'com.ibm.wala.cast.python.ml.test')
 
-enableFeaturePreview('STABLE_PUBLISHING')
