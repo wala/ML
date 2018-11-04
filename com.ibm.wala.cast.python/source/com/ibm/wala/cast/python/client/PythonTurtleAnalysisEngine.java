@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONArray;
@@ -31,10 +32,13 @@ import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.types.MemberReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
+import com.ibm.wala.util.graph.Graph;
+import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
 import com.ibm.wala.util.intset.OrdinalSet;
 
-public class PythonTurtleAnalysisEngine extends PythonAnalysisEngine<Set<PythonTurtleAnalysisEngine.TurtlePath>> {
+public class PythonTurtleAnalysisEngine extends PythonAnalysisEngine<Graph<PythonTurtleAnalysisEngine.TurtlePath>> {
 
 	private TurtleSummary turtles;
 	
@@ -130,17 +134,18 @@ public class PythonTurtleAnalysisEngine extends PythonAnalysisEngine<Set<PythonT
 	}
 	
 	@Override
-	public Set<TurtlePath> performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
+	public Graph<TurtlePath> performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
 		Set<TurtlePath> turtlePaths = HashSetFactory.make();
 		CallGraph CG = builder.getCallGraph();
 		HeapModel H = builder.getPointerAnalysis().getHeapModel();
+		Map<SSAInstruction,TurtlePath> stuff = HashMapFactory.make();
 		CG.getNodes(turtles.getCode().getReference()).forEach((CGNode turtle) -> {
 			CG.getPredNodes(turtle).forEachRemaining((CGNode caller) -> {
 				IR callerIR = caller.getIR();
 				DefUse DU = caller.getDU();
 				CG.getPossibleSites(caller, turtle).forEachRemaining((CallSiteReference site) -> {
 					 for(SSAAbstractInvokeInstruction inst : callerIR.getCalls(site)) {
-						 turtlePaths.add(new TurtlePath() {
+						 TurtlePath x = new TurtlePath() {
 							private final List<MemberReference> path = makePath(CG, caller, DU, inst.getDef());
 
 							public int arguments() {
@@ -196,24 +201,43 @@ public class PythonTurtleAnalysisEngine extends PythonAnalysisEngine<Set<PythonT
 								}
 								out.append(":");
 								out.append(path());
-								for(int i = 1; i < inst.getNumberOfUses(); i++) {
-									List<MemberReference> path = makePath(CG, caller, DU, inst.getUse(i));
-									if (! path.isEmpty()) {
-										try {
-											out.append("\n  ").append(new SourceBuffer(((AstMethod)callerIR.getMethod()).debugInfo().getOperandPosition(inst.iindex, i)));
-										} catch (IOException e) {
-											out.append("\n  arg ").append(i);
-										}
-										out.append(":").append(path());
-									 }
-								}
 							 	return out.toString();
 							}
-						});
+						};
+						turtlePaths.add(x);
+						stuff.put(inst, x);
 					 }
 				});
 			});
 		});
-		return turtlePaths;
+		
+		Graph<TurtlePath> G = SlowSparseNumberedGraph.make();
+		turtlePaths.forEach((t) -> {
+			G.addNode(t);
+		});
+		stuff.entrySet().forEach((i) -> {
+			CGNode n = ((LocalPointerKey)i.getValue().value()).getNode();
+			for(int x = 0; x < i.getKey().getNumberOfUses(); x++) {
+				SSAInstruction inst = i.getKey();
+				PointerKey ak = H.getPointerKeyForLocal(n, inst.getUse(x));
+				OrdinalSet<? extends InstanceKey> ptrs = getPointerAnalysis().getPointsToSet(ak);
+				for(InstanceKey ptr : ptrs) {
+					if (ptr.getConcreteType().getReference().equals(TurtleSummary.turtleClassRef)) {
+						ptr.getCreationSites(CG).forEachRemaining((site) -> {
+							CG.getPredNodes(site.fst).forEachRemaining((caller) -> {
+								CG.getPossibleSites(caller, site.fst).forEachRemaining((cs) -> {
+									for(SSAAbstractInvokeInstruction call : caller.getIR().getCalls(cs)) {
+										if (stuff.containsKey(call)) {
+											G.addEdge(stuff.get(call), i.getValue());
+										}
+									}
+								});
+							});
+						});
+					}
+				}
+			}
+		});
+		return G;
 	}
 }

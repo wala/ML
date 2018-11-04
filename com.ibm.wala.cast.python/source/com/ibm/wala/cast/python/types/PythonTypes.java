@@ -34,6 +34,12 @@ public class PythonTypes extends AstTypeReference {
 
 	  public static final TypeReference CodeBody = TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LCodeBody"));
 
+	  public static final TypeReference lambda = TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Llambda"));
+
+	  public static final TypeReference filter = TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lfilter"));
+
+	  public static final TypeReference comprehension = TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lcomprehension"));
+
 	  public static final TypeReference object = TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lobject"));
 
 	  public static final TypeReference list = TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Llist"));

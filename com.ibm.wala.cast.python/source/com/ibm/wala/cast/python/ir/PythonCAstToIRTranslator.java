@@ -36,7 +36,6 @@ import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
 import com.ibm.wala.cast.tree.visit.CAstVisitor;
-import com.ibm.wala.cast.util.CAstPattern;
 import com.ibm.wala.cast.util.CAstPrinter;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
@@ -573,10 +572,31 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	@Override
 	protected boolean doVisit(CAstNode n, WalkContext context, CAstVisitor<WalkContext> visitor) {
 		if (n.getKind() == CAstNode.COMPREHENSION_EXPR) {
-			context.setValue(n, context.currentScope().getConstantValue(null));
+			int[] args = new int[ n.getChild(2).getChildCount()+2 ];
+
+			visitor.visit(n.getChild(0), context, visitor);
+			int obj = context.getValue(n.getChild(0));
+			
+			visitor.visit(n.getChild(1), context, visitor);
+			int lambda = context.getValue(n.getChild(1));
+			
+			args[0] = lambda;
+			args[1]  = obj;
+			for(int i = 0; i < args.length-2; i++) {
+				visitor.visit(n.getChild(2).getChild(i), context, visitor);
+				args[i+2] = context.getValue(n.getChild(2).getChild(i));
+			}
+			
+			int pos = context.cfg().getCurrentInstruction();
+			CallSiteReference site = new DynamicCallSiteReference(PythonTypes.CodeBody, pos);
+			int result = context.currentScope().allocateTempValue();
+			int exception = context.currentScope().allocateTempValue();
+			context.cfg().addInstruction(new PythonInvokeInstruction(pos, result, exception, site, args, new Pair[0]));
+
+		    context.setValue(n, result);
 			return true;
-		}
-		else if(n.getKind() == CAstNode.GLOBAL_DECL){
+		
+		} else if(n.getKind() == CAstNode.GLOBAL_DECL){
 			int numOfChildren = n.getChildCount();
 			for(int i = 0;i < numOfChildren; i++){
 				String val = (String) n.getChild(i).getChild(0).getValue();
@@ -584,8 +604,8 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 				addGlobal(context.currentScope(),val);
 			}
 			return true;
-		}
-		else {
+		
+		} else {
 			return super.doVisit(n, context, visitor);
 		}
 	}

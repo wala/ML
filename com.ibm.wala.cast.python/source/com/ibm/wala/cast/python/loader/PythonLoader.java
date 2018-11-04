@@ -35,6 +35,7 @@ import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
+import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.CAstImpl;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
 import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
@@ -166,6 +167,12 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 
 	final CoreClass CodeBody = new CoreClass(PythonTypes.CodeBody.getName(), PythonTypes.rootTypeName, this, null);
 
+	final CoreClass lambda = new CoreClass(PythonTypes.lambda.getName(), PythonTypes.CodeBody.getName(), this, null);
+
+	final CoreClass filter = new CoreClass(PythonTypes.filter.getName(), PythonTypes.CodeBody.getName(), this, null);
+
+	final CoreClass comprehension = new CoreClass(PythonTypes.comprehension.getName(), PythonTypes.CodeBody.getName(), this, null);
+
 	final CoreClass object = new CoreClass(PythonTypes.object.getName(), PythonTypes.rootTypeName, this, null);
 
 	final CoreClass list = new CoreClass(PythonTypes.list.getName(), PythonTypes.object.getName(), this, null);
@@ -184,7 +191,8 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 	}
 
 	public IClass defineFunctionType(String name, CAstSourcePositionMap.Position pos, CAstEntity entity, WalkContext context) {
-		return makeCodeBodyType(name, PythonTypes.CodeBody, pos, entity, context);
+		CAstType st = entity.getType().getSupertypes().iterator().next();
+		return makeCodeBodyType(name, lookupClass(TypeName.findOrCreate("L" + st.getName())).getReference(), pos, entity, context);
 	}
 
 	public IClass defineMethodType(String name, CAstSourcePositionMap.Position pos, CAstEntity entity, TypeName typeName, WalkContext context) {

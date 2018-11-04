@@ -47,7 +47,7 @@ public class PythonConstructorTargetSelector implements MethodTargetSelector {
 	public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
 		if (receiver != null) {
 		IClassHierarchy cha = receiver.getClassHierarchy();
-		if (cha.isSubclassOf(receiver, cha.lookupClass(PythonTypes.object))) {
+		if (cha.isSubclassOf(receiver, cha.lookupClass(PythonTypes.object)) && receiver instanceof PythonClass) {
 			if (!ctors.containsKey(receiver)) {
 				IMethod init = receiver.getMethod(new Selector(Atom.findOrCreateUnicodeAtom("__init__"), AstMethodReference.fnDesc));
 				int params = init==null? 1: init.getNumberOfParameters();

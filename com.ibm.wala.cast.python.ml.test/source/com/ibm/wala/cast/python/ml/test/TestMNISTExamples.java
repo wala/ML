@@ -59,7 +59,7 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
 		});
 	}
 
-	private static final String Ex2URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/tutorials/mnist/mnist_deep.py";
+	private static final String Ex2URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/r1.12/tensorflow/examples/tutorials/mnist/mnist_deep.py";
 
 	@Test
 	public void testEx2CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
@@ -89,7 +89,7 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
 		});
 	}
 	
-	private static final String Ex3URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/tutorials/mnist/mnist_softmax.py";
+	private static final String Ex3URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/r1.12/tensorflow/examples/tutorials/mnist/mnist_softmax.py";
 	
 	private void testMnistSoftmax(String url) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		Set<SSAInstruction> goodCalls = HashSetFactory.make();
@@ -154,14 +154,14 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
 		testMnistSoftmax(Ex3URL);
 	}
 	
-	private static final String Ex4URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/tutorials/mnist/mnist_softmax_xla.py";
+	private static final String Ex4URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/r1.12/tensorflow/examples/tutorials/mnist/mnist_softmax_xla.py";
 
 	@Test
 	public void testEx4CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		testMnistSoftmax(Ex4URL);
 	}
 
-	private static final String Ex5URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/tutorials/mnist/mnist_with_summaries.py";
+	private static final String Ex5URL = "https://raw.githubusercontent.com/tensorflow/tensorflow/r1.12/tensorflow/examples/tutorials/mnist/mnist_with_summaries.py";
 
 	@Test
 	public void testEx5CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {

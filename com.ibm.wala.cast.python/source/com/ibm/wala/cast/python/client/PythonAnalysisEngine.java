@@ -14,6 +14,7 @@ import com.ibm.wala.cast.python.ipa.callgraph.PythonConstructorTargetSelector;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonScopeMappingInstanceKeys;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonTrampolineTargetSelector;
+import com.ibm.wala.cast.python.ipa.summaries.PythonComprehensionTrampolines;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
 import com.ibm.wala.cast.python.types.PythonTypes;
@@ -222,7 +223,8 @@ public abstract class PythonAnalysisEngine<T>
 		options.setSelector(
 			new PythonTrampolineTargetSelector(
 				new PythonConstructorTargetSelector(
-					options.getMethodTargetSelector())));
+					new PythonComprehensionTrampolines(
+						options.getMethodTargetSelector()))));
 		
 		addSummaryBypassLogic(options, "pandas.xml");
 		addSummaryBypassLogic(options, "functools.xml");
