@@ -1323,12 +1323,13 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 			if(numStr.contains("l") | numStr.contains("L"))
 				return Ast.makeConstant(Long.parseLong(numStr.substring(0, numStr.length() - 1)));
-			else if(!numStr.contains("."))
-				return Ast.makeConstant(Long.parseLong(numStr));
-			//else if(numStr.contains("j") | numStr.contains("J")) //Placeholder for implementation/modeling of imaginary numbers
-			//	return Ast.makeConstant();
-			else
-				return Ast.makeConstant(Double.parseDouble(numStr));
+			else {
+				try {
+					return Ast.makeConstant(Long.parseLong(numStr));
+				} catch (NumberFormatException e) {
+					return Ast.makeConstant(Double.parseDouble(numStr));
+				}
+			}
 		}
 
 		@Override
