@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 
 import com.ibm.wala.cast.python.ir.PythonLanguage;
+import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.classLoader.CallSiteReference;
@@ -20,6 +21,7 @@ import com.ibm.wala.ipa.callgraph.ClassTargetSelector;
 import com.ibm.wala.ipa.callgraph.MethodTargetSelector;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ipa.summaries.BypassSyntheticClassLoader;
+import com.ibm.wala.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.types.Descriptor;
 import com.ibm.wala.types.FieldReference;
@@ -28,13 +30,16 @@ import com.ibm.wala.types.Selector;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.types.annotations.Annotation;
+import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.strings.Atom;
 
 public class TurtleSummary {
 	public static final TypeReference turtleClassRef = TypeReference.findOrCreate(PythonTypes.pythonLoader, "Lturtle");
 	public static final MethodReference turtleMethodRef = MethodReference.findOrCreate(turtleClassRef, Atom.findOrCreateUnicodeAtom("turtle"), AstMethodReference.fnDesc);
 	public static final FieldReference turtleFieldRef = FieldReference.findOrCreate(turtleClassRef, Atom.findOrCreateUnicodeAtom("turtle"), PythonTypes.Root);
-	
+
+	public static final MethodReference turtleCallbackMethodRef = MethodReference.findOrCreate(turtleClassRef, Atom.findOrCreateUnicodeAtom("callback"), AstMethodReference.fnDesc);
+
 	private final IClassHierarchy cha;
 	
 	private IMethod turtleMethod = new IMethod() {
@@ -418,9 +423,10 @@ public class TurtleSummary {
 		this.cha = cha;
 
 		PythonSummary x = new PythonSummary(turtleMethodRef, 1);
-		x.addStatement(PythonLanguage.Python.instructionFactory().NewInstruction(0, 2, NewSiteReference.make(0, turtleClassRef)));
-		x.addStatement(PythonLanguage.Python.instructionFactory().PutInstruction(1, 2, 2, turtleFieldRef));
-		x.addStatement(PythonLanguage.Python.instructionFactory().ReturnInstruction(2, 2, false));
+		x.addStatement(PythonLanguage.Python.instructionFactory().NewInstruction(0, 10, NewSiteReference.make(0, turtleClassRef)));
+		x.addStatement(PythonLanguage.Python.instructionFactory().PutInstruction(1, 10, 10, turtleFieldRef));
+		x.addStatement(new PythonInvokeInstruction(2, 11, 12, CallSiteReference.make(2, turtleCallbackMethodRef, Dispatch.VIRTUAL), new int[] {2}, new Pair[0]));
+		x.addStatement(PythonLanguage.Python.instructionFactory().ReturnInstruction(3, 10, false));
 		code = new PythonSummarizedFunction(turtleMethodRef, x, turtleClass);
 		
 		BypassSyntheticClassLoader ldr = (BypassSyntheticClassLoader) cha.getLoader(cha.getScope().getSyntheticLoader());
@@ -436,7 +442,13 @@ public class TurtleSummary {
 
 		@Override
 		public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
-			if (receiver == null? site.getDeclaredTarget().getDeclaringClass().equals(turtleClassRef): receiver.equals(turtleClass)) {
+			if (site.getDeclaredTarget().equals(turtleCallbackMethodRef)) {
+				if (caller.getClassHierarchy().isSubclassOf(receiver, caller.getClassHierarchy().lookupClass(PythonTypes.CodeBody))) {
+					return receiver.getMethod(AstMethodReference.fnSelector);
+				} else {
+					return null;
+				}
+			} else if (receiver == null? site.getDeclaredTarget().getDeclaringClass().equals(turtleClassRef): receiver.equals(turtleClass)) {
 				return code;
 			} else {			
 			    return base.getCalleeTarget(caller, site, receiver);

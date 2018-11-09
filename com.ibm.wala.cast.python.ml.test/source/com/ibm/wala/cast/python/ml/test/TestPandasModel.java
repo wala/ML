@@ -25,7 +25,7 @@ public class TestPandasModel extends TestPythonMLCallGraphShape {
 		PythonAnalysisEngine<TensorTypeAnalysis> engine = makeEngine("pandas1.py");
 		CallGraphBuilder<? extends InstanceKey> builder = engine.defaultCallGraphBuilder();
 		CallGraph CG = builder.makeCallGraph(engine.getOptions(), new NullProgressMonitor());
-		PointerAnalysis<? extends InstanceKey> PA = engine.getPointerAnalysis();
+		PointerAnalysis<? extends InstanceKey> PA = builder.getPointerAnalysis();
 		HeapModel H = PA.getHeapModel();
 		
 		Map<InstanceKey, Set<String>> excelTableFields = PandasReadExcelAnalysis.readExcelAnalysis(CG, PA, H);

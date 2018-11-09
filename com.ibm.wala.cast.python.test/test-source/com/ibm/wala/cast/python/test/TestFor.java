@@ -76,7 +76,7 @@ public class TestFor extends TestPythonCallGraphShape {
 		 };
 		 e.setModuleFiles(Collections.singleton(getScript("comp1.py")));
 		 PropagationCallGraphBuilder cgBuilder = (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
-		 CallGraph CG = cgBuilder.getCallGraph();	
+		 CallGraph CG = cgBuilder.makeCallGraph(cgBuilder.getOptions());
 		 System.err.println(CG);
 		 //CAstCallGraphUtil.AVOID_DUMP = false;
 		 //CAstCallGraphUtil.dumpCG((SSAContextInterpreter)cgBuilder.getContextInterpreter(), cgBuilder.getPointerAnalysis(), CG);

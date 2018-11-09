@@ -81,7 +81,7 @@ public abstract class TestPythonMLCallGraphShape extends TestPythonCallGraphShap
 				PythonTensorAnalysisEngine e = new PythonTensorAnalysisEngine();
 				e.setModuleFiles(Collections.singleton(new SourceURLModule(new URL(url))));
 				PropagationCallGraphBuilder cgBuilder = (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
-				CallGraph CG = cgBuilder.getCallGraph();		
+				CallGraph CG = cgBuilder.makeCallGraph(cgBuilder.getOptions());	
 				TensorTypeAnalysis result = e.performAnalysis(cgBuilder);
 				System.err.println(result);
 				check.check(cgBuilder, CG, result);

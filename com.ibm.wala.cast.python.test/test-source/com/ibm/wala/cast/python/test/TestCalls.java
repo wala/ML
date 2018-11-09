@@ -143,7 +143,7 @@ public class TestCalls extends TestPythonCallGraphShape {
 			};
 			e.setModuleFiles(Collections.singleton(getScript("calls7.py")));
 			PropagationCallGraphBuilder cgBuilder = (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
-			CallGraph CG = cgBuilder.getCallGraph();	
+			CallGraph CG = cgBuilder.makeCallGraph(cgBuilder.getOptions());
 			CAstCallGraphUtil.AVOID_DUMP = false;
 			CAstCallGraphUtil.dumpCG((SSAContextInterpreter)cgBuilder.getContextInterpreter(), cgBuilder.getPointerAnalysis(), CG);
 	}
@@ -172,7 +172,7 @@ public class TestCalls extends TestPythonCallGraphShape {
 			};
 			e.setModuleFiles(Collections.singleton(getScript("defaultValuesTest.py")));
 			PropagationCallGraphBuilder cgBuilder = (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
-			CallGraph CG = cgBuilder.getCallGraph();	
+			CallGraph CG = cgBuilder.makeCallGraph(cgBuilder.getOptions());
 			//CAstCallGraphUtil.AVOID_DUMP = false;
 			//CAstCallGraphUtil.dumpCG((SSAContextInterpreter)cgBuilder.getContextInterpreter(), cgBuilder.getPointerAnalysis(), CG);
 			verifyGraphAssertions(CG, assertionsDefaultValues);

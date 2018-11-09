@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.ibm.wala.cast.ir.ssa.AssignInstruction;
+import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.translator.ArrayOpHandler;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
@@ -206,6 +207,15 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	  }
 
 	@Override
+	protected void doPrologue(WalkContext context) {
+		if (context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY) {
+			doGlobalWrite(context, context.currentScope().getEntity().getName(), PythonTypes.Root, 1);
+		}
+		
+		super.doPrologue(context);
+	}
+
+	@Override
 	protected void doThrow(WalkContext context, int exception) {
 		context.cfg().addInstruction(Python.instructionFactory().ThrowInstruction(context.cfg().getCurrentInstruction(), exception));
 	}
@@ -259,6 +269,9 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	    int idx = context.cfg().getCurrentInstruction();
 	    context.cfg().addInstruction(Python.instructionFactory().NewInstruction(idx, result, NewSiteReference.make(idx, type)));
 	    doGlobalWrite(context, fnName, PythonTypes.Root, result);
+	    
+	    FieldReference fnField = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom(fn.getName()), PythonTypes.Root);
+	    context.cfg().addInstruction(Python.instructionFactory().PutInstruction(context.cfg().getCurrentInstruction(), 1, result, fnField));
 	}
 
 	
@@ -482,10 +495,16 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	@Override
 	protected void doPrimitive(int resultVal, WalkContext context, CAstNode primitiveCall) {
 		if (primitiveCall.getChildCount() == 2 && "import".equals(primitiveCall.getChild(0).getValue())) {
-			TypeReference imprt = TypeReference.findOrCreate(PythonTypes.pythonLoader, "L" + primitiveCall.getChild(1).getValue());
-			MethodReference call = MethodReference.findOrCreate(imprt, "import", "()L" + primitiveCall.getChild(1).getValue());
+			String name = (String) primitiveCall.getChild(1).getValue();
 			int idx = context.cfg().getCurrentInstruction();
-			context.cfg().addInstruction(Python.instructionFactory().InvokeInstruction(idx, resultVal, new int[0], context.currentScope().allocateTempValue(), CallSiteReference.make(idx, call, Dispatch.STATIC), null));
+			if (loader.lookupClass(TypeName.findOrCreate("Lscript " + name + ".py")) != null) {
+			      FieldReference global = makeGlobalRef("script " + name + ".py");
+			      context.cfg().addInstruction(new AstGlobalRead(context.cfg().getCurrentInstruction(), resultVal, global));
+			} else {
+				TypeReference imprt = TypeReference.findOrCreate(PythonTypes.pythonLoader, "L" + name);
+				MethodReference call = MethodReference.findOrCreate(imprt, "import", "()L" + primitiveCall.getChild(1).getValue());
+				context.cfg().addInstruction(Python.instructionFactory().InvokeInstruction(idx, resultVal, new int[0], context.currentScope().allocateTempValue(), CallSiteReference.make(idx, call, Dispatch.STATIC), null));
+			}
 		}
 	}
 	

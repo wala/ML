@@ -42,6 +42,19 @@
         <return value="x"/>
       </method>
     </class>
+    <class name="tensorflow" allocatable="true">
+      <method name="import"
+	      static="true"
+	      descriptor="()Ltensorflow;">
+        <new def="x" class="Lturtle"/>
+ 	<putfield class="Lturtle"
+                  field="any"
+                  fieldType="LRoot"
+                  ref="x"
+                  value="x"/>
+        <return value="x"/>
+      </method>
+    </class>
   </classloader>
 </summary-spec>
 
