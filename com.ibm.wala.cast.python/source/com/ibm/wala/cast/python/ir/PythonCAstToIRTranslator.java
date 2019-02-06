@@ -229,7 +229,16 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	protected void doFieldRead(WalkContext context, int result, int receiver, CAstNode elt, CAstNode parent) {
 	    int currentInstruction = context.cfg().getCurrentInstruction();
 		if (elt.getKind() == CAstNode.CONSTANT && elt.getValue() instanceof String) {
-			FieldReference f = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), PythonTypes.Root);
+            FieldReference f;
+		    if(parent.getChildCount() > 1
+                    && parent.getChild(0).getKind() == CAstNode.PRIMITIVE
+                    && parent.getChild(0).getChildCount() == 2
+                    && parent.getChild(0).getChild(0).getValue().equals("import")){
+                f = FieldReference.findOrCreate(PythonTypes.module, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), PythonTypes.Root);
+            }
+		    else
+			    f = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), PythonTypes.Root);
+
 			context.cfg().addInstruction(Python.instructionFactory().GetInstruction(currentInstruction, result, receiver, f));
 		} else {
 			visit(elt, context, this);		
