@@ -27,10 +27,7 @@ import com.ibm.wala.cast.java.loader.JavaSourceLoaderImpl;
 import com.ibm.wala.cast.python.cfg.PythonInducedCFG;
 import com.ibm.wala.cast.python.modref.PythonModRef.PythonModVisitor;
 import com.ibm.wala.cast.python.modref.PythonModRef.PythonRefVisitor;
-import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
-import com.ibm.wala.cast.python.ssa.PythonPropertyRead;
-import com.ibm.wala.cast.python.ssa.PythonPropertyWrite;
-import com.ibm.wala.cast.python.ssa.PythonStoreProperty;
+import com.ibm.wala.cast.python.ssa.*;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cfg.InducedCFG;
@@ -53,10 +50,7 @@ import com.ibm.wala.ipa.modref.ModRef.ModVisitor;
 import com.ibm.wala.ipa.modref.ModRef.RefVisitor;
 import com.ibm.wala.shrikeCT.BootstrapMethodsReader.BootstrapMethod;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
-import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
-import com.ibm.wala.ssa.SSAArrayStoreInstruction;
-import com.ibm.wala.ssa.SSAInstruction;
-import com.ibm.wala.ssa.SSAInvokeInstruction;
+import com.ibm.wala.ssa.*;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
@@ -248,6 +242,14 @@ public class PythonLanguage implements Language {
 		        public AstYieldInstruction YieldInstruction(int iindex, int[] rvals) {
 		          return new AstYieldInstruction(iindex, rvals);
 		        }
+
+		        @Override
+				public SSAGetInstruction GetInstruction(int iindex, int result, int ref, FieldReference field){
+	        		if(field.getDeclaringClass().getName().toString().equals("Lmodule"))
+	        			return new PythonImportFromGetInstruction(iindex, result, ref, field);
+
+					return super.GetInstruction(iindex, result, ref, field);
+				}
 		};
 	}
 
