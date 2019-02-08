@@ -1032,7 +1032,6 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			int i = 0;
 			CAstNode[] elts = new CAstNode[ arg0.getInternalNames().size()*2 ];
 			for(alias n : arg0.getInternalNames()) {
-				System.err.println("SIMPLE IMPORT "+ n.getInternalAsname() + " | " + name(n) + " intName = " + n.getInternalName());
 				elts[i++] = Ast.makeNode(CAstNode.DECL_STMT,
 					Ast.makeConstant(new CAstSymbolImpl(name(n), PythonCAstToIRTranslator.Any)));
 				elts[i++] = Ast.makeNode(CAstNode.ASSIGN,
@@ -1058,7 +1057,6 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			}
 			String moduleName = sb.toString();
 			for(alias n : arg0.getInternalNames()) {
-				System.err.println("IMPORT FROM " + moduleName +" " + arg0.getInternalModule() + " : " + n.getInternalAsname() + " | " + name(n) + " intName = " + n.getInternalName());
 				elts[i++] = Ast.makeNode(CAstNode.DECL_STMT,
 						Ast.makeConstant(new CAstSymbolImpl(name(n), PythonCAstToIRTranslator.Any)));
 				CAstNode importAst = Ast.makeNode(CAstNode.PRIMITIVE,
