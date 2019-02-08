@@ -32,6 +32,7 @@ import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
+import com.ibm.wala.cast.tree.CAstSymbol;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
@@ -276,14 +277,39 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 			CAstVisitor<WalkContext> visitor) {
 		super.leaveFunctionEntity(n, context, codeContext, visitor);
 
-		String fnName = composeEntityName(context, n) + "_defaults";		
-		if (n.getArgumentDefaults() != null) {
+		String fnName = composeEntityName(context, n) + "_defaults";
+		if (n.getArgumentDefaults() != null && n.getArgumentDefaults().length > 0) {
 			int first = n.getArgumentCount() - n.getArgumentDefaults().length;
 			for(int i = first; i < n.getArgumentCount(); i++) {
 				CAstNode dflt = n.getArgumentDefaults()[i - first];
 				visitor.visit(dflt, context, visitor);
 			    doGlobalWrite(context, "L" + fnName + "_" + i, PythonTypes.Root, context.getValue(dflt));
 			}
+		}
+	}
+
+	protected void leaveDeclStmt(CAstNode n, WalkContext c, CAstVisitor<WalkContext> visitor) {
+		CAstSymbol s = (CAstSymbol) n.getChild(0).getValue();
+		String nm = s.name();
+		CAstType t = s.type();
+		Scope scope = c.currentScope();
+		if (n.getChildCount() == 2) {
+			CAstNode v = n.getChild(1);
+			if(isGlobal(c, nm)){
+				scope.declare(s);
+				doGlobalWrite(c, nm, makeType(t), c.getValue(v));
+			}
+			else if (scope.contains(nm) && scope.lookup(nm).getDefiningScope() == scope) {
+				assert !s.isFinal();
+				doLocalWrite(c, nm, makeType(t), c.getValue(v));
+			} else if (v.getKind() != CAstNode.CONSTANT && v.getKind() != CAstNode.VAR && v.getKind() != CAstNode.THIS) {
+				scope.declare(s, c.getValue(v));
+			} else {
+				scope.declare(s);
+				doLocalWrite(c, nm, makeType(t), c.getValue(v));
+			}
+		} else {
+			c.currentScope().declare(s);
 		}
 	}
 
@@ -605,7 +631,8 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		    context.setValue(n, result);
 			return true;
 		
-		} else if(n.getKind() == CAstNode.GLOBAL_DECL){
+		}
+		else if(n.getKind() == CAstNode.GLOBAL_DECL){
 			int numOfChildren = n.getChildCount();
 			for(int i = 0;i < numOfChildren; i++){
 				String val = (String) n.getChild(i).getChild(0).getValue();
@@ -614,7 +641,8 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 			}
 			return true;
 		
-		} else {
+		}
+		else {
 			return super.doVisit(n, context, visitor);
 		}
 	}

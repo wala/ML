@@ -1048,7 +1048,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			int i = 0;
 			java.util.List<Name> names = arg0.getInternalModuleNames();
 
-			StringBuilder sb = new StringBuilder();arg0.getInternalModule();
+			StringBuilder sb = new StringBuilder();
 			String prev = ".";
 			for(Name name: names){
 				if(!prev.equals("."))
