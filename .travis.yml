@@ -17,10 +17,10 @@ install:
  - gradle install
  - popd
  - pushd /tmp/WALA
- - mvn clean install -DskipTests
+ - mvn clean install -B -q -DskipTests
  - popd
  - pushd /tmp/IDE
- - mvn clean install -DskipTests
+ - mvn clean install -B -q -DskipTests
  - popd
 script:
  - mvn clean install -B
