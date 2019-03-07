@@ -48,7 +48,11 @@ public class PythonTypes extends AstTypeReference {
 
 	  public static final TypeReference dict = TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Ldict"));
 
+	  public static final TypeReference string = TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lstring"));
+
 	  public static final TypeReference tuple = TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Ltuple"));
+
+	  public static final TypeReference enumerate = TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lenumerate"));
 
 	  public static final TypeReference trampoline = TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Ltrampoline"));
 

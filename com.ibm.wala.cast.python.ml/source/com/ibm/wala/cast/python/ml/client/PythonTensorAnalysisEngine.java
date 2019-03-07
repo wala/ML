@@ -17,6 +17,7 @@ import com.ibm.wala.ipa.callgraph.propagation.LocalPointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
+import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
@@ -166,8 +167,8 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 		return errorLog;
 	}
 	
-	protected void addBypassLogic(AnalysisOptions options) {
-		super.addBypassLogic(options);
+	protected void addBypassLogic(IClassHierarchy cha, AnalysisOptions options) {
+		super.addBypassLogic(cha, options);
 		addSummaryBypassLogic(options, "tensorflow.xml");
 	}
 

@@ -74,6 +74,11 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 			return DiagnosticSeverity.Warning;
 		}
 
+		@Override
+		public String source() {
+			return "Ariadne";
+		}
+
 	}
 
 	static class ConvError implements AnalysisError {
@@ -149,6 +154,11 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 		@Override
 		public DiagnosticSeverity severity() {
 			return DiagnosticSeverity.Error;
+		}
+
+		@Override
+		public String source() {
+			return "Ariadne";
 		}
 
 	}

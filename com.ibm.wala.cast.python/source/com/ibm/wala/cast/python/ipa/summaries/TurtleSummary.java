@@ -1,11 +1,18 @@
 package com.ibm.wala.cast.python.ipa.summaries;
 
+import static com.ibm.wala.cast.python.ir.PythonLanguage.Python;
+
 import java.io.Reader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
+import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
+import com.ibm.wala.cast.loader.AstFunctionClass;
+import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
+import com.ibm.wala.cast.python.loader.PythonLoader;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
@@ -18,11 +25,14 @@ import com.ibm.wala.classLoader.NewSiteReference;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.ClassTargetSelector;
+import com.ibm.wala.ipa.callgraph.Entrypoint;
 import com.ibm.wala.ipa.callgraph.MethodTargetSelector;
+import com.ibm.wala.ipa.callgraph.impl.AbstractRootMethod;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ipa.summaries.BypassSyntheticClassLoader;
 import com.ibm.wala.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
+import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.types.Descriptor;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
@@ -30,6 +40,7 @@ import com.ibm.wala.types.Selector;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.types.annotations.Annotation;
+import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.strings.Atom;
 
@@ -478,6 +489,81 @@ public class TurtleSummary {
 		return code;
 	}
 
+	public static Entrypoint turtleEntryPoint(IMethod fun) {
+		return new Entrypoint(fun) {
+
+			@Override
+			public SSAAbstractInvokeInstruction addCall(AbstractRootMethod m) {
+			    int paramValues[];
+			    IClassHierarchy cha = m.getClassHierarchy();
+			    paramValues = new int[getNumberOfParameters()];
+			    for (int j = 0; j < paramValues.length; j++) {
+			    	AstInstructionFactory insts = PythonLanguage.Python.instructionFactory();
+					if (j == 0 && getMethod().getDeclaringClass().getName().toString().contains("/")) {
+			    		int v = m.nextLocal++;
+			    		paramValues[j] = v;
+			    		if (getMethod().getDeclaringClass() instanceof PythonLoader.DynamicMethodBody) {
+					    FieldReference global = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("global " + getMethod().getDeclaringClass().getName().toString().substring(1, getMethod().getDeclaringClass().getName().toString().lastIndexOf('/'))), PythonTypes.Root);
+					    int idx = m.statements.size();
+			    			int cls = m.nextLocal++;
+			    			int obj = m.nextLocal++;
+			    			m.statements.add(insts.GlobalRead(m.statements.size(), cls, global));
+							idx = m.statements.size();
+							m.statements.add(new PythonInvokeInstruction(idx, obj, m.nextLocal++, new DynamicCallSiteReference(PythonTypes.CodeBody, idx), new int[] {cls}, new Pair[0]));
+							idx = m.statements.size();
+							String method = getMethod().getDeclaringClass().getName().toString();
+							String field = method.substring(method.lastIndexOf('/')+1);
+							FieldReference f = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom(field), PythonTypes.Root);
+							m.statements.add(insts.GetInstruction(idx, v, obj, f));
+			    		} else {
+					    FieldReference global = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("global " + getMethod().getDeclaringClass().getName().toString().substring(1)), PythonTypes.Root);
+					    m.statements.add(insts.GlobalRead(m.statements.size(), v, global));
+			    		}
+			    	} else {
+			    		paramValues[j] = makeArgument(m, j);
+			    	}
+			      if (paramValues[j] == -1) {
+			        // there was a problem
+			        return null;
+			      }
+			      TypeReference x[] = getParameterTypes(j);
+			      if (x.length == 1 && x[0].equals(turtleClassRef)) {
+			    	  m.statements.add(insts.PutInstruction(m.statements.size(), paramValues[j], paramValues[j], turtleFieldRef));
+			      }
+			    }
+			    
+			    int pc = m.statements.size();
+			    PythonInvokeInstruction call = 
+			    	new PythonInvokeInstruction(pc, m.nextLocal++, m.nextLocal++, new DynamicCallSiteReference(PythonTypes.CodeBody, pc), paramValues, new Pair[0]);
+			    
+			    m.statements.add(call);
+			    
+				return call;
+			}
+
+			@Override
+			public TypeReference[] getParameterTypes(int i) {
+				return new TypeReference[] { i==0? fun.getDeclaringClass().getReference() : turtleClassRef };
+			}
+
+			@Override
+			public int getNumberOfParameters() {
+				return fun.getNumberOfParameters();
+			}
+		};
+	}
+	
+	public static Collection<Entrypoint> turtleEntryPoints(IClassHierarchy cha) {
+		Set<Entrypoint> stuff = HashSetFactory.make();
+		IClass cb = cha.lookupClass(PythonTypes.CodeBody);
+		cha.forEach((cls) -> {
+			if (cha.isSubclassOf(cls, cb) && cls instanceof AstFunctionClass) {
+				stuff.add(turtleEntryPoint(((AstFunctionClass)cls).getCodeBody()));
+			}
+		});
+		return stuff;
+	}
+	
 	public void analyzeWithTurtles(AnalysisOptions options) {
 		options.setSelector(new PythonMethodTurtleTargetSelector(options.getMethodTargetSelector()));
 		options.setSelector(new PythonClassTurtleTargetSelector(options.getClassTargetSelector()));

@@ -13,3 +13,5 @@ Require-Bundle: com.ibm.wala.cast;bundle-version="1.4.4",
  com.ibm.wala.cast.lsp;bundle-version="0.0.1",
  com.google.gson;bundle-version="2.7.0"
 Automatic-Module-Name: com.ibm.wala.cast.python
+Import-Package: org.apache.commons.lang.mutable,
+ org.apache.commons.lang3.mutable

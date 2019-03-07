@@ -1,10 +1,11 @@
 package com.ibm.wala.cast.python.ml.test;
 
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assume.assumeThat;
-
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -23,6 +24,7 @@ import org.eclipse.lsp4j.TextEdit;
 import org.junit.Test;
 
 import com.ibm.wala.cast.lsp.WALAServer;
+import com.ibm.wala.cast.lsp.WALAServerCore;
 import com.ibm.wala.cast.python.ml.driver.ClientDriver;
 import com.ibm.wala.cast.python.ml.driver.PythonDriver;
 import com.ibm.wala.core.tests.util.WalaTestCase;
@@ -34,17 +36,31 @@ import com.ibm.wala.util.io.TemporaryFile;
 public class ServerTest extends WalaTestCase {
 
 	@Test
-	public void trivialClient() throws IOException, InterruptedException, ExecutionException, ClassHierarchyException, IllegalArgumentException, CancelException, URISyntaxException {		
-	    //assumeThat("not running on Travis CI", System.getenv("TRAVIS"), nullValue());
-
-	    WALAServer wala = WALAServer.launchOnServerPort(0, PythonDriver.python, true);	    
-	    
+	public void trivialClientServerPort() throws IOException, InterruptedException, ExecutionException, ClassHierarchyException, IllegalArgumentException, CancelException, URISyntaxException {		
+	    WALAServerCore wala = WALAServer.launchOnServerPort(0, PythonDriver.python, true);	    
 	    Socket socket = new Socket("localhost", wala.getServerPort());
 	    
+	    trivialClient(socket.getInputStream(), socket.getOutputStream());
+	}
+
+	@Test
+	public void trivialClientStreams() throws IOException, InterruptedException, ExecutionException, ClassHierarchyException, IllegalArgumentException, CancelException, URISyntaxException {		
+	    PipedInputStream clientIn = new PipedInputStream();
+	    PipedOutputStream serverOut = new PipedOutputStream(clientIn);
+
+	    PipedInputStream serverIn = new PipedInputStream();
+	    PipedOutputStream clientOut = new PipedOutputStream(serverIn);
+
+		WALAServer.launchOnStream(PythonDriver.python, serverIn, serverOut);
+		
+		trivialClient(clientIn, clientOut);
+	}
+
+	public void trivialClient(InputStream in, OutputStream out) throws IOException, InterruptedException, ExecutionException, ClassHierarchyException, IllegalArgumentException, CancelException, URISyntaxException {		
 	    String script = "buggy_convolutional_network.py";
 		String fileName = getScript(script);
 		Set<String> checks = HashSetFactory.make();
-		ClientDriver.main(new String[] {fileName, "37", "28", "46", "35"}, socket.getInputStream(), socket.getOutputStream(), (Object s) -> { 
+		ClientDriver.main(new String[] {fileName, "37", "28", "46", "35"}, in, out, (Object s) -> { 
 			if (s == null) {
 				return;
 			}

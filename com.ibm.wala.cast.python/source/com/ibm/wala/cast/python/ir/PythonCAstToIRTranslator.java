@@ -25,6 +25,7 @@ import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.translator.ArrayOpHandler;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
+import com.ibm.wala.cast.ir.translator.AstTranslator.WalkContext;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.loader.PythonLoader;
@@ -285,8 +286,9 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 			int first = n.getArgumentCount() - n.getArgumentDefaults().length;
 			for(int i = first; i < n.getArgumentCount(); i++) {
 				CAstNode dflt = n.getArgumentDefaults()[i - first];
-				visitor.visit(dflt, context, visitor);
-			    doGlobalWrite(context, "L" + fnName + "_" + i, PythonTypes.Root, context.getValue(dflt));
+				WalkContext cc = context.codeContext();
+				visitor.visit(dflt, cc, visitor);
+			    doGlobalWrite(cc, "L" + fnName + "_" + i, PythonTypes.Root, cc.getValue(dflt));
 			}
 		}
 	}

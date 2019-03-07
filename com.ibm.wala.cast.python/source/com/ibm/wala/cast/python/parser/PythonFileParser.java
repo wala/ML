@@ -42,7 +42,7 @@ public class PythonFileParser extends PythonParser<File> {
 	
 	protected WalaPythonParser makeParser() throws IOException {
         ANTLRFileStream file = new ANTLRFileStream(fileName.getAbsolutePath());
-		return new WalaPythonParser(file, fileName.getAbsolutePath(), null);
+		return new WalaPythonParser(file, fileName.getAbsolutePath(), "UTF-8");
 	}
 
 	public static void main(String[] args) throws Exception {

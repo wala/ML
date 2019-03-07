@@ -14,6 +14,7 @@ import com.ibm.wala.cast.python.ipa.callgraph.PythonConstructorTargetSelector;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonScopeMappingInstanceKeys;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonTrampolineTargetSelector;
+import com.ibm.wala.cast.python.ipa.summaries.BuiltinFunctions;
 import com.ibm.wala.cast.python.ipa.summaries.PythonComprehensionTrampolines;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
@@ -219,12 +220,17 @@ public abstract class PythonAnalysisEngine<T>
 		options.setSelector(cs);
 	}
 
-	protected void addBypassLogic(AnalysisOptions options) {
+	protected void addBypassLogic(IClassHierarchy cha, AnalysisOptions options) {
 		options.setSelector(
 			new PythonTrampolineTargetSelector(
 				new PythonConstructorTargetSelector(
 					new PythonComprehensionTrampolines(
 						options.getMethodTargetSelector()))));
+		
+		BuiltinFunctions builtins = new BuiltinFunctions(cha);
+		options.setSelector(
+			builtins.builtinClassTargetSelector(
+				options.getClassTargetSelector()));
 		
 		addSummaryBypassLogic(options, "pandas.xml");
 		addSummaryBypassLogic(options, "functools.xml");
@@ -253,8 +259,8 @@ public abstract class PythonAnalysisEngine<T>
 		
 		options.setSelector(new ClassHierarchyClassTargetSelector(cha));
 		options.setSelector(new ClassHierarchyMethodTargetSelector(cha));
-		
-		addBypassLogic(options);
+
+		addBypassLogic(cha, options);
 		
 		options.setUseConstantSpecificKeys(true);
 		

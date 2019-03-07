@@ -97,7 +97,9 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 
 	private final CAst Ast = new CAstImpl();
 	
-	private final CAstPattern slice = CAstPattern.parse("<top>ASSIGN(CALL(VAR(\"slice\"),<args>**),<value>*)");
+	private final CAstPattern sliceAssign = CAstPattern.parse("<top>ASSIGN(CALL(VAR(\"slice\"),<args>**),<value>*)");
+
+	private final CAstPattern sliceAssignOp = CAstPattern.parse("<top>ASSIGN_POST_OP(CALL(VAR(\"slice\"),<args>**),<value>*,<op>*)");
 
 	private CAstNode rewriteSubscriptAssign(Segments s) {
 		int i = 0;
@@ -109,24 +111,42 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 		
 		return Ast.makeNode(CAstNode.CALL, Ast.makeNode(CAstNode.VAR, Ast.makeConstant("slice")), args);	
 	}
-	
+
+	private CAstNode rewriteSubscriptAssignOp(Segments s) {
+		int i = 0;
+		CAstNode[] args = new CAstNode[ s.getMultiple("args").size() + 1];
+		for(CAstNode arg : s.getMultiple("args")) {
+			args[i++] = arg;
+		}
+		args[i++] = s.getSingle("value");
+		
+		return Ast.makeNode(CAstNode.CALL, Ast.makeNode(CAstNode.VAR, Ast.makeConstant("slice")), args);	
+	}
+
 	@Override
 	protected TranslatorToCAst getTranslatorToCAst(CAst ast, ModuleEntry M) throws IOException {
 		RewritingTranslatorToCAst x = new RewritingTranslatorToCAst(M, new PythonModuleParser((SourceModule)M, typeDictionary) {
 			@Override
 			public CAstEntity translateToCAst() throws Error, IOException {
 				CAstEntity ce =  super.translateToCAst();
-				return AstConstantFolder.fold(ce);
+				return new AstConstantFolder().fold(ce);
 			}
 		});
 		
 		x.addRewriter(new CAstRewriterFactory<NonCopyingContext,NoKey>() {
 			@Override
 			public PatternBasedRewriter createCAstRewriter(CAst ast) {
-				return new PatternBasedRewriter(ast, slice, (Segments s) -> { return rewriteSubscriptAssign(s); });
+				return new PatternBasedRewriter(ast, sliceAssign, (Segments s) -> { return rewriteSubscriptAssign(s); });
 			}
 		}, false);
-		
+
+		x.addRewriter(new CAstRewriterFactory<NonCopyingContext,NoKey>() {
+			@Override
+			public PatternBasedRewriter createCAstRewriter(CAst ast) {
+				return new PatternBasedRewriter(ast, sliceAssignOp, (Segments s) -> { return rewriteSubscriptAssignOp(s); });
+			}
+		}, false);
+
 		x.addRewriter(new CAstRewriterFactory<NonCopyingContext,NoKey>() {
 			@Override
 			public ConstantFoldingRewriter createCAstRewriter(CAst ast) {
@@ -185,6 +205,26 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 
 	final CoreClass trampoline = new CoreClass(PythonTypes.trampoline.getName(), PythonTypes.CodeBody.getName(), this, null);
 
+	public class DynamicMethodBody extends DynamicCodeBody {
+		private final IClass container;
+		
+		public DynamicMethodBody(TypeReference codeName, TypeReference parent, IClassLoader loader,
+				Position sourcePosition, CAstEntity entity, WalkContext context, IClass container) {
+			super(codeName, parent, loader, sourcePosition, entity, context);
+			this.container = container;
+		}
+
+		public IClass getContainer() {
+			return container;
+		}
+		
+	}
+
+	public IClass makeMethodBodyType(String name, TypeReference P, CAstSourcePositionMap.Position sourcePosition, CAstEntity entity, WalkContext context, IClass container) {
+		return new DynamicMethodBody(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName(name)), P, this,
+				sourcePosition, entity, context, container);
+	}
+
 	public IClass makeCodeBodyType(String name, TypeReference P, CAstSourcePositionMap.Position sourcePosition, CAstEntity entity, WalkContext context) {
 		return new DynamicCodeBody(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.string2TypeName(name)), P, this,
 				sourcePosition, entity, context);
@@ -196,11 +236,13 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 	}
 
 	public IClass defineMethodType(String name, CAstSourcePositionMap.Position pos, CAstEntity entity, TypeName typeName, WalkContext context) {
-		IClass fun = makeCodeBodyType(name, PythonTypes.CodeBody, pos, entity, context);
+		PythonClass self = (PythonClass)types.get(typeName);
+
+		IClass fun = makeMethodBodyType(name, PythonTypes.CodeBody, pos, entity, context, self);
 		
 		assert types.containsKey(typeName);
 		MethodReference me = MethodReference.findOrCreate(fun.getReference(), Atom.findOrCreateUnicodeAtom(entity.getType().getName()), AstMethodReference.fnDesc);
-		((PythonClass)types.get(typeName)).methodTypes.add(me);
+		self.methodTypes.add(me);
 
 		return fun;
 	}

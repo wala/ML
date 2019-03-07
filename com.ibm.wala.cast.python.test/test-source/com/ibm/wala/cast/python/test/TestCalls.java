@@ -133,6 +133,16 @@ public class TestCalls extends TestPythonCallGraphShape {
 	}
 
 	 @Test
+	public void testCalls8() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		CallGraph CG = process("calls8.py");
+		System.err.println(CG);
+		CG.forEach((n) -> {
+			System.err.println(n.getIR());
+		});
+		//verifyGraphAssertions(CG, assertionsCalls6);
+	}
+
+	 @Test
 	public void testCalls7() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 			PythonAnalysisEngine<?> e = new PythonAnalysisEngine<Void>() {
 				@Override

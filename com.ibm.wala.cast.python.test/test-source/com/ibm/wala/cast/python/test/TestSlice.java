@@ -9,9 +9,11 @@ import org.junit.Test;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
+import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
+import com.ibm.wala.ssa.SSANewInstruction;
 import com.ibm.wala.util.CancelException;
 
 public class TestSlice extends TestPythonCallGraphShape {
@@ -33,22 +35,39 @@ public class TestSlice extends TestPythonCallGraphShape {
 		Collection<CGNode> nodes = getNodes(CG, "script slice1.py");
 		assert nodes.size() == 1;
 		
-		IR script = nodes.iterator().next().getIR();
+		CGNode node = nodes.iterator().next();
+		DefUse du = node.getDU();
+		IR script = node.getIR();
 
 		SSAAbstractInvokeInstruction sliceImport = find(script, (SSAAbstractInvokeInstruction inst) -> {
-			return "Lslice".equals(inst.getDeclaredTarget().getDeclaringClass().getName().toString());
+			if (inst.getNumberOfUses() > 0) {
+				int f = inst.getUse(0);
+				SSAInstruction def = du.getDef(f);
+				if (def instanceof SSANewInstruction) {
+					return "Lwala/builtin/slice".equals(((SSANewInstruction)def).getConcreteType().getName().toString());				
+				} 
+			}
+			
+			return false;
+			
 		});
 		
-		assert sliceImport != null;
-		
-		int sliceVn = sliceImport.getDef();
-		
-		assert null != find(script, (SSAAbstractInvokeInstruction inst) -> {
-			return inst.getNumberOfUses() > 0 && inst.getUse(0) == sliceVn && inst.getNumberOfPositionalParameters() == 5;
-		});   
-
-		assert null != find(script, (SSAAbstractInvokeInstruction inst) -> {
-			return inst.getNumberOfUses() > 0 && inst.getUse(0) == sliceVn && inst.getNumberOfPositionalParameters() == 6;
-		});
+		assert sliceImport != null;		
 	}	
+	
+	 protected static final Object[][] assertionsSlice2 = new Object[][] {
+		    new Object[] { ROOT, new String[] { "script slice2.py" } },
+		    new Object[] {
+		        "script slice2.py",
+		        new String[] { "wala/builtin/slice", "script slice2.py/a", "script slice2.py/b", "script slice2.py/c", "script slice2.py/d" } }
+	 };
+
+	@Test
+	public void testSlice2() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		CallGraph CG = process("slice2.py");
+		verifyGraphAssertions(CG, assertionsSlice2);
+
+		Collection<CGNode> nodes = getNodes(CG, "script slice2.py");
+		assert nodes.size() == 1;
+	}
 }

@@ -35,6 +35,7 @@ import org.eclipse.lsp4j.DiagnosticSeverity;
 
 import com.ibm.wala.cast.lsp.Util;
 import com.ibm.wala.cast.lsp.WALAServer;
+import com.ibm.wala.cast.lsp.WALAServerCore;
 import com.ibm.wala.cast.python.ml.driver.DiagnosticsFormatter.FORMAT;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
@@ -264,18 +265,18 @@ public class Ariadne {
 			break;
 		}
 		case client: {
-			final WALAServer server = WALAServer.launchOnClientPort(null, port, PythonDriver.python);
+			final WALAServerCore server = WALAServer.launchOnClientPort(null, port, PythonDriver.python);
 			break;
 		}
 		case server: {
-			final WALAServer server = 
+			final WALAServerCore server = 
 					WALAServer.launchOnServerPort(port, PythonDriver.python, false);
 			final Integer actualPort = server.getServerPort();
 			System.err.println("Server up, listening on port: " + actualPort);
 			break;
 		}
 		case daemon: {
-			final WALAServer server = 
+			final WALAServerCore server = 
 					WALAServer.launchOnServerPort(port, PythonDriver.python, true);
 			final Integer actualPort = server.getServerPort();
 			System.err.println("Server up, listening on port: " + actualPort);

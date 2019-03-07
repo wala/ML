@@ -95,6 +95,7 @@ import com.ibm.wala.cast.ir.translator.AbstractCodeEntity;
 import com.ibm.wala.cast.ir.translator.AbstractFieldEntity;
 import com.ibm.wala.cast.ir.translator.AbstractScriptEntity;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
+import com.ibm.wala.cast.python.ipa.summaries.BuiltinFunctions;
 import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.tree.CAst;
@@ -1029,13 +1030,14 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		@Override
 		public CAstNode visitImport(Import arg0) throws Exception {
 			int i = 0;
-			CAstNode[] elts = new CAstNode[ arg0.getInternalNames().size()*2 ];
+			CAstNode[] elts = new CAstNode[ arg0.getInternalNames().size() ];
 			for(alias n : arg0.getInternalNames()) {
+				CAstNode obj = importAst(n.getInternalNameNodes());
 				elts[i++] = Ast.makeNode(CAstNode.DECL_STMT,
-					Ast.makeConstant(new CAstSymbolImpl(name(n), PythonCAstToIRTranslator.Any)));
-				elts[i++] = Ast.makeNode(CAstNode.ASSIGN,
-					Ast.makeNode(CAstNode.VAR, Ast.makeConstant(name(n))),
-					Ast.makeNode(CAstNode.PRIMITIVE, Ast.makeConstant("import"), Ast.makeConstant(n.getInternalName().replaceAll("[.]", "/"))));
+					Ast.makeConstant(new CAstSymbolImpl(name(n), PythonCAstToIRTranslator.Any)),
+					obj != null?
+					obj:
+					Ast.makeNode(CAstNode.PRIMITIVE, Ast.makeConstant("import"), Ast.makeConstant(n.getInternalName())));
 			}
 			return Ast.makeNode(CAstNode.BLOCK_STMT, elts);
 		}
@@ -1048,15 +1050,14 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				elts[i++] = Ast.makeNode(CAstNode.DECL_STMT,
 						Ast.makeConstant(new CAstSymbolImpl(name(n), PythonCAstToIRTranslator.Any)),
 						Ast.makeNode(CAstNode.OBJECT_REF,
-								importAst(arg0),
+								importAst(arg0.getInternalModuleNames()),
 								Ast.makeConstant(n.getInternalName())));
 			}
 			
 			return Ast.makeNode(CAstNode.BLOCK_STMT, elts);
 		}
 
-		private CAstNode importAst(ImportFrom arg0) {
-			java.util.List<Name> names = arg0.getInternalModuleNames();
+		private CAstNode importAst(java.util.List<Name> names ) {
 			CAstNode importAst = Ast.makeNode(CAstNode.PRIMITIVE, 
 				Ast.makeConstant("import"), 
 				Ast.makeConstant(names.get(0).getInternalId()));
@@ -1269,23 +1270,23 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		}
 
 		private String[] defaultImportNames = new String[] {
-				"str",
-				"float",
-				"int",
 				"__name__",
 				"print",
 				"super",
-				"len",
 				"open",
 				"hasattr",
 				"BaseException",
 				"abs",
-				"range",
-				"slice",
 				"del"
 		};
 		
 		private void defaultImports(Collection<CAstNode> elts) {
+			for(String n : BuiltinFunctions.builtins()) {
+				elts.add(
+				Ast.makeNode(CAstNode.DECL_STMT,
+						Ast.makeConstant(new CAstSymbolImpl(n, PythonCAstToIRTranslator.Any)),
+						Ast.makeNode(CAstNode.NEW, Ast.makeConstant("wala/builtin/" + n))));			
+			}
 			for(String n : defaultImportNames) {
 				elts.add(
 					Ast.makeNode(CAstNode.DECL_STMT,
@@ -1296,12 +1297,16 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		
 		@Override
 		public CAstNode visitModule(Module arg0) throws Exception {
-			java.util.List<CAstNode> elts = new ArrayList<CAstNode>(arg0.getChildCount());
-			defaultImports(elts);
-			for(PythonTree c : arg0.getChildren()) {
-				elts.add(c.accept(this));
+			if (arg0.getChildren() != null) {
+				java.util.List<CAstNode> elts = new ArrayList<CAstNode>(arg0.getChildCount());
+				defaultImports(elts);
+				for(PythonTree c : arg0.getChildren()) {
+					elts.add(c.accept(this));
+				}
+				return Ast.makeNode(CAstNode.BLOCK_EXPR, elts.toArray(new CAstNode[ elts.size() ]));
+			} else {
+				return Ast.makeNode(CAstNode.EMPTY);
 			}
-			return Ast.makeNode(CAstNode.BLOCK_EXPR, elts.toArray(new CAstNode[ elts.size() ]));
 		}
 
 		@Override
@@ -1335,7 +1340,9 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		@Override
 		public CAstNode visitPass(Pass arg0) throws Exception {
 			String label = "temp " + tmpIndex++;
-			return Ast.makeNode(CAstNode.LABEL_STMT, Ast.makeConstant(label), Ast.makeNode(CAstNode.EMPTY));
+			CAstNode nothing = Ast.makeNode(CAstNode.LABEL_STMT, Ast.makeConstant(label), Ast.makeNode(CAstNode.EMPTY));
+			context.cfg().map(arg0, nothing);
+			return nothing;
 		}
 
 		@Override
@@ -1414,7 +1421,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 					acceptOrNull(S.getInternalUpper()), 		
 					acceptOrNull(S.getInternalStep())), arg0);				
 			} else {
-				return Ast.makeNode(CAstNode.EMPTY);
+				return acceptOrNull(arg0.getInternalValue());
 			}
 		}
 		

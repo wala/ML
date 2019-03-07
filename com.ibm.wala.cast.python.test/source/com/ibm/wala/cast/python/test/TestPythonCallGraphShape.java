@@ -55,22 +55,28 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 			return new SourceURLModule(getClass().getClassLoader().getResource(name));
 		}
 	}
-	
-	protected PythonAnalysisEngine<?> makeEngine(String... name) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		PythonAnalysisEngine<Void> engine = new PythonAnalysisEngine<Void>() {
+
+	protected PythonAnalysisEngine<?> createEngine() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		return new PythonAnalysisEngine<Void>() {
 			@Override
 			public Void performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
 				assert false;
 				return null;
 			}
 		};
-		
+	}
+	
+	protected PythonAnalysisEngine<?> makeEngine(PythonAnalysisEngine<?> engine, String... name) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {	
 		Set<Module> modules = HashSetFactory.make();
 		for(String n : name) {
 			modules.add(getScript(n));
 		}
 		engine.setModuleFiles(modules);
 		return engine;
+	}
+
+	protected PythonAnalysisEngine<?> makeEngine(String... name) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {	
+		return makeEngine(createEngine(), name);
 	}
 	
 	protected CallGraph process(String... name) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {

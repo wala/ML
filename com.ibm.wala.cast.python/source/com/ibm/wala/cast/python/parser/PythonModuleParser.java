@@ -36,7 +36,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
 	protected WalaPythonParser makeParser() throws IOException {
 		CharStream file = new ANTLRInputStream(fileName.getInputStream());
-		return new WalaPythonParser(file, fileName.getName(), null);
+		return new WalaPythonParser(file, fileName.getName(), "UTF-8");
 	}
 
 	public PythonModuleParser(SourceModule fileName, CAstTypeDictionaryImpl<String> types) {
