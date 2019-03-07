@@ -17,10 +17,10 @@ install:
  - gradle install
  - popd
  - pushd /tmp/WALA
- - ./gradlew build publishToMavenLocal -x test
+ - mvn clean install -DskipTests
  - popd
  - pushd /tmp/IDE
- - gradle build publishToMavenLocal -x test
+ - mvn clean install -DskipTests
  - popd
 script:
  - mvn clean install -B
