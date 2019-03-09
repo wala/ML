@@ -21,7 +21,12 @@ public class WalaPythonParser extends AnalyzingParser {
 		if (text == null) {
 			text = tokens.toOriginalString();
 		}
-		return text.substring(start, Math.min(end, text.length()-1));
+		int e = Math.min(end, text.length()-1);
+		if (start >= e) {
+			return "";
+		} else {
+			return text.substring(start, e);
+		}
 	}
 
     protected PythonParser setupParser(boolean single) {
