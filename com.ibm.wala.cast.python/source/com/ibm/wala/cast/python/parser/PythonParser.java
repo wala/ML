@@ -656,7 +656,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		@Override
 		public CAstNode visitContinue(Continue arg0) throws Exception {
 			PyObject target = context.getContinueFor(null);
-			context.cfg().add(arg0, target, true);
+			context.cfg().add(arg0, target, null);
 			CAstNode gt = notePosition(Ast.makeNode(CAstNode.GOTO), arg0);
 			context.cfg().map(arg0, gt);
 			return gt;
