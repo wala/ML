@@ -20,6 +20,7 @@ import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
+import com.ibm.wala.cast.util.Util;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
 import com.ibm.wala.classLoader.IField;
@@ -61,6 +62,8 @@ import com.ibm.wala.types.Selector;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.WalaException;
+import com.ibm.wala.util.WalaRuntimeException;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.strings.Atom;
@@ -93,11 +96,14 @@ public abstract class PythonAnalysisEngine<T>
 	public IClassHierarchy buildClassHierarchy() {
 		try {
 			IClassHierarchy cha = SeqClassHierarchyFactory.make(scope, loader);
+			Util.checkForFrontEndErrors(cha);
 			setClassHierarchy(cha);
 			return cha;
 		} catch (ClassHierarchyException e) {
 			assert false : e;
 			return null;
+		} catch (WalaException e) {
+			throw new WalaRuntimeException(e.getMessage());
 		}
 	}
 
@@ -253,6 +259,7 @@ public abstract class PythonAnalysisEngine<T>
 		return result;
 	}
 
+	
 	@Override
 	protected PythonSSAPropagationCallGraphBuilder getCallGraphBuilder(IClassHierarchy cha, AnalysisOptions options, IAnalysisCacheView cache2) {
 		IAnalysisCacheView cache = new AnalysisCacheImpl(irs, options.getSSAOptions());

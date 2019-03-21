@@ -309,9 +309,12 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			//return notePosition(Ast.makeNode(CAstNode.ASSERT, arg0.getInternalTest().accept(this)), arg0);
 		}
 
+		private int assign = 0;
 		@Override
 		public CAstNode visitAssign(Assign arg0) throws Exception {
+			String rvalName = "rval"  + assign++;
 			CAstNode v = notePosition(arg0.getInternalValue().accept(this), arg0.getInternalValue());
+
 			if (context.entity().getKind() == CAstEntity.TYPE_ENTITY) {
 				for (expr lhs : arg0.getInternalTargets()) {
 					context.addScopedEntity(null, new AbstractFieldEntity(lhs.getText(), Collections.emptySet(), false, context.entity()) {
@@ -334,8 +337,20 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				return Ast.makeNode(CAstNode.EMPTY);
 			} else {
 				java.util.List<CAstNode> nodes = new ArrayList<CAstNode>(); 
-				for (expr lhs : arg0.getInternalTargets()) {
-					nodes.add(notePosition(Ast.makeNode(CAstNode.ASSIGN, notePosition(lhs.accept(this), lhs), v), lhs));
+				if (arg0.getInternalTargets().size() > 1) {
+					CAstNode rval =
+							Ast.makeNode(CAstNode.DECL_STMT, 
+									Ast.makeConstant(new CAstSymbolImpl(rvalName, PythonCAstToIRTranslator.Any)),
+									v);
+					nodes.add(rval);
+					for (expr lhs : arg0.getInternalTargets()) {
+						nodes.add(notePosition(Ast.makeNode(CAstNode.ASSIGN, notePosition(lhs.accept(this), lhs), Ast.makeNode(CAstNode.VAR, Ast.makeConstant(rvalName))), lhs));
+					}
+				} else {
+					for (expr lhs : arg0.getInternalTargets()) {
+						nodes.add(notePosition(Ast.makeNode(CAstNode.ASSIGN, notePosition(lhs.accept(this), lhs), v), lhs));
+					}
+
 				}
 				return Ast.makeNode(CAstNode.BLOCK_EXPR, nodes.toArray(new CAstNode[nodes.size()]));
 			}
@@ -453,7 +468,9 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			
 			CAstNode f = notePosition(arg0.getInternalFunc().accept(this), arg0.getInternalFunc());
 			
-			return notePosition(Ast.makeNode(CAstNode.CALL, f, args), arg0);
+			CAstNode call = notePosition(Ast.makeNode(CAstNode.CALL, f, args), arg0);
+			
+			return call;
 		}
 
 		@Override
@@ -557,8 +574,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 				@Override
 				public CAstControlFlowRecorder cfg() {
-					assert false;
-					return null;
+					return (CAstControlFlowRecorder) parent.entity().getControlFlow();
 				}
 
 				@Override
@@ -597,7 +613,9 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 			CAstVisitor v = new CAstVisitor(child, parser);
 			for(stmt e : arg0.getInternalBody()) {
-				e.accept(v);				
+				if (! (e instanceof Pass)) {
+					e.accept(v);			
+				}
 			}
 
 			CAstNode x= Ast.makeNode(CAstNode.EMPTY);
@@ -605,15 +623,23 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			return x;
 		}
 
+		private int compareTmp = 0;
+		
 		private CAstNode compare(CAstNode lhs, Iterator<cmpopType> ops, Iterator<expr> rhss) throws Exception {
 			if (ops.hasNext()) {
-				CAstNode rhs = rhss.next().accept(this);
+				String vn = "" + compareTmp++;
+				
+				  Ast.makeNode(CAstNode.ASSIGN,
+						    Ast.makeNode(CAstNode.OBJECT_REF,
+						      Ast.makeNode(CAstNode.VAR, Ast.makeConstant(vn)),
+						      rhss.next().accept(this)));
+
 				CAstOperator op = translateOperator(ops.next());
 				
-				CAstNode rest = compare(rhs, ops, rhss);
+				CAstNode rest = compare(Ast.makeNode(CAstNode.VAR, Ast.makeConstant(vn)), ops, rhss);
 				
 				return Ast.makeNode(CAstNode.IF_EXPR, 
-						Ast.makeNode(CAstNode.BINARY_EXPR, op, lhs, rhs), 
+						Ast.makeNode(CAstNode.BINARY_EXPR, op, lhs, Ast.makeNode(CAstNode.VAR, Ast.makeConstant(vn))),
 						Ast.makeConstant(true), rest);
 			} else {
 				return Ast.makeConstant(false);
@@ -883,7 +909,8 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				if (a instanceof Tuple) {
 					Tuple t = (Tuple)a;
 					for(expr e : t.getInternalElts()) {
-						String name = e.accept(this).getChild(0).getValue().toString();
+						CAstNode cast = e.accept(this);
+						String name = cast.getChild(0).getValue().toString();
 						argumentNames[x++] = name;								
 					}
 				} else {
@@ -1195,8 +1222,8 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 						Ast.makeNode(CAstNode.EXPR_LIST, filters));
 				
 			} else {
-				String listName = "temp " + tmpIndex++;
-				String indexName = "temp " + tmpIndex++;
+				String listName = "temp " + ++tmpIndex;
+				String indexName = "temp " + ++tmpIndex;
 				CAstNode body = 
 						Ast.makeNode(CAstNode.BLOCK_EXPR,
 								Ast.makeNode(CAstNode.ASSIGN,
@@ -1238,7 +1265,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 					}
 				}
 				
-				String tempName = "temp " + tmpIndex++;
+				String tempName = "temp " + ++tmpIndex;
 				
 				CAstNode test = 
 		          Ast.makeNode(CAstNode.BINARY_EXPR,
@@ -1339,7 +1366,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitPass(Pass arg0) throws Exception {
-			String label = "temp " + tmpIndex++;
+			String label = "temp " + ++tmpIndex;
 			CAstNode nothing = Ast.makeNode(CAstNode.LABEL_STMT, Ast.makeConstant(label), Ast.makeNode(CAstNode.EMPTY));
 			context.cfg().map(arg0, nothing);
 			return nothing;
@@ -1358,7 +1385,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		@Override
 		public CAstNode visitRaise(Raise arg0) throws Exception {
 			if (arg0.getInternalType() == null) {
-				return Ast.makeNode(CAstNode.THROW);
+				return Ast.makeNode(CAstNode.THROW, Ast.makeNode(CAstNode.VAR,  Ast.makeConstant("$currentException")));
 			} else {
 				return Ast.makeNode(CAstNode.THROW, arg0.getInternalType().accept(this));
 			}
@@ -1458,7 +1485,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 					CAstNode body = block(h.getInternalBody());
 					handlers.put(type.toString(), Ast.makeNode(CAstNode.CATCH,
 						Ast.makeConstant(name),
-						body));
+						Ast.makeNode(CAstNode.BLOCK_STMT,
+							Ast.makeNode(CAstNode.ASSIGN,
+								Ast.makeNode(CAstNode.VAR, Ast.makeConstant("$currentException")),
+								Ast.makeNode(CAstNode.VAR, Ast.makeConstant(name.getValue()))),
+							body)));
 					
 					if (h.getInternalType() != null) {
 						context.getNodeTypeMap().add(name, types.getCAstTypeFor(h.getInternalType()));
@@ -1576,7 +1607,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				blk[i++] = s.accept(this);
 			}
 		
-			String tmpName = "tmp_" + tmpIndex++;
+			String tmpName = "tmp_" + ++tmpIndex;
 			
 			Supplier<CAstNode> v = () -> { 
 				try {
@@ -1637,6 +1668,26 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 	public CAstEntity translateToCAst() throws Error, IOException {
 		WalaPythonParser parser = makeParser();
 		Module pythonAst = (Module)parser.parseModule();
+		
+		if (! parser.getErrors().isEmpty()) {
+			java.util.Set<Warning> warnings = HashSetFactory.make();
+			parser.getErrors().forEach((e) -> {
+				warnings.add(new Warning() {
+					
+					@Override
+					public byte getLevel() {
+						return Warning.SEVERE;
+					}
+					
+					@Override
+					public String getMsg() {
+						return e.toString();
+					}
+				});
+			});
+			throw new TranslatorToCAst.Error(warnings);
+		}
+		
 		try {
 			CAstType scriptType = new CAstType() {
 				@Override

@@ -19,4 +19,13 @@ public class TestClasses extends TestPythonCallGraphShape {
 		});
 	}
 
+	@Test
+	public void testClasses2() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		CallGraph CG = process("classes2.py");
+		System.err.println(CG);
+		CG.forEach((n) -> {
+			System.err.println(n.getIR());
+		});
+	}
+
 }

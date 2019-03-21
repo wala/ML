@@ -31,6 +31,7 @@ import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.Selector;
+import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.strings.Atom;
 
@@ -49,7 +50,9 @@ public class PythonConstructorTargetSelector implements MethodTargetSelector {
 		IClassHierarchy cha = receiver.getClassHierarchy();
 		if (cha.isSubclassOf(receiver, cha.lookupClass(PythonTypes.object)) && receiver instanceof PythonClass) {
 			if (!ctors.containsKey(receiver)) {
-				IMethod init = receiver.getMethod(new Selector(Atom.findOrCreateUnicodeAtom("__init__"), AstMethodReference.fnDesc));
+				TypeReference ctorRef = TypeReference.findOrCreate(receiver.getClassLoader().getReference(), receiver.getName() + "/__init__");
+				IClass ctorCls = cha.lookupClass(ctorRef);
+				IMethod init = ctorCls==null? null: ctorCls.getMethod(AstMethodReference.fnSelector);
 				int params = init==null? 1: init.getNumberOfParameters();
 				int v = params+2;
 				int pc = 0;
@@ -61,6 +64,19 @@ public class PythonConstructorTargetSelector implements MethodTargetSelector {
 				pc++;
 				
 				PythonClass x = (PythonClass)receiver;
+				for(TypeReference r : x.getInnerReferences()) {
+					int orig_t = v++;
+					String typeName = r.getName().toString();
+					typeName = typeName.substring(typeName.lastIndexOf('/')+1);
+					FieldReference inner = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom(typeName), PythonTypes.Root);
+					
+					ctor.addStatement(insts.GetInstruction(pc, orig_t, 1, inner));
+					pc++;
+					
+					ctor.addStatement(insts.PutInstruction(pc, inst, orig_t, inner));
+					pc++;
+				}
+				
 				for(MethodReference r : x.getMethodReferences()) {
 					int f = v++;
 					ctor.addStatement(insts.NewInstruction(pc, f, NewSiteReference.make(pc, PythonInstanceMethodTrampoline.findOrCreate(r.getDeclaringClass(), receiver.getClassHierarchy()))));

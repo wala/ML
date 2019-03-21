@@ -269,9 +269,20 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 	public class PythonClass extends CoreClass {
 		private java.util.Set<IField> staticFields = HashSetFactory.make();
 		private java.util.Set<MethodReference> methodTypes = HashSetFactory.make();
+		private java.util.Set<TypeReference> innerTypes = HashSetFactory.make();
 		
 		public PythonClass(TypeName name, TypeName superName, IClassLoader loader, Position sourcePosition) {
 			super(name, superName, loader, sourcePosition);
+			if (name.toString().lastIndexOf('/') > 0) {
+				String maybeOuterName = name.toString().substring(0, name.toString().lastIndexOf('/'));
+				TypeName maybeOuter = TypeName.findOrCreate(maybeOuterName);
+				if (types.containsKey(maybeOuter)) {
+					IClass cls = types.get(maybeOuter);
+					if (cls instanceof PythonClass) {
+						((PythonClass)cls).innerTypes.add(this.getReference());
+					}
+				}
+			}
 		}
 
 		@Override
@@ -282,7 +293,11 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 		public Collection<MethodReference> getMethodReferences() {
 			return methodTypes;
 		}
-	}
+
+		public Collection<TypeReference> getInnerReferences() {
+			return innerTypes;
+		}
+}
 	
 	public void defineType(TypeName cls, TypeName parent, Position sourcePosition) {
 		new PythonClass(cls, parent, this, sourcePosition);

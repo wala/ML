@@ -25,7 +25,6 @@ import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.translator.ArrayOpHandler;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
-import com.ibm.wala.cast.ir.translator.AstTranslator.WalkContext;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.loader.PythonLoader;
@@ -35,6 +34,7 @@ import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
+import com.ibm.wala.cast.tree.impl.CAstControlFlowRecorder;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
 import com.ibm.wala.cast.tree.visit.CAstVisitor;
@@ -375,35 +375,39 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	@Override
 	protected void leaveTypeEntity(CAstEntity n, WalkContext context, WalkContext typeContext, CAstVisitor<WalkContext> visitor) {
 		super.leaveTypeEntity(n, context, typeContext, visitor);
+
+		WalkContext code = context.codeContext();
+
+		int v = code.currentScope().allocateTempValue();
 		
-		int v = context.currentScope().allocateTempValue();
-		
-		int idx = context.cfg().getCurrentInstruction();
+		int idx = code.cfg().getCurrentInstruction();
 	    String fnName = composeEntityName(context, n);
 	    IClass cls = loader.lookupClass(TypeName.findOrCreate("L" + fnName));
 	    TypeReference type = cls.getReference();
-	    context.cfg().addInstruction(Python.instructionFactory().NewInstruction(idx, v, NewSiteReference.make(idx, type)));
+	    code.cfg().addInstruction(Python.instructionFactory().NewInstruction(idx, v, NewSiteReference.make(idx, type)));
 	
-	    doLocalWrite(context, n.getType().getName(), type, v);
-	    doGlobalWrite(context, fnName, PythonTypes.Root, v);
+	    doLocalWrite(code, n.getType().getName(), type, v);
+	    doGlobalWrite(code, fnName, PythonTypes.Root, v);
 
 	    for(CAstEntity field : n.getAllScopedEntities().get(null)) {
    			FieldReference fr = FieldReference.findOrCreate(type, Atom.findOrCreateUnicodeAtom(field.getName()), PythonTypes.Root);
    			int val;
 	    		if (field.getKind() == CAstEntity.FIELD_ENTITY) {
-	    			this.visit(field.getAST(), context, this);
-	    			val = context.getValue(field.getAST());
+	    			this.visit(field.getAST(), code, this);
+	    			val = code.getValue(field.getAST());
+	    		} else if (field.getKind() == CAstEntity.TYPE_ENTITY) {
+	    		    String className = composeEntityName(typeContext, field);
+	    			val = doGlobalRead(null, code, className, PythonTypes.Root);
 	    		} else {
 	    			assert (field.getKind() == CAstEntity.FUNCTION_ENTITY);
-	    			val = context.currentScope().allocateTempValue();
-	    			
+	    			val = code.currentScope().allocateTempValue();	    			
 	    		    String methodName = composeEntityName(typeContext, field);
 	    		    IClass methodCls = loader.lookupClass(TypeName.findOrCreate("L" + methodName));
 	    		    TypeReference methodType = methodCls.getReference();
-	    		    int codeIdx = context.cfg().getCurrentInstruction();
-	    		    context.cfg().addInstruction(Python.instructionFactory().NewInstruction(codeIdx, val, NewSiteReference.make(codeIdx, methodType)));
+	    		    int codeIdx = code.cfg().getCurrentInstruction();
+	    		    code.cfg().addInstruction(Python.instructionFactory().NewInstruction(codeIdx, val, NewSiteReference.make(codeIdx, methodType)));
 	    		}
-	    		context.cfg().addInstruction(Python.instructionFactory().PutInstruction(context.cfg().getCurrentInstruction(), v, val, fr));
+	    		code.cfg().addInstruction(Python.instructionFactory().PutInstruction(code.cfg().getCurrentInstruction(), v, val, fr));
 	    }
 	}
 
@@ -456,6 +460,17 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	
 		pospos.addAll(keypos);
 		context.cfg().noteOperands(pos, pospos.toArray(new Position[pospos.size()]));
+	    context.cfg().addPreNode(call, context.getUnwindState());
+
+	    // this new block is for the normal termination case
+	    context.cfg().newBlock(true);
+	    
+	    // exceptional case: flow to target given in CAst, or if null, the exit node
+		((CAstControlFlowRecorder)context.getControlFlow()).map(call, call);
+		
+	    if (context.getControlFlow().getTarget(call, null) != null)
+	      context.cfg().addPreEdge(call, context.getControlFlow().getTarget(call, null), true);
+	    else context.cfg().addPreEdgeToExit(call, true);
 	}
 
 	  public static final CAstType Any = new CAstType() {
