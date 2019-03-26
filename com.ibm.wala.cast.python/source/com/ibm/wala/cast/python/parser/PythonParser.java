@@ -1359,7 +1359,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				try {
 					return Ast.makeConstant(Long.parseLong(numStr));
 				} catch (NumberFormatException e) {
-					return Ast.makeConstant(Double.parseDouble(numStr));
+					try {
+						return Ast.makeConstant(Double.parseDouble(numStr));
+					} catch (NumberFormatException ee) {
+						return Ast.makeConstant(arg0.getInternalN());
+					}
 				}
 			}
 		}
