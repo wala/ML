@@ -48,7 +48,7 @@ public class ServerTest extends WalaTestCase {
 	    PipedInputStream clientIn = new PipedInputStream();
 	    PipedOutputStream serverOut = new PipedOutputStream(clientIn);
 
-	    PipedInputStream serverIn = new PipedInputStream();
+	    PipedInputStream serverIn = new PipedInputStream(32767);
 	    PipedOutputStream clientOut = new PipedOutputStream(serverIn);
 
 		WALAServer.launchOnStream(PythonDriver.python, serverIn, serverOut);
