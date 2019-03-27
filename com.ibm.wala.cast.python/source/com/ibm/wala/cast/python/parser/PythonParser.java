@@ -866,7 +866,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				}
 				
 				public int getArgumentCount() {
-					return arguments.size()+1;
+					int sz = 1;
+					for(expr e : arguments) {
+						sz += (e instanceof Tuple)? ((Tuple)e).getInternalElts().size(): 1;
+					}
+					return sz+1;
 				}		
 				
 				@Override
@@ -904,19 +908,26 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				sz += (e instanceof Tuple)? ((Tuple)e).getInternalElts().size(): 1;
 			}
 			String[] argumentNames = new String[ sz ];
+			int[] argumentMap = new int[sz];
+			int argIndex = 0;
 			argumentNames[x++] = "the function";
+			argumentMap[argIndex++] = 0;
+			int ai = 0;
 			for(expr a : arguments) {
 				if (a instanceof Tuple) {
 					Tuple t = (Tuple)a;
 					for(expr e : t.getInternalElts()) {
 						CAstNode cast = e.accept(this);
 						String name = cast.getChild(0).getValue().toString();
-						argumentNames[x++] = name;								
+						argumentMap[x] = ai;
+						argumentNames[x++] = name;			
 					}
 				} else {
 					String name = a.accept(this).getChild(0).getValue().toString();
+					argumentMap[x] = ai;
 					argumentNames[x++] = name;		
 				}
+				ai++;
 			}
 			
 			AbstractCodeEntity fun = new AbstractCodeEntity(functionType) {
@@ -953,7 +964,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 				@Override
 				public int getArgumentCount() {
-					return arguments.size()+1;
+					return argumentNames.length;
 
 				}
 
@@ -969,7 +980,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				
 				@Override
 				public Position getPosition(int arg) {
-					return makePosition(arguments.get(arg));
+					return makePosition(arguments.get(argumentMap[arg]));
 				}
 
 				@Override
@@ -1592,7 +1603,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 						Ast.makeNode(CAstNode.BLOCK_EXPR,
 							child.block(arg0.getInternalBody()),
 							c.accept(child))),
-					Ast.makeNode(CAstNode.IF_EXPR, 
+					Ast.makeNode(CAstNode.IF_STMT, 
 						Ast.makeNode(CAstNode.UNARY_EXPR, 
 							CAstOperator.OP_NOT, 
 							Ast.makeNode(CAstNode.VAR, Ast.makeConstant("test tmp"))),
