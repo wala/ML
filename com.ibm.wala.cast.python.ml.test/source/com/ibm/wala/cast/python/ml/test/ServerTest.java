@@ -1,5 +1,8 @@
 package com.ibm.wala.cast.python.ml.test;
 
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assume.assumeThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,7 +48,9 @@ public class ServerTest extends WalaTestCase {
 
 	@Test
 	public void trivialClientStreams() throws IOException, InterruptedException, ExecutionException, ClassHierarchyException, IllegalArgumentException, CancelException, URISyntaxException {		
-	    PipedInputStream clientIn = new PipedInputStream();
+		assumeThat("not running on Travis CI", System.getenv("TRAVIS"), nullValue());
+		
+		PipedInputStream clientIn = new PipedInputStream();
 	    PipedOutputStream serverOut = new PipedOutputStream(clientIn);
 
 	    PipedInputStream serverIn = new PipedInputStream(32767);
