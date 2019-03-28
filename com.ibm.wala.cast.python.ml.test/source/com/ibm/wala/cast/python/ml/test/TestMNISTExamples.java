@@ -63,7 +63,7 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
 
 	@Test
 	public void testEx2CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		CallGraph CG = process(Ex2URL);
+			process(Ex2URL);
 	}
 
 	@Test

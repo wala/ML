@@ -41,9 +41,9 @@ public class ServerTest extends WalaTestCase {
 	@Test
 	public void trivialClientServerPort() throws IOException, InterruptedException, ExecutionException, ClassHierarchyException, IllegalArgumentException, CancelException, URISyntaxException {		
 	    WALAServerCore wala = WALAServer.launchOnServerPort(0, PythonDriver.python, true);	    
-	    Socket socket = new Socket("localhost", wala.getServerPort());
-	    
-	    trivialClient(socket.getInputStream(), socket.getOutputStream());
+	    try (Socket socket = new Socket("localhost", wala.getServerPort())) {
+	    	trivialClient(socket.getInputStream(), socket.getOutputStream());
+	    }
 	}
 
 	@Test
