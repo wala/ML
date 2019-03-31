@@ -155,6 +155,8 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 						}
 					}	
 				}
+				// no such argument in callee
+				paramNumber++;					
 			}
 
 			int dflts = target.getMethod().getNumberOfParameters() - target.getMethod().getNumberOfDefaultParameters();
