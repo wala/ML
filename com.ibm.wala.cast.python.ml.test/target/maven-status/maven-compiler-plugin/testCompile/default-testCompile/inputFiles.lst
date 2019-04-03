@@ -1,0 +1,7 @@
+/home/travis/build/wala/ML/com.ibm.wala.cast.python.ml.test/source/com/ibm/wala/cast/python/ml/test/ServerTest.java
+/home/travis/build/wala/ML/com.ibm.wala.cast.python.ml.test/source/com/ibm/wala/cast/python/ml/test/TestPythonMLCallGraphShape.java
+/home/travis/build/wala/ML/com.ibm.wala.cast.python.ml.test/source/com/ibm/wala/cast/python/ml/test/TestPandasModel.java
+/home/travis/build/wala/ML/com.ibm.wala.cast.python.ml.test/source/com/ibm/wala/cast/python/ml/test/TestSifisExamples.java
+/home/travis/build/wala/ML/com.ibm.wala.cast.python.ml.test/source/com/ibm/wala/cast/python/ml/test/TestMNISTExamples.java
+/home/travis/build/wala/ML/com.ibm.wala.cast.python.ml.test/source/com/ibm/wala/cast/python/ml/test/TestTensorflowModel.java
+/home/travis/build/wala/ML/com.ibm.wala.cast.python.ml.test/source/com/ibm/wala/cast/python/ml/test/TestNeuroImageExamples.java

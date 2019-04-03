@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.ibm.wala.cast.python.ml.test.TestNeuroImageExamples
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 1.71 sec

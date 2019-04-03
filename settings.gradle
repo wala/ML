@@ -1,0 +1,8 @@
+rootProject.name = 'com.ibm.wala.ml'
+
+include(
+  'com.ibm.wala.cast.python',
+  'com.ibm.wala.cast.python.test',
+  'com.ibm.wala.cast.python.ml',
+  'com.ibm.wala.cast.python.ml.test')
+
