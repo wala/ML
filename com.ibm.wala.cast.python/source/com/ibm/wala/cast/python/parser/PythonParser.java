@@ -228,6 +228,17 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		}
 		
 		private Position makePosition(PythonTree p) {
+			String s = parser.getText(p.getCharStartIndex(), p.getCharStopIndex());
+			String[] lines = s.split("\n");
+			int last_col;
+			int last_line = p.getLineno() + lines.length - 1;
+			if ("".equals(s) || lines.length <= 1) {
+				last_col = p.getCharPositionInLine() + (p.getCharStopIndex() - p.getCharStartIndex());
+			} else {
+				assert (lines.length > 1);
+				last_col = lines[lines.length-1].length();
+			} 
+
 			return new AbstractSourcePosition() {
 
 				@Override
@@ -247,40 +258,21 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 				@Override
 				public int getFirstLine() {
-					return p.getLine();
+					return p.getLineno();
 				}
 
 				@Override
 				public int getFirstCol() {
 					return p.getCharPositionInLine();
 				}
-
-				boolean set_last = false;
-				int last_line;
-				int last_col;
-				
-				private void setLast() {
-					String s = parser.getText(p.getCharStartIndex(), p.getCharStopIndex());
-					String[] lines = s.split("\n");
-					last_line = getFirstLine() + lines.length - 1;
-					if ("".equals(s) || lines.length <= 1) {
-						last_col = getFirstCol() + (getLastOffset() - getFirstOffset());
-					} else {
-						assert (lines.length > 1);
-						last_col = lines[lines.length-1].length();
-					} 
-					set_last = true;
-				}
 				
 				@Override
 				public int getLastLine() {
-					if (! set_last) setLast();
 					return last_line;
 				}
 
 				@Override
 				public int getLastCol() {
-					if (! set_last) setLast();
 					return last_col;
 				}
 
@@ -359,7 +351,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		public CAstNode visitAttribute(Attribute arg0) throws Exception {
 			return notePosition(Ast.makeNode(CAstNode.OBJECT_REF, 
 					notePosition(arg0.getInternalValue().accept(this), arg0.getInternalValue()),
-					notePosition(Ast.makeConstant(arg0.getInternalAttr()), arg0.getInternalAttrName())), arg0);
+					Ast.makeConstant(arg0.getInternalAttr())), arg0);
 		}
 
 		@Override
@@ -1443,7 +1435,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitStr(Str arg0) throws Exception {
-			return Ast.makeConstant(arg0.getInternalS().toString());
+			return notePosition(Ast.makeConstant(arg0.getInternalS().toString()), arg0);
 		}
 
 		@Override

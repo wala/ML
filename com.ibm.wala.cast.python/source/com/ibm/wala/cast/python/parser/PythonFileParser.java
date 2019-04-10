@@ -16,9 +16,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
 
-import org.python.antlr.runtime.ANTLRFileStream;
-import org.python.core.PyObject;
-
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
 import com.ibm.wala.cast.util.CAstPrinter;
@@ -41,7 +38,7 @@ public class PythonFileParser extends PythonParser<File> {
 	}
 	
 	protected WalaPythonParser makeParser() throws IOException {
-        ANTLRFileStream file = new ANTLRFileStream(fileName.getAbsolutePath());
+        org.antlr.runtime.ANTLRFileStream file = new org.antlr.runtime.ANTLRFileStream(fileName.getAbsolutePath());
 		return new WalaPythonParser(file, fileName.getAbsolutePath(), "UTF-8");
 	}
 

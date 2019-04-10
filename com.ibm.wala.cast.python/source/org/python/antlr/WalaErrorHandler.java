@@ -1,14 +1,14 @@
 package org.python.antlr;
 
+import org.antlr.runtime.BaseRecognizer;
+import org.antlr.runtime.BitSet;
+import org.antlr.runtime.IntStream;
+import org.antlr.runtime.Lexer;
+import org.antlr.runtime.RecognitionException;
 import org.python.antlr.base.expr;
 import org.python.antlr.base.mod;
 import org.python.antlr.base.slice;
 import org.python.antlr.base.stmt;
-import org.python.antlr.runtime.BaseRecognizer;
-import org.python.antlr.runtime.BitSet;
-import org.python.antlr.runtime.IntStream;
-import org.python.antlr.runtime.Lexer;
-import org.python.antlr.runtime.RecognitionException;
 
 import com.ibm.wala.cast.python.parser.WalaPythonParser;
 

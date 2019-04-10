@@ -15,9 +15,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 
-import org.python.antlr.runtime.ANTLRInputStream;
-import org.python.antlr.runtime.CharStream;
-import org.python.core.PyObject;
+import org.antlr.runtime.ANTLRInputStream;
+import org.antlr.runtime.CharStream;
 
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;

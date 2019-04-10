@@ -2,14 +2,14 @@ package com.ibm.wala.cast.python.parser;
 
 import java.util.Set;
 
+import org.antlr.runtime.CharStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.TokenRewriteStream;
 import org.python.antlr.AnalyzingParser;
 import org.python.antlr.PythonLexer;
 import org.python.antlr.PythonParser;
 import org.python.antlr.PythonTokenSource;
 import org.python.antlr.WalaErrorHandler;
-import org.python.antlr.runtime.CharStream;
-import org.python.antlr.runtime.CommonTokenStream;
-import org.python.antlr.runtime.TokenRewriteStream;
 
 import com.ibm.wala.util.collections.HashSetFactory;
 
