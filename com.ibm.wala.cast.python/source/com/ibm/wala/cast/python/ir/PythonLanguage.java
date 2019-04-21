@@ -104,8 +104,13 @@ public class PythonLanguage implements Language {
 
 	@Override
 	public TypeReference getConstantType(Object o) {
-		// TODO: totally wrong
-		return PythonTypes.Root;
+		if (o instanceof String) {
+			return PythonTypes.string;
+/*		} else if (o instanceof Number) {
+			return TypeReference.Int;
+*/		} else {
+			return PythonTypes.Root;
+		}
 	}
 
 	@Override

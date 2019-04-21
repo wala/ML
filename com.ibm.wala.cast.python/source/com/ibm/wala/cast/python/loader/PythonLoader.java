@@ -203,6 +203,8 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 
 	final CoreClass tuple = new CoreClass(PythonTypes.tuple.getName(), PythonTypes.object.getName(), this, null);
 
+	final CoreClass string = new CoreClass(PythonTypes.string.getName(), PythonTypes.object.getName(), this, null);
+
 	final CoreClass trampoline = new CoreClass(PythonTypes.trampoline.getName(), PythonTypes.CodeBody.getName(), this, null);
 
 	public class DynamicMethodBody extends DynamicCodeBody {

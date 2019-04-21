@@ -10,29 +10,41 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.ipa.callgraph;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+
 import com.ibm.wala.cast.ipa.callgraph.AstSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.ipa.callgraph.GlobalObjectKey;
+import com.ibm.wala.cast.python.ipa.summaries.BuiltinFunctions.BuiltinFunction;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.ssa.PythonInstructionVisitor;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.ssa.PythonStoreProperty;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.classLoader.IField;
+import com.ibm.wala.fixpoint.AbstractOperator;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.IAnalysisCacheView;
 import com.ibm.wala.ipa.callgraph.propagation.AbstractFieldPointerKey;
+import com.ibm.wala.ipa.callgraph.propagation.ConcreteTypeKey;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKeyFactory;
+import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ipa.callgraph.propagation.StaticFieldKey;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAArrayLoadInstruction;
 import com.ibm.wala.ssa.SSAArrayStoreInstruction;
 import com.ibm.wala.ssa.SSABinaryOpInstruction;
+import com.ibm.wala.ssa.SSAGetInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.FieldReference;
+import com.ibm.wala.types.TypeReference;
+import com.ibm.wala.util.collections.HashMapFactory;
+import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.intset.IntSetUtil;
 import com.ibm.wala.util.intset.MutableIntSet;
 import com.ibm.wala.util.strings.Atom;
@@ -69,11 +81,79 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 	    return definingMethod.equals(opNode.getMethod().getReference().getDeclaringClass().getName().toString());
 	}
 
+	private static final Collection<TypeReference> types = Arrays.asList(PythonTypes.string, TypeReference.Int);
+
 	public static class PythonConstraintVisitor extends AstConstraintVisitor implements PythonInstructionVisitor {
 
 		public PythonConstraintVisitor(AstSSAPropagationCallGraphBuilder builder, CGNode node) {
 			super(builder, node);
 		}
+
+		private final Map<Pair<String,TypeReference>,BuiltinFunction> primitives = HashMapFactory.make();
+		
+		private BuiltinFunction ensure(Pair<String,TypeReference> key) {
+			if (! primitives.containsKey(key)) {
+				primitives.put(key, new BuiltinFunction(this.getClassHierarchy(), key.fst, key.snd));
+			}
+			
+			return primitives.get(key);
+		}
+		
+		@Override
+		public void visitGet(SSAGetInstruction instruction) {
+		      SymbolTable symtab = ir.getSymbolTable();
+    		  String name = instruction.getDeclaredField().getName().toString();
+
+		      int objVn = instruction.getRef();
+		      final PointerKey objKey = getPointerKeyForLocal(objVn);
+
+		      int lvalVn = instruction.getDef();
+		      final PointerKey lvalKey = getPointerKeyForLocal(lvalVn);
+
+		      if (contentsAreInvariant(symtab, du, objVn)) {
+		          system.recordImplicitPointsToSet(objKey);
+		          for (InstanceKey ik : getInvariantContents(objVn)) {
+		        	  if (types.contains(ik.getConcreteType().getReference())) {
+		        		  Pair<String,TypeReference> key = Pair.make(name, ik.getConcreteType().getReference());
+		        		  system.newConstraint(lvalKey, new ConcreteTypeKey(ensure(key)));
+		        	  }
+		          }
+		      } else {
+		    	  system.newSideEffect(new AbstractOperator<PointsToSetVariable>() {
+					@Override
+					public byte evaluate(PointsToSetVariable lhs, PointsToSetVariable[] rhs) {
+						if (rhs[0].getValue() != null)
+						rhs[0].getValue().foreach((i) -> { 
+							InstanceKey ik = system.getInstanceKey(i);
+							if (types.contains(ik.getConcreteType().getReference())) {
+								Pair<String,TypeReference> key = Pair.make(name, ik.getConcreteType().getReference());
+								system.newConstraint(lvalKey, new ConcreteTypeKey(ensure(key)));
+							}
+						});
+						return NOT_CHANGED;
+					}
+
+					@Override
+					public int hashCode() {
+						return node.hashCode()*instruction.hashCode();
+					}
+
+					@Override
+					public boolean equals(Object o) {
+						return getClass().equals(o.getClass()) && hashCode() == o.hashCode();
+					}
+
+					@Override
+					public String toString() {
+						return "get function " + name + " at " + instruction;
+					}  
+		    	  }, new PointerKey[] { lvalKey });
+		      }
+		      
+			// TODO Auto-generated method stub
+			super.visitGet(instruction);
+		}
+
 
 		@Override
 		public void visitPythonInvoke(PythonInvokeInstruction inst) {

@@ -39,12 +39,12 @@ public class BuiltinFunctions {
 	}
 
 
-	private IMethod typeSummary(IClass cls, String name, TypeReference type) {
+	private static IMethod typeSummary(IClass cls, String name, TypeReference type) {
 		PythonSummary S = typeSummary(cls, builtinFunction(name), type); 
 		return new PythonSummarizedFunction((MethodReference) S.getMethod(), S, cls);
 	}
 	
-	private PythonSummary typeSummary(IClass cls, TypeReference type, TypeReference returnedType) {
+	private static PythonSummary typeSummary(IClass cls, TypeReference type, TypeReference returnedType) {
 		MethodReference ref = MethodReference.findOrCreate(type, AstMethodReference.fnSelector);
 		PythonSummary x = new PythonSummary(ref, 10);
 		
@@ -55,12 +55,12 @@ public class BuiltinFunctions {
 		return x;
 	}
 
-	private IMethod argSummary(IClass cls, String name, int arg) {
+	private static IMethod argSummary(IClass cls, String name, int arg) {
 		PythonSummary S = argSummary(cls, builtinFunction(name), arg); 
 		return new PythonSummarizedFunction((MethodReference) S.getMethod(), S, cls);
 	}
 	
-	private PythonSummary argSummary(IClass cls, TypeReference type, int arg) {
+	private static PythonSummary argSummary(IClass cls, TypeReference type, int arg) {
 		MethodReference ref = MethodReference.findOrCreate(type, AstMethodReference.fnSelector);
 		PythonSummary x = new PythonSummary(ref, 10);
 		
@@ -70,12 +70,12 @@ public class BuiltinFunctions {
 		return x;
 	}
 
-	private IMethod noopSummary(IClass cls, String name) {
+	private static IMethod noopSummary(IClass cls, String name) {
 		PythonSummary S = noopSummary(cls, builtinFunction(name)); 
 		return new PythonSummarizedFunction((MethodReference) S.getMethod(), S, cls);
 	}
 	
-	private PythonSummary noopSummary(IClass cls, TypeReference type) {
+	private static PythonSummary noopSummary(IClass cls, TypeReference type) {
 		MethodReference ref = MethodReference.findOrCreate(type, AstMethodReference.fnSelector);
 		PythonSummary x = new PythonSummary(ref, 10);
 		
@@ -85,22 +85,25 @@ public class BuiltinFunctions {
 		return x;
 	}
 
-	public class BuiltinFunction implements IClass {
+	public static class BuiltinFunction implements IClass {
 		private final TypeReference ref;
 		private final IMethod builtinCode;
+		private final IClassHierarchy cha;
 		
-		private BuiltinFunction(String name, TypeReference returnedType) {
+		public BuiltinFunction(IClassHierarchy cha, String name, TypeReference returnedType) {
+			this.cha = cha;
 			this.ref = builtinFunction(name);
 			this.builtinCode = returnedType==null? noopSummary(this, name): typeSummary(this, name, returnedType);
 		}
 
-		private BuiltinFunction(String name, int arg) {
+		public BuiltinFunction(IClassHierarchy cha, String name, int arg) {
+			this.cha = cha;
 			this.ref = builtinFunction(name);
 			this.builtinCode = argSummary(this, name, arg);
 		}
 
-		private BuiltinFunction(String name) {
-			this(name, null);
+		public BuiltinFunction(IClassHierarchy cha, String name) {
+			this(cha, name, null);
 		}
 		
 		@Override
@@ -294,8 +297,8 @@ public class BuiltinFunctions {
 			Either<TypeReference, Integer> v = bf.getValue();
 			builtins.put(builtinFunction(bf.getKey()), 
 				v.isLeft()?
-					new BuiltinFunction(bf.getKey(), v.getLeft()):
-					new BuiltinFunction(bf.getKey(), v.getRight()));
+					new BuiltinFunction(cha, bf.getKey(), v.getLeft()):
+					new BuiltinFunction(cha, bf.getKey(), v.getRight()));
 		});
 		
 		return new ClassTargetSelector() {

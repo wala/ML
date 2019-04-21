@@ -6,8 +6,12 @@ import java.util.function.Function;
 
 import org.junit.Test;
 
+import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
+import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
+import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
+import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.IR;
@@ -64,7 +68,11 @@ public class TestSlice extends TestPythonCallGraphShape {
 
 	@Test
 	public void testSlice2() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		CallGraph CG = process("slice2.py");
+		PythonAnalysisEngine<?> engine = makeEngine("slice2.py");
+		SSAPropagationCallGraphBuilder builder = (SSAPropagationCallGraphBuilder) engine.defaultCallGraphBuilder();
+		CallGraph CG = builder.makeCallGraph(builder.getOptions());
+		CAstCallGraphUtil.AVOID_DUMP = false;
+		CAstCallGraphUtil.dumpCG((SSAContextInterpreter)builder.getContextInterpreter(), builder.getPointerAnalysis(), CG);
 		verifyGraphAssertions(CG, assertionsSlice2);
 
 		Collection<CGNode> nodes = getNodes(CG, "script slice2.py");
