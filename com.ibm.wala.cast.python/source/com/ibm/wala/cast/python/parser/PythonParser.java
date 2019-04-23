@@ -1063,11 +1063,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			CAstNode[] elts = new CAstNode[ arg0.getInternalNames().size() ];
 			for(alias n : arg0.getInternalNames()) {
 				CAstNode obj = importAst(n.getInternalNameNodes());
-				elts[i++] = Ast.makeNode(CAstNode.DECL_STMT,
+				elts[i++] = notePosition(Ast.makeNode(CAstNode.DECL_STMT,
 					Ast.makeConstant(new CAstSymbolImpl(name(n), PythonCAstToIRTranslator.Any)),
 					obj != null?
 					obj:
-					Ast.makeNode(CAstNode.PRIMITIVE, Ast.makeConstant("import"), Ast.makeConstant(n.getInternalName())));
+					Ast.makeNode(CAstNode.PRIMITIVE, Ast.makeConstant("import"), Ast.makeConstant(n.getInternalName()))), n);
 			}
 			return Ast.makeNode(CAstNode.BLOCK_STMT, elts);
 		}
@@ -1077,24 +1077,24 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			CAstNode[] elts = new CAstNode[ arg0.getInternalNames().size() ];
 			int i = 0;
 			for(alias n : arg0.getInternalNames()) {
-				elts[i++] = Ast.makeNode(CAstNode.DECL_STMT,
+				elts[i++] = notePosition(Ast.makeNode(CAstNode.DECL_STMT,
 						Ast.makeConstant(new CAstSymbolImpl(name(n), PythonCAstToIRTranslator.Any)),
 						Ast.makeNode(CAstNode.OBJECT_REF,
 								importAst(arg0.getInternalModuleNames()),
-								Ast.makeConstant(n.getInternalName())));
+								Ast.makeConstant(n.getInternalName()))), n);
 			}
 			
 			return Ast.makeNode(CAstNode.BLOCK_STMT, elts);
 		}
 
 		private CAstNode importAst(java.util.List<Name> names ) {
-			CAstNode importAst = Ast.makeNode(CAstNode.PRIMITIVE, 
+			CAstNode importAst = notePosition(Ast.makeNode(CAstNode.PRIMITIVE, 
 				Ast.makeConstant("import"), 
-				Ast.makeConstant(names.get(0).getInternalId()));
+				Ast.makeConstant(names.get(0).getInternalId())), names.get(0));
 			for(int i = 1; i < names.size(); i++) {
-				importAst = Ast.makeNode(CAstNode.OBJECT_REF,
+				importAst = notePosition(Ast.makeNode(CAstNode.OBJECT_REF,
 					importAst,
-					Ast.makeConstant(names.get(i).getInternalId()));
+					Ast.makeConstant(names.get(i).getInternalId())), names.get(i));
 			}
 			return importAst;
 		}
