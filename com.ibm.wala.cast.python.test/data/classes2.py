@@ -16,7 +16,7 @@ class Ctor():
     def get(self, x):
         return self.a(x) + self.b(x) + self.c(x)
     
-if fa(3) > fb(3):
+if fc(3) > 7:
     x = fa
     fb = fa
     fa = x
