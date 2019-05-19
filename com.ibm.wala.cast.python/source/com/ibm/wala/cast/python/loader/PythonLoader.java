@@ -207,6 +207,8 @@ public class PythonLoader extends CAstAbstractModuleLoader {
 
 	final CoreClass trampoline = new CoreClass(PythonTypes.trampoline.getName(), PythonTypes.CodeBody.getName(), this, null);
 
+	final CoreClass superfun = new CoreClass(PythonTypes.superfun.getName(), PythonTypes.CodeBody.getName(), this, null);
+
 	public class DynamicMethodBody extends DynamicCodeBody {
 		private final IClass container;
 		

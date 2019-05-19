@@ -2,7 +2,6 @@ package com.ibm.wala.cast.python.test;
 
 import java.io.IOException;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
@@ -96,23 +95,22 @@ public class TestClasses extends TestPythonCallGraphShape {
 		    new Object[] {
 			        "$script classes3.py/Ctor/__init__:trampoline4",
 			        new String[] { "script classes3.py/Ctor/__init__" }
-		    },
+		    }/*,
 		    new Object[] {
 			        "script classes3.py/OtherSubCtor/__init__",
 			        new String[] { "$script classes3.py/Ctor/__init__:trampoline4" }
-		    }
+		    }*/
 	 };
 	 
-	 @Ignore
 	@Test
 	public void testClasses3() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		PythonAnalysisEngine<?> engine = makeEngine("classes3.py");
 		SSAPropagationCallGraphBuilder builder = (SSAPropagationCallGraphBuilder) engine.defaultCallGraphBuilder();
 		CallGraph CG = builder.makeCallGraph(builder.getOptions());
-		verifyGraphAssertions(CG, assertionsClasses3);
-		CAstCallGraphUtil.AVOID_DUMP = false;
 		System.err.println(CG);
+		CAstCallGraphUtil.AVOID_DUMP = false;
 		CAstCallGraphUtil.dumpCG((SSAContextInterpreter)builder.getContextInterpreter(), builder.getPointerAnalysis(), CG);
+		verifyGraphAssertions(CG, assertionsClasses3);
 	}
 
 }

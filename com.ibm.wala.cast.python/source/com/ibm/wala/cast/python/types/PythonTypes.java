@@ -56,4 +56,5 @@ public class PythonTypes extends AstTypeReference {
 
 	  public static final TypeReference trampoline = TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Ltrampoline"));
 
+	  public static final TypeReference superfun = TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lsuperfun"));
 }

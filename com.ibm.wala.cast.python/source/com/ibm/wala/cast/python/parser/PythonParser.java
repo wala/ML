@@ -872,7 +872,8 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			};
 			
 			CAstType functionType;
-			if (context.entity().getKind() == CAstEntity.TYPE_ENTITY) {
+			boolean isMethod = context.entity().getKind() == CAstEntity.TYPE_ENTITY;
+			if (isMethod) {
 				class PythonMethod extends PythonCodeType implements CAstType.Method {
 					@Override
 					public CAstType getDeclaringType() {
@@ -931,7 +932,32 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				@Override
 				public CAstNode getAST() {
 					if (function instanceof FunctionDef) {
-						return PythonParser.this.Ast.makeNode(CAstNode.BLOCK_STMT, nodes);
+						if (isMethod) {
+							CAst Ast = PythonParser.this.Ast;
+							CAstNode[] newNodes = new CAstNode[ nodes.length + 2];
+							System.arraycopy(nodes, 0, newNodes, 2, nodes.length);
+
+							newNodes[0] = 
+								Ast.makeNode(CAstNode.DECL_STMT,
+									Ast.makeConstant(new CAstSymbolImpl("super", PythonCAstToIRTranslator.Any)),
+									Ast.makeNode(CAstNode.NEW, Ast.makeConstant("superfun")));
+							newNodes[1] =
+								Ast.makeNode(CAstNode.BLOCK_STMT,
+									Ast.makeNode(CAstNode.ASSIGN,
+										Ast.makeNode(CAstNode.OBJECT_REF,
+											Ast.makeNode(CAstNode.VAR, Ast.makeConstant("super")),
+											Ast.makeConstant("$class")),
+										Ast.makeNode(CAstNode.VAR, Ast.makeConstant(context.entity().getType().getName()))),
+									Ast.makeNode(CAstNode.ASSIGN, 
+										Ast.makeNode(CAstNode.OBJECT_REF,
+											Ast.makeNode(CAstNode.VAR, Ast.makeConstant("super")),
+											Ast.makeConstant("$self")),
+										Ast.makeNode(CAstNode.VAR, Ast.makeConstant(getArgumentNames()[1]))));
+							
+							return PythonParser.this.Ast.makeNode(CAstNode.BLOCK_STMT, newNodes);
+						} else {
+							return PythonParser.this.Ast.makeNode(CAstNode.BLOCK_STMT, nodes);
+						}
 					} else {
 						return PythonParser.this.Ast.makeNode(CAstNode.RETURN, 
 							PythonParser.this.Ast.makeNode(CAstNode.BLOCK_EXPR, nodes));
@@ -987,7 +1013,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				nodes[i++] = s.accept(cv);
 			}
 
-			if (context.entity().getKind() == CAstEntity.TYPE_ENTITY) {
+			if (isMethod) {
 				context.addScopedEntity(null, fun);
 				return null;
 				
@@ -1052,7 +1078,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		private String name(alias n) {
 			String s = n.getInternalAsname()==null? n.getInternalName(): n.getInternalAsname();
 			if (s.contains(".")) {
-				s = s.substring(0, s.indexOf('.'));
+				s = s.substring(s.lastIndexOf('.') + 1);
 			}
 			return s;
 		}
@@ -1074,13 +1100,19 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 		@Override
 		public CAstNode visitImportFrom(ImportFrom arg0) throws Exception {
-			CAstNode[] elts = new CAstNode[ arg0.getInternalNames().size() ];
-			int i = 0;
+			String tree = "importTree" + (++tmpIndex);
+			CAstNode[] elts = new CAstNode[ arg0.getInternalNames().size()+1 ];
+
+			elts[0] = Ast.makeNode(CAstNode.DECL_STMT,
+				Ast.makeConstant(new CAstSymbolImpl(tree, PythonCAstToIRTranslator.Any)),
+				importAst(arg0.getInternalModuleNames()));					
+
+			int i = 1;
 			for(alias n : arg0.getInternalNames()) {
 				elts[i++] = notePosition(Ast.makeNode(CAstNode.DECL_STMT,
 						Ast.makeConstant(new CAstSymbolImpl(name(n), PythonCAstToIRTranslator.Any)),
 						Ast.makeNode(CAstNode.OBJECT_REF,
-								importAst(arg0.getInternalModuleNames()),
+								Ast.makeNode(CAstNode.VAR, Ast.makeConstant(tree)),
 								Ast.makeConstant(n.getInternalName()))), n);
 			}
 			
@@ -1307,7 +1339,8 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 				"hasattr",
 				"BaseException",
 				"abs",
-				"del"
+				"del",
+				"sklearn"
 		};
 		
 		private void defaultImports(Collection<CAstNode> elts) {

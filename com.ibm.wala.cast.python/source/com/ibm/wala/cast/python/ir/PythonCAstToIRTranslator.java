@@ -55,6 +55,7 @@ import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
+import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.strings.Atom;
 
@@ -388,6 +389,11 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	
 	    doLocalWrite(code, n.getType().getName(), type, v);
 	    doGlobalWrite(code, fnName, PythonTypes.Root, v);
+	    
+	    if (! this.entity2ExposedNames.containsKey(context.top())) {
+	    	this.entity2ExposedNames.put(context.top(), HashSetFactory.make());
+	    }
+ 	    this.entity2ExposedNames.get(context.top()).add(fnName);
 
 	    for(CAstEntity field : n.getAllScopedEntities().get(null)) {
    			FieldReference fr = FieldReference.findOrCreate(type, Atom.findOrCreateUnicodeAtom(field.getName()), PythonTypes.Root);
