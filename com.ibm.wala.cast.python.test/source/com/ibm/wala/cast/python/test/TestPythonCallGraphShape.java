@@ -10,8 +10,8 @@ import java.util.Set;
 import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.types.PythonTypes;
-import com.ibm.wala.cast.test.TestCallGraphShape;
 import com.ibm.wala.cast.types.AstMethodReference;
+import com.ibm.wala.cast.util.test.TestCallGraphShape;
 import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.classLoader.SourceURLModule;
 import com.ibm.wala.ipa.callgraph.CGNode;
@@ -32,7 +32,7 @@ import com.ibm.wala.util.strings.Atom;
 public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 	
 	@Override
-	protected Collection<CGNode> getNodes(CallGraph CG, String functionIdentifier) {
+	public Collection<CGNode> getNodes(CallGraph CG, String functionIdentifier) {
 		if (functionIdentifier.contains(":")) {
 			String cls = functionIdentifier.substring(0, functionIdentifier.indexOf(":"));
 			String name = functionIdentifier.substring(functionIdentifier.indexOf(":")+1);

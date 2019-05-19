@@ -30,13 +30,12 @@ import com.ibm.wala.cast.lsp.WALAServer;
 import com.ibm.wala.cast.lsp.WALAServerCore;
 import com.ibm.wala.cast.python.ml.driver.ClientDriver;
 import com.ibm.wala.cast.python.ml.driver.PythonDriver;
-import com.ibm.wala.core.tests.util.WalaTestCase;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.io.TemporaryFile;
 
-public class ServerTest extends WalaTestCase {
+public class ServerTest {
 
 	@Test
 	public void trivialClientServerPort() throws IOException, InterruptedException, ExecutionException, ClassHierarchyException, IllegalArgumentException, CancelException, URISyntaxException {		
