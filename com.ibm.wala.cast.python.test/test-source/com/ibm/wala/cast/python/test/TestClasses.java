@@ -2,6 +2,7 @@ package com.ibm.wala.cast.python.test;
 
 import java.io.IOException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
@@ -95,13 +96,14 @@ public class TestClasses extends TestPythonCallGraphShape {
 		    new Object[] {
 			        "$script classes3.py/Ctor/__init__:trampoline4",
 			        new String[] { "script classes3.py/Ctor/__init__" }
-		    }/*,
+		    },
 		    new Object[] {
 			        "script classes3.py/OtherSubCtor/__init__",
 			        new String[] { "$script classes3.py/Ctor/__init__:trampoline4" }
-		    }*/
+		    }
 	 };
 	 
+	 @Ignore
 	@Test
 	public void testClasses3() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		PythonAnalysisEngine<?> engine = makeEngine("classes3.py");
