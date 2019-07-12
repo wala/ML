@@ -82,10 +82,10 @@ public class PythonDriver {
 						if (M instanceof AstMethod) {
 							IR ir = n.getIR();
 							ir.iterateAllInstructions().forEachRemaining((SSAInstruction inst) -> {
-								if (inst.iindex != -1) {
-									Position pos = ((AstMethod)M).debugInfo().getInstructionPosition(inst.iindex);
+								if (inst.iIndex() != -1) {
+									Position pos = ((AstMethod)M).debugInfo().getInstructionPosition(inst.iIndex());
 									if (pos != null) {
-										lsp.add(pos, new int[] {CG.getNumber(n), inst.iindex});
+										lsp.add(pos, new int[] {CG.getNumber(n), inst.iIndex()});
 									}
 									if (inst.hasDef()) {
 										PointerKey v = H.getPointerKeyForLocal(n, inst.getDef());

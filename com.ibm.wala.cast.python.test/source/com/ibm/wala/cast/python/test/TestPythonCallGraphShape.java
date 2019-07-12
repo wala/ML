@@ -9,7 +9,10 @@ import java.util.Set;
 
 import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
+import com.ibm.wala.cast.python.loader.PythonLoader;
+import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
 import com.ibm.wala.cast.python.types.PythonTypes;
+import com.ibm.wala.cast.python.util.PythonInterpreter;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cast.util.test.TestCallGraphShape;
 import com.ibm.wala.classLoader.Module;
@@ -30,6 +33,24 @@ import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.strings.Atom;
 
 public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
+	
+	static {
+		try {
+			Class<?> j3 = Class.forName("com.ibm.wala.cast.python.loader.Python3LoaderFactory");
+			PythonAnalysisEngine.setLoaderFactory((Class<? extends PythonLoaderFactory>) j3);
+			Class<?> i3 = Class.forName("com.ibm.wala.cast.python.util.Python3Interpreter");
+			PythonInterpreter.setInterpreter((PythonInterpreter)i3.newInstance());
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+			try {
+				Class<?> j2 = Class.forName("com.ibm.wala.cast.python.loader.Python2LoaderFactory");			
+				PythonAnalysisEngine.setLoaderFactory((Class<? extends PythonLoaderFactory>) j2);
+				Class<?> i2 = Class.forName("com.ibm.wala.cast.python.util.Python2Interpreter");
+				PythonInterpreter.setInterpreter((PythonInterpreter)i2.newInstance());
+			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e1) {
+				assert false : e.getMessage() + ", then " + e1.getMessage();
+			}
+		}
+	}
 	
 	@Override
 	public Collection<CGNode> getNodes(CallGraph CG, String functionIdentifier) {
@@ -102,6 +123,6 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 		CallGraph CG = builder.makeCallGraph(E.getOptions(), new NullProgressMonitor());
 		
 		CAstCallGraphUtil.AVOID_DUMP = false;
-		CAstCallGraphUtil.dumpCG(((SSAPropagationCallGraphBuilder)builder).getCFAContextInterpreter(), E.getPointerAnalysis(), CG);
+		CAstCallGraphUtil.dumpCG(((SSAPropagationCallGraphBuilder)builder).getCFAContextInterpreter(), builder.getPointerAnalysis(), CG);
 	}
 }

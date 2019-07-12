@@ -113,7 +113,7 @@ public class PythonInvokeInstruction extends SSAAbstractInvokeInstruction {
 			}
 		}
 		
-		return new PythonInvokeInstruction(iindex, nr, ne, site, newpos, newkey);
+		return new PythonInvokeInstruction(iIndex(), nr, ne, site, newpos, newkey);
 	}
 
 	@Override

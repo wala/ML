@@ -13,7 +13,7 @@ repositories {
 dependencies {
   testCompile(
       project(':com.ibm.wala.cast.python.ml'),
-      project(configuration: 'testArtifacts', path: ':com.ibm.wala.cast.python.test'),
+      project(':com.ibm.wala.cast.python.test'),
       project(':com.ibm.wala.cast.python'),
      'com.ibm.wala:com.ibm.wala.cast.lsp:0.0.1-SNAPSHOT',
      'com.ibm.wala:com.ibm.wala.util:1.5.4-SNAPSHOT',

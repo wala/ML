@@ -43,6 +43,7 @@ import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.EmptyIterator;
 import com.ibm.wala.util.collections.HashMapFactory;
+import com.ibm.wala.util.collections.NonNullSingletonIterator;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.intset.EmptyIntSet;
 import com.ibm.wala.util.intset.IntSet;
@@ -104,6 +105,11 @@ public class PythonSuper {
 				return null;
 			}
 		}
+		
+		@Override
+		public String toString() {
+			return "[ExplicitSuper:" + fst + "," + snd + "]";
+		}
 	}
 	
 	private class SuperContextInterpreter implements SSAContextInterpreter {
@@ -117,7 +123,11 @@ public class PythonSuper {
 
 		@Override
 		public Iterator<FieldReference> iterateFieldsRead(CGNode node) {
-			return Arrays.asList($class, $self).iterator();
+			if (node.getContext().get(superClass) == null) {
+				return Arrays.asList($class, $self).iterator();	
+			} else {
+				return EmptyIterator.instance();
+			}
 		}
 
 		@Override
@@ -137,7 +147,11 @@ public class PythonSuper {
 
 		@Override
 		public Iterator<CallSiteReference> iterateCallSites(CGNode node) {
-			return EmptyIterator.instance();
+			if (node.getContext().get(superClass) == null) {
+				return new NonNullSingletonIterator<>(((SSAAbstractInvokeInstruction)getIR(node).getInstructions()[2]).getCallSite());
+			} else {
+				return EmptyIterator.instance();
+			}
 		}
 
 		private final Map<IClass,PythonSummarizedFunction> ctors = HashMapFactory.make();
@@ -261,7 +275,8 @@ public class PythonSuper {
 		public Context getCalleeTarget(CGNode caller, CallSiteReference site, IMethod callee,
 				InstanceKey[] actualParameters) {
 			if (superStub.equals(callee)) {
-				if (actualParameters.length >= 3 && actualParameters[1].getConcreteType() instanceof PythonClass) {
+				if (actualParameters.length >= 3 && 
+					actualParameters[1].getConcreteType().getSuperclass() instanceof PythonClass) {
 					return new ExplicitSuperContext(actualParameters[1].getConcreteType(), actualParameters[2]);
 				} if (actualParameters.length == 1) {
 					return new DelegatingContext(implicitSuperContext, base.getCalleeTarget(caller, site, callee, actualParameters));
@@ -277,9 +292,7 @@ public class PythonSuper {
 		public IntSet getRelevantParameters(CGNode caller, CallSiteReference site) {
 			SSAAbstractInvokeInstruction inst = caller.getIR().getCalls(site)[0];
 			if (inst.getNumberOfUses() > 2) {
-				int obj = inst.getUse(0);
-				SSAInstruction x = caller.getDU().getDef(obj);
-				if (x instanceof SSANewInstruction && ((SSANewInstruction)x).getConcreteType().equals(PythonTypes.superfun)) {
+				if (site.getDeclaredTarget().getDeclaringClass().equals(PythonTypes.superfun)) {
 					return IntSetUtil.make(new int[] {0, 1, 2});
 				}
 			}

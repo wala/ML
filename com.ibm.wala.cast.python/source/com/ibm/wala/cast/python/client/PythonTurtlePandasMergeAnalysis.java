@@ -417,7 +417,7 @@ public class PythonTurtlePandasMergeAnalysis extends PythonTurtleAnalysisEngine 
 			
 			SortedSet<BasicBlockInContext<IExplodedBasicBlock>> stmts = new TreeSet<>(new Comparator<BasicBlockInContext<IExplodedBasicBlock>>() {
 				private int index(BasicBlockInContext<IExplodedBasicBlock> o) {
-					return (o.getLastInstruction() == null)? Integer.MAX_VALUE: o.getLastInstruction().iindex;
+					return (o.getLastInstruction() == null)? Integer.MAX_VALUE: o.getLastInstruction().iIndex();
 				}
 				@Override
 				public int compare(BasicBlockInContext<IExplodedBasicBlock> o1,

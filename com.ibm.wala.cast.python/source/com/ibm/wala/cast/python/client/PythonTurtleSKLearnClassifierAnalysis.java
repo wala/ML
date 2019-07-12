@@ -506,7 +506,7 @@ public class PythonTurtleSKLearnClassifierAnalysis extends PythonTurtleAnalysisE
 				result.getResult(bbic).foreach((n) -> { 		
 					ClassifierState s = domain.getMappedObject(n);
 					if (s.vn == vn && s.node == bbic.getNode()) {
-						System.err.println(((AstMethod)bbic.getMethod()).debugInfo().getInstructionPosition(inst.iindex) + " : " + (s.state.equals(State.FIT)? "is fitted": "not fitted")); 
+						System.err.println(((AstMethod)bbic.getMethod()).debugInfo().getInstructionPosition(inst.iIndex()) + " : " + (s.state.equals(State.FIT)? "is fitted": "not fitted")); 
 						SortedSet<Position> trace = new TreeSet<Position>();
 						bt.trace(bbic, s).forEach((fp) -> {
 							if (fp.fst.getMethod() instanceof AstMethod && fp.fst.getLastInstruction() != null) {

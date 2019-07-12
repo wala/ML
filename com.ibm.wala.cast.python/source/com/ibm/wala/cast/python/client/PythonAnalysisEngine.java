@@ -72,11 +72,26 @@ import com.ibm.wala.util.strings.Atom;
 public abstract class PythonAnalysisEngine<T>
 		extends AbstractAnalysisEngine<InstanceKey, PythonSSAPropagationCallGraphBuilder, T> {
 
-	private final PythonLoaderFactory loader = new PythonLoaderFactory();
+	private static Class<? extends PythonLoaderFactory> loaders;
+	
+	public static void setLoaderFactory(Class<? extends PythonLoaderFactory> lf) {
+		loaders = lf;
+	}
+	
+	private final PythonLoaderFactory loader;
+	
 	private final IRFactory<IMethod> irs = AstIRFactory.makeDefaultFactory();
 
 	public PythonAnalysisEngine() {
 		super();
+		PythonLoaderFactory f;
+		try {
+			f = loaders.newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			f = null;
+			assert false : e.getMessage();
+		}
+		loader = f;
 	}
 
 	@Override

@@ -16,16 +16,12 @@ import com.ibm.wala.classLoader.IClassLoader;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.types.ClassLoaderReference;
 
-public class PythonLoaderFactory extends SingleClassLoaderFactory {
+public abstract class PythonLoaderFactory extends SingleClassLoaderFactory {
 
 	@Override
 	public ClassLoaderReference getTheReference() {
 		return PythonTypes.pythonLoader;
 	}
 
-	@Override
-	protected IClassLoader makeTheLoader(IClassHierarchy cha) {
-		return new PythonLoader(cha);
-	}
 
 }

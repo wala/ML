@@ -17,15 +17,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.python.core.PyObject;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.python.ml.types.TensorType.Dimension;
 import com.ibm.wala.cast.python.ssa.PythonPropertyWrite;
-import com.ibm.wala.cast.python.util.PythonUtil;
+import com.ibm.wala.cast.python.util.PythonInterpreter;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.util.SourceBuffer;
 import com.ibm.wala.ipa.callgraph.CGNode;
@@ -367,16 +365,15 @@ public class TensorType implements Iterable<Dimension<?>> {
 				r.add(v >=0? new NumericDim((Integer)v): new SymbolicDim("?")); 
 			} else {
 				if (du.getDef(val) !=  null && node.getMethod() instanceof AstMethod) {
-					Position p = ((AstMethod)node.getMethod()).debugInfo().getInstructionPosition(du.getDef(val).iindex);
+					Position p = ((AstMethod)node.getMethod()).debugInfo().getInstructionPosition(du.getDef(val).iIndex());
 					System.err.println(p);
 					try {
 						SourceBuffer b = new SourceBuffer(p);
 						String expr = b.toString();
 						System.err.println(expr);
-						PyObject value = PythonUtil.getInterp().eval(expr);
-						System.err.println(value);
-						if (value.isInteger() ) {
-							r.add(new NumericDim(value.asInt()));
+						Integer ival = PythonInterpreter.interpretAsInt(expr);
+						if (ival != null) {
+							r.add(new NumericDim(ival));
 							continue;
 						}
 					} catch (IOException e) {

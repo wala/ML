@@ -16,8 +16,6 @@ import java.util.stream.StreamSupport;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.python.core.PyException;
-import org.python.core.PyObject;
 
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.ir.ssa.AstLexicalRead;
@@ -26,7 +24,7 @@ import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.python.ipa.summaries.TurtleSummary;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.ssa.PythonPropertyWrite;
-import com.ibm.wala.cast.python.util.PythonUtil;
+import com.ibm.wala.cast.python.util.PythonInterpreter;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.util.SourceBuffer;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
@@ -379,20 +377,24 @@ public class PythonTurtleAnalysisEngine extends PythonAnalysisEngine<LabeledGrap
 											result.put(field.toString(), S.getConstantValue(val));
 											hasAnything = true;
 										} else {
-											if (du.getDef(val) !=  null && lk.getNode().getMethod() instanceof AstMethod) {
-												Position p = ((AstMethod)lk.getNode().getMethod()).debugInfo().getInstructionPosition(du.getDef(val).iindex);
-												try {
-													SourceBuffer b = new SourceBuffer(p);
-													String expr = b.toString();
-													PyObject pyv = PythonUtil.getInterp().eval(expr);
-													if (pyv.isInteger() ) {
-														result.put(String.valueOf(field), pyv.asInt());
-														hasAnything = true;
-														continue;
+											if (du.getDef(val) !=  null && 
+												lk.getNode().getMethod() instanceof AstMethod &&
+												du.getDef(val).iIndex() >= 0) {
+												Position p = ((AstMethod)lk.getNode().getMethod()).debugInfo().getInstructionPosition(du.getDef(val).iIndex());
+													SourceBuffer b;
+													try {
+														b = new SourceBuffer(p);
+														String expr = b.toString();
+														Integer ival = PythonInterpreter.interpretAsInt(expr);
+														if (ival != null) {
+															result.put(String.valueOf(field), ival);
+															hasAnything = true;
+															continue;
+														}
+													} catch (IOException e) {
+														// TODO Auto-generated catch block
+														e.printStackTrace();
 													}
-												} catch (IOException | PyException e) {
-													// not able to evaluate
-												}
 											} 
 											
 											Object value = getValue(val);
@@ -491,14 +493,14 @@ public class PythonTurtleAnalysisEngine extends PythonAnalysisEngine<LabeledGrap
 
 							@Override
 							public Position position() {
-								return ((AstMethod)callerIR.getMethod()).debugInfo().getInstructionPosition(inst.iindex);
+								return ((AstMethod)callerIR.getMethod()).debugInfo().getInstructionPosition(inst.iIndex());
 							}
 
 							@Override
 							public String toString() {
 								StringBuffer out = new StringBuffer();
 								try {
-									out.append(new SourceBuffer(((AstMethod)callerIR.getMethod()).debugInfo().getInstructionPosition(inst.iindex)));
+									out.append(new SourceBuffer(((AstMethod)callerIR.getMethod()).debugInfo().getInstructionPosition(inst.iIndex())));
 								} catch (IOException e) {
 									out.append("v").append(inst.getDef());
 								}
@@ -513,7 +515,7 @@ public class PythonTurtleAnalysisEngine extends PythonAnalysisEngine<LabeledGrap
 									LocalPointerKey lpk = (LocalPointerKey)value();
 									SSAInstruction inst = lpk.getNode().getDU().getDef(lpk.getValueNumber());
 									if (inst != null) {
-										return new NormalStatement(lpk.getNode(), inst.iindex);
+										return new NormalStatement(lpk.getNode(), inst.iIndex());
 									}
 								}
 								
@@ -562,7 +564,7 @@ public class PythonTurtleAnalysisEngine extends PythonAnalysisEngine<LabeledGrap
 
 		Function<TurtlePath, BasicBlockInContext<IExplodedBasicBlock>> toBlock = (srcPath) -> {
 			LocalPointerKey rk = (LocalPointerKey) srcPath.value();
-			IExplodedBasicBlock rbb = ipcfg.getCFG(rk.getNode()).getBlockForInstruction(rk.getNode().getDU().getDef(rk.getValueNumber()).iindex);
+			IExplodedBasicBlock rbb = ipcfg.getCFG(rk.getNode()).getBlockForInstruction(rk.getNode().getDU().getDef(rk.getValueNumber()).iIndex());
 			BasicBlockInContext<IExplodedBasicBlock> src = new BasicBlockInContext<>(rk.getNode(), rbb);
 			assert ipcfg.containsNode(src) : src;
 			return src;

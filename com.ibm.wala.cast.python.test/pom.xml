@@ -44,11 +44,6 @@
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>org.python</groupId>
-      <artifactId>jython</artifactId>
-      <version>2.7.2a1+</version>
-    </dependency>
-    <dependency>
       <groupId>org.eclipse.lsp4j</groupId>
       <artifactId>org.eclipse.lsp4j</artifactId>
       <version>0.5.0</version>
@@ -57,7 +52,6 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 

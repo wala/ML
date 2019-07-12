@@ -10,6 +10,11 @@
   <dependencies>
     <dependency>
       <groupId>com.ibm.wala</groupId>
+      <artifactId>com.ibm.wala.cast.python.jython.test</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+   <dependency>
+      <groupId>com.ibm.wala</groupId>
       <artifactId>com.ibm.wala.cast.python.test</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>

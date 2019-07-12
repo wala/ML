@@ -12,6 +12,7 @@ package com.ibm.wala.cast.python.ml.analysis;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,10 +36,11 @@ import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.SSAInstruction;
+import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.graph.Graph;
 
-public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, TensorVariable> {
+public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, TensorVariable> implements Iterable<Pair<PointerKey, TensorVariable>> {
 
 	static class ReshapeError implements AnalysisError {
 		ReshapeError(TensorType from, TensorType to, Position pos, Position definer) {
@@ -181,7 +183,7 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 							DefUse du = lpk.getNode().getDU();
 							SSAInstruction inst = du.getDef(lpk.getValueNumber());
 							if (lpk.getNode().getMethod() instanceof AstMethod) {
-								return ((AstMethod)lpk.getNode().getMethod()).debugInfo().getOperandPosition(inst.iindex, 1);
+								return ((AstMethod)lpk.getNode().getMethod()).debugInfo().getOperandPosition(inst.iIndex(), 1);
 							}	
 						}
 						
@@ -196,7 +198,7 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 							if (lpk.getNode().getMethod() instanceof AstMethod) {
 								SSAInstruction def = du.getDef(inst.getUse(1));
 								if (def != null) {
-									return ((AstMethod)lpk.getNode().getMethod()).debugInfo().getInstructionPosition(def.iindex);
+									return ((AstMethod)lpk.getNode().getMethod()).debugInfo().getInstructionPosition(def.iIndex());
 								}
 							}	
 						}
@@ -464,4 +466,16 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
 		}
 		return sb.toString();
 	}
+
+	@Override
+	public Iterator<Pair<PointerKey, TensorVariable>> iterator() {
+		Set<Pair<PointerKey, TensorVariable>> x = HashSetFactory.make();
+		for(PointsToSetVariable var : getProblem().getFlowGraph()) {
+			if (getOut(var) != null && getOut(var).state != null && !getOut(var).state.isEmpty()) {
+				x.add(Pair.make(var.getPointerKey(), getOut(var)));
+			}
+		}
+		return x.iterator();
+	}
+	
 }

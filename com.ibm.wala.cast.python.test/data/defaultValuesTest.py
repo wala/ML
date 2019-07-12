@@ -1,6 +1,6 @@
 
 def defValTest(a, l=lambda x: x+1):
-	print l(a)
+	print(l(a))
 	
 defValTest(1)
 defValTest(2)

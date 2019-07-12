@@ -433,9 +433,6 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	@Override
 	protected void doCall(WalkContext context, CAstNode call, int result, int exception, CAstNode name, int receiver,
 			int[] arguments) {
-		int pos = context.cfg().getCurrentInstruction();
-		CallSiteReference site = new DynamicCallSiteReference(PythonTypes.CodeBody, pos);
-
 		List<Position> pospos = new ArrayList<Position>();
 		List<Position> keypos = new ArrayList<Position>();
 		List<Integer> posp = new ArrayList<Integer>();
@@ -462,6 +459,9 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 			hack[i] = posp.get(i);
 		}
 		
+		int pos = context.cfg().getCurrentInstruction();
+		CallSiteReference site = new DynamicCallSiteReference(PythonTypes.CodeBody, pos);
+
 		context.cfg().addInstruction(new PythonInvokeInstruction(pos, result, exception, site, hack, keyp.toArray(new Pair[ keyp.size() ])));
 	
 		pospos.addAll(keypos);
