@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
+import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
 import com.ibm.wala.cast.python.util.PythonInterpreter;
@@ -15,6 +16,7 @@ import com.ibm.wala.ipa.callgraph.CallGraphBuilderCancelException;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
+import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.slicer.SDG;
 import com.ibm.wala.ipa.slicer.Slicer.ControlDependenceOptions;
 import com.ibm.wala.ipa.slicer.Slicer.DataDependenceOptions;
@@ -42,15 +44,8 @@ public class Driver {
 		}
 	}
 
-	public static void main(String... args) throws IllegalArgumentException, IOException, CallGraphBuilderCancelException {
-	
-		PythonAnalysisEngine<Void> E = new PythonAnalysisEngine<Void>() {
-			@Override
-			public Void performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
-				return null;
-			}
-		};
-		
+	protected static <T> T runit(PythonAnalysisEngine<T> E, String... args)
+			throws IOException, CancelException {
 		Set<Module> sources = HashSetFactory.make();
 		for(String file : args) {
 			sources.add(new SourceFileModule(new File(file), file, null));
@@ -58,13 +53,31 @@ public class Driver {
 		E.setModuleFiles(sources);
 		
 		CallGraphBuilder<? super InstanceKey> builder = E.defaultCallGraphBuilder();
-		PointerAnalysis<InstanceKey> PA = (PointerAnalysis<InstanceKey>) builder.getPointerAnalysis();
 
 		CallGraph CG = builder.makeCallGraph(E.getOptions(), new NullProgressMonitor());
-		System.err.println(CG);
-		
+
+		PointerAnalysis<InstanceKey> PA = (PointerAnalysis<InstanceKey>) builder.getPointerAnalysis();
+
+		CAstCallGraphUtil.AVOID_DUMP = false;
+	    CAstCallGraphUtil.dumpCG(((SSAPropagationCallGraphBuilder)builder).getCFAContextInterpreter(), PA, CG);
+
 		SDG<InstanceKey> SDG = new SDG<InstanceKey>(CG, PA, DataDependenceOptions.NO_EXCEPTIONS, ControlDependenceOptions.NO_EXCEPTIONAL_EDGES);
 		System.err.println(SDG);
+		
+		return E.performAnalysis((PropagationCallGraphBuilder) builder);
 	}
-	
+
+	public static void main(String... args) throws IllegalArgumentException, IOException, CancelException {
+		
+		PythonAnalysisEngine<Void> E = new PythonAnalysisEngine<Void>() {
+			@Override
+			public Void performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
+				return null;
+			}
+		};
+		
+		runit(E, args);
+	}
+
+
 }
