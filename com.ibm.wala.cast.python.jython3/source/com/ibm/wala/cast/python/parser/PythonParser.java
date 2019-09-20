@@ -630,20 +630,23 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 		
 		private CAstNode compare(CAstNode lhs, Iterator<cmpopType> ops, Iterator<expr> rhss) throws Exception {
 			if (ops.hasNext()) {
-				String vn = "" + compareTmp++;
-				
-				  Ast.makeNode(CAstNode.ASSIGN,
-						    Ast.makeNode(CAstNode.OBJECT_REF,
-						      Ast.makeNode(CAstNode.VAR, Ast.makeConstant(vn)),
-						      rhss.next().accept(this)));
+				String cmpTemp = "cmp" + compareTmp++;
 
 				CAstOperator op = translateOperator(ops.next());
+				CAstNode val = rhss.next().accept(this);
 				
-				CAstNode rest = compare(Ast.makeNode(CAstNode.VAR, Ast.makeConstant(vn)), ops, rhss);
-				
-				return Ast.makeNode(CAstNode.IF_EXPR, 
-						Ast.makeNode(CAstNode.BINARY_EXPR, op, lhs, Ast.makeNode(CAstNode.VAR, Ast.makeConstant(vn))),
-						Ast.makeConstant(true), rest);
+				return Ast.makeNode(CAstNode.LOCAL_SCOPE,
+				  Ast.makeNode(CAstNode.BLOCK_EXPR,
+				    Ast.makeNode(CAstNode.DECL_STMT,
+				      Ast.makeConstant(new CAstSymbolImpl(cmpTemp, PythonCAstToIRTranslator.Any)),
+				      val),
+				    ops.hasNext()?
+				    Ast.makeNode(CAstNode.IF_EXPR, 
+				      Ast.makeNode(CAstNode.BINARY_EXPR, op, lhs, Ast.makeNode(CAstNode.VAR, Ast.makeConstant(cmpTemp))),
+					    Ast.makeConstant(true),
+						compare(Ast.makeNode(CAstNode.VAR, Ast.makeConstant(cmpTemp)), ops, rhss)):
+				    Ast.makeNode(CAstNode.BINARY_EXPR, op, lhs, Ast.makeNode(CAstNode.VAR, Ast.makeConstant(cmpTemp)))));
+							
 			} else {
 				return Ast.makeConstant(false);
 			}

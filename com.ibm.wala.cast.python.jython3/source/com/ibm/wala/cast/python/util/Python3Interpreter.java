@@ -9,9 +9,13 @@ public class Python3Interpreter extends com.ibm.wala.cast.python.util.PythonInte
 	private static PythonInterpreter interp = null;
 	
 	public static PythonInterpreter getInterp() {
+		try {
 		if (interp == null) {
 //			PySystemState.initialize(  );
 			interp = new PythonInterpreter(  );
+		}
+		} catch (Throwable e) {
+			
 		}
 		return interp;
 	}
