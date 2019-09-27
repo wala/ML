@@ -56,6 +56,8 @@ public class Driver {
 
 		CallGraph CG = builder.makeCallGraph(E.getOptions(), new NullProgressMonitor());
 
+		System.err.println(CG);
+		
 		PointerAnalysis<InstanceKey> PA = (PointerAnalysis<InstanceKey>) builder.getPointerAnalysis();
 
 		CAstCallGraphUtil.AVOID_DUMP = false;

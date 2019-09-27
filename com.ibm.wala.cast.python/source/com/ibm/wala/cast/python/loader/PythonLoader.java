@@ -190,8 +190,11 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
 		IClass fun = makeMethodBodyType(name, PythonTypes.CodeBody, pos, entity, context, self);
 		
 		assert types.containsKey(typeName);
-		MethodReference me = MethodReference.findOrCreate(fun.getReference(), Atom.findOrCreateUnicodeAtom(entity.getType().getName()), AstMethodReference.fnDesc);
-		self.methodTypes.add(me);
+		
+		if (entity.getArgumentCount() > 0 && "self".equals(entity.getArgumentNames()[1])) {
+			MethodReference me = MethodReference.findOrCreate(fun.getReference(), Atom.findOrCreateUnicodeAtom(entity.getType().getName()), AstMethodReference.fnDesc);
+			self.methodTypes.add(me);
+		}
 	
 		return fun;
 	}

@@ -95,7 +95,6 @@ import com.ibm.wala.cast.ir.translator.AbstractCodeEntity;
 import com.ibm.wala.cast.ir.translator.AbstractFieldEntity;
 import com.ibm.wala.cast.ir.translator.AbstractScriptEntity;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
-import com.ibm.wala.cast.python.ipa.summaries.BuiltinFunctions;
 import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.tree.CAst;
@@ -121,7 +120,7 @@ import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.ReverseIterator;
 import com.ibm.wala.util.warnings.Warning;
 
-abstract public class PythonParser<T> implements TranslatorToCAst {
+abstract public class PythonParser<T> extends AbstractParser<T> implements TranslatorToCAst {
 
 	private static boolean COMPREHENSION_IR = true;
 
@@ -212,7 +211,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 	private final CAst Ast = new CAstImpl();
 	
-	private class CAstVisitor implements VisitorIF<CAstNode>  {
+	private class CAstVisitor extends AbstractParser<T>.CAstVisitor implements VisitorIF<CAstNode>  {
 		private final PythonParser.WalkContext context;
 		private final WalaPythonParser parser;
 		
@@ -295,6 +294,11 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 			return n;
 		}
 		
+		public CAstNode notePosition(CAstNode n, Position pos) {
+			pushSourcePosition(context, n, pos);
+			return n;
+		}
+
 		@Override
 		public CAstNode visitAssert(Assert arg0) throws Exception {
 			return Ast.makeNode(CAstNode.EMPTY);
@@ -1330,33 +1334,7 @@ abstract public class PythonParser<T> implements TranslatorToCAst {
 
 			return result;
 		}
-
-		private String[] defaultImportNames = new String[] {
-				"__name__",
-				"print",
-				"super",
-				"open",
-				"hasattr",
-				"BaseException",
-				"abs",
-				"del"
-		};
-		
-		private void defaultImports(Collection<CAstNode> elts) {
-			for(String n : BuiltinFunctions.builtins()) {
-				elts.add(
-				Ast.makeNode(CAstNode.DECL_STMT,
-						Ast.makeConstant(new CAstSymbolImpl(n, PythonCAstToIRTranslator.Any)),
-						Ast.makeNode(CAstNode.NEW, Ast.makeConstant("wala/builtin/" + n))));			
-			}
-			for(String n : defaultImportNames) {
-				elts.add(
-					Ast.makeNode(CAstNode.DECL_STMT,
-						Ast.makeConstant(new CAstSymbolImpl(n, PythonCAstToIRTranslator.Any)),
-						Ast.makeNode(CAstNode.PRIMITIVE, Ast.makeConstant("import"), Ast.makeConstant(n))));
-			}
-		}
-		
+				
 		@Override
 		public CAstNode visitModule(Module arg0) throws Exception {
 			if (arg0.getChildren() != null) {
