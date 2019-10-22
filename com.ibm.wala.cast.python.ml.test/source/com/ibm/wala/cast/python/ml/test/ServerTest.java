@@ -28,14 +28,35 @@ import org.junit.Test;
 
 import com.ibm.wala.cast.lsp.WALAServer;
 import com.ibm.wala.cast.lsp.WALAServerCore;
+import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
+import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
 import com.ibm.wala.cast.python.ml.driver.ClientDriver;
 import com.ibm.wala.cast.python.ml.driver.PythonDriver;
+import com.ibm.wala.cast.python.util.PythonInterpreter;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.io.TemporaryFile;
 
 public class ServerTest {
+
+	static {
+		try {
+			Class<?> j3 = Class.forName("com.ibm.wala.cast.python.loader.Python3LoaderFactory");
+			PythonAnalysisEngine.setLoaderFactory((Class<? extends PythonLoaderFactory>) j3);
+			Class<?> i3 = Class.forName("com.ibm.wala.cast.python.util.Python3Interpreter");
+			PythonInterpreter.setInterpreter((PythonInterpreter)i3.newInstance());
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+			try {
+				Class<?> j2 = Class.forName("com.ibm.wala.cast.python.loader.Python2LoaderFactory");			
+				PythonAnalysisEngine.setLoaderFactory((Class<? extends PythonLoaderFactory>) j2);
+				Class<?> i2 = Class.forName("com.ibm.wala.cast.python.util.Python2Interpreter");
+				PythonInterpreter.setInterpreter((PythonInterpreter)i2.newInstance());
+			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e1) {
+				assert false : e.getMessage() + ", then " + e1.getMessage();
+			}
+		}
+	}
 
 	@Test
 	public void trivialClientServerPort() throws IOException, InterruptedException, ExecutionException, ClassHierarchyException, IllegalArgumentException, CancelException, URISyntaxException {		
