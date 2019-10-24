@@ -182,10 +182,6 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 	protected void processCallingConstraints(CGNode caller, SSAAbstractInvokeInstruction instruction, CGNode target,
 			InstanceKey[][] constParams, PointerKey uniqueCatchKey) {
 		
-		if (target.toString().contains("numpy_input_fn")) {
-			System.err.println(target);
-		}
-		
 		if (! (instruction instanceof PythonInvokeInstruction)) {
 			super.processCallingConstraints(caller, instruction, target, constParams, uniqueCatchKey);
 		} else {
@@ -193,7 +189,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 			
 			// positional parameters
 			PythonInvokeInstruction call = (PythonInvokeInstruction) instruction;
-			for(int i = 0; i < call.getNumberOfPositionalParameters(); i++) {
+			for(int i = 0; i < call.getNumberOfPositionalParameters() && i <= target.getMethod().getNumberOfParameters(); i++) {
 				PointerKey lval = getPointerKeyForLocal(target, i+1);
 				args.add(i);
 				

@@ -775,6 +775,14 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 
 		@Override
 		public CAstNode visitFor(For arg0) throws Exception {
+			PyObject target = arg0.getTarget();
+			PyObject iter = arg0.getIter();
+			java.util.List<stmt> internalBody = arg0.getInternalBody();
+
+			return handleFor(target, iter, internalBody);
+		}
+
+		private CAstNode handleFor(PyObject target, PyObject iter, java.util.List<stmt> internalBody) throws Exception {
 			Pass b = new Pass();
 			Pass c = new Pass();
 			LoopContext x = new LoopContext(context, b, c);
@@ -787,14 +795,14 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			context.cfg().map(c, continueStmt);
 			
 			int i = 0;
-			CAstNode[] body = new CAstNode[ arg0.getInternalBody().size() ];
-			for(stmt s : arg0.getInternalBody()) {
+			CAstNode[] body = new CAstNode[ internalBody.size() ];
+			for(stmt s : internalBody) {
 				body[i++] = s.accept(child);
 			}
 			
 			comprehension g = new comprehension();
-			g.setIter(arg0.getIter());
-			g.setTarget(arg0.getTarget());
+			g.setIter(iter);
+			g.setTarget(target);
 			
 			return 
 			  Ast.makeNode(CAstNode.BLOCK_EXPR,
@@ -808,7 +816,17 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 		
 		@Override
 		public CAstNode visitFunctionDef(FunctionDef arg0) throws Exception {
-				return defineFunction(arg0.getInternalName(), arg0.getInternalArgs().getInternalArgs(), arg0.getInternalBody(), arg0, makePosition(arg0.getInternalNameNode()), codeBody, arg0.getInternalArgs().getInternalDefaults());
+				arguments aa = arg0.getInternalArgs();
+				java.util.List<arg> args = aa.getInternalArgs();
+				if (aa.getInternalKwarg() != null) {
+					args = new LinkedList<>(args);
+					args.add(aa.getInternalKwarg());
+				} 
+				if (aa.getInternalVararg() != null) {
+					args = new LinkedList<>(args);
+					args.add(aa.getInternalVararg());
+				}
+				return defineFunction(arg0.getInternalName(), args, arg0.getInternalBody(), arg0, makePosition(arg0.getInternalNameNode()), codeBody, aa.getInternalDefaults());
 		}
 		
 		private <R extends PythonTree, S extends PythonTree> CAstNode defineFunction(String functionName, 
@@ -891,7 +909,8 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			boolean isMethod = 
 				context.entity().getKind() == CAstEntity.TYPE_ENTITY && 
 				arguments.size()>0 &&
-				!functionName.startsWith("lambda");
+				!functionName.startsWith("lambda") &&
+				!functionName.startsWith("comprehension");
 			if (isMethod) {
 				class PythonMethod extends PythonCodeType implements CAstType.Method {
 					@Override
@@ -1273,6 +1292,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				}
 
 				CAstNode lambda = comprehensionLambda(value, gen);
+				assert lambda != null;
 				CAstNode[] filters = comprehensionFilters(gen);
 
 				return Ast.makeNode(CAstNode.COMPREHENSION_EXPR,
@@ -1645,12 +1665,17 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 					}
 				};
 
+				CAstNode vg = v.get();
 				body = Ast.makeNode(CAstNode.BLOCK_EXPR,
 						Ast.makeNode(CAstNode.DECL_STMT,
 								Ast.makeConstant(new CAstSymbolImpl(tmpName, PythonCAstToIRTranslator.Any))),
-						notePosition(Ast.makeNode(CAstNode.DECL_STMT,
+						notePosition(
+							vg.getKind() == CAstNode.VAR?
+							Ast.makeNode(CAstNode.DECL_STMT,
 								Ast.makeConstant(new CAstSymbolImpl(v.get().getChild(0).getValue().toString(), PythonCAstToIRTranslator.Any)),
-								wi.getInternalContext_expr().accept(this)), wi.getInternalContext_expr()),
+								wi.getInternalContext_expr().accept(this)):
+							Ast.makeNode(CAstNode.ASSIGN, vg, wi.getInternalContext_expr().accept(this)), 
+							wi.getInternalContext_expr()),
 						Ast.makeNode(CAstNode.UNWIND, 
 								Ast.makeNode(CAstNode.BLOCK_EXPR,
 										notePosition(Ast.makeNode(CAstNode.CALL, 
@@ -1681,8 +1706,11 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 
 		@Override
 		public CAstNode visitAsyncFor(AsyncFor arg0) throws Exception {
-			// TODO Auto-generated method stub
-			return null;
+			PyObject target = arg0.getTarget();
+			PyObject iter = arg0.getIter();
+			java.util.List<stmt> internalBody = arg0.getInternalBody();
+
+			return handleFor(target, iter, internalBody);
 		}
 
 		@Override
@@ -1731,8 +1759,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 
 		@Override
 		public CAstNode visitNonlocal(Nonlocal arg0) throws Exception {
-			// TODO Auto-generated method stub
-			return null;
+			return Ast.makeNode(CAstNode.EMPTY);
 		}
 
 		@Override

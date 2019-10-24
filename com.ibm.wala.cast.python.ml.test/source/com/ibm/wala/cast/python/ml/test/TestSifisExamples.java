@@ -3,6 +3,7 @@ package com.ibm.wala.cast.python.ml.test;
 import java.io.IOException;
 
 import org.junit.Test;
+import org.junit.Ignore;
 
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
@@ -16,6 +17,7 @@ public class TestSifisExamples extends TestPythonMLCallGraphShape {
 	    new Object[] { ROOT, new String[] { "script mnist.py" } },
 	};
 	
+	@Ignore
 	@Test
 	public void testEx1CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		CallGraph CG = process(Ex1URL);

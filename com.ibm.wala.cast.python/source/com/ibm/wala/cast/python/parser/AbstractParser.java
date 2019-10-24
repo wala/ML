@@ -13,20 +13,20 @@ import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
 
 public abstract class AbstractParser<T> {
 
+	public static  String[] defaultImportNames = new String[] {
+			"__name__",
+			"print",
+			"super",
+			"open",
+			"hasattr",
+			"BaseException",
+			"abs",
+			"del",
+		};
+
 	protected final CAst Ast = new CAstImpl();
 
 	protected abstract class CAstVisitor {
-
-		private String[] defaultImportNames = new String[] {
-						"__name__",
-						"print",
-						"super",
-						"open",
-						"hasattr",
-						"BaseException",
-						"abs",
-						"del",
-					};
 
 		protected void defaultImports(Collection<CAstNode> elts) {
 			for(String n : BuiltinFunctions.builtins()) {

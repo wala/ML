@@ -13,6 +13,7 @@ package com.ibm.wala.cast.python.ipa.callgraph;
 import java.util.Map;
 
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
+import com.ibm.wala.cast.python.ipa.summaries.PythonInstanceMethodTrampoline;
 import com.ibm.wala.cast.python.ipa.summaries.PythonSummarizedFunction;
 import com.ibm.wala.cast.python.ipa.summaries.PythonSummary;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
@@ -28,6 +29,7 @@ import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.SSAReturnInstruction;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
+import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.strings.Atom;
@@ -55,16 +57,19 @@ public class PythonTrampolineTargetSelector implements MethodTargetSelector {
 							Atom.findOrCreateUnicodeAtom("trampoline" + call.getNumberOfTotalParameters()), 
 							AstMethodReference.fnDesc);
 					PythonSummary x = new PythonSummary(tr, call.getNumberOfTotalParameters());
+					IClass filter = ((PythonInstanceMethodTrampoline)receiver).getRealClass();
 					int v = call.getNumberOfTotalParameters() + 1;
 					x.addStatement(PythonLanguage.Python.instructionFactory().GetInstruction(0, v, 1, FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("$function"), PythonTypes.Root)));
-					int v1 = v + 1;
+					int v0 = v + 1;
+					x.addStatement(PythonLanguage.Python.instructionFactory().CheckCastInstruction(1, v0, v, filter.getReference(), true));
+					int v1 = v + 2;
 					x.addStatement(PythonLanguage.Python.instructionFactory().GetInstruction(1, v1, 1, FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("$self"), PythonTypes.Root)));
 
 					int i = 0;
-					int[] params = new int[ call.getNumberOfPositionalParameters()+1 ];
-					params[i++] = v;
+					int[] params = new int[ Math.max(2, call.getNumberOfPositionalParameters()) ];
+					params[i++] = v0;
 					params[i++] = v1;
-					for(int j = 1; j < call.getNumberOfPositionalParameters(); j++) {
+					for(int j = 1; j < call.getNumberOfPositionalParameters()-1; j++) {
 						params[i++] = j+1;
 					}
 

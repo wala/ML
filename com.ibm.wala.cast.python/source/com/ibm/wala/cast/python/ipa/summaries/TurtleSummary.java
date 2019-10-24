@@ -52,7 +52,7 @@ public class TurtleSummary {
 	public static final MethodReference turtleCallbackMethodRef = MethodReference.findOrCreate(turtleClassRef, Atom.findOrCreateUnicodeAtom("callback"), AstMethodReference.fnDesc);
 
 	private final IClassHierarchy cha;
-	
+
 	private IMethod turtleMethod = new IMethod() {
 
 		@Override
@@ -210,7 +210,7 @@ public class TurtleSummary {
 			return false;
 		}		
 	};
-	
+
 	private IField turtleField = new IField() {
 
 		@Override
@@ -273,7 +273,7 @@ public class TurtleSummary {
 			return false;
 		}
 	};
-	
+
 	private IClass turtleClass = new IClass() {
 
 		@Override
@@ -334,8 +334,8 @@ public class TurtleSummary {
 		@Override
 		public IMethod getMethod(Selector selector) {
 			if (selector.equals(MethodReference.clinitSelector) || 
-				selector.equals(MethodReference.initSelector) || 
-				selector.equals(MethodReference.finalizeSelector)) {
+					selector.equals(MethodReference.initSelector) || 
+					selector.equals(MethodReference.finalizeSelector)) {
 				return null;
 			} else {
 				return turtleMethod;
@@ -439,11 +439,11 @@ public class TurtleSummary {
 		x.addStatement(new PythonInvokeInstruction(2, 11, 12, CallSiteReference.make(2, turtleCallbackMethodRef, Dispatch.VIRTUAL), new int[] {2}, new Pair[0]));
 		x.addStatement(PythonLanguage.Python.instructionFactory().ReturnInstruction(3, 10, false));
 		code = new PythonSummarizedFunction(turtleMethodRef, x, turtleClass);
-		
+
 		BypassSyntheticClassLoader ldr = (BypassSyntheticClassLoader) cha.getLoader(cha.getScope().getSyntheticLoader());
 		ldr.registerClass(turtleClassRef.getName(), turtleClass);
 	}
-	
+
 	private class PythonMethodTurtleTargetSelector implements MethodTargetSelector {
 		private final MethodTargetSelector base;
 
@@ -462,18 +462,18 @@ public class TurtleSummary {
 			} else if (receiver == null? site.getDeclaredTarget().getDeclaringClass().equals(turtleClassRef): receiver.equals(turtleClass)) {
 				return code;
 			} else {			
-			    return base.getCalleeTarget(caller, site, receiver);
+				return base.getCalleeTarget(caller, site, receiver);
 			}
 		}
 	}
-	
+
 	private class PythonClassTurtleTargetSelector implements ClassTargetSelector {
 		private final ClassTargetSelector base;
-		
+
 		private PythonClassTurtleTargetSelector(ClassTargetSelector base) {
 			this.base = base;
 		}
-		
+
 		@Override
 		public IClass getAllocatedTarget(CGNode caller, NewSiteReference site) {
 			if (site.getDeclaredType().equals(turtleClassRef)) {
@@ -482,9 +482,9 @@ public class TurtleSummary {
 				return base.getAllocatedTarget(caller, site);
 			}
 		}
-		
+
 	}
-	
+
 	public IMethod getCode() {
 		return code;
 	}
@@ -494,20 +494,20 @@ public class TurtleSummary {
 
 			@Override
 			public SSAAbstractInvokeInstruction addCall(AbstractRootMethod m) {
-			    int paramValues[];
-			    IClassHierarchy cha = m.getClassHierarchy();
-			    paramValues = new int[getNumberOfParameters()];
-			    for (int j = 0; j < paramValues.length; j++) {
-			    	AstInstructionFactory insts = PythonLanguage.Python.instructionFactory();
+				int paramValues[];
+				IClassHierarchy cha = m.getClassHierarchy();
+				paramValues = new int[getNumberOfParameters()];
+				for (int j = 0; j < paramValues.length; j++) {
+					AstInstructionFactory insts = PythonLanguage.Python.instructionFactory();
 					if (j == 0 && getMethod().getDeclaringClass().getName().toString().contains("/")) {
-			    		int v = m.nextLocal++;
-			    		paramValues[j] = v;
-			    		if (getMethod().getDeclaringClass() instanceof PythonLoader.DynamicMethodBody) {
-					    FieldReference global = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("global " + getMethod().getDeclaringClass().getName().toString().substring(1, getMethod().getDeclaringClass().getName().toString().lastIndexOf('/'))), PythonTypes.Root);
-					    int idx = m.statements.size();
-			    			int cls = m.nextLocal++;
-			    			int obj = m.nextLocal++;
-			    			m.statements.add(insts.GlobalRead(m.statements.size(), cls, global));
+						int v = m.nextLocal++;
+						paramValues[j] = v;
+						if (getMethod().getDeclaringClass() instanceof PythonLoader.DynamicMethodBody) {
+							FieldReference global = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("global " + getMethod().getDeclaringClass().getName().toString().substring(1, getMethod().getDeclaringClass().getName().toString().lastIndexOf('/'))), PythonTypes.Root);
+							int idx = m.statements.size();
+							int cls = m.nextLocal++;
+							int obj = m.nextLocal++;
+							m.statements.add(insts.GlobalRead(m.statements.size(), cls, global));
 							idx = m.statements.size();
 							m.statements.add(new PythonInvokeInstruction(idx, obj, m.nextLocal++, new DynamicCallSiteReference(PythonTypes.CodeBody, idx), new int[] {cls}, new Pair[0]));
 							idx = m.statements.size();
@@ -515,29 +515,29 @@ public class TurtleSummary {
 							String field = method.substring(method.lastIndexOf('/')+1);
 							FieldReference f = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom(field), PythonTypes.Root);
 							m.statements.add(insts.GetInstruction(idx, v, obj, f));
-			    		} else {
-					    FieldReference global = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("global " + getMethod().getDeclaringClass().getName().toString().substring(1)), PythonTypes.Root);
-					    m.statements.add(insts.GlobalRead(m.statements.size(), v, global));
-			    		}
-			    	} else {
-			    		paramValues[j] = makeArgument(m, j);
-			    	}
-			      if (paramValues[j] == -1) {
-			        // there was a problem
-			        return null;
-			      }
-			      TypeReference x[] = getParameterTypes(j);
-			      if (x.length == 1 && x[0].equals(turtleClassRef)) {
-			    	  m.statements.add(insts.PutInstruction(m.statements.size(), paramValues[j], paramValues[j], turtleFieldRef));
-			      }
-			    }
-			    
-			    int pc = m.statements.size();
-			    PythonInvokeInstruction call = 
-			    	new PythonInvokeInstruction(pc, m.nextLocal++, m.nextLocal++, new DynamicCallSiteReference(PythonTypes.CodeBody, pc), paramValues, new Pair[0]);
-			    
-			    m.statements.add(call);
-			    
+						} else {
+							FieldReference global = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("global " + getMethod().getDeclaringClass().getName().toString().substring(1)), PythonTypes.Root);
+							m.statements.add(insts.GlobalRead(m.statements.size(), v, global));
+						}
+					} else {
+						paramValues[j] = makeArgument(m, j);
+					}
+					if (paramValues[j] == -1) {
+						// there was a problem
+						return null;
+					}
+					TypeReference x[] = getParameterTypes(j);
+					if (x.length == 1 && x[0].equals(turtleClassRef)) {
+						m.statements.add(insts.PutInstruction(m.statements.size(), paramValues[j], paramValues[j], turtleFieldRef));
+					}
+				}
+
+				int pc = m.statements.size();
+				PythonInvokeInstruction call = 
+						new PythonInvokeInstruction(pc, m.nextLocal++, m.nextLocal++, new DynamicCallSiteReference(PythonTypes.CodeBody, pc), paramValues, new Pair[0]);
+
+				m.statements.add(call);
+
 				return call;
 			}
 
@@ -552,7 +552,7 @@ public class TurtleSummary {
 			}
 		};
 	}
-	
+
 	public static Collection<Entrypoint> turtleEntryPoints(IClassHierarchy cha) {
 		Set<Entrypoint> stuff = HashSetFactory.make();
 		IClass cb = cha.lookupClass(PythonTypes.CodeBody);
@@ -563,7 +563,7 @@ public class TurtleSummary {
 		});
 		return stuff;
 	}
-	
+
 	public void analyzeWithTurtles(AnalysisOptions options) {
 		options.setSelector(new PythonMethodTurtleTargetSelector(options.getMethodTargetSelector()));
 		options.setSelector(new PythonClassTurtleTargetSelector(options.getClassTargetSelector()));
