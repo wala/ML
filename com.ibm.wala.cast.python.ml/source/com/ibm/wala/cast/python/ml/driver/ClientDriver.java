@@ -219,7 +219,7 @@ public class ClientDriver implements LanguageClient {
 		main(args, s.getInputStream(), s.getOutputStream(), process);
 	}
 	
-	private void sendClientStuff(String[] args) {
+	private CompletableFuture<Void> sendClientStuff(String[] args) {
 		InitializeParams x = new InitializeParams();
 		ClientCapabilities c = new ClientCapabilities();
 		TextDocumentClientCapabilities tc = new TextDocumentClientCapabilities();
@@ -229,7 +229,7 @@ public class ClientDriver implements LanguageClient {
 		c.setTextDocument(tc);
 		x.setCapabilities(c);
 		CompletableFuture<InitializeResult> y = server.initialize(x);
-		y.thenAccept((InitializeResult xx) -> { 
+		return y.thenAccept((InitializeResult xx) -> { 
 			System.err.println(xx);
 			
 			InitializedParams z = new InitializedParams();
@@ -279,6 +279,6 @@ public class ClientDriver implements LanguageClient {
 		launcher.startListening();	
 		System.err.println("started");
 
-		client.sendClientStuff(args);
+		client.sendClientStuff(args).join();
 	}
 }
