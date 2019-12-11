@@ -400,6 +400,8 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				return CAstOperator.OP_LSH;
 			case Mod:
 				return CAstOperator.OP_MOD;
+			case MatMult:
+				return CAstOperator.OP_MUL; // FIXME: matrix multiply
 			case Mult:
 				return CAstOperator.OP_MUL;
 			case Pow:
@@ -576,9 +578,17 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 					members.add(visit);
 				}
 
+				private WalkContext codeParent() {
+					WalkContext p = parent;
+					while (p.entity().getKind() == CAstEntity.TYPE_ENTITY) {
+						p = p.getParent();
+					}
+					return p;
+				}
+				
 				@Override
-				public CAstControlFlowRecorder cfg() {
-					return (CAstControlFlowRecorder) parent.entity().getControlFlow();
+				public CAstControlFlowRecorder cfg() {					
+					return (CAstControlFlowRecorder) codeParent().entity().getControlFlow();
 				}
 
 				@Override
@@ -588,8 +598,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 
 				@Override
 				public CAstNodeTypeMapRecorder getNodeTypeMap() {
-					assert false;
-					return null;
+					return codeParent().getNodeTypeMap();
 				}
 
 				@Override
@@ -636,6 +645,15 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				CAstOperator op = translateOperator(ops.next());
 				CAstNode val = rhss.next().accept(this);
 				
+				CAstNode compareExpr;
+				compareExpr = 
+					op==CAstOperator.OP_IN?
+						Ast.makeNode(CAstNode.IS_DEFINED_EXPR, Ast.makeNode(CAstNode.VAR, Ast.makeConstant(cmpTemp)), lhs):
+					op==CAstOperator.OP_NOT_IN?
+						Ast.makeNode(CAstNode.UNARY_EXPR, CAstOperator.OP_NOT,
+							Ast.makeNode(CAstNode.IS_DEFINED_EXPR, Ast.makeNode(CAstNode.VAR, Ast.makeConstant(cmpTemp)), lhs)):
+					    Ast.makeNode(CAstNode.BINARY_EXPR, op, lhs, Ast.makeNode(CAstNode.VAR, Ast.makeConstant(cmpTemp)));
+				
 				return Ast.makeNode(CAstNode.LOCAL_SCOPE,
 				  Ast.makeNode(CAstNode.BLOCK_EXPR,
 				    Ast.makeNode(CAstNode.DECL_STMT,
@@ -643,10 +661,10 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				      val),
 				    ops.hasNext()?
 				    Ast.makeNode(CAstNode.IF_EXPR, 
-				      Ast.makeNode(CAstNode.BINARY_EXPR, op, lhs, Ast.makeNode(CAstNode.VAR, Ast.makeConstant(cmpTemp))),
+				      compareExpr,
 					    Ast.makeConstant(true),
 						compare(Ast.makeNode(CAstNode.VAR, Ast.makeConstant(cmpTemp)), ops, rhss)):
-				    Ast.makeNode(CAstNode.BINARY_EXPR, op, lhs, Ast.makeNode(CAstNode.VAR, Ast.makeConstant(cmpTemp)))));
+				    compareExpr));
 							
 			} else {
 				return Ast.makeConstant(false);
@@ -1478,9 +1496,21 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 		public CAstNode visitSubscript(Subscript arg0) throws Exception {
 			slice s = arg0.getInternalSlice();
 			if (s instanceof Index) {
-				return notePosition(Ast.makeNode(CAstNode.OBJECT_REF,
-					acceptOrNull(arg0.getInternalValue()), 
-					acceptOrNull(arg0.getInternalSlice())), arg0);
+				if (s.getChildren().size() == 1 && s.getChild(0) instanceof List) {
+					List l = (List) s.getChild(0);
+					CAstNode[] cs = new CAstNode[ l.getChildCount() + 3 ];
+					cs[0] = Ast.makeNode(CAstNode.VAR, Ast.makeConstant("slice"));
+					cs[1] = Ast.makeNode(CAstNode.EMPTY);
+					cs[2] = acceptOrNull(arg0.getInternalValue());
+					for(int i = 0; i < l.getChildCount(); i++) {
+						cs[i+3] = l.getChild(i).accept(this);
+					}
+					return notePosition(Ast.makeNode(CAstNode.CALL, cs), arg0);				
+				} else {
+					return notePosition(Ast.makeNode(CAstNode.OBJECT_REF,
+						acceptOrNull(arg0.getInternalValue()), 
+						acceptOrNull(s)), arg0);
+				}
 			} else if (s instanceof Slice) {
 				Slice S = (Slice) s;
 				return notePosition(Ast.makeNode(CAstNode.CALL,
