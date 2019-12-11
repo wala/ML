@@ -80,4 +80,27 @@ public class TestCompare extends TestPythonCallGraphShape {
 		});
 	}
 
+	 protected static final Object[][] assertionsCmp2 = new Object[][] {
+		    new Object[] { ROOT, new String[] { "script cmp2.py" } },
+		    new Object[] {
+		        "script cmp2.py",
+		        new String[] { "script cmp2.py/cin" } }
+	 };
+
+	 
+	@Test
+	public void testAssign2() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		PythonAnalysisEngine<?> e = new PythonAnalysisEngine<Void>() {
+			@Override
+			public Void performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
+				assert false;
+				return null;
+			}
+		};
+		e.setModuleFiles(Collections.singleton(getScript("cmp2.py")));
+		PropagationCallGraphBuilder cgBuilder = (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
+		CallGraph CG = cgBuilder.makeCallGraph(cgBuilder.getOptions());
+		verifyGraphAssertions(CG, assertionsCmp2);		
+	}
+
 }
