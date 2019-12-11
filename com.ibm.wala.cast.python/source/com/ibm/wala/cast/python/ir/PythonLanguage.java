@@ -19,6 +19,7 @@ import com.ibm.wala.cast.ir.ssa.AstEchoInstruction;
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.ir.ssa.AstGlobalWrite;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
+import com.ibm.wala.cast.ir.ssa.AstIsDefinedInstruction;
 import com.ibm.wala.cast.ir.ssa.AstPropertyRead;
 import com.ibm.wala.cast.ir.ssa.AstPropertyWrite;
 import com.ibm.wala.cast.ir.ssa.AstYieldInstruction;
@@ -194,7 +195,20 @@ public class PythonLanguage implements Language {
 	@Override
 	public AstInstructionFactory instructionFactory() {
 		return new JavaSourceLoaderImpl.InstructionFactory() {
+			
 	        @Override
+			public AstIsDefinedInstruction IsDefinedInstruction(int iindex, int lval, int rval, int fieldVal) {
+				return new AstIsDefinedInstruction(iindex, lval, rval, fieldVal);
+			}
+
+			@Override
+			public AstIsDefinedInstruction IsDefinedInstruction(int iindex, int lval, int rval, int fieldVal,
+					FieldReference fieldRef) {
+				assert fieldRef==null;
+				return new AstIsDefinedInstruction(iindex, lval, rval, fieldVal, fieldRef);
+			}
+
+			@Override
 			public AstEchoInstruction EchoInstruction(int iindex, int[] rvals) {
 				return new AstEchoInstruction(iindex, rvals);
 			}
