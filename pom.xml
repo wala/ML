@@ -30,6 +30,5 @@
     <module>com.ibm.wala.cast.python.jython3.test</module>
     <module>com.ibm.wala.cast.python.ml</module>
     <module>com.ibm.wala.cast.python.ml.test</module>
-    <module>com.ibm.wala.cast.python.ml.j2ee</module>
   </modules>
 </project>
