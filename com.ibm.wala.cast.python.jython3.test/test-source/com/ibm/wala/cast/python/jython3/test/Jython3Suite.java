@@ -29,7 +29,8 @@ import com.ibm.wala.cast.python.test.TestSource;
 	TestMulti.class,
 	TestPrimitives.class,
 	TestSlice.class,
-	TestSource.class
+	TestSource.class,
+	TestAnnotations.class
 })
 public class Jython3Suite {
 

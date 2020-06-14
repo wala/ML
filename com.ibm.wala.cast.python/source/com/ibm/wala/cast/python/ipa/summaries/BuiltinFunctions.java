@@ -274,7 +274,8 @@ public class BuiltinFunctions {
 	private static final Map<String,Either<TypeReference,Integer>> builtinFunctions = HashMapFactory.make();
 	
 	static {
-		builtinFunctions.put("enumerate", Either.forLeft(PythonTypes.enumerate));
+//		builtinFunctions.put("enumerate", Either.forLeft(PythonTypes.enumerate));
+		builtinFunctions.put("enumerate", Either.forRight(2));
 		builtinFunctions.put("int", Either.forLeft(TypeReference.Int));
 		builtinFunctions.put("len", Either.forLeft(TypeReference.Int));
 		builtinFunctions.put("list", Either.forLeft(PythonTypes.list));

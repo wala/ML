@@ -18,8 +18,4 @@ public interface PythonInstructionVisitor extends AstInstructionVisitor {
 		
 	}
 
-	default void visitPythonStoreProperty(PythonStoreProperty inst) {
-		
-	}
-
 }

@@ -31,7 +31,6 @@ import com.ibm.wala.cast.python.modref.PythonModRef.PythonRefVisitor;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.ssa.PythonPropertyRead;
 import com.ibm.wala.cast.python.ssa.PythonPropertyWrite;
-import com.ibm.wala.cast.python.ssa.PythonStoreProperty;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cfg.InducedCFG;
@@ -55,7 +54,6 @@ import com.ibm.wala.ipa.modref.ModRef.RefVisitor;
 import com.ibm.wala.shrikeCT.BootstrapMethodsReader.BootstrapMethod;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
-import com.ibm.wala.ssa.SSAArrayStoreInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.types.FieldReference;
@@ -246,16 +244,10 @@ public class PythonLanguage implements Language {
 				}
 
 				@Override
-				public SSAInvokeInstruction InvokeInstruction(int iindex, int[] params, int exception,
+				public SSAAbstractInvokeInstruction InvokeInstruction(int iindex, int[] params, int exception,
 						CallSiteReference site, BootstrapMethod bootstrap) {
 					// TODO Auto-generated method stub
 					return super.InvokeInstruction(iindex, params, exception, site, bootstrap);
-				}
-
-				@Override
-				public SSAArrayStoreInstruction ArrayStoreInstruction(int iindex, int arrayref, int index, int value,
-						TypeReference declaredType) {
-					return new PythonStoreProperty(iindex, arrayref, index, value);
 				}
 		        
 				@Override

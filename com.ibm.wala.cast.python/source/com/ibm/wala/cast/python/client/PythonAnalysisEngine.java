@@ -254,6 +254,7 @@ public abstract class PythonAnalysisEngine<T>
 			builtins.builtinClassTargetSelector(
 				options.getClassTargetSelector()));
 		
+		addSummaryBypassLogic(options, "flask.xml");
 		addSummaryBypassLogic(options, "pandas.xml");
 		addSummaryBypassLogic(options, "functools.xml");
 	}
@@ -297,7 +298,7 @@ public abstract class PythonAnalysisEngine<T>
 		options.setSSAOptions(ssaOptions);
 		
 		PythonSSAPropagationCallGraphBuilder builder = 
-			new PythonSSAPropagationCallGraphBuilder(cha, options, cache, new AstCFAPointerKeys());
+			makeBuilder(cha, options, cache);
 	
 		AstContextInsensitiveSSAContextInterpreter interpreter = new AstContextInsensitiveSSAContextInterpreter(options, cache);
 		builder.setContextInterpreter(interpreter);
@@ -309,6 +310,11 @@ public abstract class PythonAnalysisEngine<T>
 		new PythonSuper(cha).handleSuperCalls(builder, options);
 		
 		return builder;
+	}
+
+	protected PythonSSAPropagationCallGraphBuilder makeBuilder(IClassHierarchy cha, AnalysisOptions options,
+			IAnalysisCacheView cache) {
+		return new PythonSSAPropagationCallGraphBuilder(cha, options, cache, new AstCFAPointerKeys());
 	}
 
 	public abstract T performAnalysis(PropagationCallGraphBuilder builder) throws CancelException;

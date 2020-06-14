@@ -107,6 +107,7 @@ import com.ibm.wala.cast.ir.translator.AbstractFieldEntity;
 import com.ibm.wala.cast.ir.translator.AbstractScriptEntity;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
 import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
+import com.ibm.wala.cast.python.loader.DynamicAnnotatableEntity;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstEntity;
@@ -295,9 +296,59 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				
 			};
 		}
+
+		private CAstNode notePosition(CAstNode n, PythonTree... p) {
+			return notePosition(n, 0, p);
+		}
 		
-		private CAstNode notePosition(CAstNode n, PythonTree p) {
-			Position pos = makePosition(p);
+		private CAstNode notePosition(CAstNode n, int pad, PythonTree... p) {
+			Position pos = makePosition(p[0]);
+			if (p.length > 1) {
+				Position start = pos;
+				Position end = makePosition(p[p.length-1]);
+				pos = new AbstractSourcePosition() {
+
+					@Override
+					public int getFirstLine() {
+						return start.getFirstLine();
+					}
+					
+					@Override
+					public int getLastLine() {
+						return end.getLastLine();
+					}
+
+					@Override
+					public int getFirstCol() {
+						return start.getFirstCol();
+					}
+
+					@Override
+					public int getLastCol() {
+						return end.getLastCol() + pad;
+					}
+
+					@Override
+					public int getFirstOffset() {
+						return start.getFirstOffset();
+					}
+
+					@Override
+					public int getLastOffset() {
+						return end.getLastOffset() + pad;
+					}
+
+					@Override
+					public URL getURL() {
+						return start.getURL();
+					}
+
+					@Override
+					public Reader getReader() throws IOException {
+						return start.getReader();
+					}	
+				};
+			}
 			pushSourcePosition(context, n, pos);
 			return n;
 		}
@@ -363,7 +414,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 		public CAstNode visitAttribute(Attribute arg0) throws Exception {
 			return notePosition(Ast.makeNode(CAstNode.OBJECT_REF, 
 					notePosition(arg0.getInternalValue().accept(this), arg0.getInternalValue()),
-					Ast.makeConstant(arg0.getInternalAttr())), arg0);
+					Ast.makeConstant(arg0.getInternalAttr())), arg0, arg0.getInternalAttrName());
 		}
 
 		@Override
@@ -844,7 +895,13 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 					args = new LinkedList<>(args);
 					args.add(aa.getInternalVararg());
 				}
-				return defineFunction(arg0.getInternalName(), args, arg0.getInternalBody(), arg0, makePosition(arg0.getInternalNameNode()), codeBody, aa.getInternalDefaults());
+				java.util.Set<CAstNode> x = HashSetFactory.make();
+				if (arg0.getDecorator_list() != null) {
+					for(expr f : arg0.getInternalDecorator_list()) {
+						x.add(f.accept(this));
+					}
+				}
+				return defineFunction(arg0.getInternalName(), args, arg0.getInternalBody(), arg0, makePosition(arg0.getInternalNameNode()), codeBody, aa.getInternalDefaults(), x);
 		}
 		
 		private <R extends PythonTree, S extends PythonTree> CAstNode defineFunction(String functionName, 
@@ -853,7 +910,8 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				PythonTree function, 
 				Position namePos,
 				CAstType superType,
-				java.util.List<expr> defaults) throws Exception {
+				java.util.List<expr> defaults,
+				Iterable<CAstNode> dynamicAnnotations) throws Exception {
 			
 			if (defaults != null) {
 			defaults = new ArrayList<>(defaults);
@@ -985,7 +1043,17 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				ai++;
 			}
 			
-			AbstractCodeEntity fun = new AbstractCodeEntity(functionType) {
+			class PythonCodeEntity extends AbstractCodeEntity implements DynamicAnnotatableEntity {
+				
+				@Override
+				public Iterable<CAstNode> dynamicAnnotations() {
+					return dynamicAnnotations;
+				}
+
+				protected PythonCodeEntity(CAstType type) {
+					super(type);
+				}
+
 				@Override
 				public int getKind() {					
 					return CAstEntity.FUNCTION_ENTITY;
@@ -1069,6 +1137,8 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				}
 			};
 
+			PythonCodeEntity fun = new PythonCodeEntity(functionType);
+			
 			PythonParser.FunctionContext child = new PythonParser.FunctionContext(context, fun, function);	
 			CAstVisitor cv = new CAstVisitor(child, parser);
 			for(S s : body) {
@@ -1221,7 +1291,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 		public CAstNode visitLambda(Lambda arg0) throws Exception {
 			arguments lambdaArgs = arg0.getInternalArgs();
 			expr lambdaBody = arg0.getInternalBody();
-			return defineFunction("lambda" + (++tmpIndex), lambdaArgs.getInternalArgs(), Collections.singletonList(lambdaBody), arg0, makePosition(arg0.getChildren().get(0)), lambda, lambdaArgs.getInternalDefaults());
+			return defineFunction("lambda" + (++tmpIndex), lambdaArgs.getInternalArgs(), Collections.singletonList(lambdaBody), arg0, makePosition(arg0.getChildren().get(0)), lambda, lambdaArgs.getInternalDefaults(), Collections.emptyList());
 		}
 
 		private CAstNode collectObjects(java.util.List<expr> eltList, String type) throws Exception {
@@ -1267,7 +1337,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				arguments.add(x.getInternalTarget());
 			});
 			
-			return defineFunction(name, arguments, Collections.singletonList(value), value, null, comprehension, null);
+			return defineFunction(name, arguments, Collections.singletonList(value), value, null, comprehension, null, Collections.emptyList());
 		}
 
 		private CAstType filter = new CAstType() {
@@ -1295,7 +1365,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			java.util.List<CAstNode> filters = new LinkedList<>();
 			for(comprehension g : gen) {
 				for(expr test : g.getInternalIfs()) {
-					filters.add(defineFunction(name, arguments, Collections.singletonList(test), g, null, filter, null));
+					filters.add(defineFunction(name, arguments, Collections.singletonList(test), g, null, filter, null, Collections.emptyList()));
 				}
 			}
 			
@@ -1509,7 +1579,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				} else {
 					return notePosition(Ast.makeNode(CAstNode.OBJECT_REF,
 						acceptOrNull(arg0.getInternalValue()), 
-						acceptOrNull(s)), arg0);
+						acceptOrNull(s)), 1, arg0, s);
 				}
 			} else if (s instanceof Slice) {
 				Slice S = (Slice) s;
@@ -1745,7 +1815,13 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 
 		@Override
 		public CAstNode visitAsyncFunctionDef(AsyncFunctionDef arg0) throws Exception {
-			return defineFunction(arg0.getInternalName(), arg0.getInternalArgs().getInternalArgs(), arg0.getInternalBody(), arg0, makePosition(arg0.getInternalNameNode()), codeBody, arg0.getInternalArgs().getInternalDefaults());
+			java.util.Set<CAstNode> x = HashSetFactory.make();
+			if (arg0.getDecorator_list() != null) {
+				for(expr f : arg0.getInternalDecorator_list()) {
+					x.add(f.accept(this));
+				}
+			}
+			return defineFunction(arg0.getInternalName(), arg0.getInternalArgs().getInternalArgs(), arg0.getInternalBody(), arg0, makePosition(arg0.getInternalNameNode()), codeBody, arg0.getInternalArgs().getInternalDefaults(), x);
 		}
 
 		@Override

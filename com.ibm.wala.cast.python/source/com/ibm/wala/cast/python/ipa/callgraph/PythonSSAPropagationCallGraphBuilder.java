@@ -20,7 +20,6 @@ import com.ibm.wala.cast.python.ipa.summaries.BuiltinFunctions.BuiltinFunction;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.ssa.PythonInstructionVisitor;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
-import com.ibm.wala.cast.python.ssa.PythonStoreProperty;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.fixpoint.AbstractOperator;
@@ -158,11 +157,6 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 		@Override
 		public void visitPythonInvoke(PythonInvokeInstruction inst) {
 	        visitInvokeInternal(inst, new DefaultInvariantComputer());
-		}
-
-		@Override
-		public void visitPythonStoreProperty(PythonStoreProperty inst) {
-			newFieldWrite(node, inst.getArrayRef(), inst.getIndex(), inst.getValue());
 		}
 
 		@Override

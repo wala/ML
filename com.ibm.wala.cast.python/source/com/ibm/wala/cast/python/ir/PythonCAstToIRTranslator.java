@@ -27,6 +27,7 @@ import com.ibm.wala.cast.ir.translator.ArrayOpHandler;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
+import com.ibm.wala.cast.python.loader.DynamicAnnotatableEntity;
 import com.ibm.wala.cast.python.loader.PythonLoader;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.types.PythonTypes;
@@ -265,13 +266,32 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
 	@Override
 	protected void doMaterializeFunction(CAstNode node, WalkContext context, int result, int exception, CAstEntity fn) {
-	    String fnName = composeEntityName(context, fn);
+		
+		String fnName = composeEntityName(context, fn);
 	    IClass cls = loader.lookupClass(TypeName.findOrCreate("L" + fnName));
 	    TypeReference type = cls.getReference();
 	    int idx = context.cfg().getCurrentInstruction();
 	    context.cfg().addInstruction(Python.instructionFactory().NewInstruction(idx, result, NewSiteReference.make(idx, type)));
+
+		if (fn instanceof DynamicAnnotatableEntity) {
+			if (((DynamicAnnotatableEntity)fn).dynamicAnnotations().iterator().hasNext()) {
+				((DynamicAnnotatableEntity)fn).dynamicAnnotations().forEach(a -> { 
+					visit(a, context, this);
+					int pos = context.cfg().getCurrentInstruction();
+					CallSiteReference site = new DynamicCallSiteReference(PythonTypes.CodeBody, pos);
+					context.cfg().addInstruction(
+						new PythonInvokeInstruction(
+							context.cfg().getCurrentInstruction(), 
+							result,
+							context.currentScope().allocateTempValue(),
+							site,
+							new int[] { context.getValue(a), result },
+							new Pair[0]));
+				});
+			}
+		}
+
 	    doGlobalWrite(context, fnName, PythonTypes.Root, result);
-	    
 	    FieldReference fnField = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom(fn.getName()), PythonTypes.Root);
 	    context.cfg().addInstruction(Python.instructionFactory().PutInstruction(context.cfg().getCurrentInstruction(), 1, result, fnField));
 	}
@@ -574,9 +594,18 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	protected void leaveObjectLiteralAssign(CAstNode n, CAstNode v, CAstNode a, WalkContext c,
 			CAstVisitor<WalkContext> visitor) {
 		int rval = c.getValue(v);
-		for(int i = 1; i < n.getChildCount(); i+=2) {
-			int idx = c.getValue(n.getChild(i));
-			CAstNode var = n.getChild(i+1);
+		handleObjectLiteralAssign(n, n, rval, c, visitor);
+	}
+
+	private void handleObjectLiteralAssign(CAstNode n, CAstNode lvalAst, int rval, WalkContext c,
+			CAstVisitor<WalkContext> visitor) {
+		for(int i = 1; i < lvalAst.getChildCount(); i+=2) {
+			int idx = c.getValue(lvalAst.getChild(i));
+			if (idx == -1) {
+				visitor.visit(lvalAst.getChild(i), c, visitor);
+				idx = c.getValue(lvalAst.getChild(i));
+			}
+			CAstNode var = lvalAst.getChild(i+1);
 			if (var.getKind() == CAstNode.VAR) {
 				String name = (String) var.getChild(0).getValue();
 				c.currentScope().declare(new CAstSymbolImpl(name, topType()));
@@ -585,12 +614,16 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 				int rvi = c.currentScope().allocateTempValue();
 				c.cfg().addInstruction(Python.instructionFactory().PropertyRead(c.cfg().getCurrentInstruction(), rvi, rval, idx));
 		    
-				c.setValue(n, rvi);
+				// c.setValue(n, rvi);
 				assignValue(n, c, ls, name, rvi);
+			} else if (var.getKind() == CAstNode.OBJECT_LITERAL) {
+				int rvi = c.currentScope().allocateTempValue();
+				c.cfg().addInstruction(Python.instructionFactory().PropertyRead(c.cfg().getCurrentInstruction(), rvi, rval, idx));
+				handleObjectLiteralAssign(n, var, rvi, c, visitor);
 			}
 		}
 	}
-
+	
 	boolean isGlobal(WalkContext context, String varName){
 		  	if(signleFileAnalysis)
 		  		return false;
@@ -652,11 +685,13 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		}
 	}
 
+	
 	@Override
 	protected boolean doVisitAssignNodes(CAstNode n, WalkContext context, CAstNode v, CAstNode a,
 			CAstVisitor<WalkContext> visitor) {
 		return super.doVisitAssignNodes(n, context, v, a, visitor);
 	}
+
 
 	@Override
 	protected Position[] getParameterPositions(CAstEntity e) {
