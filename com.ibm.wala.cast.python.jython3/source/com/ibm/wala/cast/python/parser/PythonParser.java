@@ -1589,7 +1589,14 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 					acceptOrNull(arg0.getInternalValue()), 
 					acceptOrNull(S.getInternalLower()), 		
 					acceptOrNull(S.getInternalUpper()), 		
-					acceptOrNull(S.getInternalStep())), arg0);				
+					acceptOrNull(S.getInternalStep())), arg0);	
+			} else if (s instanceof ExtSlice) {
+				CAstNode res = notePosition(arg0.getInternalValue().accept(this), arg0);
+				for (slice d : ((ExtSlice)s).getInternalDims()) {
+					res = Ast.makeNode(CAstNode.OBJECT_REF, res, d.accept(this));
+				}
+				return res;
+
 			} else {
 				return acceptOrNull(arg0.getInternalValue());
 			}
