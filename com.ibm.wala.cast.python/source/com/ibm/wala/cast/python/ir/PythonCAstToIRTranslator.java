@@ -165,18 +165,17 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	    		((PythonLoader) loader).defineFunctionType("L" + fnName, N.getPosition(), N, context);
 	    }
 	}
-
+	
 	@Override
 	protected void defineFunction(CAstEntity N, WalkContext definingContext,
 			AbstractCFG<SSAInstruction, ? extends IBasicBlock<SSAInstruction>> cfg, SymbolTable symtab,
 			boolean hasCatchBlock, Map<IBasicBlock<SSAInstruction>, TypeReference[]> catchTypes, boolean hasMonitorOp,
 			AstLexicalInformation lexicalInfo, DebuggingInformation debugInfo) {
 	      String fnName = composeEntityName(definingContext, N);
-
 	      ((PythonLoader) loader).defineCodeBodyCode("L" + fnName, cfg, symtab, hasCatchBlock, catchTypes, hasMonitorOp, lexicalInfo,
 	          debugInfo, N.getArgumentDefaults().length);
 	}
-
+ 
 	@Override
 	protected void defineField(CAstEntity topEntity, WalkContext context, CAstEntity fieldEntity) {
 		((PythonLoader)loader).defineField(walaTypeNames.get(topEntity.getType()), fieldEntity);
@@ -540,14 +539,21 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		if (primitiveCall.getChildCount() == 2 && "import".equals(primitiveCall.getChild(0).getValue())) {
 			String name = (String) primitiveCall.getChild(1).getValue();
 			int idx = context.cfg().getCurrentInstruction();
+			
+			Position save = currentPosition;
+			currentPosition = context.getSourceMap().getPosition(primitiveCall);
+			System.err.println("&&&&& switched to " + currentPosition);
+			
 			if (loader.lookupClass(TypeName.findOrCreate("Lscript " + name + ".py")) != null) {
 			      FieldReference global = makeGlobalRef("script " + name + ".py");
-			      context.cfg().addInstruction(new AstGlobalRead(context.cfg().getCurrentInstruction(), resultVal, global));
+			      context.cfg().addInstruction(new AstGlobalRead(idx, resultVal, global));
 			} else {
 				TypeReference imprt = TypeReference.findOrCreate(PythonTypes.pythonLoader, "L" + name);
 				MethodReference call = MethodReference.findOrCreate(imprt, "import", "()L" + primitiveCall.getChild(1).getValue());
 				context.cfg().addInstruction(Python.instructionFactory().InvokeInstruction(idx, resultVal, new int[0], context.currentScope().allocateTempValue(), CallSiteReference.make(idx, call, Dispatch.STATIC), null));
 			}
+			
+			currentPosition = save;
 		}
 	}
 	
@@ -611,9 +617,14 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 				c.currentScope().declare(new CAstSymbolImpl(name, topType()));
 				Symbol ls = c.currentScope().lookup(name);
 		    
+				Position save = currentPosition;
+				currentPosition = c.getSourceMap().getPosition(var);
+				
 				int rvi = c.currentScope().allocateTempValue();
 				c.cfg().addInstruction(Python.instructionFactory().PropertyRead(c.cfg().getCurrentInstruction(), rvi, rval, idx));
 		    
+				currentPosition = save;
+				
 				// c.setValue(n, rvi);
 				assignValue(n, c, ls, name, rvi);
 			} else if (var.getKind() == CAstNode.OBJECT_LITERAL) {

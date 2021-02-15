@@ -199,10 +199,14 @@ public class PythonLanguage implements Language {
 				return new AstIsDefinedInstruction(iindex, lval, rval, fieldVal);
 			}
 
+	        @Override
+			public AstIsDefinedInstruction IsDefinedInstruction(int iindex, int lval, int rval, FieldReference fieldVal) {
+				return new AstIsDefinedInstruction(iindex, lval, rval, fieldVal);
+			}
+
 			@Override
 			public AstIsDefinedInstruction IsDefinedInstruction(int iindex, int lval, int rval, int fieldVal,
 					FieldReference fieldRef) {
-				assert fieldRef==null;
 				return new AstIsDefinedInstruction(iindex, lval, rval, fieldVal, fieldRef);
 			}
 
