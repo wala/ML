@@ -1010,10 +1010,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			}
 			
 			int x = 0;
-			int sz = 1;
-			for(Object e : arguments) {
-				sz += (e instanceof Tuple)? ((Tuple)e).getInternalElts().size(): 1;
-			}
+			int sz = countArguments(arguments);
 			String[] argumentNames = new String[ sz ];
 			int[] argumentMap = new int[sz];
 			int argIndex = 0;
@@ -1021,25 +1018,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			argumentMap[argIndex++] = 0;
 			int ai = 0;
 			for(Object a : arguments) {
-				if (a instanceof Tuple) {
-					Tuple t = (Tuple)a;
-					for(expr e : t.getInternalElts()) {
-						CAstNode cast = e.accept(this);
-						String name = cast.getChild(0).getValue().toString();
-						argumentMap[x] = ai;
-						argumentNames[x++] = name;			
-					}
-				} else if (a instanceof arg) {
-					String name = ((arg)a).getInternalArg();
-					argumentMap[x] = ai;
-					argumentNames[x++] = name;		
-				} else if (a instanceof Name) {
-					String name = ((Name)a).getText();
-					argumentMap[x] = ai;
-					argumentNames[x++] = name;		
-				} else {
-					assert false : "unexpected " + a;
-				}
+				x = handleFunctionArguments(x, argumentNames, argumentMap, ai, a);
 				ai++;
 			}
 			
@@ -1169,6 +1148,35 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			}
 		}
 
+		private <R extends PythonTree> int countArguments(java.util.List<R> arguments) {
+			int sz = 1;
+			for(Object e : arguments) {
+				sz += (e instanceof Tuple)? countArguments(((Tuple)e).getInternalElts()): 1;
+			}
+			return sz;
+		}
+
+		private int handleFunctionArguments(int x, String[] argumentNames, int[] argumentMap, int ai, Object a)
+				throws Exception {
+			if (a instanceof Tuple) {
+				Tuple t = (Tuple)a;
+				for(expr e : t.getInternalElts()) {
+					x = handleFunctionArguments(x, argumentNames, argumentMap, ai, e);
+				}
+			} else if (a instanceof arg) {
+				String name = ((arg)a).getInternalArg();
+				argumentMap[x] = ai;
+				argumentNames[x++] = name;		
+			} else if (a instanceof Name) {
+				String name = ((Name)a).getText();
+				argumentMap[x] = ai;
+				argumentNames[x++] = name;		
+			} else {
+				assert false : "unexpected " + a;
+			}
+			return x;
+		}
+
 		@Override
 		public CAstNode visitGeneratorExp(GeneratorExp arg0) throws Exception {
 			return fail(arg0);
@@ -1184,11 +1192,14 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 		}
 
 		private CAstNode block(java.util.List<stmt> block) throws Exception {
-			CAstNode[] x = new CAstNode[ block.size() ];
+			java.util.List<CAstNode> x = new LinkedList<>();
 			for(int i = 0; i < block.size(); i++) {
-				x[i] = block.get(i).accept(this);
+				CAstNode y = block.get(i).accept(this);
+				if (y != null) {
+					x.add(y);
+				}
 			}
-			return Ast.makeNode(CAstNode.BLOCK_STMT, x);
+			return Ast.makeNode(CAstNode.BLOCK_STMT, x.toArray(new CAstNode[ x.size() ]));
 		}
 		
 		@Override
@@ -1241,11 +1252,17 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 
 			int i = 1;
 			for(alias n : arg0.getInternalNames()) {
-				elts[i++] = notePosition(Ast.makeNode(CAstNode.DECL_STMT,
+				java.util.List<Name> nn = n.getInternalNameNodes();
+				if (nn == null) {
+					assert n.getInternalName().equals("*");
+				}
+				elts[i++] = notePosition(
+					Ast.makeNode(CAstNode.DECL_STMT,
 						Ast.makeConstant(new CAstSymbolImpl(name(n), PythonCAstToIRTranslator.Any)),
 						Ast.makeNode(CAstNode.OBJECT_REF,
 								Ast.makeNode(CAstNode.VAR, Ast.makeConstant(tree)),
-								Ast.makeConstant(n.getInternalName()))), n);
+								Ast.makeConstant(n.getInternalName()))), 
+					nn == null? n : nn.get(nn.size()-1));
 			}
 			
 			return Ast.makeNode(CAstNode.BLOCK_STMT, elts);
@@ -1300,7 +1317,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			elts[i++] = Ast.makeNode(CAstNode.NEW, Ast.makeConstant(type));
 			for(expr e : eltList) {
 				elts[i++] = Ast.makeConstant(j++);
-				elts[i++] = e.accept(this);
+				elts[i++] = acceptOrNull(e);
 			}
 			return Ast.makeNode(CAstNode.OBJECT_LITERAL, elts);
 		}
@@ -1334,10 +1351,20 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			
 			java.util.List<expr> arguments = new LinkedList<>();
 			gen.forEach((x) -> {
-				arguments.add(x.getInternalTarget());
+				getComprehensionArguments(x.getInternalTarget(), arguments);
 			});
 			
 			return defineFunction(name, arguments, Collections.singletonList(value), value, null, comprehension, null, Collections.emptyList());
+		}
+
+		private void getComprehensionArguments(expr arg, java.util.List<expr> arguments) {
+			if (arg instanceof Tuple) {
+				((Tuple)arg).getInternalElts().forEach(elt -> { 
+					getComprehensionArguments(elt, arguments);
+				});	
+			} else {
+				arguments.add(arg);
+			}
 		}
 
 		private CAstType filter = new CAstType() {
@@ -1359,13 +1386,16 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 
 			java.util.List<expr> arguments = new LinkedList<>();
 			gen.forEach((x) -> {
-				arguments.add(x.getInternalTarget());
+				getComprehensionArguments(x.getInternalTarget(), arguments);
 			});
 
 			java.util.List<CAstNode> filters = new LinkedList<>();
 			for(comprehension g : gen) {
 				for(expr test : g.getInternalIfs()) {
-					filters.add(defineFunction(name, arguments, Collections.singletonList(test), g, null, filter, null, Collections.emptyList()));
+					CAstNode filter_f = defineFunction(name, arguments, Collections.singletonList(test), g, null, filter, null, Collections.emptyList());
+					if (filter_f != null) {
+						filters.add(filter_f);
+					}
 				}
 			}
 			
