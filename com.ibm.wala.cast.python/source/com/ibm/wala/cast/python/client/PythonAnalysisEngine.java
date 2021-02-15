@@ -78,7 +78,7 @@ public abstract class PythonAnalysisEngine<T>
 		loaders = lf;
 	}
 	
-	private final PythonLoaderFactory loader;
+	protected PythonLoaderFactory loader;
 	
 	private final IRFactory<IMethod> irs = AstIRFactory.makeDefaultFactory();
 
@@ -259,8 +259,8 @@ public abstract class PythonAnalysisEngine<T>
 		addSummaryBypassLogic(options, "functools.xml");
 	}
 
-	private String scriptName(Module m) {
-		String path = ((ModuleEntry)m).getName();
+	private String scriptName(ModuleEntry m) {
+		String path = m.getName();
 		return "Lscript " + (path.contains("/")? path.substring(path.lastIndexOf('/')+1): path);
 	}
 
@@ -268,10 +268,12 @@ public abstract class PythonAnalysisEngine<T>
 	protected Iterable<Entrypoint> makeDefaultEntrypoints(AnalysisScope scope, IClassHierarchy cha) {
 		Set<Entrypoint> result = HashSetFactory.make();
 		for(Module m : moduleFiles) {
-			IClass entry = cha.lookupClass(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.findOrCreate(scriptName(m))));
-			assert entry != null: "bad root name " + scriptName(m) + ":\n" + cha;
-			MethodReference er = MethodReference.findOrCreate(entry.getReference(), AstMethodReference.fnSelector);
-			result.add(new DefaultEntrypoint(er, cha));
+			m.getEntries().forEachRemaining(f -> {
+				IClass entry = cha.lookupClass(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.findOrCreate(scriptName(f))));
+				assert entry != null: "bad root name " + scriptName(f) + ":\n" + cha;
+				MethodReference er = MethodReference.findOrCreate(entry.getReference(), AstMethodReference.fnSelector);
+				result.add(new DefaultEntrypoint(er, cha));
+			});
 		}
 		return result;
 	}

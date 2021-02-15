@@ -9,6 +9,7 @@ import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
 import com.ibm.wala.cast.python.util.PythonInterpreter;
 import com.ibm.wala.classLoader.Module;
+import com.ibm.wala.classLoader.SourceDirectoryTreeModule;
 import com.ibm.wala.classLoader.SourceFileModule;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.CallGraphBuilder;
@@ -48,7 +49,12 @@ public class Driver {
 			throws IOException, CancelException {
 		Set<Module> sources = HashSetFactory.make();
 		for(String file : args) {
-			sources.add(new SourceFileModule(new File(file), file, null));
+			File fo = new File(file);
+			if (fo.isDirectory()) {
+				sources.add(new SourceDirectoryTreeModule(fo, ".py"));
+			} else {
+				sources.add(new SourceFileModule(fo, file, null));
+			}
 		}
 		E.setModuleFiles(sources);
 		
