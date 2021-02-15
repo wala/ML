@@ -37,8 +37,8 @@ public class TestMulti extends TestPythonCallGraphShape {
 		PropagationCallGraphBuilder builder = (PropagationCallGraphBuilder) engine.defaultCallGraphBuilder();
 		CallGraph CG = builder.makeCallGraph(engine.getOptions(), new NullProgressMonitor());
 		verifyGraphAssertions(CG, assertionsMulti1);
-		// CAstCallGraphUtil.AVOID_DUMP = false;
-		// CAstCallGraphUtil.dumpCG((SSAContextInterpreter)builder.getContextInterpreter(), builder.getPointerAnalysis(), CG);
+		CAstCallGraphUtil.AVOID_DUMP = false;
+		CAstCallGraphUtil.dumpCG((SSAContextInterpreter)builder.getContextInterpreter(), builder.getPointerAnalysis(), CG);
 	}
 
 }
