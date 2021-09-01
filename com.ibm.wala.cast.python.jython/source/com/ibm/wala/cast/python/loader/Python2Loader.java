@@ -11,6 +11,7 @@
 package com.ibm.wala.cast.python.loader;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.python.core.PyObject;
 
@@ -29,6 +30,7 @@ import com.ibm.wala.cast.tree.rewrite.CAstRewriterFactory;
 import com.ibm.wala.cast.tree.rewrite.PatternBasedRewriter;
 import com.ibm.wala.cast.util.CAstPattern.Segments;
 import com.ibm.wala.classLoader.IClassLoader;
+import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.SourceModule;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
@@ -43,8 +45,8 @@ public class Python2Loader extends PythonLoader {
 	}
 
 	@Override
-	protected TranslatorToCAst getTranslatorToCAst(CAst ast, ModuleEntry M) throws IOException {
-		RewritingTranslatorToCAst x = new RewritingTranslatorToCAst(M, new PythonModuleParser((SourceModule)M, typeDictionary) {
+	protected TranslatorToCAst getTranslatorToCAst(CAst ast, ModuleEntry M, List<Module> allModules) throws IOException {
+		RewritingTranslatorToCAst x = new RewritingTranslatorToCAst(M, new PythonModuleParser((SourceModule)M, typeDictionary, allModules) {
 			@Override
 			public CAstEntity translateToCAst() throws Error, IOException {
 				CAstEntity ce =  super.translateToCAst();

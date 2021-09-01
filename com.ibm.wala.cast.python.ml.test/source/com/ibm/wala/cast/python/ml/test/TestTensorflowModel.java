@@ -6,8 +6,13 @@ import java.util.Iterator;
 
 import org.junit.Test;
 
+import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
+import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
+import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
+import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
+import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 
@@ -15,7 +20,14 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 
 	@Test
 	public void testTf1() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		CallGraph CG = process("tf1.py");
+		PythonAnalysisEngine<TensorTypeAnalysis> E = makeEngine("tf1.py");
+		PythonSSAPropagationCallGraphBuilder builder = E.defaultCallGraphBuilder();
+		CallGraph CG = builder.makeCallGraph(builder.getOptions());
+		
+//		CAstCallGraphUtil.AVOID_DUMP = false;
+//		CAstCallGraphUtil.dumpCG(((SSAPropagationCallGraphBuilder)builder).getCFAContextInterpreter(), builder.getPointerAnalysis(), CG);
+
+//		System.err.println(CG);
 		
 		Collection<CGNode> nodes = getNodes(CG, "script tf1.py/model_fn");
 		assert ! nodes.isEmpty() : "model_fn should be called";

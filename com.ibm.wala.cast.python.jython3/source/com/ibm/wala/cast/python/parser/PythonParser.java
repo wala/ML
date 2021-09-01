@@ -113,6 +113,7 @@ import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.CAstQualifier;
+import com.ibm.wala.cast.tree.CAstSourcePositionMap;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.AbstractSourcePosition;
@@ -129,7 +130,7 @@ import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.ReverseIterator;
-import com.ibm.wala.util.warnings.Warning;
+import com.ibm.wala.core.util.warnings.Warning;
 
 abstract public class PythonParser<T> extends AbstractParser<T> implements TranslatorToCAst {
 
@@ -151,10 +152,22 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 
 	interface WalkContext extends TranslatorToCAst.WalkContext<WalkContext, PythonTree> {
  
+		default void addDefinedName(String name) {
+			getParent().addDefinedName(name);
+		}
+		
+		default WalkContext root() {
+			return getParent().root();
+		}
+		
 		WalkContext getParent();
 		
 		default CAstEntity entity() {
 			return getParent().entity();
+		}
+		
+		default void addGlobal(String n) {
+			getParent().addGlobal(n);
 		}
 		
 	}
@@ -162,33 +175,63 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 	private static class RootContext extends TranslatorToCAst.RootContext<WalkContext, PythonTree> implements WalkContext {
 		private final Module ast;
 		
+		private final java.util.Set<String> downwardGlobals = HashSetFactory.make();
+		
 		private RootContext(Module ast) { 
 			this.ast = ast;
 		}
-		
+				
 		@Override
 		public PythonTree top() {
 			return ast;
 		}
 
+		@Override
 		public WalkContext getParent() {
 			assert false;
 			return null;
+		}
+		
+		public void addGlobal(String g) {
+			downwardGlobals.add(g);
+		}
+
+		private java.util.Set<String> downwardGlobals() {
+			return downwardGlobals;
+		}
+		
+		public WalkContext root() {
+			return this;
+		}
+		
+		public void addDefinedName(String name) {
+			assert false;
 		}
 	}
 	
 	private static class FunctionContext extends TranslatorToCAst.FunctionContext<WalkContext, PythonTree> implements WalkContext {
 		private final AbstractCodeEntity fun;
+		private final java.util.Set<String> downwardGlobals;
+		private final java.util.Set<String> definedNames = HashSetFactory.make();
 		
 		public WalkContext getParent() {
 			return parent;
 		}
 		
-		private FunctionContext(WalkContext parent, AbstractCodeEntity fun, PythonTree s) {
+		private FunctionContext(WalkContext parent, AbstractCodeEntity fun, java.util.Set<String> downwardGlobals, PythonTree s) {
 			super(parent, s);
 			this.fun = fun;
+			this.downwardGlobals = downwardGlobals;
 		}
 
+		public void addDefinedName(String name) {
+			definedNames.add(name);
+		}
+		
+		public void addGlobal(String g) {
+			downwardGlobals.add(g);
+		}
+		
 		@Override
 		public CAstEntity entity() {
 			return fun;
@@ -219,7 +262,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			return fun.getAllScopedEntities();
 		}
 	}
-
+	
 	public class CAstVisitor extends AbstractParser<T>.CAstVisitor implements VisitorIF<CAstNode>  {
 		private final PythonParser.WalkContext context;
 		private final WalaPythonParser parser;
@@ -230,7 +273,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			return Ast.makeNode(CAstNode.EMPTY);
 		}
 		
-		private CAstVisitor(PythonParser.WalkContext context, WalaPythonParser parser) {
+		protected CAstVisitor(PythonParser.WalkContext context, WalaPythonParser parser) {
 			this.context = context;
 			this.parser = parser;
 		}
@@ -407,6 +450,20 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 					}
 
 				}
+				
+				for (int i = 0; i < nodes.size(); i++) {
+					CAstNode assign = nodes.get(i);
+					if (assign.getChild(0).getKind() == CAstNode.VAR) {
+						CAstNode nm = assign.getChild(0).getChild(0);
+						if (nm.getValue() instanceof String) {
+							context.addDefinedName((String)nm.getValue());
+							nodes.set(i, Ast.makeNode(CAstNode.BLOCK_STMT,
+								Ast.makeNode(CAstNode.DECL_STMT, Ast.makeConstant(new CAstSymbolImpl((String)nm.getValue(), CAstType.DYNAMIC))),
+								assign));
+						}
+					}
+				}
+				
 				return Ast.makeNode(CAstNode.BLOCK_EXPR, nodes.toArray(new CAstNode[nodes.size()]));
 			}
 		}
@@ -539,7 +596,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				public Collection<CAstType> getSupertypes() {
 					Collection<CAstType> supertypes = HashSetFactory.make();
 					for(expr e : arg0.getInternalBases()) {
-						System.out.println(arg0.getInternalName() + " " + arg0.getType()+ " extends "  + e.getText() + " " + e.getType());
+//						System.out.println(arg0.getInternalName() + " " + arg0.getType()+ " extends "  + e.getText() + " " + e.getType());
 						try {
 							CAstType type = types.getCAstTypeFor(e.getText());
 							if (type != null) {
@@ -789,7 +846,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				args[i++] = keys.next().accept(this);
 				args[i++] = vals.next().accept(this);
 			}
-			return Ast.makeNode(CAstNode.OBJECT_LITERAL, args);
+			return notePosition(Ast.makeNode(CAstNode.OBJECT_LITERAL, args), arg0);
 		}
 
 		
@@ -929,9 +986,10 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				defaultCode = new CAstNode[ defaults.size() ];
 				for(expr dflt : defaults) {
 					String name = functionName + "_default_" + arg;
+ 					context.root().addGlobal(name);
 					defaultCode[arg] = 
-					    Ast.makeNode(CAstNode.DECL_STMT,
-							Ast.makeConstant(new CAstSymbolImpl(name, PythonCAstToIRTranslator.Any)),
+					    Ast.makeNode(CAstNode.ASSIGN,
+							Ast.makeNode(CAstNode.VAR, Ast.makeConstant(name)),
 						    dflt.accept(this));
 					defaultVars[arg++] = Ast.makeNode(CAstNode.VAR, Ast.makeConstant(name));
 				}
@@ -1022,15 +1080,17 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				ai++;
 			}
 			
-			class PythonCodeEntity extends AbstractCodeEntity implements DynamicAnnotatableEntity {
+			class PythonCodeEntity extends AbstractCodeEntity implements PythonGlobalsEntity, DynamicAnnotatableEntity {
+				private final java.util.Set<String> downwardGlobals;
 				
 				@Override
 				public Iterable<CAstNode> dynamicAnnotations() {
 					return dynamicAnnotations;
 				}
 
-				protected PythonCodeEntity(CAstType type) {
+				protected PythonCodeEntity(CAstType type, java.util.Set<String> downwardGlobals) {
 					super(type);
+					this.downwardGlobals = downwardGlobals;
 				}
 
 				@Override
@@ -1114,11 +1174,18 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				public Position getNamePosition() {
 					return namePos;
 				}
+
+				@Override
+				public java.util.Set<String> downwardGlobals() {
+					return downwardGlobals;
+				}
 			};
 
-			PythonCodeEntity fun = new PythonCodeEntity(functionType);
+			java.util.Set<String> downwardGlobals = HashSetFactory.make();
 			
-			PythonParser.FunctionContext child = new PythonParser.FunctionContext(context, fun, function);	
+			PythonCodeEntity fun = new PythonCodeEntity(functionType, downwardGlobals);
+			
+			PythonParser.FunctionContext child = new PythonParser.FunctionContext(context, fun, downwardGlobals, function);	
 			CAstVisitor cv = new CAstVisitor(child, parser);
 			for(S s : body) {
 				nodes[i++] = s.accept(cv);
@@ -1126,7 +1193,11 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 
 			if (isMethod) {
 				context.addScopedEntity(null, fun);
-				return null;
+				if (defaultCode.length == 0) {
+					return null;
+				} else {
+					return Ast.makeNode(CAstNode.BLOCK_EXPR, defaultCode);
+				}
 				
 			} else {
 				CAstNode stmt = Ast.makeNode(CAstNode.FUNCTION_EXPR, Ast.makeConstant(fun));
@@ -1185,6 +1256,9 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 		@Override
 		public CAstNode visitGlobal(Global arg0) throws Exception {
 			java.util.List <Name> internalNames = arg0.getInternalNameNodes();
+			
+			internalNames.forEach(n -> context.addGlobal(n.getText()));
+			
 			CAstNode[] x = new CAstNode[arg0.getInternalNameNodes().size()];
 			for(int i = 0; i < x.length; i++)
 				x[i] = internalNames.get(i).accept(this);
@@ -1204,18 +1278,18 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 		
 		@Override
 		public CAstNode visitIf(If arg0) throws Exception {
-			return Ast.makeNode(CAstNode.IF_STMT,
+			return notePosition(Ast.makeNode(CAstNode.IF_STMT,
 					arg0.getInternalTest().accept(this),
 					block(arg0.getInternalBody()),
-					block(arg0.getInternalOrelse()));
+					block(arg0.getInternalOrelse())), arg0);
 		}
 
 		@Override
 		public CAstNode visitIfExp(IfExp arg0) throws Exception {
-			return Ast.makeNode(CAstNode.IF_EXPR, 
+			return notePosition(Ast.makeNode(CAstNode.IF_EXPR, 
 					arg0.getInternalTest().accept(this),
 					arg0.getInternalBody().accept(this),
-					arg0.getInternalOrelse().accept(this));
+					arg0.getInternalOrelse().accept(this)), arg0);
 		}
 
 		private String name(alias n) {
@@ -1231,7 +1305,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			int i = 0;
 			CAstNode[] elts = new CAstNode[ arg0.getInternalNames().size() ];
 			for(alias n : arg0.getInternalNames()) {
-				CAstNode obj = importAst(n.getInternalNameNodes());
+				CAstNode obj = importAst(arg0, n.getInternalNameNodes());
 				elts[i++] = notePosition(Ast.makeNode(CAstNode.DECL_STMT,
 					Ast.makeConstant(new CAstSymbolImpl(name(n), PythonCAstToIRTranslator.Any)),
 					obj != null?
@@ -1248,7 +1322,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 
 			elts[0] = notePosition(Ast.makeNode(CAstNode.DECL_STMT,
 				Ast.makeConstant(new CAstSymbolImpl(tree, PythonCAstToIRTranslator.Any)),
-				importAst(arg0.getInternalModuleNames())), arg0);					
+				importAst(arg0, arg0.getInternalModuleNames())), arg0);					
 
 			int i = 1;
 			for(alias n : arg0.getInternalNames()) {
@@ -1268,10 +1342,12 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			return Ast.makeNode(CAstNode.BLOCK_STMT, elts);
 		}
 
-		private CAstNode importAst(java.util.List<Name> names ) {
+		private final boolean wholeStatement = true;
+		
+		private <T extends stmt> CAstNode importAst(T importNode, java.util.List<Name> names ) {
 			CAstNode importAst = notePosition(Ast.makeNode(CAstNode.PRIMITIVE, 
 				Ast.makeConstant("import"), 
-				Ast.makeConstant(names.get(0).getInternalId())), names.get(0));
+				Ast.makeConstant(names.get(0).getInternalId())), wholeStatement? importNode: names.get(0));
 			for(int i = 1; i < names.size(); i++) {
 				importAst = notePosition(Ast.makeNode(CAstNode.OBJECT_REF,
 					importAst,
@@ -1475,10 +1551,18 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			            Ast.makeNode(CAstNode.EACH_ELEMENT_GET,   
 			              Ast.makeNode(CAstNode.VAR, Ast.makeConstant(tempName)),
 			              c.getInternalTarget().accept(this)))));
-				
-				result = Ast.makeNode(CAstNode.BLOCK_EXPR,
+								
+				result = notePosition(Ast.makeNode(CAstNode.BLOCK_EXPR,
+						
 				  Ast.makeNode(CAstNode.DECL_STMT, Ast.makeConstant(new CAstSymbolImpl(tempName, PythonCAstToIRTranslator.Any)), 
-				    c.getInternalIter().accept(this)),
+					c.getInternalIter().accept(this)),
+
+			      Ast.makeNode(CAstNode.ASSIGN, 
+			        c.getInternalTarget().accept(this),
+			        Ast.makeNode(CAstNode.EACH_ELEMENT_GET,   
+			          Ast.makeNode(CAstNode.VAR, Ast.makeConstant(tempName)),
+			          Ast.makeConstant(null))),
+												
 				  Ast.makeNode(CAstNode.LOOP, 
 					test, 
 					Ast.makeNode(CAstNode.BLOCK_EXPR,
@@ -1487,7 +1571,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 					    Ast.makeNode(CAstNode.OBJECT_REF,
 					    	Ast.makeNode(CAstNode.VAR, Ast.makeConstant(tempName)),
 					    	c.getInternalTarget().accept(this))),
-					  result)));
+					  result))), c);
 				
 			}
 
@@ -1502,7 +1586,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				for(PythonTree c : arg0.getChildren()) {
 					elts.add(c.accept(this));
 				}
-				return Ast.makeNode(CAstNode.BLOCK_EXPR, elts.toArray(new CAstNode[ elts.size() ]));
+				return Ast.makeNode(CAstNode.BLOCK_STMT, elts.toArray(new CAstNode[ elts.size() ]));
 			} else {
 				return Ast.makeNode(CAstNode.EMPTY);
 			}
@@ -1560,9 +1644,9 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 		@Override
 		public CAstNode visitReturn(Return arg0) throws Exception {
 			if(arg0.getInternalValue() == null)
-				return Ast.makeNode(CAstNode.RETURN, Ast.makeNode(CAstNode.VAR, Ast.makeConstant("None")));
+				return notePosition(Ast.makeNode(CAstNode.RETURN, Ast.makeNode(CAstNode.VAR, Ast.makeConstant("None"))), arg0);
 			else
-				return Ast.makeNode(CAstNode.RETURN, arg0.getInternalValue().accept(this));
+				return notePosition(Ast.makeNode(CAstNode.RETURN, arg0.getInternalValue().accept(this)), arg0);
 		}
 
 		@Override
@@ -1938,6 +2022,10 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 		
 	}
 
+	protected CAstVisitor makeVisitor(PythonParser.WalkContext context, WalaPythonParser parser) {
+		return new CAstVisitor(context, parser);
+	}
+
 	@Override
 	public CAstEntity translateToCAst() throws Error, IOException {
 		WalaPythonParser parser = makeParser();
@@ -1976,19 +2064,19 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				
 			};
 			
-			WalkContext root = new PythonParser.RootContext(pythonAst);
-			CAstEntity script = new AbstractScriptEntity(scriptName(), scriptType) {
+			RootContext root = new PythonParser.RootContext(pythonAst);
+			
+			class PythonScriptEntity extends AbstractScriptEntity implements PythonGlobalsEntity {
+				private PythonScriptEntity(String file, CAstType type) throws Exception {
+					super(file, type);
+					context = new PythonParser.FunctionContext(root, this, root.downwardGlobals(), pythonAst);
+					visitor = makeVisitor(context, parser);
+					cast = pythonAst.accept(visitor);
+				}
 
 				private final WalkContext context;
 				private final CAstVisitor visitor;
-				private final CAstNode cast;
-				
-				{
-					context = new PythonParser.FunctionContext(root, this, pythonAst);		
-					visitor = new CAstVisitor(context, parser);
-					cast = pythonAst.accept(visitor);
-				}
-				
+				private final CAstNode cast;				
 				
 				@Override
 				public CAstNode getAST() {
@@ -2000,6 +2088,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 					return visitor.makePosition(pythonAst);
 				}
 				
+				@Override
 				public Position getPosition(int arg) {
 					return null;
 				}
@@ -2009,9 +2098,14 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 					return null;
 				}
 
+				@Override
+				public java.util.Set<String> downwardGlobals() {
+					return root.downwardGlobals();
+				}
+
 			};
 			
-			return script;
+			return new PythonScriptEntity(scriptName(), scriptType);
 		} catch (Exception e) {
 			throw new Error(Collections.singleton(new Warning(Warning.SEVERE) {
 				@Override

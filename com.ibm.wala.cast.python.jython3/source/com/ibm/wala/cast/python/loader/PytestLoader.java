@@ -18,13 +18,14 @@ import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.visit.CAstVisitor;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IClass;
+import com.ibm.wala.classLoader.ModuleEntry;
+import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
-import com.ibm.wala.util.strings.Atom;
 
 public class PytestLoader extends Python3Loader {
 
@@ -37,8 +38,8 @@ public class PytestLoader extends Python3Loader {
 	}
 
 	@Override
-	protected TranslatorToIR initTranslator() {
-		return new PythonCAstToIRTranslator(this) {
+	protected TranslatorToIR initTranslator(Set<Pair<CAstEntity, ModuleEntry>> topLevelEntities) {
+		return new PythonCAstToIRTranslator(this, topLevelEntities) {
 
 			private boolean isPytestEntry(CAstEntity F) {
 				if (F.getType() instanceof CAstType.Function) {

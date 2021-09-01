@@ -4,12 +4,14 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import com.ibm.wala.cast.ir.ssa.AstPropertyRead;
 import com.ibm.wala.cast.python.ssa.PythonInstructionVisitor;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
+import com.ibm.wala.ipa.callgraph.propagation.ConstantKey;
 import com.ibm.wala.ipa.callgraph.propagation.HeapModel;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
@@ -41,6 +43,24 @@ public class PandasReadExcelAnalysis {
 				} 	
 			});
 			ir.visitAllInstructions(new PythonInstructionVisitor() {
+				
+				@Override
+				public void visitPropertyRead(AstPropertyRead instruction) {
+					PA.getPointsToSet(H.getPointerKeyForLocal(script, instruction.getObjectRef())).forEach((InstanceKey obj) -> {
+						if (excelTableFields.containsKey(obj)) {
+							if (excelTableFields.containsKey(obj)) {
+								PA.getPointsToSet(H.getPointerKeyForLocal(script, instruction.getMemberRef())).forEach((InstanceKey field) -> {
+									if (field instanceof ConstantKey<?> && 
+										((ConstantKey<?>)field).getValue() instanceof String)
+									{
+										excelTableFields.get(obj).add(((ConstantKey<String>)field).getValue());
+									}
+								});
+							}
+						}
+					});
+				}
+
 				@Override
 				public void visitGet(SSAGetInstruction instruction) {
 					PA.getPointsToSet(H.getPointerKeyForLocal(script, instruction.getRef())).forEach((InstanceKey obj) -> {

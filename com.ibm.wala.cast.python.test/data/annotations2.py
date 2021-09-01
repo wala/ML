@@ -102,12 +102,12 @@ def test_class(class_):
 def test_cols(columns):
      print("(" + str(columns) + ")")
 
-@pytest.mark.parametrize("repeats, kwargs, error, msg",[
-(2, dict(axis=1), ValueError, "'axis"),
-(-1, dict(), ValueError, "negative"),
-([1, 2], dict(), ValueError, "shape")])
-def test_dict(repeats, kwargs, error, msg):
-     print("(" + str(repeats) + " " + str(kwargs) + " " + str(error) + " " + msg + ")")
+#@pytest.mark.parametrize("repeats, kwargs, error, msg",[
+#(2, dict(axis=1), ValueError, "'axis"),
+#(-1, dict(), ValueError, "negative"),
+#([1, 2], dict(), ValueError, "shape")])
+#def test_dict(repeats, kwargs, error, msg):
+#     print("(" + str(repeats) + " " + str(kwargs) + " " + str(error) + " " + msg + ")")
 
 from pandas_shim import DataFrame
 import np_shim as np

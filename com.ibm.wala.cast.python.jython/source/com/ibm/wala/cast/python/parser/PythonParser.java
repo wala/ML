@@ -118,7 +118,7 @@ import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.ReverseIterator;
-import com.ibm.wala.util.warnings.Warning;
+import com.ibm.wala.core.util.warnings.Warning;
 
 abstract public class PythonParser<T> extends AbstractParser<T> implements TranslatorToCAst {
 
@@ -232,7 +232,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			int last_col;
 			int last_line = p.getLineno() + lines.length - 1;
 			if ("".equals(s) || lines.length <= 1) {
-				last_col = p.getCharPositionInLine() + (p.getCharStopIndex() - p.getCharStartIndex());
+				last_col = p.getCol_offset() + (p.getCharStopIndex() - p.getCharStartIndex());
 			} else {
 				assert (lines.length > 1);
 				last_col = lines[lines.length-1].length();
@@ -262,7 +262,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 
 				@Override
 				public int getFirstCol() {
-					return p.getCharPositionInLine();
+					return p.getCol_offset();
 				}
 				
 				@Override
@@ -1092,7 +1092,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			int i = 0;
 			CAstNode[] elts = new CAstNode[ arg0.getInternalNames().size() ];
 			for(alias n : arg0.getInternalNames()) {
-				CAstNode obj = importAst(n.getInternalNameNodes());
+				CAstNode obj = importAst(arg0, n.getInternalNameNodes());
 				elts[i++] = notePosition(Ast.makeNode(CAstNode.DECL_STMT,
 					Ast.makeConstant(new CAstSymbolImpl(name(n), PythonCAstToIRTranslator.Any)),
 					obj != null?
@@ -1109,7 +1109,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 
 			elts[0] = Ast.makeNode(CAstNode.DECL_STMT,
 				Ast.makeConstant(new CAstSymbolImpl(tree, PythonCAstToIRTranslator.Any)),
-				importAst(arg0.getInternalModuleNames()));					
+				importAst(arg0, arg0.getInternalModuleNames()));					
 
 			int i = 1;
 			for(alias n : arg0.getInternalNames()) {
@@ -1123,10 +1123,12 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			return Ast.makeNode(CAstNode.BLOCK_STMT, elts);
 		}
 
-		private CAstNode importAst(java.util.List<Name> names ) {
+		private final boolean wholeStatement = true;
+		
+		private <R extends stmt> CAstNode importAst(R importNode, java.util.List<Name> names ) {
 			CAstNode importAst = notePosition(Ast.makeNode(CAstNode.PRIMITIVE, 
 				Ast.makeConstant("import"), 
-				Ast.makeConstant(names.get(0).getInternalId())), names.get(0));
+				Ast.makeConstant(names.get(0).getInternalId())), wholeStatement? importNode: names.get(0));
 			for(int i = 1; i < names.size(); i++) {
 				importAst = notePosition(Ast.makeNode(CAstNode.OBJECT_REF,
 					importAst,

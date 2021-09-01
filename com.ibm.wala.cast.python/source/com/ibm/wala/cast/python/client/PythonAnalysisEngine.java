@@ -20,8 +20,10 @@ import com.ibm.wala.cast.python.ipa.summaries.PythonSuper;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
 import com.ibm.wala.cast.python.types.PythonTypes;
+import com.ibm.wala.cast.python.util.PythonInterpreter;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cast.util.Util;
+import com.ibm.wala.classLoader.FileModule;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
 import com.ibm.wala.classLoader.IField;
@@ -30,6 +32,7 @@ import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.SyntheticClass;
 import com.ibm.wala.client.AbstractAnalysisEngine;
+import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.callgraph.AnalysisCacheImpl;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.AnalysisScope;
@@ -52,7 +55,7 @@ import com.ibm.wala.ipa.summaries.BypassClassTargetSelector;
 import com.ibm.wala.ipa.summaries.BypassMethodTargetSelector;
 import com.ibm.wala.ipa.summaries.BypassSyntheticClassLoader;
 import com.ibm.wala.ipa.summaries.XMLMethodSummaryReader;
-import com.ibm.wala.shrikeBT.Constants;
+import com.ibm.wala.shrike.shrikeBT.Constants;
 import com.ibm.wala.ssa.IRFactory;
 import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.ssa.SSAOptions.DefaultValues;
@@ -67,10 +70,27 @@ import com.ibm.wala.util.WalaException;
 import com.ibm.wala.util.WalaRuntimeException;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
-import com.ibm.wala.util.strings.Atom;
 
 public abstract class PythonAnalysisEngine<T>
 		extends AbstractAnalysisEngine<InstanceKey, PythonSSAPropagationCallGraphBuilder, T> {
+
+	static {
+		try {
+			Class<?> j3 = Class.forName("com.ibm.wala.cast.python.loader.Python3LoaderFactory");
+			PythonAnalysisEngine.setLoaderFactory((Class<? extends PythonLoaderFactory>) j3);
+			Class<?> i3 = Class.forName("com.ibm.wala.cast.python.util.Python3Interpreter");
+			PythonInterpreter.setInterpreter((PythonInterpreter)i3.newInstance());
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+			try {
+				Class<?> j2 = Class.forName("com.ibm.wala.cast.python.loader.Python2LoaderFactory");			
+				PythonAnalysisEngine.setLoaderFactory((Class<? extends PythonLoaderFactory>) j2);
+				Class<?> i2 = Class.forName("com.ibm.wala.cast.python.util.Python2Interpreter");
+				PythonInterpreter.setInterpreter((PythonInterpreter)i2.newInstance());
+			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e1) {
+				assert false : e.getMessage() + ", then " + e1.getMessage();
+			}
+		}
+	}
 
 	private static Class<? extends PythonLoaderFactory> loaders;
 	
@@ -259,26 +279,19 @@ public abstract class PythonAnalysisEngine<T>
 		addSummaryBypassLogic(options, "functools.xml");
 	}
 
-	private String scriptName(ModuleEntry m) {
-		String path = m.getName();
-		return "Lscript " + (path.contains("/")? path.substring(path.lastIndexOf('/')+1): path);
-	}
-
+	
 	@Override
 	protected Iterable<Entrypoint> makeDefaultEntrypoints(AnalysisScope scope, IClassHierarchy cha) {
 		Set<Entrypoint> result = HashSetFactory.make();
-		for(Module m : moduleFiles) {
-			m.getEntries().forEachRemaining(f -> {
-				IClass entry = cha.lookupClass(TypeReference.findOrCreate(PythonTypes.pythonLoader, TypeName.findOrCreate(scriptName(f))));
-				assert entry != null: "bad root name " + scriptName(f) + ":\n" + cha;
+		cha.forEach(entry -> {
+			if (entry.getName().toString().endsWith(".py")) {
 				MethodReference er = MethodReference.findOrCreate(entry.getReference(), AstMethodReference.fnSelector);
 				result.add(new DefaultEntrypoint(er, cha));
-			});
-		}
+			}
+		});
 		return result;
 	}
 
-	
 	@Override
 	protected PythonSSAPropagationCallGraphBuilder getCallGraphBuilder(IClassHierarchy cha, AnalysisOptions options, IAnalysisCacheView cache2) {
 		IAnalysisCacheView cache = new AnalysisCacheImpl(irs, options.getSSAOptions());

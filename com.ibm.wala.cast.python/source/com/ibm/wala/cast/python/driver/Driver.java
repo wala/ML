@@ -45,7 +45,7 @@ public class Driver {
 		}
 	}
 
-	protected static <T> T runit(PythonAnalysisEngine<T> E, String... args)
+	protected <T> T runit(PythonAnalysisEngine<T> E, String... args)
 			throws IOException, CancelException {
 		Set<Module> sources = HashSetFactory.make();
 		for(String file : args) {
@@ -84,7 +84,7 @@ public class Driver {
 			}
 		};
 		
-		runit(E, args);
+		new Driver().runit(E, args);
 	}
 
 

@@ -21,11 +21,11 @@ import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.SyntheticClass;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
-import com.ibm.wala.shrikeBT.Constants;
+import com.ibm.wala.shrike.shrikeBT.Constants;
 import com.ibm.wala.types.Selector;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
-import com.ibm.wala.util.strings.Atom;
+import com.ibm.wala.core.util.strings.Atom;
 
 public class PythonSyntheticClass extends SyntheticClass {
 	protected final Map<Selector,PythonSummarizedFunction> functions = HashMapFactory.make();

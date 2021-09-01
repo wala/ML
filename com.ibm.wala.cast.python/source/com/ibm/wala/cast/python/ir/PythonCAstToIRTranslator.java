@@ -19,20 +19,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import com.ibm.wala.cast.ir.ssa.AssignInstruction;
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
-import com.ibm.wala.cast.ir.translator.ArrayOpHandler;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.loader.DynamicAnnotatableEntity;
 import com.ibm.wala.cast.python.loader.PythonLoader;
+import com.ibm.wala.cast.python.parser.AbstractParser.PythonGlobalsEntity;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
+import com.ibm.wala.cast.tree.CAstSourcePositionMap;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.CAstControlFlowRecorder;
@@ -45,10 +47,12 @@ import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
+import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.NewSiteReference;
-import com.ibm.wala.shrikeBT.IBinaryOpInstruction;
-import com.ibm.wala.shrikeBT.IBinaryOpInstruction.IOperator;
-import com.ibm.wala.shrikeBT.IInvokeInstruction.Dispatch;
+import com.ibm.wala.core.util.strings.Atom;
+import com.ibm.wala.shrike.shrikeBT.IBinaryOpInstruction;
+import com.ibm.wala.shrike.shrikeBT.IBinaryOpInstruction.IOperator;
+import com.ibm.wala.shrike.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.FieldReference;
@@ -58,25 +62,17 @@ import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
-import com.ibm.wala.util.strings.Atom;
 
 public class PythonCAstToIRTranslator extends AstTranslator {
 
 	private final Map<CAstType, TypeName> walaTypeNames = HashMapFactory.make();
 	private final Set<Pair<Scope,String>> globalDeclSet = new HashSet<>();
 	private static boolean signleFileAnalysis = true;
+	private final Set<Pair<CAstEntity, ModuleEntry>> topLevelEntities;
 	
-	public PythonCAstToIRTranslator(IClassLoader loader, Map<Object, CAstEntity> namedEntityResolver,
-			ArrayOpHandler arrayOpHandler) {
-		super(loader, namedEntityResolver, arrayOpHandler);
-	}
-
-	public PythonCAstToIRTranslator(IClassLoader loader, Map<Object, CAstEntity> namedEntityResolver) {
-		super(loader, namedEntityResolver);
-	}
-
-	public PythonCAstToIRTranslator(IClassLoader loader) {
+	public PythonCAstToIRTranslator(IClassLoader loader, Set<Pair<CAstEntity, ModuleEntry>> topLevelEntities) {
 		super(loader);
+		this.topLevelEntities = topLevelEntities;
 	}
 
 	public static boolean isSingleFileAnalysis() {
@@ -211,7 +207,9 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	@Override
 	protected void doPrologue(WalkContext context) {
 		if (context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY) {
-			doGlobalWrite(context, context.currentScope().getEntity().getName(), PythonTypes.Root, 1);
+		    context.cfg().unknownInstructions(() -> { 	
+		    	doGlobalWrite(context, context.currentScope().getEntity().getName(), PythonTypes.Root, 1);
+		    });
 		}
 		
 		super.doPrologue(context);
@@ -240,27 +238,27 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	@Override
 	protected void doFieldRead(WalkContext context, int result, int receiver, CAstNode elt, CAstNode parent) {
 	    int currentInstruction = context.cfg().getCurrentInstruction();
-		if (elt.getKind() == CAstNode.CONSTANT && elt.getValue() instanceof String) {
-			FieldReference f = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), PythonTypes.Root);
-			context.cfg().addInstruction(Python.instructionFactory().GetInstruction(currentInstruction, result, receiver, f));
-		} else {
+//		if (elt.getKind() == CAstNode.CONSTANT && elt.getValue() instanceof String) {
+//			FieldReference f = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), PythonTypes.Root);
+//			context.cfg().addInstruction(Python.instructionFactory().GetInstruction(currentInstruction, result, receiver, f));
+//		} else {
 			visit(elt, context, this);		
 			assert context.getValue(elt) != -1;
 			context.cfg().addInstruction(((AstInstructionFactory) insts).PropertyRead(currentInstruction, result, receiver, context.getValue(elt)));
-		}
+//		}
 	    context.cfg().noteOperands(currentInstruction, context.getSourceMap().getPosition(parent.getChild(0)), context.getSourceMap().getPosition(elt));
 	}
 
 	@Override
 	protected void doFieldWrite(WalkContext context, int receiver, CAstNode elt, CAstNode parent, int rval) {
-	    if (elt.getKind() == CAstNode.CONSTANT && elt.getValue() instanceof String) {
-			FieldReference f = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), PythonTypes.Root);
-			context.cfg().addInstruction(Python.instructionFactory().PutInstruction(context.cfg().getCurrentInstruction(), receiver, rval, f));
-		} else {
+//	    if (elt.getKind() == CAstNode.CONSTANT && elt.getValue() instanceof String) {
+//			FieldReference f = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), PythonTypes.Root);
+//			context.cfg().addInstruction(Python.instructionFactory().PutInstruction(context.cfg().getCurrentInstruction(), receiver, rval, f));
+//		} else {
 			visit(elt, context, this);		
 			assert context.getValue(elt) != -1;
 		    context.cfg().addInstruction(((AstInstructionFactory) insts).PropertyWrite(context.cfg().getCurrentInstruction(), receiver, context.getValue(elt), rval));
-		}
+//		}
 	}
 
 	@Override
@@ -270,7 +268,10 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	    IClass cls = loader.lookupClass(TypeName.findOrCreate("L" + fnName));
 	    TypeReference type = cls.getReference();
 	    int idx = context.cfg().getCurrentInstruction();
-	    context.cfg().addInstruction(Python.instructionFactory().NewInstruction(idx, result, NewSiteReference.make(idx, type)));
+
+	    context.cfg().unknownInstructions(() -> { 	
+	    	context.cfg().addInstruction(Python.instructionFactory().NewInstruction(idx, result, NewSiteReference.make(idx, type)));
+	    });
 
 		if (fn instanceof DynamicAnnotatableEntity) {
 			if (((DynamicAnnotatableEntity)fn).dynamicAnnotations().iterator().hasNext()) {
@@ -290,9 +291,11 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 			}
 		}
 
-	    doGlobalWrite(context, fnName, PythonTypes.Root, result);
-	    FieldReference fnField = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom(fn.getName()), PythonTypes.Root);
-	    context.cfg().addInstruction(Python.instructionFactory().PutInstruction(context.cfg().getCurrentInstruction(), 1, result, fnField));
+	    context.cfg().unknownInstructions(() -> { 	
+	    	doGlobalWrite(context, fnName, PythonTypes.Root, result);
+	    	FieldReference fnField = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom(fn.getName()), PythonTypes.Root);
+	    	context.cfg().addInstruction(Python.instructionFactory().PutInstruction(context.cfg().getCurrentInstruction(), 1, result, fnField));
+	    });
 	}
 
 	
@@ -313,37 +316,67 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		}
 	}
 
+	private final Stack<PythonGlobalsEntity> globalsStack = new Stack<>();
+
+	@Override
+	protected boolean enterEntity(CAstEntity n, WalkContext context, CAstVisitor<WalkContext> visitor) {
+		if (n.getOriginal() instanceof PythonGlobalsEntity) {
+			globalsStack.push((PythonGlobalsEntity)n.getOriginal());
+		}
+		return super.enterEntity(n, context, visitor);
+	}
+
+	@Override
+	protected void postProcessEntity(CAstEntity n, WalkContext context, CAstVisitor<WalkContext> visitor) {
+		if (n.getOriginal() instanceof PythonGlobalsEntity) {
+			globalsStack.pop();
+		}
+		super.postProcessEntity(n, context, visitor);
+	}
+
+	private boolean isGlobalVar(String name) {
+		for(PythonGlobalsEntity e : globalsStack ) {
+			if (e.downwardGlobals().contains(name)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	@Override
 	protected void leaveVar(CAstNode n, WalkContext c, CAstVisitor<WalkContext> visitor) {
 		WalkContext context = c;
 		String nm = (String) n.getChild(0).getValue();
 		assert nm != null : "cannot find var for " + CAstPrinter.print(n, context.getSourceMap());
-		Symbol s = context.currentScope().lookup(nm);
-		assert s != null : "cannot find symbol for " + nm + " at " + CAstPrinter.print(n, context.getSourceMap());
-		assert s.type() != null : "no type for " + nm + " at " + CAstPrinter.print(n, context.getSourceMap());
-		TypeReference type = makeType(s.type());
-		if (context.currentScope().isGlobal(s) || isGlobal(context, nm)) {
-			c.setValue(n, doGlobalRead(n, context, nm, type));
-		} else if (context.currentScope().isLexicallyScoped(s)) {
-			c.setValue(n, doLexicallyScopedRead(n, context, nm, type));
+
+		if ("0".equals(nm)) {
+			System.err.println("got here");
+		}
+
+		if (isGlobalVar(nm)) {
+			c.setValue(n, doGlobalRead(n, context, nm, PythonTypes.Root));			
 		} else {
-			c.setValue(n, doLocalRead(context, nm, type));
+			Symbol s = context.currentScope().lookup(nm);
+			assert s != null : "cannot find symbol for " + nm + " at " + CAstPrinter.print(n, context.getSourceMap());
+			assert s.type() != null : "no type for " + nm + " at " + CAstPrinter.print(n, context.getSourceMap());
+			TypeReference type = makeType(s.type());
+			if (context.currentScope().isGlobal(s) || isGlobal(context, nm)) {
+				c.setValue(n, doGlobalRead(n, context, nm, type));
+			} else if (context.currentScope().isLexicallyScoped(s)) {
+				c.setValue(n, doLexicallyScopedRead(n, context, nm, type));
+			} else {
+				c.setValue(n, doLocalRead(context, nm, type));
+			}
 		}
 	}
 
-//	@Override
-//	protected void leaveVarAssign(CAstNode n, CAstNode v, CAstNode a, WalkContext c, CAstVisitor<WalkContext> visitor) {
-//		WalkContext context = c;
-//		int rval = c.getValue(v);
-//		String nm = (String) n.getChild(0).getValue();
-//		Symbol ls = context.currentScope().lookup(nm);
-//		c.setValue(n, rval);
-//		assignValue(n, context, ls, nm, rval);
-//	}
 
 	@Override
 	protected void assignValue(CAstNode n, WalkContext context, Symbol ls, String nm, int rval) {
-		if (context.currentScope().isGlobal(ls) || isGlobal(context, nm))
+		if (isGlobalVar(nm)) {
+			doGlobalWrite(context, nm, PythonTypes.Root, rval);
+		} else if (context.currentScope().isGlobal(ls) || isGlobal(context, nm))
 			doGlobalWrite(context, nm, makeType(ls.type()), rval);
 		else if (context.currentScope().isLexicallyScoped(ls)) {
 			doLexicallyScopedWrite(context, nm, makeType(ls.type()), rval);
@@ -542,7 +575,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 			
 			Position save = currentPosition;
 			currentPosition = context.getSourceMap().getPosition(primitiveCall);
-			System.err.println("&&&&& switched to " + currentPosition);
+			// System.err.println("&&&&& switched to " + currentPosition);
 			
 			if (loader.lookupClass(TypeName.findOrCreate("Lscript " + name + ".py")) != null) {
 			      FieldReference global = makeGlobalRef("script " + name + ".py");
@@ -554,6 +587,16 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 			}
 			
 			currentPosition = save;
+		} else if (primitiveCall.getChildCount() == 3 && "import".equals(primitiveCall.getChild(0).getValue())) {
+			String scriptName = (String) primitiveCall.getChild(1).getValue();
+			String eltName = (String) primitiveCall.getChild(2).getValue();
+			
+			int idx = context.cfg().getCurrentInstruction();
+			FieldReference global = makeGlobalRef("script " + scriptName + ".py");
+			context.cfg().addInstruction(new AstGlobalRead(idx, resultVal, global));
+
+			idx = context.cfg().getCurrentInstruction();
+			context.cfg().addInstruction(((AstInstructionFactory) insts).PropertyRead(idx, resultVal, resultVal, context.currentScope().getConstantValue(eltName)));
 		}
 	}
 	
@@ -655,6 +698,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 		Pair<Scope,String> pair = Pair.make(scope,varName);
 		globalDeclSet.add(pair);
 	}
+	
 	@Override
 	protected boolean doVisit(CAstNode n, WalkContext context, CAstVisitor<WalkContext> visitor) {
 		if (n.getKind() == CAstNode.COMPREHENSION_EXPR) {
@@ -711,6 +755,13 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 			ps[i] = e.getPosition(i-1);
 		}
 		return ps;
+	}
+
+	
+	@Override
+	protected void leaveBlockStmt(CAstNode n, WalkContext c, CAstVisitor<WalkContext> visitor) {
+		// TODO Auto-generated method stub
+		super.leaveBlockStmt(n, c, visitor);
 	}
 
 }

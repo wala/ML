@@ -10,6 +10,7 @@ import com.ibm.wala.cast.python.ipa.summaries.PythonInstanceMethodTrampoline;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.classLoader.IClass;
+import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKeyFactory;
@@ -35,10 +36,11 @@ public class PythonScopeMappingInstanceKeys extends ScopeMappingInstanceKeys {
 			 cls = ((PythonInstanceMethodTrampoline)cls).getRealClass();
 		 }
 		 
-		DynamicMethodObject function = (DynamicMethodObject)
-			cls.getMethod(AstMethodReference.fnSelector);
+		IMethod function = cls.getMethod(AstMethodReference.fnSelector);
 
-		 return function==null? new LexicalParent[0]: function.getParents();
+		 return function==null || !(function instanceof DynamicMethodObject)? 
+				 new LexicalParent[0]: 
+				 ((DynamicMethodObject)function).getParents();
 	 }
 
 	 @Override

@@ -20,7 +20,7 @@ import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.types.annotations.Annotation;
-import com.ibm.wala.util.strings.Atom;
+import com.ibm.wala.core.util.strings.Atom;
 
 public class PythonInstanceMethodTrampoline extends PythonSyntheticClass {
 	private static final Atom selfName = Atom.findOrCreateUnicodeAtom("self");

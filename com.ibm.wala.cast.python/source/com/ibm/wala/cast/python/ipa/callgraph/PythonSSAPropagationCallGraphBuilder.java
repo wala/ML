@@ -46,7 +46,7 @@ import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.intset.IntSetUtil;
 import com.ibm.wala.util.intset.MutableIntSet;
-import com.ibm.wala.util.strings.Atom;
+import com.ibm.wala.core.util.strings.Atom;
 
 public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallGraphBuilder {
 
@@ -82,22 +82,20 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 
 	private static final Collection<TypeReference> types = Arrays.asList(PythonTypes.string, TypeReference.Int);
 
+  private final Map<Pair<String,TypeReference>,BuiltinFunction> primitives = HashMapFactory.make();
+  
+  
 	public static class PythonConstraintVisitor extends AstConstraintVisitor implements PythonInstructionVisitor {
+
+	  @Override
+	  protected PythonSSAPropagationCallGraphBuilder getBuilder() {
+	    return (PythonSSAPropagationCallGraphBuilder) builder;
+	  }
 
 		public PythonConstraintVisitor(AstSSAPropagationCallGraphBuilder builder, CGNode node) {
 			super(builder, node);
 		}
 
-		private final Map<Pair<String,TypeReference>,BuiltinFunction> primitives = HashMapFactory.make();
-		
-		private BuiltinFunction ensure(Pair<String,TypeReference> key) {
-			if (! primitives.containsKey(key)) {
-				primitives.put(key, new BuiltinFunction(this.getClassHierarchy(), key.fst, key.snd));
-			}
-			
-			return primitives.get(key);
-		}
-		
 		@Override
 		public void visitGet(SSAGetInstruction instruction) {
 		      SymbolTable symtab = ir.getSymbolTable();
@@ -114,7 +112,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 		          for (InstanceKey ik : getInvariantContents(objVn)) {
 		        	  if (types.contains(ik.getConcreteType().getReference())) {
 		        		  Pair<String,TypeReference> key = Pair.make(name, ik.getConcreteType().getReference());
-		        		  system.newConstraint(lvalKey, new ConcreteTypeKey(ensure(key)));
+		        		  // system.newConstraint(lvalKey, new ConcreteTypeKey(getBuilder().ensure(key)));
 		        	  }
 		          }
 		      } else {
@@ -126,7 +124,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 							InstanceKey ik = system.getInstanceKey(i);
 							if (types.contains(ik.getConcreteType().getReference())) {
 								Pair<String,TypeReference> key = Pair.make(name, ik.getConcreteType().getReference());
-								system.newConstraint(lvalKey, new ConcreteTypeKey(ensure(key)));
+								// system.newConstraint(lvalKey, new ConcreteTypeKey(getBuilder().ensure(key)));
 							}
 						});
 						return NOT_CHANGED;
@@ -183,7 +181,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 			
 			// positional parameters
 			PythonInvokeInstruction call = (PythonInvokeInstruction) instruction;
-			for(int i = 0; i < call.getNumberOfPositionalParameters() && i <= target.getMethod().getNumberOfParameters(); i++) {
+			for(int i = 0; i < call.getNumberOfPositionalParameters() && i < target.getMethod().getNumberOfParameters(); i++) {
 				PointerKey lval = getPointerKeyForLocal(target, i+1);
 				args.add(i);
 				

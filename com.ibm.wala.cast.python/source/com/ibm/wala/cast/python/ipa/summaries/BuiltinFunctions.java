@@ -28,7 +28,7 @@ import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.types.annotations.Annotation;
 import com.ibm.wala.util.collections.HashMapFactory;
-import com.ibm.wala.util.strings.Atom;
+import com.ibm.wala.core.util.strings.Atom;
 
 public class BuiltinFunctions {
 
@@ -90,19 +90,19 @@ public class BuiltinFunctions {
 		private final IMethod builtinCode;
 		private final IClassHierarchy cha;
 		
-		public BuiltinFunction(IClassHierarchy cha, String name, TypeReference returnedType) {
+		private BuiltinFunction(IClassHierarchy cha, String name, TypeReference returnedType) {
 			this.cha = cha;
 			this.ref = builtinFunction(name);
 			this.builtinCode = returnedType==null? noopSummary(this, name): typeSummary(this, name, returnedType);
 		}
 
-		public BuiltinFunction(IClassHierarchy cha, String name, int arg) {
+		private BuiltinFunction(IClassHierarchy cha, String name, int arg) {
 			this.cha = cha;
 			this.ref = builtinFunction(name);
 			this.builtinCode = argSummary(this, name, arg);
 		}
 
-		public BuiltinFunction(IClassHierarchy cha, String name) {
+		private BuiltinFunction(IClassHierarchy cha, String name) {
 			this(cha, name, null);
 		}
 		
@@ -267,7 +267,7 @@ public class BuiltinFunctions {
 		
 	}
 
-	public static TypeReference builtinFunction(String name) {
+	private static TypeReference builtinFunction(String name) {
 		return TypeReference.findOrCreate(PythonTypes.pythonLoader, "Lwala/builtin/" + name);
 	}
 
@@ -277,6 +277,7 @@ public class BuiltinFunctions {
 //		builtinFunctions.put("enumerate", Either.forLeft(PythonTypes.enumerate));
 		builtinFunctions.put("enumerate", Either.forRight(2));
 		builtinFunctions.put("int", Either.forLeft(TypeReference.Int));
+		builtinFunctions.put("round", Either.forLeft(TypeReference.Int));
 		builtinFunctions.put("len", Either.forLeft(TypeReference.Int));
 		builtinFunctions.put("list", Either.forLeft(PythonTypes.list));
 		builtinFunctions.put("range", Either.forLeft(PythonTypes.list));
@@ -286,6 +287,7 @@ public class BuiltinFunctions {
 		builtinFunctions.put("type", Either.forLeft(PythonTypes.object));
 		builtinFunctions.put("zip", Either.forLeft(PythonTypes.list));
 		builtinFunctions.put("slice", Either.forRight(2));
+		builtinFunctions.put("__delete__", Either.forRight(2));
 	}
 
 	public static Set<String> builtins() {

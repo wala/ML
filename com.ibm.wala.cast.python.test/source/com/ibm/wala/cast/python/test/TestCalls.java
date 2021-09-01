@@ -128,7 +128,18 @@ public class TestCalls extends TestPythonCallGraphShape {
 
 	 @Test
 	public void testCalls6() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		CallGraph CG = process("calls6.py");
+		PythonAnalysisEngine<?> e = new PythonAnalysisEngine<Void>() {
+			@Override
+			public Void performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
+				assert false;
+				return null;
+			}
+		};
+		e.setModuleFiles(Collections.singleton(getScript("calls6.py")));
+		PropagationCallGraphBuilder cgBuilder = (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
+		CallGraph CG = cgBuilder.makeCallGraph(cgBuilder.getOptions());
+		CAstCallGraphUtil.AVOID_DUMP = false;
+		CAstCallGraphUtil.dumpCG((SSAContextInterpreter)cgBuilder.getContextInterpreter(), cgBuilder.getPointerAnalysis(), CG);
 		verifyGraphAssertions(CG, assertionsCalls6);
 	}
 
@@ -183,8 +194,8 @@ public class TestCalls extends TestPythonCallGraphShape {
 			e.setModuleFiles(Collections.singleton(getScript("defaultValuesTest.py")));
 			PropagationCallGraphBuilder cgBuilder = (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
 			CallGraph CG = cgBuilder.makeCallGraph(cgBuilder.getOptions());
-			//CAstCallGraphUtil.AVOID_DUMP = false;
-			//CAstCallGraphUtil.dumpCG((SSAContextInterpreter)cgBuilder.getContextInterpreter(), cgBuilder.getPointerAnalysis(), CG);
+			CAstCallGraphUtil.AVOID_DUMP = false;
+			CAstCallGraphUtil.dumpCG((SSAContextInterpreter)cgBuilder.getContextInterpreter(), cgBuilder.getPointerAnalysis(), CG);
 			verifyGraphAssertions(CG, assertionsDefaultValues);
 	 }
 }

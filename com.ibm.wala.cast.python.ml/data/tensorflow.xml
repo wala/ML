@@ -341,18 +341,19 @@
     
    <package name="tensorflow/estimator">
       <class name="Estimator" allocatable="true">
-        <method name="do" descriptor="()LRoot;" numArgs="2">
+        <method name="do" descriptor="()LRoot;" numArgs="2"
+		paramNames="self model">
           <new def="x" class="Ltensorflow/estimator/train/train"/>
 	  <putfield class="LRoot"
                     field="train"
                     fieldType="LRoot"
-                    ref="arg0"
+                    ref="self"
                     value="x"/>
 	  <putfield class="LRoot"
                     field="$callback"
                     fieldType="LRoot"
                     ref="x"
-                    value="2"/>
+                    value="model"/>
 	  <return value="arg0"/>
 	</method>
       </class>

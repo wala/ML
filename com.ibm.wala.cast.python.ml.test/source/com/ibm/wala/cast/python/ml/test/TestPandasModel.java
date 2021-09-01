@@ -30,7 +30,7 @@ public class TestPandasModel extends TestPythonMLCallGraphShape {
 		
 		Map<InstanceKey, Set<String>> excelTableFields = PandasReadExcelAnalysis.readExcelAnalysis(CG, PA, H);
 
-		System.out.println(excelTableFields);
+//		System.out.println(excelTableFields);
 	
 		boolean foundDfqol = false;
 		boolean foundDfdemog = false;
