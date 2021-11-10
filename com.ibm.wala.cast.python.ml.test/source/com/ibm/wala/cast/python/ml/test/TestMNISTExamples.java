@@ -1,8 +1,18 @@
 package com.ibm.wala.cast.python.ml.test;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
+import com.ibm.wala.cast.loader.AstMethod;
+import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
+import com.ibm.wala.cast.python.client.PythonTurtleAnalysisEngine;
+import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
+import com.ibm.wala.ipa.callgraph.propagation.*;
+import com.ibm.wala.ssa.*;
+import com.ibm.wala.util.collections.HashMapFactory;
+import com.ibm.wala.util.graph.Graph;
 import org.junit.Test;
 
 import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
@@ -16,20 +26,12 @@ import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
-import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
-import com.ibm.wala.ipa.callgraph.propagation.PointerKeyFactory;
-import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
-import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
-import com.ibm.wala.ipa.callgraph.propagation.PropagationSystem;
-import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
-import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
-import com.ibm.wala.ssa.SSAInstruction;
-import com.ibm.wala.ssa.SSAReturnInstruction;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashSetFactory;
+import org.python.modules._codecs$utf_7_decode_exposer;
 
 public class TestMNISTExamples extends TestPythonMLCallGraphShape {
 
@@ -184,5 +186,53 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
 			}
 			assert goodFeeds.size() > 0;
 		});
+	}
+
+	@Test
+	public void testDataFlow() throws ClassHierarchyException, IOException, CancelException {
+
+
+
+		PythonAnalysisEngine<?> E = makeEngine("/Users/malinda/Documents/Research3/wala_ml/com.ibm.wala.cast.python.ml.test/resources/dataflow.py");
+		PythonSSAPropagationCallGraphBuilder B = E.defaultCallGraphBuilder();
+		CallGraph CG = B.makeCallGraph(B.getOptions());
+
+		CAstCallGraphUtil.AVOID_DUMP = false;
+//		CAstCallGraphUtil.dumpCG((SSAContextInterpreter)B.getContextInterpreter(), B.getPointerAnalysis(), CG);
+//		System.out.println(CG.toString());
+		for (CGNode cgnode : CG) {
+//			if (cgnode.getMethod() instanceof AstMethod) {
+				IR callerIR = cgnode.getIR();
+				DefUse DU = cgnode.getDU();
+				SSAInstruction[] instructions = callerIR.getInstructions();
+				if (instructions.length>0){
+				for (int i = 0; i < instructions.length; i++) {
+					try {
+						int def1 = instructions[i].getDef();
+						System.out.println(instructions[i].toString());
+						Iterator<SSAInstruction> uses = DU.getUses(def1);
+						for (Iterator<SSAInstruction> it = uses; it.hasNext(); ) {
+							SSAInstruction item = it.next();
+							System.out.println("uses"+item.toString());
+						}
+					}
+					catch (AssertionError|ArrayIndexOutOfBoundsException|NullPointerException e){
+
+					}
+
+				}
+//					SSAInstruction def = DU.getDef(i);
+//					for (int j = 0; j < def.getNumberOfUses(); j++) {
+//						int use = def.getU(j);
+//					}
+
+
+
+				}
+
+//				System.out.println("DU");
+//			}
+		}
+
 	}
 }
