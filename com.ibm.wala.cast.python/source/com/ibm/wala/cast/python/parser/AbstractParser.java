@@ -7,11 +7,16 @@ import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
 import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap;
+import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.impl.CAstImpl;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
 
 public abstract class AbstractParser<T> {
+
+	public interface MissingType extends CAstType {
+		
+	}
 
 	public interface PythonGlobalsEntity {
 		java.util.Set<String> downwardGlobals();

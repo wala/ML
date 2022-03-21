@@ -113,7 +113,6 @@ import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.CAstQualifier;
-import com.ibm.wala.cast.tree.CAstSourcePositionMap;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.AbstractSourcePosition;
@@ -126,11 +125,11 @@ import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriter.CopyKey;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriter.RewriteContext;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriterFactory;
+import com.ibm.wala.core.util.warnings.Warning;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.ReverseIterator;
-import com.ibm.wala.core.util.warnings.Warning;
 
 abstract public class PythonParser<T> extends AbstractParser<T> implements TranslatorToCAst {
 
@@ -207,6 +206,18 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 		public void addDefinedName(String name) {
 			assert false;
 		}
+
+		@Override
+		public CAstNode getCatchTarget() {
+			return null;
+		}
+
+		@Override
+		public CAstNode getCatchTarget(String s) {
+			return null;
+		}
+		
+		
 	}
 	
 	private static class FunctionContext extends TranslatorToCAst.FunctionContext<WalkContext, PythonTree> implements WalkContext {
@@ -403,8 +414,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 
 		@Override
 		public CAstNode visitAssert(Assert arg0) throws Exception {
-			return Ast.makeNode(CAstNode.EMPTY);
-			//return notePosition(Ast.makeNode(CAstNode.ASSERT, arg0.getInternalTest().accept(this)), arg0);
+			return notePosition(Ast.makeNode(CAstNode.ASSERT, arg0.getInternalTest().accept(this)), arg0);
 		}
 
 		private int assign = 0;
@@ -584,9 +594,35 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			
 			CAstNode call = notePosition(Ast.makeNode(CAstNode.CALL, f, args), arg0);
 			
+			if (context.getCatchTarget("Exception") != null) {
+				context.cfg().map(arg0, call);
+				context.cfg().add(arg0, context.getCatchTarget("Exception"), "Exception");
+			}
+			
 			return call;
 		}
 
+		private final Map<String,CAstType> missingTypes = HashMapFactory.make();
+				
+		protected CAstType getMissingType(String name) {
+			if (!missingTypes.containsKey(name)) {
+				missingTypes.put(name, new MissingType() {
+
+					@Override
+					public String getName() {
+						return name;
+					}
+
+					@Override
+					public Collection<CAstType> getSupertypes() {
+						return Collections.emptySet();
+					}
+				});
+			} 
+			
+			return missingTypes.get(name);
+
+		}
 		@Override
 		public CAstNode visitClassDef(ClassDef arg0) throws Exception {
 			WalkContext parent = this.context;
@@ -596,11 +632,12 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 				public Collection<CAstType> getSupertypes() {
 					Collection<CAstType> supertypes = HashSetFactory.make();
 					for(expr e : arg0.getInternalBases()) {
-//						System.out.println(arg0.getInternalName() + " " + arg0.getType()+ " extends "  + e.getText() + " " + e.getType());
 						try {
 							CAstType type = types.getCAstTypeFor(e.getText());
 							if (type != null) {
 								supertypes.add(type);
+							} else {
+								supertypes.add(getMissingType(e.getText()));
 							}
 						} catch (Exception e1) {
 							assert false : e1;
@@ -1739,24 +1776,33 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			Map<String,CAstNode> handlers = HashMapFactory.make();
 			for(PyObject x : arg0.getChildren()) {
 				if (x instanceof ExceptHandler) {
+					CAstNode n1, n2;
 					ExceptHandler h = (ExceptHandler) x;
-					CAstNode name = h.getInternalName()==null? 
-						Ast.makeConstant("x"): 
-							Ast.makeConstant(h.getInternalName());
+					String name = h.getInternalName()==null? 
+						"x": 
+						h.getInternalName();
 					CAstNode type = h.getInternalType()==null?
-							Ast.makeConstant("any"):
+							Ast.makeConstant("Exception"):
 							h.getInternalType().accept(this);
 					CAstNode body = block(h.getInternalBody());
-					handlers.put(type.toString(), Ast.makeNode(CAstNode.CATCH,
-						Ast.makeConstant(name),
-						Ast.makeNode(CAstNode.BLOCK_STMT,
-							Ast.makeNode(CAstNode.ASSIGN,
-								Ast.makeNode(CAstNode.VAR, Ast.makeConstant("$currentException")),
-								Ast.makeNode(CAstNode.VAR, Ast.makeConstant(name.getValue()))),
-							body)));
+					CAstNode handler = Ast.makeNode(CAstNode.CATCH,
+							n1=Ast.makeConstant(name),
+							Ast.makeNode(CAstNode.BLOCK_STMT,
+								Ast.makeNode(CAstNode.ASSIGN,
+									Ast.makeNode(CAstNode.VAR, Ast.makeConstant("$currentException")),
+									Ast.makeNode(CAstNode.VAR, n2=Ast.makeConstant(name))),
+								body));
+					while (type.getValue() == null) {
+						type = type.getChild(0);
+					}
+					String typeStr = type.getValue().toString();
+					handlers.put(typeStr, handler);
+					
+					context.cfg().map(handler, handler);
 					
 					if (h.getInternalType() != null) {
-						context.getNodeTypeMap().add(name, types.getCAstTypeFor(h.getInternalType()));
+						context.getNodeTypeMap().add(n1, types.getCAstTypeFor(h.getInternalType()));
+						context.getNodeTypeMap().add(n2, types.getCAstTypeFor(h.getInternalType()));
 					}
 				}
 			}
@@ -1764,6 +1810,8 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			TryCatchContext catches = new TryCatchContext(context, handlers);
 			CAstVisitor child = new CAstVisitor(catches, parser);
 			CAstNode block = child.block(arg0.getInternalBody());
+			
+			System.err.println("catches: " + handlers);
 			
 			return Ast.makeNode(CAstNode.TRY,
 				Ast.makeNode(CAstNode.BLOCK_EXPR,

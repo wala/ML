@@ -13,7 +13,6 @@ import com.ibm.wala.classLoader.SourceDirectoryTreeModule;
 import com.ibm.wala.classLoader.SourceFileModule;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.CallGraphBuilder;
-import com.ibm.wala.ipa.callgraph.CallGraphBuilderCancelException;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
@@ -64,13 +63,21 @@ public class Driver {
 
 		System.err.println(CG);
 		
+		@SuppressWarnings("unchecked")
 		PointerAnalysis<InstanceKey> PA = (PointerAnalysis<InstanceKey>) builder.getPointerAnalysis();
 
 		CAstCallGraphUtil.AVOID_DUMP = false;
 	    CAstCallGraphUtil.dumpCG(((SSAPropagationCallGraphBuilder)builder).getCFAContextInterpreter(), PA, CG);
 
 		SDG<InstanceKey> SDG = new SDG<InstanceKey>(CG, PA, DataDependenceOptions.NO_EXCEPTIONS, ControlDependenceOptions.NO_EXCEPTIONAL_EDGES);
-		System.err.println(SDG);
+		SDG.forEach(n -> { 
+			System.err.println(n);
+			if (SDG.getSuccNodeCount(n) > 0) {
+				SDG.getSuccNodes(n).forEachRemaining(s -> { 
+					System.err.println("  --> " + s);
+				});
+			}
+		});
 		
 		return E.performAnalysis((PropagationCallGraphBuilder) builder);
 	}

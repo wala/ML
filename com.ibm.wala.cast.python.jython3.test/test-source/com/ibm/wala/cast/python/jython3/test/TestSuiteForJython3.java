@@ -15,6 +15,7 @@ import com.ibm.wala.cast.python.test.TestMulti;
 import com.ibm.wala.cast.python.test.TestPrimitives;
 import com.ibm.wala.cast.python.test.TestSlice;
 import com.ibm.wala.cast.python.test.TestSource;
+import com.ibm.wala.cast.python.test.TestTry;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
@@ -29,8 +30,9 @@ import com.ibm.wala.cast.python.test.TestSource;
 	TestMulti.class,
 	TestPrimitives.class,
 	TestSlice.class,
-	TestSource.class
+	TestSource.class,
+	TestTry.class
 })
-public class Jython3Suite {
+public class TestSuiteForJython3 {
 
 }

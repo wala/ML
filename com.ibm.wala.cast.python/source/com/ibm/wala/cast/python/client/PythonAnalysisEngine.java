@@ -23,13 +23,11 @@ import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.python.util.PythonInterpreter;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cast.util.Util;
-import com.ibm.wala.classLoader.FileModule;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
 import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.Module;
-import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.SyntheticClass;
 import com.ibm.wala.client.AbstractAnalysisEngine;
 import com.ibm.wala.core.util.strings.Atom;
@@ -63,7 +61,6 @@ import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.Selector;
-import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.WalaException;
@@ -281,7 +278,7 @@ public abstract class PythonAnalysisEngine<T>
 
 	
 	@Override
-	protected Iterable<Entrypoint> makeDefaultEntrypoints(AnalysisScope scope, IClassHierarchy cha) {
+	protected Iterable<Entrypoint> makeDefaultEntrypoints(IClassHierarchy cha) {
 		Set<Entrypoint> result = HashSetFactory.make();
 		cha.forEach(entry -> {
 			if (entry.getName().toString().endsWith(".py")) {

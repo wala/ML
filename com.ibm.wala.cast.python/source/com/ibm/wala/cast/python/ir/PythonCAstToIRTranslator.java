@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 import com.ibm.wala.cast.ir.ssa.AssignInstruction;
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
@@ -29,6 +30,8 @@ import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.loader.DynamicAnnotatableEntity;
 import com.ibm.wala.cast.python.loader.PythonLoader;
+import com.ibm.wala.cast.python.loader.PythonLoader.PythonClass;
+import com.ibm.wala.cast.python.parser.AbstractParser.MissingType;
 import com.ibm.wala.cast.python.parser.AbstractParser.PythonGlobalsEntity;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.types.PythonTypes;
@@ -122,13 +125,17 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	    TypeName typeName = TypeName.findOrCreate("L" + typeNameStr);
 	    walaTypeNames.put(cls, typeName);
 
-		((PythonLoader)loader)
+	    Set<CAstType> present = cls.getSupertypes().stream().filter(t -> !(t instanceof MissingType)).collect(Collectors.toSet());;
+
+	    ((PythonLoader)loader)
 		    .defineType(
-		    		typeName, 
-		    		cls.getSupertypes().isEmpty()?
-		    			PythonTypes.object.getName():
-		    			walaTypeNames.get(cls.getSupertypes().iterator().next()), type.getPosition());
-		
+		    	typeName, 
+		    	present.isEmpty()?
+		    		PythonTypes.object.getName():
+		    		walaTypeNames.get(present.iterator().next()), 
+		    	type.getPosition(),
+		    	cls.getSupertypes().stream().filter(t -> t instanceof MissingType).collect(Collectors.toSet()));
+		    			
 		return true;
 	}
 
@@ -467,6 +474,14 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	    		}
 	    		code.cfg().addInstruction(Python.instructionFactory().PutInstruction(code.cfg().getCurrentInstruction(), v, val, fr));
 	    }
+	    
+	    if (cls instanceof PythonClass) {
+	    	((PythonClass)cls).getMissingTypeNames().forEach(tn -> {
+	    		int val = doLocalRead(code, tn, PythonTypes.Root);
+	   			FieldReference fr = FieldReference.findOrCreate(cls.getReference(), Atom.findOrCreateUnicodeAtom("missing_" + tn), PythonTypes.Root);
+	    		code.cfg().addInstruction(Python.instructionFactory().PutInstruction(code.cfg().getCurrentInstruction(), v, val, fr));
+	    	});
+	    }
 	}
 
 	@Override
@@ -526,9 +541,16 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 	    // exceptional case: flow to target given in CAst, or if null, the exit node
 		((CAstControlFlowRecorder)context.getControlFlow()).map(call, call);
 		
-	    if (context.getControlFlow().getTarget(call, null) != null)
-	      context.cfg().addPreEdge(call, context.getControlFlow().getTarget(call, null), true);
-	    else context.cfg().addPreEdgeToExit(call, true);
+		if (context.getControlFlow().getTargetLabels(call).isEmpty()) {
+			System.err.println("no exceptions for " + CAstPrinter.print(call));	
+			context.cfg().addPreEdgeToExit(call, true);	
+		} else {
+			context.getControlFlow().getTargetLabels(call).forEach(nm -> {
+				if (context.getControlFlow().getTarget(call, nm) != null) {
+					context.cfg().addPreEdge(call, context.getControlFlow().getTarget(call, nm), true);
+				}
+			});
+		}
 	}
 
 	  public static final CAstType Any = new CAstType() {

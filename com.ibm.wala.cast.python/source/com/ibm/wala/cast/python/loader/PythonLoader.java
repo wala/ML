@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.ibm.wala.cast.ir.translator.AstTranslator.AstLexicalInformation;
 import com.ibm.wala.cast.ir.translator.AstTranslator.WalkContext;
@@ -76,9 +77,11 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
 		java.util.Set<IField> staticFields = HashSetFactory.make();
 		java.util.Set<MethodReference> methodTypes = HashSetFactory.make();
 		private java.util.Set<TypeReference> innerTypes = HashSetFactory.make();
+		java.util.Set<String> missingTypeNames;
 		
-		public PythonClass(TypeName name, TypeName superName, IClassLoader loader, Position sourcePosition) {
+		public PythonClass(TypeName name, TypeName superName, IClassLoader loader, Position sourcePosition, Set<CAstType> missingTypes) {
 			super(name, superName, loader, sourcePosition);
+			missingTypeNames = missingTypes.stream().map(t -> t.getName()).collect(Collectors.toSet());
 			if (name.toString().lastIndexOf('/') > 0) {
 				String maybeOuterName = name.toString().substring(0, name.toString().lastIndexOf('/'));
 				TypeName maybeOuter = TypeName.findOrCreate(maybeOuterName);
@@ -89,6 +92,10 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
 					}
 				}
 			}
+		}
+
+		public java.util.Set<String> getMissingTypeNames() {
+			return missingTypeNames;
 		}
 
 		@Override
@@ -229,8 +236,8 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
 				};
 			}
 
-	public void defineType(TypeName cls, TypeName parent, Position sourcePosition) {
-		new PythonClass(cls, parent, this, sourcePosition);
+	public void defineType(TypeName cls, TypeName parent, Position sourcePosition, Set<CAstType> missingTypes) {
+		new PythonClass(cls, parent, this, sourcePosition, missingTypes);
 	}
 
 	public void defineField(TypeName cls, CAstEntity field) {
