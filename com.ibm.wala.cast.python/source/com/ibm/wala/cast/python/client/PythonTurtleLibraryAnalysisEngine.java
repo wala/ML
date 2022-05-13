@@ -8,7 +8,7 @@ import com.ibm.wala.ipa.cha.IClassHierarchy;
 public class PythonTurtleLibraryAnalysisEngine extends PythonTurtleAnalysisEngine {
 
 	@Override
-	protected Iterable<Entrypoint> makeDefaultEntrypoints(IClassHierarchy cha) {
+	protected Iterable<Entrypoint> makeDefaultEntrypoints(AnalysisScope scope, IClassHierarchy cha) {
 		return TurtleSummary.turtleEntryPoints(cha);
 	}
 
