@@ -41,7 +41,7 @@
     <dependency>
       <groupId>org.python</groupId>
       <artifactId>jython-slim</artifactId>
-      <version>2.7.3a1-SNAPSHOT</version>
+      <version>[2.7.3a1-SNAPSHOT,)</version>
     </dependency>
     <dependency>
       <groupId>commons-cli</groupId>
