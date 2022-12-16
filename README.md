@@ -8,7 +8,7 @@ Since it is built using WALA, you need to have WALA on your system to use it:
 * set ANDROID_HOME to the location of the Android SDK
 * make sure JAVA_HOME points to a Java 8 JDK
 * clone WALA with `git clone https://github.com/wala/WALA`
-* in the cloned directory, `mvn clean install -DskipTests`
+* in the cloned directory, `./gradlew clean build -x test`
 
 Currently, the Python analysis code is being developed in Eclipse:
 
