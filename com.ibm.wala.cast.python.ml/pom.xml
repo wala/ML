@@ -6,37 +6,31 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>com.ibm.wala.cast.python.ml</artifactId>
-  
+
   <dependencies>
     <dependency>
       <groupId>org.python</groupId>
       <artifactId>jython3</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.ibm.wala</groupId>
       <artifactId>com.ibm.wala.util</artifactId>
-      <version>1.5.8-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.ibm.wala</groupId>
       <artifactId>com.ibm.wala.shrike</artifactId>
-      <version>1.5.8-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.ibm.wala</groupId>
       <artifactId>com.ibm.wala.core</artifactId>
-      <version>1.5.8-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.ibm.wala</groupId>
       <artifactId>com.ibm.wala.cast</artifactId>
-      <version>1.5.8-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.ibm.wala</groupId>
       <artifactId>com.ibm.wala.cast.java</artifactId>
-      <version>1.5.8-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.ibm.wala</groupId>
@@ -44,19 +38,18 @@
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>com.ibm.wala</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>com.ibm.wala.cast.python</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.ibm.wala</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>com.ibm.wala.cast.python.jython</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.lsp4j</groupId>
       <artifactId>org.eclipse.lsp4j</artifactId>
-      <version>0.8.1</version>
     </dependency>
     <dependency>
       <groupId>commons-cli</groupId>
@@ -66,55 +59,41 @@
   </dependencies>
 
   <build>
-    <sourceDirectory>source</sourceDirectory>
-    <resources>
-      <resource>
-      <directory>data</directory>
-      </resource>
-    </resources>
     <plugins>
       <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.5.1</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.3</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+        <filters>
+          <filter>
+            <artifact>*:*</artifact>
+            <excludes>
+              <exclude>META-INF/*.SF</exclude>
+              <exclude>META-INF/*.DSA</exclude>
+              <exclude>META-INF/*.RSA</exclude>
+            </excludes>
+          </filter>
+        </filters>
+        <!-- Additional configuration. -->
         </configuration>
-      </plugin>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-shade-plugin</artifactId>
-	<version>2.3</version>
-	<configuration>
-	  <filters>
-            <filter>
-              <artifact>*:*</artifact>
-              <excludes>
-                <exclude>META-INF/*.SF</exclude>
-                <exclude>META-INF/*.DSA</exclude>
-                <exclude>META-INF/*.RSA</exclude>
-              </excludes>
-            </filter>
-	  </filters>
-	  <!-- Additional configuration. -->
-	</configuration>
-	<executions>
-	  <!-- Run shade goal on package phase -->
-	  <execution>
-    	    <phase>package</phase>
-    	    <goals>
-    	      <goal>shade</goal>
-    	    </goals>
-    	    <configuration>
-    	      <transformers>
-    		<!-- add Main-Class to manifest file -->
-		<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-    		  <mainClass>com.ibm.wala.cast.python.ml.driver.Ariadne</mainClass>
-    		</transformer>
-    	      </transformers>
-    	    </configuration>
-	  </execution>
-	</executions>
+        <executions>
+          <!-- Run shade goal on package phase -->
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <!-- add Main-Class to manifest file -->
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                <mainClass>com.ibm.wala.cast.python.ml.driver.Ariadne</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
