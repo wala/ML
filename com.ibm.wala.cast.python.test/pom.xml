@@ -32,6 +32,7 @@
     <dependency>
       <groupId>com.ibm.wala</groupId>
       <artifactId>com.ibm.wala.cast</artifactId>
+      <version>${wala.version}</version>
       <classifier>test-fixtures</classifier>
     </dependency>
     <dependency>
