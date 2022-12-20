@@ -278,7 +278,7 @@ public abstract class PythonAnalysisEngine<T>
 
 	
 	@Override
-	protected Iterable<Entrypoint> makeDefaultEntrypoints(AnalysisScope scope, IClassHierarchy cha) {
+	protected Iterable<Entrypoint> makeDefaultEntrypoints(IClassHierarchy cha) {
 		Set<Entrypoint> result = HashSetFactory.make();
 		cha.forEach(entry -> {
 			if (entry.getName().toString().endsWith(".py")) {
