@@ -18,3 +18,26 @@ Sessionx.vim
 tags
 # Persistent undo
 [._]*.un~
+
+# https://github.com/github/gitignore/blob/4488915eec0b3a45b5c63ead28f286819c0917de/Gradle.gitignore
+.gradle
+**/build/
+!src/**/build/
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+
+# Avoid ignore Gradle wrappper properties
+!gradle-wrapper.properties
+
+# Cache of project
+.gradletasknamecache
+
+# Eclipse Gradle plugin generated files
+# Eclipse Core
+.project
+# JDT-specific (Eclipse Java Development Tools)
+.classpath
