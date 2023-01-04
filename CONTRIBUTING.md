@@ -31,7 +31,8 @@ You must install the `jython-dev.jar` to your local maven repository.
 1. Clone the [WALA repository][WALA].
 1. Checkout the tag corresponding to the version needed, e.g., `git checkout v1.5.8`. You need to match this version with the WALA version in the `pom.xml` file found in *this* repository.
 1. Build WALA without running the tests (if you want to run the tests, *remove* `-x test`): `./gradlew build -x test`.
-1. Deploy WALA to your local maven repository. This is necessary because the test JARs are not published on Maven Central: `./gradlew publishToMavenLocal -x signRemotePublication`.
+1. Deploy WALA to your local maven repository. This is necessary because the test JARs are not published on Maven Central: `./gradlew publishToMavenLocal`.
+    1. If you run into [this issue](https://github.com/wala/WALA/issues/1173), try: `./gradlew publishToMavenLocal -x signRemotePublication`.
 
 ### Building WALA/ML
 
