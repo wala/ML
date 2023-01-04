@@ -1,25 +1,22 @@
-dist: xenial
-language: android
-android:
-  components:
-    - build-tools-28.0.3
-jdk: oraclejdk8
+os: linux
+dist: focal
+language: java
+jdk: openjdk11
 before_install:
  - git clone --depth=50 https://github.com/wala/WALA /tmp/WALA
- - git clone --depth=50 https://github.com/wala/IDE /tmp/IDE
- - git clone https://github.com/juliandolby/lsp4j /tmp/lsp4j
- - hg clone https://bitbucket.org/juliandolby/jython /tmp/jython
+ - git clone --depth=50 https://github.com/ponder-lab/IDE /tmp/IDE
+ - git clone https://github.com/juliandolby/jython3.git /tmp/jython3
 install:
- - pushd /tmp/jython
- - chmod a+x gradlew
- - ./gradlew clean publishToMavenLocal
+ - pushd /tmp/jython3
+ - ant
+ - pushd dist
+ - mvn install:install-file -Dfile=./jython-dev.jar -DgroupId="org.python" -DartifactId="jython3" -Dversion="0.0.1-SNAPSHOT" -Dpackaging="jar" -DgeneratePom=true
  - popd
- - pushd /tmp/lsp4j
- - git checkout websockets
- - gradle install
  - popd
  - pushd /tmp/WALA
- - mvn clean install -B -q -DskipTests
+ - git checkout v1.5.8
+ - ./gradlew build -x test
+ - ./gradlew publishToMavenLocal -x signRemotePublication
  - popd
  - pushd /tmp/IDE/com.ibm.wala.cast.lsp
  - mvn clean install -B -q -DskipTests
