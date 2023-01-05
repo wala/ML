@@ -49,7 +49,7 @@
     </dependency>
   </dependencies>
   <build>
-	<sourceDirectory>source</sourceDirectory>
+    <sourceDirectory>source</sourceDirectory>
     <testSourceDirectory>source</testSourceDirectory>
     <resources>
       <resource>
