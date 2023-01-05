@@ -17,7 +17,6 @@
     <wala.version>1.5.8</wala.version>
     <maven.surefire.version>3.0.0-M7</maven.surefire.version>
   </properties>
-
   <distributionManagement>
     <repository>
       <id>internal.repo</id>
@@ -25,7 +24,6 @@
       <url>file://${project.build.directory}/mvn-repo</url>
     </repository>
   </distributionManagement>
-
   <modules>
     <module>com.ibm.wala.cast.python</module>
     <module>com.ibm.wala.cast.python.jython</module>
@@ -36,7 +34,6 @@
     <module>com.ibm.wala.cast.python.ml</module>
     <module>com.ibm.wala.cast.python.ml.test</module>
   </modules>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -111,7 +108,6 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
   <build>
     <sourceDirectory>source</sourceDirectory>
     <resources>

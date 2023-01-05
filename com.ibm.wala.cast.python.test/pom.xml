@@ -6,7 +6,6 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>com.ibm.wala.cast.python.test</artifactId>
-
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -44,7 +43,6 @@
       <artifactId>junit</artifactId>
     </dependency>
   </dependencies>
-
   <build>
     <plugins>
       <plugin>

@@ -6,7 +6,6 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>com.ibm.wala.cast.python.jython3.test</artifactId>
-
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -56,7 +55,6 @@
       <artifactId>jnr-constants</artifactId>
     </dependency>
   </dependencies>
-
   <build>
     <plugins>
       <plugin>
