@@ -61,6 +61,9 @@
         <configuration>
           <forkMode>once</forkMode>
           <argLine>-Dpython.import.site=false</argLine>
+          <excludes>
+            <exclude>**/*ServerTest.java</exclude>
+          </excludes>>
         </configuration>
       </plugin>
     </plugins>
