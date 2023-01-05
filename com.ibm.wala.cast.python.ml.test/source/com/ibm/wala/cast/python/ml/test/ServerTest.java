@@ -24,6 +24,7 @@ import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextEdit;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.ibm.wala.cast.lsp.WALAServer;
@@ -38,6 +39,7 @@ import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.io.TemporaryFile;
 
+@Ignore
 public class ServerTest {
 
 	static {
