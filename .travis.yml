@@ -15,7 +15,6 @@ install:
  - popd
  - pushd /tmp/WALA
  - git checkout v1.5.8
- - ./gradlew build -x test
  - ./gradlew publishToMavenLocal -x signRemotePublication
  - popd
  - pushd /tmp/IDE/com.ibm.wala.cast.lsp
