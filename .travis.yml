@@ -10,13 +10,7 @@ install:
  - pushd /tmp/jython3
  - ant
  - pushd dist
- - mvn install:install-file \
-    -Dfile=./jython-dev.jar \
-    -DgroupId="org.python" \
-    -DartifactId="jython3" \
-    -Dversion="0.0.1-SNAPSHOT" \
-    -Dpackaging="jar" \
-    -DgeneratePom=true
+ - mvn install:install-file -Dfile=./jython-dev.jar -DgroupId="org.python" -DartifactId="jython3" -Dversion="0.0.1-SNAPSHOT" -Dpackaging="jar" -DgeneratePom=true
  - popd
  - popd
  - pushd /tmp/WALA
