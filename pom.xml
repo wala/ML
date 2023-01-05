@@ -14,7 +14,7 @@
     <maven.compiler.version>3.10.1</maven.compiler.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build-alias>b000</build-alias>
-    <wala.version>1.5.8</wala.version>
+    <wala.version>1.5.9</wala.version>
     <maven.surefire.version>3.0.0-M7</maven.surefire.version>
   </properties>
   <distributionManagement>
