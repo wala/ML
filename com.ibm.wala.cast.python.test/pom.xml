@@ -6,6 +6,9 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>com.ibm.wala.cast.python.test</artifactId>
+  <properties>
+    <m2e.disableTestClasspathFlag>true</m2e.disableTestClasspathFlag>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
