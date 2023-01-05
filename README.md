@@ -7,4 +7,4 @@ Since it is built using [WALA], you need to have WALA on your system to use it. 
 To test, for example, run `TestCalls` in the `com.ibm.wala.cast.python.test` project.
 
 [WALA]: https://github.com/wala/WALA
-[CONTRIBUTING.md]: CONTRIBUTING.md#user-content-building
+[CONTRIBUTING.md]: CONTRIBUTING.md#building
