@@ -22,7 +22,6 @@ install:
  - popd
 script:
  - mvn clean install -B
-sudo: false
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
