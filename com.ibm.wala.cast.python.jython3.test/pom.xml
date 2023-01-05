@@ -56,6 +56,7 @@
     </dependency>
   </dependencies>
   <build>
+    <testSourceDirectory>test-source</testSourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

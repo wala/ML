@@ -109,12 +109,6 @@
     </dependencies>
   </dependencyManagement>
   <build>
-    <sourceDirectory>source</sourceDirectory>
-    <resources>
-      <resource>
-        <directory>data</directory>
-      </resource>
-    </resources>
     <pluginManagement>
       <plugins>
         <plugin>

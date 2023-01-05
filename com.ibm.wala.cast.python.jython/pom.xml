@@ -45,4 +45,12 @@
       <artifactId>json</artifactId>
     </dependency>
   </dependencies>
+  <build>
+    <sourceDirectory>source</sourceDirectory>
+    <resources>
+      <resource>
+        <directory>data</directory>
+      </resource>
+    </resources>
+  </build>
 </project>
