@@ -2,511 +2,359 @@
 <!DOCTYPE summary-spec>
 <!-- TensorFlow model -->
 <summary-spec>
-  <classloader name="PythonLoader">
-    <class name="tensorflow" allocatable="true">
-      <method name="import"
-	      static="true"
-	      descriptor="()Ltensorflow;">
-        <new def="x" class="Ltensorflow"/>
+	<classloader name="PythonLoader">
+		<class name="tensorflow" allocatable="true">
+			<method name="import" static="true"
+				descriptor="()Ltensorflow;">
+				<new def="x" class="Ltensorflow" />
 
-	<new def="train" class="Lobject"/>
-	<putfield class="LRoot"
-                  field="train"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="train"/>
+				<new def="train" class="Lobject" />
+				<putfield class="LRoot" field="train" fieldType="LRoot"
+					ref="x" value="train" />
 
-	<new def="AdamOptimizer"
-	     class="Ltensorflow/functions/AdamOptimizer"/>
-	<putfield class="LRoot"
-                  field="AdamOptimizer"
-                  fieldType="LRoot"
-                  ref="train"
-                  value="AdamOptimizer"/>
-	
-	<new def="shuffle_batch"
-	     class="Ltensorflow/functions/shuffle_batch"/>
-	<putfield class="LRoot"
-                  field="shuffle_batch"
-                  fieldType="LRoot"
-                  ref="train"
-                  value="shuffle_batch"/>
+				<new def="AdamOptimizer"
+					class="Ltensorflow/functions/AdamOptimizer" />
+				<putfield class="LRoot" field="AdamOptimizer"
+					fieldType="LRoot" ref="train" value="AdamOptimizer" />
 
-	<new def="InteractiveSession" class="Ltensorflow/functions/InteractiveSession"/>
-	<putfield class="LRoot"
-                  field="InteractiveSession"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="InteractiveSession"/>
-	<putfield class="LRoot"
-                  field="Session"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="InteractiveSession"/>
-	
-	<new def="parse_single_example"
-	     class="Ltensorflow/functions/parse_single_example"/>
-	<putfield class="LRoot"
-                  field="parse_single_example"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="parse_single_example"/>
-	
-	<new def="FixedLenFeature"
-	     class="Ltensorflow/functions/FixedLenFeature"/>
-	<putfield class="LRoot"
-                  field="FixedLenFeature"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="FixedLenFeature"/>
-	
-	<new def="pass_through"
-	     class="Ltensorflow/functions/pass_through"/>
-	<putfield class="LRoot"
-                  field="cast"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="pass_through"/>
-	<putfield class="LRoot"
-                  field="decode_raw"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="pass_through"/>
-	
-        <new def="estimator" class="Lobject"/>
-	<putfield class="LRoot"
-                  field="estimator"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="estimator"/>
+				<new def="shuffle_batch"
+					class="Ltensorflow/functions/shuffle_batch" />
+				<putfield class="LRoot" field="shuffle_batch"
+					fieldType="LRoot" ref="train" value="shuffle_batch" />
 
-        <new def="nn" class="Lobject"/>
-	<putfield class="LRoot"
-                  field="nn"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="nn"/>
-        <new def="layers" class="Lobject"/>
-	<putfield class="LRoot"
-                  field="layers"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="layers"/>
+				<new def="InteractiveSession"
+					class="Ltensorflow/functions/InteractiveSession" />
+				<putfield class="LRoot" field="InteractiveSession"
+					fieldType="LRoot" ref="x" value="InteractiveSession" />
+				<putfield class="LRoot" field="Session" fieldType="LRoot"
+					ref="x" value="InteractiveSession" />
 
-	<new def="app" class="Lobject"/>
-	<putfield class="LRoot"
-                  field="app"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="app"/>
-	<new def="run" class="Ltensorflow/app/run"/>
-	<putfield class="LRoot"
-                  field="run"
-                  fieldType="LRoot"
-                  ref="app"
-                  value="run"/>
+				<new def="parse_single_example"
+					class="Ltensorflow/functions/parse_single_example" />
+				<putfield class="LRoot" field="parse_single_example"
+					fieldType="LRoot" ref="x" value="parse_single_example" />
 
-	<new def="Estimator" class="Ltensorflow/estimator/Estimator"/>
-	<putfield class="LRoot"
-                  field="Estimator"
-                  fieldType="LRoot"
-                  ref="estimator"
-                  value="Estimator"/>
+				<new def="FixedLenFeature"
+					class="Ltensorflow/functions/FixedLenFeature" />
+				<putfield class="LRoot" field="FixedLenFeature"
+					fieldType="LRoot" ref="x" value="FixedLenFeature" />
 
-	<new def="inputs" class="Lobject"/>
-	<putfield class="LRoot"
-                  field="inputs"
-                  fieldType="LRoot"
-                  ref="estimator"
-                  value="inputs"/>
+				<new def="pass_through"
+					class="Ltensorflow/functions/pass_through" />
+				<putfield class="LRoot" field="cast" fieldType="LRoot"
+					ref="x" value="pass_through" />
+				<putfield class="LRoot" field="decode_raw"
+					fieldType="LRoot" ref="x" value="pass_through" />
 
-	<new def="numpy_input_fn" class="Ltensorflow/estimator/numpy_input_fn"/>
-	<putfield class="LRoot"
-                  field="numpy_input_fn"
-                  fieldType="LRoot"
-                  ref="inputs"
-                  value="numpy_input_fn"/>
+				<new def="estimator" class="Lobject" />
+				<putfield class="LRoot" field="estimator" fieldType="LRoot"
+					ref="x" value="estimator" />
 
-	<new def="reshape" class="Ltensorflow/functions/reshape"/>
-	<putfield class="LRoot"
-                  field="reshape"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="reshape"/>
+				<new def="nn" class="Lobject" />
+				<putfield class="LRoot" field="nn" fieldType="LRoot"
+					ref="x" value="nn" />
+				<new def="layers" class="Lobject" />
+				<putfield class="LRoot" field="layers" fieldType="LRoot"
+					ref="x" value="layers" />
 
-	<new def="conv2d" class="Ltensorflow/functions/conv2d"/>
-	<putfield class="LRoot"
-                  field="conv2d"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="conv2d"/>
-	<putfield class="LRoot"
-                  field="conv2d"
-                  fieldType="LRoot"
-                  ref="nn"
-                  value="conv2d"/>
-	<putfield class="LRoot"
-                  field="conv2d"
-                  fieldType="LRoot"
-                  ref="layers"
-                  value="conv2d"/>
+				<new def="app" class="Lobject" />
+				<putfield class="LRoot" field="app" fieldType="LRoot"
+					ref="x" value="app" />
+				<new def="run" class="Ltensorflow/app/run" />
+				<putfield class="LRoot" field="run" fieldType="LRoot"
+					ref="app" value="run" />
 
-	<new def="conv3d" class="Ltensorflow/functions/conv3d"/>
-	<putfield class="LRoot"
-                  field="conv3d"
-                  fieldType="LRoot"
-                  ref="nn"
-                  value="conv3d"/>
+				<new def="Estimator" class="Ltensorflow/estimator/Estimator" />
+				<putfield class="LRoot" field="Estimator" fieldType="LRoot"
+					ref="estimator" value="Estimator" />
 
-	<new def="placeholder"
-	     class="Ltensorflow/functions/placeholder"/>
-	<putfield class="LRoot"
-                  field="placeholder"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="placeholder"/>
+				<new def="inputs" class="Lobject" />
+				<putfield class="LRoot" field="inputs" fieldType="LRoot"
+					ref="estimator" value="inputs" />
 
-	<new def="examples"  class="Lobject"/>
-	<putfield class="LRoot"
-                  field="examples"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="examples"/>
-	<new def="tutorials"  class="Lobject"/>
-	<putfield class="LRoot"
-                  field="tutorials"
-                  fieldType="LRoot"
-                  ref="examples"
-                  value="tutorials"/>
-	<new def="mnist"  class="Lobject"/>
-	<putfield class="LRoot"
-                  field="mnist"
-                  fieldType="LRoot"
-                  ref="tutorials"
-                  value="mnist"/>
-          <new def="id" class="Ltensorflow/examples/tutorials/mnist/input_data"/>
-          <putfield class="LRoot"
-                    field="input_data"
-                    fieldType="LRoot"
-                    ref="mnist"
-                    value="id"/>
-          <new def="rds" class="Ltensorflow/examples/tutorials/mnist/read_data_sets"/>
-          <putfield class="LRoot"
-                    field="read_data_sets"
-                    fieldType="LRoot"
-                    ref="id"
-                    value="rds"/>
-	
-	<return value="x"/>
-      </method>
-    </class>
-	
-    <package name="tensorflow/objects">
-      <class name="feature" allocatable="true"/>
-    </package>
-    
-    <package name="tensorflow/functions">
+				<new def="numpy_input_fn"
+					class="Ltensorflow/estimator/numpy_input_fn" />
+				<putfield class="LRoot" field="numpy_input_fn"
+					fieldType="LRoot" ref="inputs" value="numpy_input_fn" />
 
-      <class name="AdamOptimizer" allocatable="true">
-	<method name="do" descriptor="()LRoot;">
-	  <new def="opt" class="Lobject"/>
+				<new def="reshape" class="Ltensorflow/functions/reshape" />
+				<putfield class="LRoot" field="reshape" fieldType="LRoot"
+					ref="x" value="reshape" />
 
-	  <new def="minimize" class="Ltensorflow/functions/minimize"/>
-	  <putfield class="LRoot"
-                    field="minimize"
-                    fieldType="LRoot"
-                    ref="opt"
-                    value="minimize"/>
+				<new def="conv2d" class="Ltensorflow/functions/conv2d" />
+				<putfield class="LRoot" field="conv2d" fieldType="LRoot"
+					ref="x" value="conv2d" />
+				<putfield class="LRoot" field="conv2d" fieldType="LRoot"
+					ref="nn" value="conv2d" />
+				<putfield class="LRoot" field="conv2d" fieldType="LRoot"
+					ref="layers" value="conv2d" />
 
-	  <return value="opt"/>
-	</method>
-      </class>
+				<new def="conv3d" class="Ltensorflow/functions/conv3d" />
+				<putfield class="LRoot" field="conv3d" fieldType="LRoot"
+					ref="nn" value="conv3d" />
 
-      <class name="minimize" allocatable="true">
-	<method name="do" descriptor="()LRoot;">
-	  <new def="v" class="Lobject"/>
-	  <new def="f" class="Ltensorflow/functions/Runner"/>
-	  <putfield class="LRoot"
-                    field="run"
-                    fieldType="LRoot"
-                    ref="v"
-                    value="f"/>
-	  <return value="v"/>
-	</method>
-      </class>
-      
-      <class name="shuffle_batch" allocatable="true">
-	<method name="do" descriptor="()LRoot;" numArgs="3"
-		paramNames="self data">
-	  <return value="data"/>
-	</method>
-      </class>
-      
-      <class name="InteractiveSession" allocatable="true">
-	<method name="do" descriptor="()LRoot;">
-	  <new def="v" class="Lobject"/>
-	  <new def="f" class="Ltensorflow/functions/Runner"/>
-	  <putfield class="LRoot"
-                    field="run"
-                    fieldType="LRoot"
-                    ref="v"
-                    value="f"/>
-	  <return value="v"/>
-	</method>
-      </class>
-      
-      <class name="Runner" allocatable="true">
-	<method name="do" descriptor="()LRoot;" numArgs="3"
-		paramNames="self graph feed_dict">
-	  <return value="self"/>
-	</method>
-      </class>
+				<new def="placeholder" class="Ltensorflow/functions/placeholder" />
+				<putfield class="LRoot" field="placeholder"
+					fieldType="LRoot" ref="x" value="placeholder" />
 
-      <class name="set_shape" allocatable="true">
-	<method name="do" descriptor="()LRoot;" numArgs="2"
-		paramNames="self shape">
-	  <return value="self"/>
-	</method>
-      </class>
+				<new def="examples" class="Lobject" />
+				<putfield class="LRoot" field="examples" fieldType="LRoot"
+					ref="x" value="examples" />
+				<new def="tutorials" class="Lobject" />
+				<putfield class="LRoot" field="tutorials" fieldType="LRoot"
+					ref="examples" value="tutorials" />
+				<new def="mnist" class="Lobject" />
+				<putfield class="LRoot" field="mnist" fieldType="LRoot"
+					ref="tutorials" value="mnist" />
+				<new def="id"
+					class="Ltensorflow/examples/tutorials/mnist/input_data" />
+				<putfield class="LRoot" field="input_data"
+					fieldType="LRoot" ref="mnist" value="id" />
+				<new def="rds"
+					class="Ltensorflow/examples/tutorials/mnist/read_data_sets" />
+				<putfield class="LRoot" field="read_data_sets"
+					fieldType="LRoot" ref="id" value="rds" />
 
-      <class name="reshape" allocatable="true">
-	<method name="copy_data" descriptor="()LRoot;">
-          <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset"/>
-	  <return value="x"/>
-	</method>
+				<return value="x" />
+			</method>
+		</class>
 
-        <method name="do" descriptor="()LRoot;" numArgs="3">
-	  <call class="LRoot"
-		name="copy_data"
-		descriptor="()LRoot;"
-		type="virtual"
-		arg0="arg0"
-		def="x"/>
-	  <return value="x"/>
-	</method>
-      </class>
+		<package name="tensorflow/objects">
+			<class name="feature" allocatable="true" />
+		</package>
 
-      <class name="placeholder" allocatable="true">
-	<method name="do" descriptor="()LRoot;" numArgs="3"
-		paramNames="dtype shape name">
-	  <new def="x" class="Lobject"/>
-	  <return value="x"/>
-	</method>
-      </class>
-      
-      <class name="pass_through" allocatable="true">
-	<method name="do" descriptor="()LRoot;" numArgs="3"
-		paramNames="self data features">
-	  <return value="data"/>
-	</method>
-      </class>
-      
-      <class name="parse_single_example" allocatable="true">
-	<method name="do" descriptor="()LRoot;" numArgs="3"
-		paramNames="self data features">
-	  <return value="features"/>
-	</method>
-      </class>
-      
-     <class name="FixedLenFeature" allocatable="true">
-	<method name="do" descriptor="()LRoot;" numArgs="3"
-		paramNames="self dims type">
-	  <new def="x" class="Ltensorflow/objects/feature"/>
+		<package name="tensorflow/functions">
 
-	  <new def="y" class="Ltensorflow/functions/set_shape"/>
-	  <putfield class="LRoot"
-                    field="set_shape"
-                    fieldType="LRoot"
-                    ref="x"
-                    value="y"/>
+			<class name="AdamOptimizer" allocatable="true">
+				<method name="do" descriptor="()LRoot;">
+					<new def="opt" class="Lobject" />
 
-	  <return value="x"/>
-	</method>
-      </class>
-      
-      <class name="conv2d" allocatable="true">
-        <method name="do" descriptor="()LRoot;" numArgs="3"
-		paramNames="self x y">
-	  <return value="x"/>
-	</method>
-      </class>
+					<new def="minimize" class="Ltensorflow/functions/minimize" />
+					<putfield class="LRoot" field="minimize" fieldType="LRoot"
+						ref="opt" value="minimize" />
 
-      <class name="conv3d" allocatable="true">
-        <method name="do" descriptor="()LRoot;" numArgs="3"
-		paramNames="self x y">
-	  <return value="x"/>
-	</method>
-      </class>
-    </package>
-    
-   <package name="tensorflow/estimator">
-      <class name="Estimator" allocatable="true">
-        <method name="do" descriptor="()LRoot;" numArgs="2"
-		paramNames="self model">
-          <new def="x" class="Ltensorflow/estimator/train/train"/>
-	  <putfield class="LRoot"
-                    field="train"
-                    fieldType="LRoot"
-                    ref="self"
-                    value="x"/>
-	  <putfield class="LRoot"
-                    field="$callback"
-                    fieldType="LRoot"
-                    ref="x"
-                    value="model"/>
-	  <return value="arg0"/>
-	</method>
-      </class>
+					<return value="opt" />
+				</method>
+			</class>
 
-      <class name="numpy_input_fn" allocatable="true">
-        <method name="do" descriptor="()LRoot;" numArgs="5"
-        paramNames="self x y batch_size shuffle">
-          <new def="xx" class="Lobject"/>
-	  <putfield class="LRoot"
-                    field="data"
-                    fieldType="LRoot"
-                    ref="xx"
-                    value="2"/>
-	  <putfield class="LRoot"
-                    field="labels"
-                    fieldType="LRoot"
-                    ref="xx"
-                    value="3"/>
-	  <return value="xx"/>
-	</method>
-      </class>
-   </package>
-   
-   <package name="tensorflow/estimator/train">
-      <class name="train" allocatable="true">
-        <method name="do" descriptor="()LRoot;" numArgs="3">
-	  <getfield class="LRoot"
-                    field="$callback"
-                    fieldType="LRoot"
-                    ref="arg0"
-                    def="xx"/>
-	  <getfield class="LRoot"
-                    field="data"
-                    fieldType="LRoot"
-                    ref="arg1"
-                    def="data"/>
-	  <call class="LRoot"
-		name="do"
-		descriptor="()LRoot;"
-		type="virtual"
-		arg0="xx"
-		arg1="data"
-		arg2="3"
-		numArgs="3"
-		def="v"/>
-	  <return value="v"/>
-	</method>
-      </class>
-    </package>
+			<class name="minimize" allocatable="true">
+				<method name="do" descriptor="()LRoot;">
+					<new def="v" class="Lobject" />
+					<new def="f" class="Ltensorflow/functions/Runner" />
+					<putfield class="LRoot" field="run" fieldType="LRoot"
+						ref="v" value="f" />
+					<return value="v" />
+				</method>
+			</class>
 
-    <package name="tensorflow/app">
-      <class name="run" allocatable="true">
-	<method name="do" descriptor="()LRoot;" numArgs="3"
-        paramNames="self main argv">
-	  <call class="LRoot"
-		name="do"
-		descriptor="()LRoot;"
-		type="virtual"
-		arg0="arg1"
-		arg1=""
-		def="v"/>
-	  <return value="v"/>
-	</method>
-      </class>
-    </package>
-    
-    <package name="tensorflow/examples/tutorials/mnist">
-      <class name="read_data_sets" allocatable="true">
-	<method name="read_data" descriptor="()LRoot;">
-          <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset"/>
-	  <return value="x"/>
-	</method>
-	
-        <method name="do" descriptor="()LRoot;">
-          <new def="test" class="Lobject"/>
+			<class name="shuffle_batch" allocatable="true">
+				<method name="do" descriptor="()LRoot;" numArgs="3"
+					paramNames="self data">
+					<return value="data" />
+				</method>
+			</class>
 
-	  <call class="LRoot"
-		name="read_data"
-		descriptor="()LRoot;"
-		type="virtual"
-		arg0="arg0"
-		def="x"/>
-	  
-	  <putfield class="LRoot"
-                    field="images"
-                    fieldType="LRoot"
-                    ref="test"
-                    value="x"/>
+			<class name="InteractiveSession" allocatable="true">
+				<method name="do" descriptor="()LRoot;">
+					<new def="v" class="Lobject" />
+					<new def="f" class="Ltensorflow/functions/Runner" />
+					<putfield class="LRoot" field="run" fieldType="LRoot"
+						ref="v" value="f" />
+					<return value="v" />
+				</method>
+			</class>
 
-	  <call class="LRoot"
-		name="read_data"
-		descriptor="()LRoot;"
-		type="virtual"
-		arg0="arg0"
-		def="y"/>
+			<class name="Runner" allocatable="true">
+				<method name="do" descriptor="()LRoot;" numArgs="3"
+					paramNames="self graph feed_dict">
+					<return value="self" />
+				</method>
+			</class>
 
-          <new def="training" class="Lobject"/>
-	  <putfield class="LRoot"
-                    field="images"
-                    fieldType="LRoot"
-                    ref="training"
-                    value="y"/>
+			<class name="set_shape" allocatable="true">
+				<method name="do" descriptor="()LRoot;" numArgs="2"
+					paramNames="self shape">
+					<return value="self" />
+				</method>
+			</class>
 
-          <new def="data" class="Lobject"/>
-	  <putfield class="LRoot"
-                    field="test"
-                    fieldType="LRoot"
-                    ref="data"
-                    value="test"/>
-	  <putfield class="LRoot"
-                    field="train"
-                    fieldType="LRoot"
-                    ref="data"
-                    value="training"/>
+			<class name="reshape" allocatable="true">
+				<method name="copy_data" descriptor="()LRoot;">
+					<new def="x"
+						class="Ltensorflow/examples/tutorials/mnist/dataset" />
+					<return value="x" />
+				</method>
 
-          <return value="data"/>
-        </method>
-      </class>
-      <class name="input_data" allocatable="true">
-      </class>
-      <class name="dataset" allocatable="true">
-      </class>
-    </package>
+				<method name="do" descriptor="()LRoot;" numArgs="3">
+					<call class="LRoot" name="copy_data" descriptor="()LRoot;"
+						type="virtual" arg0="arg0" def="x" />
+					<return value="x" />
+				</method>
+			</class>
 
-    <package name="tensorflow/examples/tutorials">
-      <class name="mnist" allocatable="true">
-        <method name="import"
-		static="true"
-		descriptor="()Ltensorflow/examples/tutorials/mnist;">
-          <new def="x" class="Ltensorflow/examples/tutorials/mnist"/>
-	  <call name="__init__"
-		class="Ltensorflow/examples/tutorials/mnist"
-		descriptor="()V"
-		type="virtual"
-		arg0="x" />
-	  <return value="x"/>
-	</method>
-        <method name="__init__" descriptor="()V">
-          <new def="x" class="Ltensorflow/examples/tutorials/mnist/input_data"/>
-          <new def="y" class="Ltensorflow/examples/tutorials/mnist/read_data_sets"/>
-          <putfield class="Ltensorflow/examples/tutorials/mnist"
-                    field="input_data"
-                    fieldType="LRoot"
-                    ref="arg0"
-                    value="x"/>
-          <putfield class="Ltensorflow/examples/tutorials/mnist/input_data"
-                    field="read_data_sets"
-                    fieldType="LRoot"
-                    ref="x"
-                    value="y"/>
-        </method>
-      </class>
-    </package>
+			<class name="placeholder" allocatable="true">
+				<method name="do" descriptor="()LRoot;" numArgs="3"
+					paramNames="dtype shape name">
+					<new def="x" class="Lobject" />
+					<return value="x" />
+				</method>
+			</class>
 
-  </classloader>
+			<class name="pass_through" allocatable="true">
+				<method name="do" descriptor="()LRoot;" numArgs="3"
+					paramNames="self data features">
+					<return value="data" />
+				</method>
+			</class>
+
+			<class name="parse_single_example" allocatable="true">
+				<method name="do" descriptor="()LRoot;" numArgs="3"
+					paramNames="self data features">
+					<return value="features" />
+				</method>
+			</class>
+
+			<class name="FixedLenFeature" allocatable="true">
+				<method name="do" descriptor="()LRoot;" numArgs="3"
+					paramNames="self dims type">
+					<new def="x" class="Ltensorflow/objects/feature" />
+
+					<new def="y" class="Ltensorflow/functions/set_shape" />
+					<putfield class="LRoot" field="set_shape"
+						fieldType="LRoot" ref="x" value="y" />
+
+					<return value="x" />
+				</method>
+			</class>
+
+			<class name="conv2d" allocatable="true">
+				<method name="do" descriptor="()LRoot;" numArgs="3"
+					paramNames="self x y">
+					<return value="x" />
+				</method>
+			</class>
+
+			<class name="conv3d" allocatable="true">
+				<method name="do" descriptor="()LRoot;" numArgs="3"
+					paramNames="self x y">
+					<return value="x" />
+				</method>
+			</class>
+		</package>
+
+		<package name="tensorflow/estimator">
+			<class name="Estimator" allocatable="true">
+				<method name="do" descriptor="()LRoot;" numArgs="2"
+					paramNames="self model">
+					<new def="x" class="Ltensorflow/estimator/train/train" />
+					<putfield class="LRoot" field="train" fieldType="LRoot"
+						ref="self" value="x" />
+					<putfield class="LRoot" field="$callback"
+						fieldType="LRoot" ref="x" value="model" />
+					<return value="arg0" />
+				</method>
+			</class>
+
+			<class name="numpy_input_fn" allocatable="true">
+				<method name="do" descriptor="()LRoot;" numArgs="5"
+					paramNames="self x y batch_size shuffle">
+					<new def="xx" class="Lobject" />
+					<putfield class="LRoot" field="data" fieldType="LRoot"
+						ref="xx" value="2" />
+					<putfield class="LRoot" field="labels" fieldType="LRoot"
+						ref="xx" value="3" />
+					<return value="xx" />
+				</method>
+			</class>
+		</package>
+
+		<package name="tensorflow/estimator/train">
+			<class name="train" allocatable="true">
+				<method name="do" descriptor="()LRoot;" numArgs="3">
+					<getfield class="LRoot" field="$callback"
+						fieldType="LRoot" ref="arg0" def="xx" />
+					<getfield class="LRoot" field="data" fieldType="LRoot"
+						ref="arg1" def="data" />
+					<call class="LRoot" name="do" descriptor="()LRoot;"
+						type="virtual" arg0="xx" arg1="data" arg2="3" numArgs="3" def="v" />
+					<return value="v" />
+				</method>
+			</class>
+		</package>
+
+		<package name="tensorflow/app">
+			<class name="run" allocatable="true">
+				<method name="do" descriptor="()LRoot;" numArgs="3"
+					paramNames="self main argv">
+					<call class="LRoot" name="do" descriptor="()LRoot;"
+						type="virtual" arg0="arg1" arg1="" def="v" />
+					<return value="v" />
+				</method>
+			</class>
+		</package>
+
+		<package name="tensorflow/examples/tutorials/mnist">
+			<class name="read_data_sets" allocatable="true">
+				<method name="read_data" descriptor="()LRoot;">
+					<new def="x"
+						class="Ltensorflow/examples/tutorials/mnist/dataset" />
+					<return value="x" />
+				</method>
+
+				<method name="do" descriptor="()LRoot;">
+					<new def="test" class="Lobject" />
+
+					<call class="LRoot" name="read_data" descriptor="()LRoot;"
+						type="virtual" arg0="arg0" def="x" />
+
+					<putfield class="LRoot" field="images" fieldType="LRoot"
+						ref="test" value="x" />
+
+					<call class="LRoot" name="read_data" descriptor="()LRoot;"
+						type="virtual" arg0="arg0" def="y" />
+
+					<new def="training" class="Lobject" />
+					<putfield class="LRoot" field="images" fieldType="LRoot"
+						ref="training" value="y" />
+
+					<new def="data" class="Lobject" />
+					<putfield class="LRoot" field="test" fieldType="LRoot"
+						ref="data" value="test" />
+					<putfield class="LRoot" field="train" fieldType="LRoot"
+						ref="data" value="training" />
+
+					<return value="data" />
+				</method>
+			</class>
+			<class name="input_data" allocatable="true">
+			</class>
+			<class name="dataset" allocatable="true">
+			</class>
+		</package>
+
+		<package name="tensorflow/examples/tutorials">
+			<class name="mnist" allocatable="true">
+				<method name="import" static="true"
+					descriptor="()Ltensorflow/examples/tutorials/mnist;">
+					<new def="x" class="Ltensorflow/examples/tutorials/mnist" />
+					<call name="__init__"
+						class="Ltensorflow/examples/tutorials/mnist" descriptor="()V"
+						type="virtual" arg0="x" />
+					<return value="x" />
+				</method>
+				<method name="__init__" descriptor="()V">
+					<new def="x"
+						class="Ltensorflow/examples/tutorials/mnist/input_data" />
+					<new def="y"
+						class="Ltensorflow/examples/tutorials/mnist/read_data_sets" />
+					<putfield class="Ltensorflow/examples/tutorials/mnist"
+						field="input_data" fieldType="LRoot" ref="arg0" value="x" />
+					<putfield
+						class="Ltensorflow/examples/tutorials/mnist/input_data"
+						field="read_data_sets" fieldType="LRoot" ref="x" value="y" />
+				</method>
+			</class>
+		</package>
+
+	</classloader>
 </summary-spec>
