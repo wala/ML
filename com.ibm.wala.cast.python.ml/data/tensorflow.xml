@@ -184,18 +184,18 @@
                   fieldType="LRoot"
                   ref="tutorials"
                   value="mnist"/>
-          <new def="id" class="Ltensorflow/examples/tutorials/mnist/input_data"/>
-          <putfield class="LRoot"
-                    field="input_data"
-                    fieldType="LRoot"
-                    ref="mnist"
-                    value="id"/>
-          <new def="rds" class="Ltensorflow/examples/tutorials/mnist/read_data_sets"/>
-          <putfield class="LRoot"
-                    field="read_data_sets"
-                    fieldType="LRoot"
-                    ref="id"
-                    value="rds"/>
+    <new def="id" class="Ltensorflow/examples/tutorials/mnist/input_data"/>
+    <putfield class="LRoot"
+                  field="input_data"
+                  fieldType="LRoot"
+                  ref="mnist"
+                  value="id"/>
+    <new def="rds" class="Ltensorflow/examples/tutorials/mnist/read_data_sets"/>
+    <putfield class="LRoot"
+                  field="read_data_sets"
+                  fieldType="LRoot"
+                  ref="id"
+                  value="rds"/>
 	
 	<return value="x"/>
       </method>
