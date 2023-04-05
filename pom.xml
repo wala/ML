@@ -19,9 +19,9 @@
   </properties>
   <distributionManagement>
     <repository>
-      <id>internal.repo</id>
-      <name>Temporary Staging Repository</name>
-      <url>file://${project.build.directory}/mvn-repo</url>
+      <id>github</id>
+      <name>GitHub ponder-lab Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/ponder-lab/ML</url>
     </repository>
   </distributionManagement>
   <modules>
