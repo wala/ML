@@ -94,6 +94,7 @@
                 <mainClass>com.ibm.wala.cast.python.ml.driver.Ariadne</mainClass>
                 </transformer>
               </transformers>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
             </configuration>
           </execution>
         </executions>
