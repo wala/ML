@@ -94,6 +94,14 @@
                 <mainClass>com.ibm.wala.cast.python.ml.driver.Ariadne</mainClass>
                 </transformer>
               </transformers>
+              <artifactSet>
+                <excludes>
+                  <exclude>com.ibm.wala:com.ibm.wala.core</exclude>
+                  <exclude>com.ibm.wala:com.ibm.wala.util</exclude>
+                  <exclude>com.ibm.wala:com.ibm.wala.shrike</exclude>
+                  <exclude>com.ibm.wala:com.ibm.wala.cast</exclude>
+                </excludes>
+              </artifactSet>
             </configuration>
           </execution>
         </executions>
