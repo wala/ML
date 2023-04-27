@@ -32,6 +32,5 @@ You must install the `jython-dev.jar` to your local maven repository.
 1. Build and install to your local Maven repo: `mvn install`
 
 [SO post]: https://stackoverflow.com/questions/4955635/how-to-add-local-jar-files-to-a-maven-project#answer-4955695
-[WALA]: https://github.com/wala/WALA
 [IDE]: https://github.com/wala/IDE
 [WALA/ML]: https://github.com/wala/ML
