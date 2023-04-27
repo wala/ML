@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.ibm.wala</groupId>
-    <artifactId>ML</artifactId>
+    <artifactId>ml</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>com.ibm.wala.cast.python.jython.test</artifactId>
