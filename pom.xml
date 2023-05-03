@@ -22,6 +22,9 @@
       <id>github</id>
       <name>GitHub ponder-lab Apache Maven Packages</name>
       <url>https://maven.pkg.github.com/ponder-lab/ML</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
     </repository>
   </distributionManagement>
   <modules>
