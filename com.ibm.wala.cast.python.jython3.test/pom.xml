@@ -56,6 +56,7 @@
     </dependency>
   </dependencies>
   <build>
+    <sourceDirectory>test-source</sourceDirectory>
     <testSourceDirectory>test-source</testSourceDirectory>
     <plugins>
       <plugin>
