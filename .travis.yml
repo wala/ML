@@ -16,7 +16,7 @@ install:
  - mvn clean install -B -q -DskipTests
  - popd
 script:
- - mvn clean install -B
+ - mvn verify -B
 after_script:
  - mvn -s .travis.settings.xml -Dgithub.username=$GITHUB_USERNAME -Dgithub.password=$GITHUB_TOKEN deploy -DskipTests # Skip tests for now.
 before_cache:
