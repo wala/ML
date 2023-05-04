@@ -6,5 +6,3 @@ Bundle-Version: 0.0.1.qualifier
 Bundle-Vendor: IBM
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: com.ibm.wala.cast.python
-Import-Package: org.apache.commons.lang.mutable,
- org.apache.commons.lang3.mutable
