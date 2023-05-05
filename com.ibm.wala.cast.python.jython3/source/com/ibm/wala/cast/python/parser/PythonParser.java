@@ -1381,7 +1381,7 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 
 		private final boolean wholeStatement = true;
 		
-		private <T extends stmt> CAstNode importAst(T importNode, java.util.List<Name> names ) {
+		private <T1 extends stmt> CAstNode importAst(T1 importNode, java.util.List<Name> names ) {
 			CAstNode importAst = notePosition(Ast.makeNode(CAstNode.PRIMITIVE, 
 				Ast.makeConstant("import"), 
 				Ast.makeConstant(names.get(0).getInternalId())), wholeStatement? importNode: names.get(0));

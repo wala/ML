@@ -3,14 +3,12 @@ package com.ibm.wala.cast.python.test;
 import java.io.IOException;
 import java.util.Set;
 
-import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.client.PythonTurtleAnalysisEngine.EdgeType;
 import com.ibm.wala.cast.python.client.PythonTurtleAnalysisEngine.TurtlePath;
 import com.ibm.wala.cast.python.client.PythonTurtlePandasMergeAnalysis;
 import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.ipa.callgraph.CallGraph;
-import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;

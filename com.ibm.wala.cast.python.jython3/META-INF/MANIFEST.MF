@@ -3,15 +3,12 @@ Bundle-ManifestVersion: 2
 Bundle-Name: WALA Python
 Bundle-SymbolicName: com.ibm.wala.cast.python
 Bundle-Version: 0.0.1.qualifier
+Export-Package: com.ibm.wala.cast.python.client,
+ com.ibm.wala.cast.python.driver,
+ com.ibm.wala.cast.python.loader,
+ com.ibm.wala.cast.python.parser,
+ com.ibm.wala.cast.python.util,
+ org.python.antlr
 Bundle-Vendor: IBM
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Require-Bundle: com.ibm.wala.cast;bundle-version="1.4.4",
- com.ibm.wala.core;bundle-version="1.4.4",
- com.ibm.wala.util;bundle-version="1.4.4",
- com.ibm.wala.shrike;bundle-version="1.4.4",
- com.ibm.wala.cast.java,
- com.ibm.wala.cast.lsp;bundle-version="0.0.1",
- com.google.gson;bundle-version="2.7.0"
 Automatic-Module-Name: com.ibm.wala.cast.python
-Import-Package: org.apache.commons.lang.mutable,
- org.apache.commons.lang3.mutable

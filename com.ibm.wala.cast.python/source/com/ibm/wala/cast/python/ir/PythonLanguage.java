@@ -55,7 +55,6 @@ import com.ibm.wala.shrike.shrikeCT.BootstrapMethodsReader.BootstrapMethod;
 import com.ibm.wala.shrike.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
-import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;

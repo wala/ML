@@ -1,7 +1,5 @@
 package com.ibm.wala.cast.python.ipa.summaries;
 
-import static com.ibm.wala.cast.python.ir.PythonLanguage.Python;
-
 import java.io.Reader;
 import java.util.Collection;
 import java.util.Collections;

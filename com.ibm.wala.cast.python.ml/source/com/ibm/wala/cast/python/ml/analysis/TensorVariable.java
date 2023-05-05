@@ -19,8 +19,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.ibm.wala.cast.python.ml.types.TensorType;
-import com.ibm.wala.cast.python.ml.types.TensorType.Dimension;
-import com.ibm.wala.cast.python.ml.types.TensorType.Format;
 import com.ibm.wala.fixpoint.IVariable;
 import com.ibm.wala.util.collections.HashSetFactory;
 

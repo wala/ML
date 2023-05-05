@@ -6,3 +6,4 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: IBM
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: com.ibm.wala.cast.python.test
+Export-Package: com.ibm.wala.cast.python.test
