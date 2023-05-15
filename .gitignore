@@ -60,3 +60,10 @@ buildNumber.properties
 # .project
 # JDT-specific (Eclipse Java Development Tools)
 # .classpath
+
+# Temporary output
+callgraph.pdf
+temp.dt
+
+# Log output
+*.log
