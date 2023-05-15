@@ -64,3 +64,6 @@ buildNumber.properties
 # Temporary output
 callgraph.pdf
 temp.dt
+
+# Log output
+*.log
