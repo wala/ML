@@ -19,13 +19,13 @@ jobs:
     - name: Checkout wala/IDE sources.
       uses: actions/checkout@v3.5.2
       with:
-        repository: https://github.com/wala/IDE
+        repository: wala/IDE
         # fetch-depth: 50
         # path: /tmp/IDE
     - name: Checkout juliandolby/jython3 sources.
       uses: actions/checkout@v3.5.2
       with:
-        repository: https://github.com/juliandolby/jython3
+        repository: juliandolby/jython3
         # path: /tmp/jython3
     - name: Install Jython3.
       run: |
