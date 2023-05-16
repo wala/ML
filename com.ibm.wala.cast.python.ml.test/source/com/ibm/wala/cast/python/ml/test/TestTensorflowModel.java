@@ -35,10 +35,12 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 		PythonAnalysisEngine<TensorTypeAnalysis> E = makeEngine("tf1.py");
 		PythonSSAPropagationCallGraphBuilder builder = E.defaultCallGraphBuilder();
 		CallGraph CG = builder.makeCallGraph(builder.getOptions());
+
 //		CAstCallGraphUtil.AVOID_DUMP = false;
 //		CAstCallGraphUtil.dumpCG(((SSAPropagationCallGraphBuilder)builder).getCFAContextInterpreter(), builder.getPointerAnalysis(), CG);
 
 //		System.err.println(CG);
+
 		Collection<CGNode> nodes = getNodes(CG, "script tf1.py/model_fn");
 		assert ! nodes.isEmpty() : "model_fn should be called";
 		check: {
@@ -48,6 +50,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 						break check;
 					}
 				}
+
 				assert false : node + " should have synthetic caller";
 			}
 		}
