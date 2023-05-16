@@ -61,6 +61,7 @@
         <configuration>
           <forkMode>once</forkMode>
           <argLine>-Dpython.import.site=false</argLine>
+          <trimStackTrace>false</trimStackTrace>
         </configuration>
       </plugin>
     </plugins>
