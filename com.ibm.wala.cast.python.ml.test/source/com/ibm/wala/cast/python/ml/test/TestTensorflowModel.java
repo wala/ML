@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
+//import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
@@ -71,8 +71,10 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 		CallGraph CG = builder.makeCallGraph(builder.getOptions());
 		assertNotNull(CG);
 
-		CAstCallGraphUtil.AVOID_DUMP = false;
-		CAstCallGraphUtil.dumpCG(builder.getCFAContextInterpreter(), builder.getPointerAnalysis(), CG);
+//		CAstCallGraphUtil.AVOID_DUMP = false;
+//		CAstCallGraphUtil.dumpCG(builder.getCFAContextInterpreter(), builder.getPointerAnalysis(), CG);
+
+//		System.err.println(CG);
 
 		TensorTypeAnalysis analysis = E.performAnalysis(builder);
 
