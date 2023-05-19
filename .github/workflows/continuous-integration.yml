@@ -1,0 +1,42 @@
+name: Continuous integration
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out wala/ML sources
+      uses: actions/checkout@v3
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: maven
+    - name: Checkout wala/IDE sources.
+      uses: actions/checkout@v3.5.2
+      with:
+        repository: wala/IDE
+        # fetch-depth: 50
+        path: ./IDE
+    - name: Checkout juliandolby/jython3 sources.
+      uses: actions/checkout@v3.5.2
+      with:
+        repository: juliandolby/jython3
+        path: ./jython3
+    - name: Install Jython3.
+      run: |
+        cd ./jython3
+        ant
+        cd dist
+        mvn install:install-file -Dfile=./jython-dev.jar -DgroupId="org.python" -DartifactId="jython3" -Dversion="0.0.1-SNAPSHOT" -Dpackaging="jar" -DgeneratePom=true
+      shell: bash
+    - name: Install IDE.
+      run: |
+        cd ./IDE/com.ibm.wala.cast.lsp
+        mvn clean install -B -q -DskipTests
+    - name: Build with Maven
+      run: mvn clean verify -B
