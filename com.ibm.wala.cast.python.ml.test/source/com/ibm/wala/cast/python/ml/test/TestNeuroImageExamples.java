@@ -27,7 +27,10 @@ public class TestNeuroImageExamples extends TestPythonMLCallGraphShape {
 		});
 	}
 	
-	private static final String Ex2URL = "https://raw.githubusercontent.com/nilearn/nilearn/master/examples/03_connectivity/plot_group_level_connectivity.py";
+	/**
+	 * FIXME: Point to master branch of nilearn once https://github.com/ponder-lab/ML/issues/4 is fixed.
+	 */
+	private static final String Ex2URL = "https://raw.githubusercontent.com/nilearn/nilearn/d43706724a72df089080f62d9f1d9c319fa391b7/examples/03_connectivity/plot_group_level_connectivity.py";
 	
 	@Test
 	public void testEx2CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
