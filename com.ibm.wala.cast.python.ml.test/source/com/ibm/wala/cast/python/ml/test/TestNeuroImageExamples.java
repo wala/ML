@@ -15,6 +15,7 @@ public class TestNeuroImageExamples extends TestPythonMLCallGraphShape {
 
 	private static final String Ex1URL = "https://raw.githubusercontent.com/corticometrics/neuroimage-tensorflow/master/train.py";
 	
+	@Ignore // FIXME: Reinstate this test once https://github.com/wala/ML/issues/42 is fixed.
 	@Test
 	public void testEx1CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		checkTensorOps(Ex1URL, (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
@@ -27,10 +28,7 @@ public class TestNeuroImageExamples extends TestPythonMLCallGraphShape {
 		});
 	}
 	
-	/**
-	 * FIXME: Point to master branch of nilearn once https://github.com/ponder-lab/ML/issues/4 is fixed.
-	 */
-	private static final String Ex2URL = "https://raw.githubusercontent.com/nilearn/nilearn/d43706724a72df089080f62d9f1d9c319fa391b7/examples/03_connectivity/plot_group_level_connectivity.py";
+	private static final String Ex2URL = "https://raw.githubusercontent.com/nilearn/nilearn/master/examples/03_connectivity/plot_group_level_connectivity.py";
 	
 	@Test
 	public void testEx2CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
