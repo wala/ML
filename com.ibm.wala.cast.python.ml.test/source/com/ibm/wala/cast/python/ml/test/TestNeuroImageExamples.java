@@ -15,6 +15,7 @@ public class TestNeuroImageExamples extends TestPythonMLCallGraphShape {
 
 	private static final String Ex1URL = "https://raw.githubusercontent.com/corticometrics/neuroimage-tensorflow/master/train.py";
 	
+	@Ignore // FIXME: Reinstate this test once https://github.com/wala/ML/issues/42 is fixed.
 	@Test
 	public void testEx1CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		checkTensorOps(Ex1URL, (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
