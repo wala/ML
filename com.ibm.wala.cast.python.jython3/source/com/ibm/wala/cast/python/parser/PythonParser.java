@@ -1111,10 +1111,9 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			int argIndex = 0;
 			argumentNames[x++] = "the function";
 			argumentMap[argIndex++] = 0;
-			int ai = 0;
 			for(Object a : arguments) {
-				x = handleFunctionArguments(x, argumentNames, argumentMap, ai, a);
-				ai++;
+				x = handleFunctionArguments(x, argumentNames, argumentMap, argIndex, a);
+				argIndex++;
 			}
 			
 			class PythonCodeEntity extends AbstractCodeEntity implements PythonGlobalsEntity, DynamicAnnotatableEntity {
