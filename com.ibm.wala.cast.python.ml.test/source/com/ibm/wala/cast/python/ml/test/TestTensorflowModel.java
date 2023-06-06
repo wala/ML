@@ -143,8 +143,15 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 			Position parameterPosition = method.getParameterPosition(paramIndex);
 
 			// check the line.
-			// the function is declared on line 3. Each parameter is also declared on that line.
-			assertEquals(3, parameterPosition.getFirstLine());
+			int expectedLine;
+			if (filename.equals("tf2.py") || filename.equals("tf2b.py"))
+				expectedLine = 3;
+			else if (filename.equals("tf2c.py"))
+				expectedLine = 4;
+			else
+				throw new IllegalArgumentException("Unexpected filename: " + filename + ".");
+
+			assertEquals(expectedLine, parameterPosition.getFirstLine());
 
 			// check the columns.
 			if (lpk.getValueNumber() == 2) {
