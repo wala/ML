@@ -19,7 +19,7 @@ script:
  - mvn clean verify -B
 deploy:
   provider: script
-  script: mvn -s .travis.settings.xml -Dgithub.username=$GITHUB_USERNAME -Dgithub.password=$GITHUB_TOKEN deploy -DskipTests
+  script: echo $TRAVIS_BRANCH; echo $TRAVIS_TAG; mvn -s .travis.settings.xml -Dgithub.username=$GITHUB_USERNAME -Dgithub.password=$GITHUB_TOKEN deploy -DskipTests
   skip_cleanup: true
   on:
     all_branches: true
