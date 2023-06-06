@@ -15,11 +15,13 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import com.ibm.wala.cast.loader.AstMethod;
 //import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
 import com.ibm.wala.cast.python.ml.analysis.TensorVariable;
+import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
@@ -133,6 +135,27 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 		assertEquals(2, valueNumberSet.size());
 		assertTrue(valueNumberSet.contains(2));
 		assertTrue(valueNumberSet.contains(3));
+
+		// check the source positions of each function parameter.
+		for (LocalPointerKey lpk : addFunctionPointerKeys) {
+			AstMethod method = (AstMethod) lpk.getNode().getIR().getMethod();
+			int paramIndex = lpk.getValueNumber() - 1;
+			Position parameterPosition = method.getParameterPosition(paramIndex);
+
+			// check the line.
+			// the function is declared on line 3. Each parameter is also declared on that line.
+			assertEquals(3, parameterPosition.getFirstLine());
+
+			// check the columns.
+			if (lpk.getValueNumber() == 2) {
+				assertEquals(8, parameterPosition.getFirstCol());
+				assertEquals(9, parameterPosition.getLastCol());
+			} else if (lpk.getValueNumber() == 3) {
+				assertEquals(11, parameterPosition.getFirstCol());
+				assertEquals(12, parameterPosition.getLastCol());
+			} else
+				throw new IllegalStateException("Expecting value numbers 2 or 3.");
+		}
 
 		// get the tensor variables for the add() function.
 		Set<TensorVariable> addFunctionTensors = methodSignatureToTensorVariables.get(addFunctionSignature);
