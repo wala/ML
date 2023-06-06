@@ -23,7 +23,7 @@ deploy:
   skip_cleanup: true
   on:
     all_branches: true
-    condition: (branch = master) AND (tag IS present)
+    condition: branch = master AND tag IS present
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
