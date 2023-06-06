@@ -909,22 +909,21 @@ abstract public class PythonParser<T> extends AbstractParser<T> implements Trans
 			int argIndex = 0;
 			argumentNames[x++] = "the function";
 			argumentMap[argIndex++] = 0;
-			int ai = 0;
 			for(expr a : arguments) {
 				if (a instanceof Tuple) {
 					Tuple t = (Tuple)a;
 					for(expr e : t.getInternalElts()) {
 						CAstNode cast = e.accept(this);
 						String name = cast.getChild(0).getValue().toString();
-						argumentMap[x] = ai;
+						argumentMap[x] = argIndex;
 						argumentNames[x++] = name;			
 					}
 				} else {
 					String name = a.accept(this).getChild(0).getValue().toString();
-					argumentMap[x] = ai;
+					argumentMap[x] = argIndex;
 					argumentNames[x++] = name;		
 				}
-				ai++;
+				argIndex++;
 			}
 			
 			AbstractCodeEntity fun = new AbstractCodeEntity(functionType) {
