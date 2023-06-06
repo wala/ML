@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,6 +32,25 @@ import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 
 public class TestTensorflowModel extends TestPythonMLCallGraphShape {
+
+	private static class Tf2TestFile {
+		private String filename;
+
+		private int expectedLineNumberForParameters;
+
+		public Tf2TestFile(String filename, int expectedLineNumberForParameters) {
+			this.filename = filename;
+			this.expectedLineNumberForParameters = expectedLineNumberForParameters;
+		}
+
+		public String getFilename() {
+			return this.filename;
+		}
+
+		public int getExpectedLineNumberForParameters() {
+			return this.expectedLineNumberForParameters;
+		}
+	}
 
 	@Test
 	public void testTf1() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
@@ -60,14 +80,17 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 
 	@Test
 	public void testTf2() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		final String[] filesToTest = { "tf2.py", "tf2b.py", "tf2c.py" };
+		final Set<Tf2TestFile> filesToTest = new LinkedHashSet<>();
+		filesToTest.add(new Tf2TestFile("tf2.py", 3));
+		filesToTest.add(new Tf2TestFile("tf2b.py", 3));
+		filesToTest.add(new Tf2TestFile("tf2c.py", 4));
 
-		for (String filename : filesToTest)
-			testTf2(filename);
+		for (Tf2TestFile testFile : filesToTest)
+			testTf2(testFile);
 	}
 
-	private void testTf2(String filename) throws ClassHierarchyException, CancelException, IOException {
-		PythonAnalysisEngine<TensorTypeAnalysis> E = makeEngine(filename);
+	private void testTf2(Tf2TestFile testFile) throws ClassHierarchyException, CancelException, IOException {
+		PythonAnalysisEngine<TensorTypeAnalysis> E = makeEngine(testFile.getFilename());
 		PythonSSAPropagationCallGraphBuilder builder = E.defaultCallGraphBuilder();
 
 		CallGraph CG = builder.makeCallGraph(builder.getOptions());
@@ -121,7 +144,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 		assertEquals(2, methodSignatureToPointerKeys.size());
 		assertEquals(2, methodSignatureToTensorVariables.size());
 
-		final String addFunctionSignature = "script " + filename + ".add.do()LRoot;";
+		final String addFunctionSignature = "script " + testFile.getFilename() + ".add.do()LRoot;";
 
 		// get the pointer keys for the add() function.
 		Set<LocalPointerKey> addFunctionPointerKeys = methodSignatureToPointerKeys.get(addFunctionSignature);
@@ -143,15 +166,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 			Position parameterPosition = method.getParameterPosition(paramIndex);
 
 			// check the line.
-			int expectedLine;
-			if (filename.equals("tf2.py") || filename.equals("tf2b.py"))
-				expectedLine = 3;
-			else if (filename.equals("tf2c.py"))
-				expectedLine = 4;
-			else
-				throw new IllegalArgumentException("Unexpected filename: " + filename + ".");
-
-			assertEquals(expectedLine, parameterPosition.getFirstLine());
+			assertEquals(testFile.getExpectedLineNumberForParameters(), parameterPosition.getFirstLine());
 
 			// check the columns.
 			if (lpk.getValueNumber() == 2) {
