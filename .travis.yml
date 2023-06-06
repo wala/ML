@@ -22,8 +22,7 @@ deploy:
   script: mvn -s .travis.settings.xml -Dgithub.username=$GITHUB_USERNAME -Dgithub.password=$GITHUB_TOKEN deploy -DskipTests
   skip_cleanup: true
   on:
-    all_branches: true
-    condition: branch = master AND tag IS present
+    branch: master
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
