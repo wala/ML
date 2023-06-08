@@ -1,15 +1,7 @@
 import tensorflow as tf
 
-# From https://www.tensorflow.org/guide/function#autograph_transformations.
-# A simple loop
+def add(a, b):
+  return a + b
 
 
-# @tf.function
-def f(x):
-  while tf.reduce_sum(x) > 1:
-    tf.print(x)
-    x = tf.tanh(x)
-  return x
-
-
-f(tf.random.uniform([5]))
+c = add(tf.random.uniform([1, 2]), tf.random.uniform([2, 2]))
