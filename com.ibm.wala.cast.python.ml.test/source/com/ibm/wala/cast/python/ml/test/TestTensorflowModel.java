@@ -84,6 +84,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 		filesToTest.add(new Tf2TestFile("tf2.py", 3));
 		filesToTest.add(new Tf2TestFile("tf2b.py", 3));
 		filesToTest.add(new Tf2TestFile("tf2c.py", 4));
+		filesToTest.add(new Tf2TestFile("tf2d.py", 8));
 
 		for (Tf2TestFile testFile : filesToTest)
 			testTf2(testFile);
