@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,16 +62,12 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 
 	@Test
 	public void testTf2() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		final Set<String> filesToTest = new LinkedHashSet<>();
-		filesToTest.add("tf2.py");
-		filesToTest.add("tf2b.py");
-		filesToTest.add("tf2c.py");
-
-		for (String testFile : filesToTest)
-			testTf2(testFile);
+		testTf2("tf2.py", "add", 2, 2, 3);
+		testTf2("tf2b.py", "add", 2, 2, 3);
+		testTf2("tf2c.py", "add", 2, 2, 3);
 	}
 
-	private void testTf2(String testFile) throws ClassHierarchyException, CancelException, IOException {
+	private void testTf2(String testFile, String functionName, int expectedNumberOfTensorParameters, int... expectedValueNumbers) throws ClassHierarchyException, CancelException, IOException {
 		PythonAnalysisEngine<TensorTypeAnalysis> E = makeEngine(testFile);
 		PythonSSAPropagationCallGraphBuilder builder = E.defaultCallGraphBuilder();
 
@@ -121,29 +118,29 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 			});
 		});
 
-		// we should have two methods.
-		assertEquals(2, methodSignatureToPointerKeys.size());
-		assertEquals(2, methodSignatureToTensorVariables.size());
+		// check the maps.
+		assertEquals(expectedNumberOfTensorParameters, methodSignatureToPointerKeys.size());
+		assertEquals(expectedNumberOfTensorParameters, methodSignatureToTensorVariables.size());
 
-		final String addFunctionSignature = "script " + testFile + ".add.do()LRoot;";
+		final String functionSignature = "script " + testFile + "." + functionName + ".do()LRoot;";
 
-		// get the pointer keys for the add() function.
-		Set<LocalPointerKey> addFunctionPointerKeys = methodSignatureToPointerKeys.get(addFunctionSignature);
+		// get the pointer keys for the function.
+		Set<LocalPointerKey> functionPointerKeys = methodSignatureToPointerKeys.get(functionSignature);
 
-		// two tensor parameters, a and b.
-		assertEquals(2, addFunctionPointerKeys.size());
+		// check tensor parameters.
+		assertEquals(expectedNumberOfTensorParameters, functionPointerKeys.size());
 
-		// should have value numbers of 2 and 3.
-		Set<Integer> valueNumberSet = addFunctionPointerKeys.stream().map(LocalPointerKey::getValueNumber)
+		// check value numbers.
+		Set<Integer> actualValueNumberSet = functionPointerKeys.stream().map(LocalPointerKey::getValueNumber)
 				.collect(Collectors.toSet());
-		assertEquals(2, valueNumberSet.size());
-		assertTrue(valueNumberSet.contains(2));
-		assertTrue(valueNumberSet.contains(3));
 
-		// get the tensor variables for the add() function.
-		Set<TensorVariable> addFunctionTensors = methodSignatureToTensorVariables.get(addFunctionSignature);
+		assertEquals(expectedValueNumbers.length, actualValueNumberSet.size());
+		Arrays.stream(expectedValueNumbers).forEach(ev -> actualValueNumberSet.contains(ev));
 
-		// two tensor parameters, a and b.
-		assertEquals(2, addFunctionTensors.size());
+		// get the tensor variables for the function.
+		Set<TensorVariable> functionTensors = methodSignatureToTensorVariables.get(functionSignature);
+
+		// check tensor parameters.
+		assertEquals(expectedNumberOfTensorParameters, functionTensors.size());
 	}
 }
