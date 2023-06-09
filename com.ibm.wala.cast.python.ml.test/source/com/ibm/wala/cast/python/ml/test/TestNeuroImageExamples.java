@@ -14,14 +14,14 @@ import com.ibm.wala.util.CancelException;
 public class TestNeuroImageExamples extends TestPythonMLCallGraphShape {
 
 	private static final String Ex1URL = "https://raw.githubusercontent.com/corticometrics/neuroimage-tensorflow/master/train.py";
-
+	
 	@Test
 	public void testEx1CG() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		checkTensorOps(Ex1URL, (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
 			String in = "[{[D:Constant,64000] of pixel}]";
 			String out = "[{[D:Constant,40, D:Constant,40, D:Constant,40, D:Constant,1] of pixel}]";
 			checkTensorOp(cgBuilder, CG, result, "reshape", in, out);
-
+			
 			in = "[{[D:Constant,40, D:Constant,40, D:Constant,40, D:Constant,1] of pixel}]";
 			checkTensorOp(cgBuilder, CG, result, "conv3d", in, null);
 		});
