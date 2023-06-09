@@ -63,8 +63,8 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 		testTf2("tf2c.py", "add", 2, 2, 3);
 	}
 
-	private void testTf2(String testFile, String functionName, int expectedNumberOfTensorParameters, int... expectedValueNumbers) throws ClassHierarchyException, CancelException, IOException {
-		PythonAnalysisEngine<TensorTypeAnalysis> E = makeEngine(testFile);
+	private void testTf2(String filename, String functionName, int expectedNumberOfTensorParameters, int... expectedValueNumbers) throws ClassHierarchyException, CancelException, IOException {
+		PythonAnalysisEngine<TensorTypeAnalysis> E = makeEngine(filename);
 		PythonSSAPropagationCallGraphBuilder builder = E.defaultCallGraphBuilder();
 
 		CallGraph CG = builder.makeCallGraph(builder.getOptions());
@@ -118,7 +118,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 		assertEquals(expectedNumberOfTensorParameters, methodSignatureToPointerKeys.size());
 		assertEquals(expectedNumberOfTensorParameters, methodSignatureToTensorVariables.size());
 
-		final String functionSignature = "script " + testFile + "." + functionName + ".do()LRoot;";
+		final String functionSignature = "script " + filename + "." + functionName + ".do()LRoot;";
 
 		// get the pointer keys for the function.
 		Set<LocalPointerKey> functionPointerKeys = methodSignatureToPointerKeys.get(functionSignature);
