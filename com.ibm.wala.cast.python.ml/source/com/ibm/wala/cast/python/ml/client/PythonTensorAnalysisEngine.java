@@ -3,6 +3,7 @@ package com.ibm.wala.cast.python.ml.client;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import com.google.common.base.Objects;
 import com.ibm.wala.cast.lsp.AnalysisError;
@@ -65,6 +66,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 				SSAInstruction inst = du.getDef(vn);
 				if (inst instanceof SSAAbstractInvokeInstruction) {
 					SSAAbstractInvokeInstruction ni = (SSAAbstractInvokeInstruction) inst;
+					Stack<String> tensorFlowAPIStack = new Stack<>();
 					String tensorFlowAPI = null;
 
 					if (!ni.isStatic()) {
@@ -86,17 +88,28 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 									Value memberRefValue = ir.getSymbolTable().getValue(memberRef);
 
 									if (memberRefValue.isStringConstant()) {
-										tensorFlowAPI = ir.getSymbolTable().getStringValue(memberRef);
+										tensorFlowAPIStack.push(ir.getSymbolTable().getStringValue(memberRef));
+										Value memberRefValuePrevious = ir.getSymbolTable().getValue(memberRef-1);
+										if (memberRefValuePrevious != null && memberRefValuePrevious.isStringConstant()) {
+												tensorFlowAPIStack.push(ir.getSymbolTable().getStringValue(memberRef-1));
+										}
 									}
 								}
 							}
 						}
 					}
+					if (!tensorFlowAPIStack.isEmpty())
+						tensorFlowAPI = tensorFlowAPIStack.pop();
 
 					if ((ni.getCallSite().getDeclaredTarget().getName().toString().equals("read_data")
 							|| Objects.equal(tensorFlowAPI, "ones") || Objects.equal(tensorFlowAPI, "Variable")
-							|| Objects.equal(tensorFlowAPI, "zeros") || Objects.equal(tensorFlowAPI, "constant"))
-							&& ni.getException() != vn) {
+							|| Objects.equal(tensorFlowAPI, "zeros") || Objects.equal(tensorFlowAPI, "constant")
+							|| (Objects.equal(tensorFlowAPI, "random"))) && ni.getException() != vn) {
+						if (Objects.equal(tensorFlowAPI, "random") && !(tensorFlowAPIStack.isEmpty())) {
+							tensorFlowAPI = tensorFlowAPIStack.pop();
+							if (Objects.equal(tensorFlowAPI, "uniform"))
+								sources.add(src);
+						}
 						sources.add(src);
 					}
 				}
