@@ -58,16 +58,19 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 		Set<PointsToSetVariable> sources = HashSetFactory.make();
 		for(PointsToSetVariable src : dataflow) {
 			PointerKey k = src.getPointerKey();
+
 			if (k instanceof LocalPointerKey) {
 				LocalPointerKey kk = (LocalPointerKey)k;
 				int vn = kk.getValueNumber();
 				CGNode node = kk.getNode();
 				DefUse du = node.getDU();
 				SSAInstruction inst = du.getDef(vn);
+
 				if (inst instanceof SSAAbstractInvokeInstruction) {
 					SSAAbstractInvokeInstruction ni = (SSAAbstractInvokeInstruction) inst;
+
+					// A stack of API calls starting from the right-most API from the selection operator, e.g., tf.random.uniform.
 					Stack<String> tensorFlowAPIStack = new Stack<>();
-					String tensorFlowAPI = null;
 
 					if (!ni.isStatic()) {
 						int receiver = ni.getReceiver();
@@ -88,9 +91,11 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 									Value memberRefValue = ir.getSymbolTable().getValue(memberRef);
 
 									if (memberRefValue.isStringConstant()) {
+										// push the API onto the stack.
 										tensorFlowAPIStack.push(ir.getSymbolTable().getStringValue(memberRef));
+
 										// If the API module uses a function, the code below gets the module. For example: random.uniform
-										Value memberRefValuePrevious = ir.getSymbolTable().getValue(memberRef-1);
+										Value memberRefValuePrevious = ir.getSymbolTable().getValue(memberRef - 1);
 										if (memberRefValuePrevious != null && memberRefValuePrevious.isStringConstant()) {
 												tensorFlowAPIStack.push(ir.getSymbolTable().getStringValue(memberRef-1));
 										}
@@ -99,21 +104,24 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 							}
 						}
 					}
+
+					String tensorFlowAPI = null;
 					if (!tensorFlowAPIStack.isEmpty())
 						tensorFlowAPI = tensorFlowAPIStack.pop();
 
+					// First-level APIs
 					if ((ni.getCallSite().getDeclaredTarget().getName().toString().equals("read_data")
 							|| Objects.equal(tensorFlowAPI, "ones") || Objects.equal(tensorFlowAPI, "Variable")
-							|| Objects.equal(tensorFlowAPI, "zeros") || Objects.equal(tensorFlowAPI, "constant")
-							|| (Objects.equal(tensorFlowAPI, "random"))) && ni.getException() != vn) {
-						if (Objects.equal(tensorFlowAPI, "random")) {
-							if (!(tensorFlowAPIStack.isEmpty())) {
-								tensorFlowAPI = tensorFlowAPIStack.pop();
-								if (Objects.equal(tensorFlowAPI, "uniform"))
-									sources.add(src);
-							}
-						} else
-							sources.add(src);
+							|| Objects.equal(tensorFlowAPI, "zeros") || Objects.equal(tensorFlowAPI, "constant"))
+							&& ni.getException() != vn) {
+						sources.add(src);
+					// Second-level APIs
+					} else if (Objects.equal(tensorFlowAPI, "random") && ni.getException() != vn) {
+						if (!tensorFlowAPIStack.isEmpty()) {
+							tensorFlowAPI = tensorFlowAPIStack.pop();
+							if (Objects.equal(tensorFlowAPI, "uniform"))
+								sources.add(src);
+						}
 					}
 				}
 			}
