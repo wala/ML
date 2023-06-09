@@ -89,6 +89,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 
 									if (memberRefValue.isStringConstant()) {
 										tensorFlowAPIStack.push(ir.getSymbolTable().getStringValue(memberRef));
+										// If the API module uses a function, the code below gets the module. For example: random.uniform
 										Value memberRefValuePrevious = ir.getSymbolTable().getValue(memberRef-1);
 										if (memberRefValuePrevious != null && memberRefValuePrevious.isStringConstant()) {
 												tensorFlowAPIStack.push(ir.getSymbolTable().getStringValue(memberRef-1));
