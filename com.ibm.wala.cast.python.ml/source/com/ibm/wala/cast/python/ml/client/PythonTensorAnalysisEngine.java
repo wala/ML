@@ -106,12 +106,14 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 							|| Objects.equal(tensorFlowAPI, "ones") || Objects.equal(tensorFlowAPI, "Variable")
 							|| Objects.equal(tensorFlowAPI, "zeros") || Objects.equal(tensorFlowAPI, "constant")
 							|| (Objects.equal(tensorFlowAPI, "random"))) && ni.getException() != vn) {
-						if (Objects.equal(tensorFlowAPI, "random") && !(tensorFlowAPIStack.isEmpty())) {
-							tensorFlowAPI = tensorFlowAPIStack.pop();
-							if (Objects.equal(tensorFlowAPI, "uniform"))
-								sources.add(src);
-						}
-						sources.add(src);
+						if (Objects.equal(tensorFlowAPI, "random")) {
+							if (!(tensorFlowAPIStack.isEmpty())) {
+								tensorFlowAPI = tensorFlowAPIStack.pop();
+								if (Objects.equal(tensorFlowAPI, "uniform"))
+									sources.add(src);
+							}
+						} else
+							sources.add(src);
 					}
 				}
 			}
