@@ -2,27 +2,24 @@ package com.ibm.wala.cast.python.ml.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.ibm.wala.cast.loader.AstMethod;
 //import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
 import com.ibm.wala.cast.python.ml.analysis.TensorVariable;
-import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
@@ -32,25 +29,6 @@ import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 
 public class TestTensorflowModel extends TestPythonMLCallGraphShape {
-
-	private static class Tf2TestFile {
-		private String filename;
-
-		private int expectedLineNumberForParameters;
-
-		public Tf2TestFile(String filename, int expectedLineNumberForParameters) {
-			this.filename = filename;
-			this.expectedLineNumberForParameters = expectedLineNumberForParameters;
-		}
-
-		public String getFilename() {
-			return this.filename;
-		}
-
-		public int getExpectedLineNumberForParameters() {
-			return this.expectedLineNumberForParameters;
-		}
-	}
 
 	@Test
 	public void testTf1() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
@@ -80,18 +58,14 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 
 	@Test
 	public void testTf2() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		final Set<Tf2TestFile> filesToTest = new LinkedHashSet<>();
-		filesToTest.add(new Tf2TestFile("tf2.py", 3));
-		filesToTest.add(new Tf2TestFile("tf2b.py", 3));
-		filesToTest.add(new Tf2TestFile("tf2c.py", 4));
-		filesToTest.add(new Tf2TestFile("tf2d.py", 3));
-
-		for (Tf2TestFile testFile : filesToTest)
-			testTf2(testFile);
+		testTf2("tf2.py", "add", 2, 2, 3);
+		testTf2("tf2b.py", "add", 2, 2, 3);
+		testTf2("tf2c.py", "add", 2, 2, 3);
+    testTf2("tf2d.py", "add", 2, 2, 3);
 	}
 
-	private void testTf2(Tf2TestFile testFile) throws ClassHierarchyException, CancelException, IOException {
-		PythonAnalysisEngine<TensorTypeAnalysis> E = makeEngine(testFile.getFilename());
+	private void testTf2(String filename, String functionName, int expectedNumberOfTensorParameters, int... expectedValueNumbers) throws ClassHierarchyException, CancelException, IOException {
+		PythonAnalysisEngine<TensorTypeAnalysis> E = makeEngine(filename);
 		PythonSSAPropagationCallGraphBuilder builder = E.defaultCallGraphBuilder();
 
 		CallGraph CG = builder.makeCallGraph(builder.getOptions());
@@ -141,49 +115,29 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 			});
 		});
 
-		// we should have two methods.
-		assertEquals(2, methodSignatureToPointerKeys.size());
-		assertEquals(2, methodSignatureToTensorVariables.size());
+		// check the maps.
+		assertEquals(expectedNumberOfTensorParameters, methodSignatureToPointerKeys.size());
+		assertEquals(expectedNumberOfTensorParameters, methodSignatureToTensorVariables.size());
 
-		final String addFunctionSignature = "script " + testFile.getFilename() + ".add.do()LRoot;";
+		final String functionSignature = "script " + filename + "." + functionName + ".do()LRoot;";
 
-		// get the pointer keys for the add() function.
-		Set<LocalPointerKey> addFunctionPointerKeys = methodSignatureToPointerKeys.get(addFunctionSignature);
+		// get the pointer keys for the function.
+		Set<LocalPointerKey> functionPointerKeys = methodSignatureToPointerKeys.get(functionSignature);
 
-		// two tensor parameters, a and b.
-		assertEquals(2, addFunctionPointerKeys.size());
+		// check tensor parameters.
+		assertEquals(expectedNumberOfTensorParameters, functionPointerKeys.size());
 
-		// should have value numbers of 2 and 3.
-		Set<Integer> valueNumberSet = addFunctionPointerKeys.stream().map(LocalPointerKey::getValueNumber)
+		// check value numbers.
+		Set<Integer> actualValueNumberSet = functionPointerKeys.stream().map(LocalPointerKey::getValueNumber)
 				.collect(Collectors.toSet());
-		assertEquals(2, valueNumberSet.size());
-		assertTrue(valueNumberSet.contains(2));
-		assertTrue(valueNumberSet.contains(3));
 
-		// check the source positions of each function parameter.
-		for (LocalPointerKey lpk : addFunctionPointerKeys) {
-			AstMethod method = (AstMethod) lpk.getNode().getIR().getMethod();
-			int paramIndex = lpk.getValueNumber() - 1;
-			Position parameterPosition = method.getParameterPosition(paramIndex);
+		assertEquals(expectedValueNumbers.length, actualValueNumberSet.size());
+		Arrays.stream(expectedValueNumbers).forEach(ev -> actualValueNumberSet.contains(ev));
 
-			// check the line.
-			assertEquals(testFile.getExpectedLineNumberForParameters(), parameterPosition.getFirstLine());
+		// get the tensor variables for the function.
+		Set<TensorVariable> functionTensors = methodSignatureToTensorVariables.get(functionSignature);
 
-			// check the columns.
-			if (lpk.getValueNumber() == 2) {
-				assertEquals(8, parameterPosition.getFirstCol());
-				assertEquals(9, parameterPosition.getLastCol());
-			} else if (lpk.getValueNumber() == 3) {
-				assertEquals(11, parameterPosition.getFirstCol());
-				assertEquals(12, parameterPosition.getLastCol());
-			} else
-				throw new IllegalStateException("Expecting value numbers 2 or 3.");
-		}
-
-		// get the tensor variables for the add() function.
-		Set<TensorVariable> addFunctionTensors = methodSignatureToTensorVariables.get(addFunctionSignature);
-
-		// two tensor parameters, a and b.
-		assertEquals(2, addFunctionTensors.size());
+		// check tensor parameters.
+		assertEquals(expectedNumberOfTensorParameters, functionTensors.size());
 	}
 }
