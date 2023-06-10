@@ -62,6 +62,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 		testTf2("tf2b.py", "add", 2, 2, 3);
 		testTf2("tf2c.py", "add", 2, 2, 3);
 		testTf2("tf2d.py", "add", 2, 2, 3);
+		testTf2("tf2e.py", "add", 2, 2, 3);
 	}
 
 	private void testTf2(String filename, String functionName, int expectedNumberOfTensorParameters, int... expectedValueNumbers) throws ClassHierarchyException, CancelException, IOException {

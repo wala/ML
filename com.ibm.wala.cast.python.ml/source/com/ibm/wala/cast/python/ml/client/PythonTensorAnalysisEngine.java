@@ -125,6 +125,16 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 								sources.add(src);
 						}
 					}
+					// Third-level APIs
+					else if (Objects.equal(tensorFlowAPI, "math") && ni.getException() != vn) {
+						if (!tensorFlowAPIStack.isEmpty()) {
+							tensorFlowAPI = tensorFlowAPIStack.pop();
+							if (Objects.equal(tensorFlowAPI, "special") && !tensorFlowAPIStack.isEmpty()) {
+								if (Objects.equal(tensorFlowAPIStack.pop(), "expint"))
+									sources.add(src);
+							}
+						}
+					}
 				}
 			}
 		}
