@@ -1,9 +1,10 @@
 package com.ibm.wala.cast.python.ml.client;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
 
 import com.google.common.base.Objects;
 import com.ibm.wala.cast.lsp.AnalysisError;
@@ -70,7 +71,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 					SSAAbstractInvokeInstruction ni = (SSAAbstractInvokeInstruction) inst;
 
 					// A stack of API calls starting from the right-most API from the selection operator, e.g., tf.random.uniform.
-					Stack<String> tensorFlowAPIStack = new Stack<>();
+					Queue<String> tensorFlowAPIQueue = new LinkedList<>();
 
 					if (!ni.isStatic()) {
 						int receiver = ni.getReceiver();
@@ -90,50 +91,43 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 									IR ir = node.getIR();
 									Value memberRefValue = ir.getSymbolTable().getValue(memberRef);
 
-									if (memberRefValue.isStringConstant()) {
-										// push the API onto the stack.
-										tensorFlowAPIStack.push(ir.getSymbolTable().getStringValue(memberRef));
+									// while a member ref value exists and it's a string constant.
+									while (memberRefValue != null && memberRefValue.isStringConstant()) {
+										// push the API onto the queue.
+										tensorFlowAPIQueue.add(ir.getSymbolTable().getStringValue(memberRef));
 
-										// If the API module uses a function, the code below gets the module. For example: random.uniform
-										Value memberRefValuePrevious = ir.getSymbolTable().getValue(memberRef - 1);
-										while (memberRefValuePrevious != null && memberRefValuePrevious.isStringConstant()) {
-											tensorFlowAPIStack.push(ir.getSymbolTable().getStringValue(memberRef-1));
-											memberRef = memberRef - 1;
-											memberRefValuePrevious = ir.getSymbolTable().getValue(memberRef - 1);
-										}
+										// go back one "level."
+										memberRefValue = ir.getSymbolTable().getValue(--memberRef);
 									}
 								}
 							}
 						}
 					}
 
-					String tensorFlowAPI = null;
-					if (!tensorFlowAPIStack.isEmpty())
-						tensorFlowAPI = tensorFlowAPIStack.pop();
+					// processs the API "levels."
+					if (ni.getException() != vn) {
+						if (!tensorFlowAPIQueue.isEmpty()) {
+							// pop the first element.
+							String tensorFlowAPI = tensorFlowAPIQueue.remove();
 
-					// First-level APIs
-					if ((ni.getCallSite().getDeclaredTarget().getName().toString().equals("read_data")
-							|| Objects.equal(tensorFlowAPI, "ones") || Objects.equal(tensorFlowAPI, "Variable")
-							|| Objects.equal(tensorFlowAPI, "zeros") || Objects.equal(tensorFlowAPI, "constant"))
-							&& ni.getException() != vn) {
-						sources.add(src);
-					// Second-level APIs
-					} else if (Objects.equal(tensorFlowAPI, "random") && ni.getException() != vn) {
-						if (!tensorFlowAPIStack.isEmpty()) {
-							tensorFlowAPI = tensorFlowAPIStack.pop();
-							if (Objects.equal(tensorFlowAPI, "uniform"))
+							// Single-level APIs.
+							if (Objects.equal(tensorFlowAPI, "ones") || Objects.equal(tensorFlowAPI, "Variable")
+									|| Objects.equal(tensorFlowAPI, "zeros") || Objects.equal(tensorFlowAPI, "constant"))
 								sources.add(src);
-						}
-					}
-					// Third-level APIs
-					else if (Objects.equal(tensorFlowAPI, "math") && ni.getException() != vn) {
-						if (!tensorFlowAPIStack.isEmpty()) {
-							tensorFlowAPI = tensorFlowAPIStack.pop();
-							if (Objects.equal(tensorFlowAPI, "special") && !tensorFlowAPIStack.isEmpty()) {
-								if (Objects.equal(tensorFlowAPIStack.pop(), "expint"))
+							// Double-level APIs.
+							else if (Objects.equal(tensorFlowAPI, "uniform")) {
+								// Check the next "level".
+								if (tensorFlowAPIQueue.isEmpty())
+									// not expecting this API call.
+									throw new IllegalStateException("Encountered unexpected API call.");
+
+								tensorFlowAPI = tensorFlowAPIQueue.remove();
+
+								if (Objects.equal(tensorFlowAPI, "random"))
 									sources.add(src);
 							}
-						}
+						} else if (ni.getCallSite().getDeclaredTarget().getName().toString().equals("read_data"))
+							sources.add(src);
 					}
 				}
 			}
