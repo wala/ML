@@ -1,7 +1,9 @@
 package com.ibm.wala.cast.python.ml.client;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 import com.google.common.base.Objects;
@@ -57,15 +59,19 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 		Set<PointsToSetVariable> sources = HashSetFactory.make();
 		for(PointsToSetVariable src : dataflow) {
 			PointerKey k = src.getPointerKey();
+
 			if (k instanceof LocalPointerKey) {
 				LocalPointerKey kk = (LocalPointerKey)k;
 				int vn = kk.getValueNumber();
 				CGNode node = kk.getNode();
 				DefUse du = node.getDU();
 				SSAInstruction inst = du.getDef(vn);
+
 				if (inst instanceof SSAAbstractInvokeInstruction) {
 					SSAAbstractInvokeInstruction ni = (SSAAbstractInvokeInstruction) inst;
-					String tensorFlowAPI = null;
+
+					// A stack of API calls starting from the right-most API from the selection operator, e.g., tf.random.uniform.
+					Queue<String> tensorFlowAPIQueue = new LinkedList<>();
 
 					if (!ni.isStatic()) {
 						int receiver = ni.getReceiver();
@@ -85,19 +91,43 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 									IR ir = node.getIR();
 									Value memberRefValue = ir.getSymbolTable().getValue(memberRef);
 
-									if (memberRefValue.isStringConstant()) {
-										tensorFlowAPI = ir.getSymbolTable().getStringValue(memberRef);
+									// while a member ref value exists and it's a string constant.
+									while (memberRefValue != null && memberRefValue.isStringConstant()) {
+										// push the API onto the queue.
+										tensorFlowAPIQueue.add(ir.getSymbolTable().getStringValue(memberRef));
+
+										// go back one "level."
+										memberRefValue = ir.getSymbolTable().getValue(--memberRef);
 									}
 								}
 							}
 						}
 					}
 
-					if ((ni.getCallSite().getDeclaredTarget().getName().toString().equals("read_data")
-							|| Objects.equal(tensorFlowAPI, "ones") || Objects.equal(tensorFlowAPI, "Variable")
-							|| Objects.equal(tensorFlowAPI, "zeros") || Objects.equal(tensorFlowAPI, "constant"))
-							&& ni.getException() != vn) {
-						sources.add(src);
+					// processs the API "levels."
+					if (ni.getException() != vn) {
+						if (!tensorFlowAPIQueue.isEmpty()) {
+							// pop the first element.
+							String tensorFlowAPI = tensorFlowAPIQueue.remove();
+
+							// Single-level APIs.
+							if (Objects.equal(tensorFlowAPI, "ones") || Objects.equal(tensorFlowAPI, "Variable")
+									|| Objects.equal(tensorFlowAPI, "zeros") || Objects.equal(tensorFlowAPI, "constant"))
+								sources.add(src);
+							// Double-level APIs.
+							else if (Objects.equal(tensorFlowAPI, "uniform")) {
+								// Check the next "level".
+								if (tensorFlowAPIQueue.isEmpty())
+									// not expecting this API call.
+									throw new IllegalStateException("Encountered unexpected API call.");
+
+								tensorFlowAPI = tensorFlowAPIQueue.remove();
+
+								if (Objects.equal(tensorFlowAPI, "random"))
+									sources.add(src);
+							}
+						} else if (ni.getCallSite().getDeclaredTarget().getName().toString().equals("read_data"))
+							sources.add(src);
 					}
 				}
 			}
