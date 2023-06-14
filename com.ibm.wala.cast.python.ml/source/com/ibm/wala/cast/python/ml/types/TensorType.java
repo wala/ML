@@ -340,7 +340,7 @@ public class TensorType implements Iterable<Dimension<?>> {
 	
 	
 	public static TensorType shapeArg(CGNode node, int literalVn) {
-		System.err.println(node.getIR());
+//		System.err.println(node.getIR());
 		ArrayList<Dimension<?>> r = new ArrayList<>();
 		DefUse du = node.getDU();
 		SymbolTable S = node.getIR().getSymbolTable();

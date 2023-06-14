@@ -101,7 +101,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 							accept(sm);
 						});
 					} else {
-						System.err.println("**CLS: " + scriptName((SourceModule)f));
+//						System.err.println("**CLS: " + scriptName((SourceModule)f));
 						localModules.add(scriptName((SourceModule)f));
 					}
 				}
