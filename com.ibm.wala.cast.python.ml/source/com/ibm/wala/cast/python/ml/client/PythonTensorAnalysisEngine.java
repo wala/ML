@@ -70,7 +70,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 				if (inst instanceof SSAAbstractInvokeInstruction) {
 					SSAAbstractInvokeInstruction ni = (SSAAbstractInvokeInstruction) inst;
 
-					// A stack of API calls starting from the right-most API from the selection operator, e.g., tf.random.uniform.
+					// A queue of API calls starting from the right-most API from the selection operator, e.g., tf.random.uniform.
 					Queue<String> tensorFlowAPIQueue = new LinkedList<>();
 
 					if (!ni.isStatic()) {
@@ -104,7 +104,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 						}
 					}
 
-					// processs the API "levels."
+					// process the API "levels."
 					if (ni.getException() != vn) {
 						if (!tensorFlowAPIQueue.isEmpty()) {
 							// pop the first element.
