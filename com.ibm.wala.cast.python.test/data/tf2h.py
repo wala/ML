@@ -1,7 +1,7 @@
-from tensorflow import SparseTensor
+import tensorflow as tf
 
 def add(a, b):
-  return a
+  return tf.sparse.add(a,b)
 
 
-c = add(SparseTensor([[0, 0], [1, 2]], [1, 2],[3, 4]), SparseTensor([[0, 0], [1, 2]], [1, 2], [3, 4]))
+c = add(tf.SparseTensor([[0, 0], [1, 2]], [1, 2],[3, 4]), tf.SparseTensor([[0, 0], [1, 2]], [1, 2], [3, 4]))
