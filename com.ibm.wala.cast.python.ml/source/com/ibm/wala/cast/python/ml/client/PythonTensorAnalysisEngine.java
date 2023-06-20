@@ -112,7 +112,13 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 
 							// Single-level APIs.
 							if (Objects.equal(tensorFlowAPI, "ones") || Objects.equal(tensorFlowAPI, "Variable")
-									|| Objects.equal(tensorFlowAPI, "zeros") || Objects.equal(tensorFlowAPI, "constant"))
+									|| Objects.equal(tensorFlowAPI, "zeros") || Objects.equal(tensorFlowAPI, "constant")
+									|| Objects.equal(tensorFlowAPI, "SparseTensor") || Objects.equal(tensorFlowAPI, "Tensor")
+									|| Objects.equal(tensorFlowAPI, "fill") || Objects.equal(tensorFlowAPI, "eye")
+									|| Objects.equal(tensorFlowAPI, "zeros_like")
+									|| Objects.equal(tensorFlowAPI, "one_hot")
+									|| Objects.equal(tensorFlowAPI, "convert_to_tensor")
+									|| Objects.equal(tensorFlowAPI, "range"))
 								sources.add(src);
 							// Double-level APIs.
 							else if (Objects.equal(tensorFlowAPI, "uniform")) {
