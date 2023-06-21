@@ -16,10 +16,8 @@ import com.ibm.wala.types.ClassLoaderReference;
 
 public abstract class PythonLoaderFactory extends SingleClassLoaderFactory {
 
-	@Override
-	public ClassLoaderReference getTheReference() {
-		return PythonTypes.pythonLoader;
-	}
-
-
+  @Override
+  public ClassLoaderReference getTheReference() {
+    return PythonTypes.pythonLoader;
+  }
 }

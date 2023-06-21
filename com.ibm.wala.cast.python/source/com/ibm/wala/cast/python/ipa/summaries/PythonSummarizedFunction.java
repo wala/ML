@@ -21,19 +21,18 @@ import com.ibm.wala.types.MethodReference;
 
 public class PythonSummarizedFunction extends SummarizedMethodWithNames {
 
-	public PythonSummarizedFunction(MethodReference ref, MethodSummary summary, IClass declaringClass)
-			throws NullPointerException {
-		super(ref, summary, declaringClass);
-	}
+  public PythonSummarizedFunction(MethodReference ref, MethodSummary summary, IClass declaringClass)
+      throws NullPointerException {
+    super(ref, summary, declaringClass);
+  }
 
-	@Override
-	public boolean equals(Object o) {
-		return this == o;
-	}
+  @Override
+  public boolean equals(Object o) {
+    return this == o;
+  }
 
-	@Override
-	public InducedCFG makeControlFlowGraph(SSAInstruction[] instructions) {
-		return new PythonInducedCFG(instructions, this, Everywhere.EVERYWHERE);	
-	}
-
+  @Override
+  public InducedCFG makeControlFlowGraph(SSAInstruction[] instructions) {
+    return new PythonInducedCFG(instructions, this, Everywhere.EVERYWHERE);
+  }
 }

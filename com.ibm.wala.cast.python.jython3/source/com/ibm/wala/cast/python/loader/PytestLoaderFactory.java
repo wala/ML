@@ -5,9 +5,8 @@ import com.ibm.wala.ipa.cha.IClassHierarchy;
 
 public class PytestLoaderFactory extends PythonLoaderFactory {
 
-	@Override
-	protected IClassLoader makeTheLoader(IClassHierarchy cha) {
-		return new PytestLoader(cha);
-	}
-
+  @Override
+  protected IClassLoader makeTheLoader(IClassHierarchy cha) {
+    return new PytestLoader(cha);
+  }
 }
