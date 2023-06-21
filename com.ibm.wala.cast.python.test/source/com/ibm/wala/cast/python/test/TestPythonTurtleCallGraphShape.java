@@ -1,12 +1,5 @@
 package com.ibm.wala.cast.python.test;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
-import org.json.JSONArray;
-
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.client.PythonTurtleAnalysisEngine;
 import com.ibm.wala.cast.python.client.PythonTurtleAnalysisEngine.EdgeType;
@@ -24,54 +17,64 @@ import com.ibm.wala.util.NullProgressMonitor;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.ReverseIterator;
 import com.ibm.wala.util.graph.labeled.LabeledGraph;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import org.json.JSONArray;
 
 public class TestPythonTurtleCallGraphShape extends TestPythonCallGraphShape {
-	private final boolean isLibrary;
+  private final boolean isLibrary;
 
-	public TestPythonTurtleCallGraphShape(boolean isLibrary) {
-		this.isLibrary = isLibrary;
-	}
+  public TestPythonTurtleCallGraphShape(boolean isLibrary) {
+    this.isLibrary = isLibrary;
+  }
 
-	@Override
-	protected PythonAnalysisEngine<LabeledGraph<TurtlePath,EdgeType>> makeEngine(String... name) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		PythonAnalysisEngine<LabeledGraph<TurtlePath,EdgeType>> engine = 
-			isLibrary? new PythonTurtleLibraryAnalysisEngine(): new PythonTurtleAnalysisEngine();
-		Set<Module> modules = HashSetFactory.make();
-		for(String n : name) {
-			modules.add(getScript(n));
-		}
-		engine.setModuleFiles(modules);
-		return engine;
-	}
+  @Override
+  protected PythonAnalysisEngine<LabeledGraph<TurtlePath, EdgeType>> makeEngine(String... name)
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    PythonAnalysisEngine<LabeledGraph<TurtlePath, EdgeType>> engine =
+        isLibrary ? new PythonTurtleLibraryAnalysisEngine() : new PythonTurtleAnalysisEngine();
+    Set<Module> modules = HashSetFactory.make();
+    for (String n : name) {
+      modules.add(getScript(n));
+    }
+    engine.setModuleFiles(modules);
+    return engine;
+  }
 
-	public static void main(String[] args) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		TestPythonTurtleCallGraphShape driver = new TestPythonTurtleCallGraphShape(Boolean.getBoolean("analyzeTurtleLibrary")) {
+  public static void main(String[] args)
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    TestPythonTurtleCallGraphShape driver =
+        new TestPythonTurtleCallGraphShape(Boolean.getBoolean("analyzeTurtleLibrary")) {};
 
-		};
+    for (String main : args) {
+      PythonAnalysisEngine<LabeledGraph<TurtlePath, PythonTurtleAnalysisEngine.EdgeType>> E =
+          driver.makeEngine(main);
 
-		for (String main : args) {
-			PythonAnalysisEngine<LabeledGraph<TurtlePath,PythonTurtleAnalysisEngine.EdgeType>> E = driver.makeEngine(main);
+      CallGraphBuilder<? super InstanceKey> builder = E.defaultCallGraphBuilder();
+      CallGraph CG = builder.makeCallGraph(E.getOptions(), new NullProgressMonitor());
 
-			CallGraphBuilder<? super InstanceKey> builder = E.defaultCallGraphBuilder();
-			CallGraph CG = builder.makeCallGraph(E.getOptions(), new NullProgressMonitor());
+      LabeledGraph<TurtlePath, PythonTurtleAnalysisEngine.EdgeType> analysis =
+          E.performAnalysis((SSAPropagationCallGraphBuilder) builder);
 
-			LabeledGraph<TurtlePath,PythonTurtleAnalysisEngine.EdgeType> analysis = E.performAnalysis((SSAPropagationCallGraphBuilder)builder);
+      JSONArray stuff = PythonTurtleAnalysisEngine.graphToJSON(analysis);
 
-			JSONArray stuff = PythonTurtleAnalysisEngine.graphToJSON(analysis);
+      for (CGNode n : CG) {
+        System.err.println(n.getIR());
+      }
+      System.err.println(CG);
+      System.err.println(stuff);
 
-			for(CGNode n : CG) {
-				System.err.println(n.getIR());
-			}
-			System.err.println(CG);
-			System.err.println(stuff);
-
-			List<String> pat = Arrays.asList("tensorflow", "examples", "tutorials", "mnist", "**", "next_batch");
-			analysis.forEach((turtle) -> {
-				if (PythonTurtleAnalysisEngine.match(ReverseIterator.reverse(turtle.path().iterator()), pat.iterator())) {
-					System.err.println(turtle.position() + ": " + turtle.value());
-				}
-			});
-		}
-	}
-
+      List<String> pat =
+          Arrays.asList("tensorflow", "examples", "tutorials", "mnist", "**", "next_batch");
+      analysis.forEach(
+          (turtle) -> {
+            if (PythonTurtleAnalysisEngine.match(
+                ReverseIterator.reverse(turtle.path().iterator()), pat.iterator())) {
+              System.err.println(turtle.position() + ": " + turtle.value());
+            }
+          });
+    }
+  }
 }

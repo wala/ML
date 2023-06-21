@@ -1,8 +1,6 @@
 package com.ibm.wala.cast.python.analysis.ap;
 
-/**
- * Access path representing a lexical variable.
- */
+/** Access path representing a lexical variable. */
 public class LexicalAP implements IAPRoot {
 
   public static LexicalAP createLexicalAP(String name, String definer) {
@@ -44,22 +42,16 @@ public class LexicalAP implements IAPRoot {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
     LexicalAP other = (LexicalAP) obj;
-    if (!definer.equals(other.definer))
-      return false;
-    if (!name.equals(other.name))
-      return false;
+    if (!definer.equals(other.definer)) return false;
+    if (!name.equals(other.name)) return false;
     return true;
   }
 
   public String toString() {
     return "(" + name + "," + definer + ")";
-    
   }
 }
