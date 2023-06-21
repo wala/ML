@@ -1,5 +1,5 @@
 /******************************************************************************
-
+ *
  * Copyright (c) 2018 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,14 +10,6 @@
  *     IBM Corporation - initial API and implementation
  *****************************************************************************/
 package com.ibm.wala.cast.python.ml.driver;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.eclipse.lsp4j.Diagnostic;
 
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.lsp.WALAServer;
@@ -43,162 +35,209 @@ import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashSetFactory;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.eclipse.lsp4j.Diagnostic;
 
 public class PythonDriver {
 
-	public static Map<String, List<Diagnostic>> getDiagnostics(String language, Map<String,String> uriTextPairs) {
-		return WALAServer.getDiagnostics(python, language, uriTextPairs);
-	}
+  public static Map<String, List<Diagnostic>> getDiagnostics(
+      String language, Map<String, String> uriTextPairs) {
+    return WALAServer.getDiagnostics(python, language, uriTextPairs);
+  }
 
-	public static Map<String, List<Diagnostic>> getDiagnostics(Map<String,String> uriTextPairs) {
-		return getDiagnostics("python", uriTextPairs);
-	}
+  public static Map<String, List<Diagnostic>> getDiagnostics(Map<String, String> uriTextPairs) {
+    return getDiagnostics("python", uriTextPairs);
+  }
 
-	private static String getTypeNameString(TypeName typ) {
-		String str = typ.toString();
-		if(str.startsWith("L")) {
-			str = str.substring(1);
-		}
-		str = str.replaceAll("/", ".");
-		return str;
-	}
-	public static final Function<WALAServer, Function<String, AbstractAnalysisEngine<InstanceKey, ? extends PropagationCallGraphBuilder, ?>>> python = (WALAServer lsp) -> {
-		return (String language) -> {
-			assert "python".equals(language) : language;
-			PythonTensorAnalysisEngine engine = new PythonTensorAnalysisEngine() {
+  private static String getTypeNameString(TypeName typ) {
+    String str = typ.toString();
+    if (str.startsWith("L")) {
+      str = str.substring(1);
+    }
+    str = str.replaceAll("/", ".");
+    return str;
+  }
 
-				@Override
-				public TensorTypeAnalysis performAnalysis(
-						PropagationCallGraphBuilder builder) throws CancelException {
+  public static final Function<
+          WALAServer,
+          Function<
+              String,
+              AbstractAnalysisEngine<InstanceKey, ? extends PropagationCallGraphBuilder, ?>>>
+      python =
+          (WALAServer lsp) -> {
+            return (String language) -> {
+              assert "python".equals(language) : language;
+              PythonTensorAnalysisEngine engine =
+                  new PythonTensorAnalysisEngine() {
 
-					TensorTypeAnalysis tt = super.performAnalysis(builder);
+                    @Override
+                    public TensorTypeAnalysis performAnalysis(PropagationCallGraphBuilder builder)
+                        throws CancelException {
 
-					CallGraph CG = builder.getCallGraph();
-					PointerAnalysis<InstanceKey> PA = builder.getPointerAnalysis();
-					HeapModel H = PA.getHeapModel();
+                      TensorTypeAnalysis tt = super.performAnalysis(builder);
 
-					CG.iterator().forEachRemaining((CGNode n) -> { 
-						IMethod M = n.getMethod();
-						if (M instanceof AstMethod) {
-							IR ir = n.getIR();
-							ir.iterateAllInstructions().forEachRemaining((SSAInstruction inst) -> {
-								if (inst.iIndex() != -1) {
-									Position pos = ((AstMethod)M).debugInfo().getInstructionPosition(inst.iIndex());
-									if (pos != null) {
-										lsp.add(pos, new int[] {CG.getNumber(n), inst.iIndex()});
-									}
-									if (inst.hasDef()) {
-										PointerKey v = H.getPointerKeyForLocal(n, inst.getDef());
-										if (M instanceof AstMethod) {
-											if (pos != null) {
-												lsp.add(pos, v);
-											}
-										}
-									}
-								}
-							});
-						}
-					});
+                      CallGraph CG = builder.getCallGraph();
+                      PointerAnalysis<InstanceKey> PA = builder.getPointerAnalysis();
+                      HeapModel H = PA.getHeapModel();
 
-					lsp.addValueAnalysis("type", builder.getPointerAnalysis().getHeapGraph(), (Boolean useMarkdown, PointerKey v) -> {
-						if (builder.getPropagationSystem().isImplicit(v)) {
-							return null;
-						} else {
-							PointsToSetVariable pts = builder.getPropagationSystem().findOrCreatePointsToSet(v);
-							if (tt.getProblem().getFlowGraph().containsNode(pts)) {
-								TensorVariable vv = tt.getOut(pts);
-								String str = vv.toCString(useMarkdown);
-								return str;
-							} else {
-								return null;
-							}
-						}
-					});
+                      CG.iterator()
+                          .forEachRemaining(
+                              (CGNode n) -> {
+                                IMethod M = n.getMethod();
+                                if (M instanceof AstMethod) {
+                                  IR ir = n.getIR();
+                                  ir.iterateAllInstructions()
+                                      .forEachRemaining(
+                                          (SSAInstruction inst) -> {
+                                            if (inst.iIndex() != -1) {
+                                              Position pos =
+                                                  ((AstMethod) M)
+                                                      .debugInfo()
+                                                      .getInstructionPosition(inst.iIndex());
+                                              if (pos != null) {
+                                                lsp.add(
+                                                    pos,
+                                                    new int[] {CG.getNumber(n), inst.iIndex()});
+                                              }
+                                              if (inst.hasDef()) {
+                                                PointerKey v =
+                                                    H.getPointerKeyForLocal(n, inst.getDef());
+                                                if (M instanceof AstMethod) {
+                                                  if (pos != null) {
+                                                    lsp.add(pos, v);
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          });
+                                }
+                              });
 
-					lsp.addInstructionAnalysis("target", (Boolean useMarkdown, int[] instId) -> {
-						CGNode node = builder.getCallGraph().getNode(instId[0]);
-						SSAInstruction[] insts = node.getIR().getInstructions();
-						if (insts.length > instId[1]) {
-							SSAInstruction inst = insts[instId[1]];
-							if (inst instanceof SSAAbstractInvokeInstruction) {
-								CallSiteReference ref = ((SSAAbstractInvokeInstruction)inst).getCallSite();
-								final Set<CGNode> possibleTargets = builder.getCallGraph().getPossibleTargets(node, ref);
+                      lsp.addValueAnalysis(
+                          "type",
+                          builder.getPointerAnalysis().getHeapGraph(),
+                          (Boolean useMarkdown, PointerKey v) -> {
+                            if (builder.getPropagationSystem().isImplicit(v)) {
+                              return null;
+                            } else {
+                              PointsToSetVariable pts =
+                                  builder.getPropagationSystem().findOrCreatePointsToSet(v);
+                              if (tt.getProblem().getFlowGraph().containsNode(pts)) {
+                                TensorVariable vv = tt.getOut(pts);
+                                String str = vv.toCString(useMarkdown);
+                                return str;
+                              } else {
+                                return null;
+                              }
+                            }
+                          });
 
-								if(possibleTargets.isEmpty()) {
-									return null;
-								}
+                      lsp.addInstructionAnalysis(
+                          "target",
+                          (Boolean useMarkdown, int[] instId) -> {
+                            CGNode node = builder.getCallGraph().getNode(instId[0]);
+                            SSAInstruction[] insts = node.getIR().getInstructions();
+                            if (insts.length > instId[1]) {
+                              SSAInstruction inst = insts[instId[1]];
+                              if (inst instanceof SSAAbstractInvokeInstruction) {
+                                CallSiteReference ref =
+                                    ((SSAAbstractInvokeInstruction) inst).getCallSite();
+                                final Set<CGNode> possibleTargets =
+                                    builder.getCallGraph().getPossibleTargets(node, ref);
 
-								final String delim;
-								if(useMarkdown) {
-									delim = "     _or_ ";
-								} else {
-									delim = "     or ";
-								}
+                                if (possibleTargets.isEmpty()) {
+                                  return null;
+                                }
 
-								final String targetStringList = possibleTargets
-										.stream()
-										.map(callee ->
-										getTypeNameString(callee.getMethod().getDeclaringClass().getName()))
-										.distinct()
-										.collect(Collectors.joining(delim));
+                                final String delim;
+                                if (useMarkdown) {
+                                  delim = "     _or_ ";
+                                } else {
+                                  delim = "     or ";
+                                }
 
-								return targetStringList;
-							}
-						}
-						return null;
-					});	
-					
-					lsp.setFindDefinitionAnalysis((int[] instId) -> {
-						CGNode node = builder.getCallGraph().getNode(instId[0]);
-						SSAInstruction inst = node.getIR().getInstructions()[instId[1]];
-						if (inst instanceof SSAAbstractInvokeInstruction) {
-							CallSiteReference ref = ((SSAAbstractInvokeInstruction)inst).getCallSite();
-								final Set<CGNode> possibleTargets = builder.getCallGraph().getPossibleTargets(node, ref);
+                                final String targetStringList =
+                                    possibleTargets.stream()
+                                        .map(
+                                            callee ->
+                                                getTypeNameString(
+                                                    callee
+                                                        .getMethod()
+                                                        .getDeclaringClass()
+                                                        .getName()))
+                                        .distinct()
+                                        .collect(Collectors.joining(delim));
 
+                                return targetStringList;
+                              }
+                            }
+                            return null;
+                          });
 
-							final Set<Position> targetPositions = possibleTargets
-							.stream()
-							.map(callee -> {
-								IMethod method = callee.getMethod();
-								if (method instanceof AstMethod) {
-									AstMethod amethod = (AstMethod)method;
-									return amethod.getSourcePosition();
-								} else {
-									return null;
-								}
-							})
-							.filter(x -> x != null)
-							.distinct()
-							.collect(Collectors.toSet());
+                      lsp.setFindDefinitionAnalysis(
+                          (int[] instId) -> {
+                            CGNode node = builder.getCallGraph().getNode(instId[0]);
+                            SSAInstruction inst = node.getIR().getInstructions()[instId[1]];
+                            if (inst instanceof SSAAbstractInvokeInstruction) {
+                              CallSiteReference ref =
+                                  ((SSAAbstractInvokeInstruction) inst).getCallSite();
+                              final Set<CGNode> possibleTargets =
+                                  builder.getCallGraph().getPossibleTargets(node, ref);
 
-							return targetPositions;
-						} else {
-							return null;
-						}
-					});	
-					
-					lsp.addValueErrors(language, this.getErrors());
-					
-					Map<InstanceKey, Set<String>> excelReads = PandasReadExcelAnalysis.readExcelAnalysis(CG, PA, H);
-					lsp.addValueAnalysis("columns", builder.getPointerAnalysis().getHeapGraph(), (Boolean useMarkdown, PointerKey v) -> {
-						Set<String> fields = HashSetFactory.make();
-						PA.getPointsToSet(v).forEach((InstanceKey o) -> {
-							if (excelReads.containsKey(o)) {
-								fields.addAll(excelReads.get(o));
-							}
-						});
-						if (fields.isEmpty()) {
-							return null;
-						} else {
-							return fields.toString();
-						}
-					});
-					
-					return tt;
-				}	
-			};
+                              final Set<Position> targetPositions =
+                                  possibleTargets.stream()
+                                      .map(
+                                          callee -> {
+                                            IMethod method = callee.getMethod();
+                                            if (method instanceof AstMethod) {
+                                              AstMethod amethod = (AstMethod) method;
+                                              return amethod.getSourcePosition();
+                                            } else {
+                                              return null;
+                                            }
+                                          })
+                                      .filter(x -> x != null)
+                                      .distinct()
+                                      .collect(Collectors.toSet());
 
-			return engine;
-		};
-	};
+                              return targetPositions;
+                            } else {
+                              return null;
+                            }
+                          });
+
+                      lsp.addValueErrors(language, this.getErrors());
+
+                      Map<InstanceKey, Set<String>> excelReads =
+                          PandasReadExcelAnalysis.readExcelAnalysis(CG, PA, H);
+                      lsp.addValueAnalysis(
+                          "columns",
+                          builder.getPointerAnalysis().getHeapGraph(),
+                          (Boolean useMarkdown, PointerKey v) -> {
+                            Set<String> fields = HashSetFactory.make();
+                            PA.getPointsToSet(v)
+                                .forEach(
+                                    (InstanceKey o) -> {
+                                      if (excelReads.containsKey(o)) {
+                                        fields.addAll(excelReads.get(o));
+                                      }
+                                    });
+                            if (fields.isEmpty()) {
+                              return null;
+                            } else {
+                              return fields.toString();
+                            }
+                          });
+
+                      return tt;
+                    }
+                  };
+
+              return engine;
+            };
+          };
 }

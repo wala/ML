@@ -1,29 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-    xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.ibm.wala</groupId>
   <artifactId>ml</artifactId>
   <version>0.5.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <properties>
-    <project-version>0.0.1-SNAPSHOT</project-version>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <maven.compiler.version>3.10.1</maven.compiler.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <build-alias>b000</build-alias>
-    <wala.version>1.6.0</wala.version>
-    <maven.surefire.version>3.0.0-M7</maven.surefire.version>
-  </properties>
-  <distributionManagement>
-    <repository>
-      <id>github</id>
-      <name>GitHub ponder-lab Apache Maven Packages</name>
-      <url>https://maven.pkg.github.com/ponder-lab/ML</url>
-    </repository>
-  </distributionManagement>
   <modules>
     <module>com.ibm.wala.cast.python</module>
     <module>com.ibm.wala.cast.python.jython</module>
@@ -34,6 +15,24 @@
     <module>com.ibm.wala.cast.python.ml</module>
     <module>com.ibm.wala.cast.python.ml.test</module>
   </modules>
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub ponder-lab Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/ponder-lab/ML</url>
+    </repository>
+  </distributionManagement>
+  <properties>
+    <project-version>0.0.1-SNAPSHOT</project-version>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.version>3.10.1</maven.compiler.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <build-alias>b000</build-alias>
+    <wala.version>1.6.0</wala.version>
+    <spotless.version>2.37.0</spotless.version>
+    <maven.surefire.version>3.0.0-M7</maven.surefire.version>
+  </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -111,6 +110,11 @@
         <artifactId>versions-maven-plugin</artifactId>
         <version>2.15.0</version>
       </dependency>
+      <dependency>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>${spotless.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <build>
@@ -131,6 +135,55 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven.surefire.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>${spotless.version}</version>
+          <configuration>
+            <formats>
+              <format>
+                <includes>
+                  <include>*.md</include>
+                  <include>.gitignore</include>
+                </includes>
+                <trimTrailingWhitespace />
+                <endWithNewline />
+                <indent>
+                  <tabs>true</tabs>
+                  <spacesPerTab>4</spacesPerTab>
+                </indent>
+              </format>
+              <format>
+                <includes>
+                  <include>*.xml</include>
+                </includes>
+                <eclipseWtp>
+                  <type>XML</type>
+                  <files>
+                    <file>${maven.multiModuleProjectDirectory}/spotless.xml.prefs</file>
+                  </files>
+                </eclipseWtp>
+              </format>
+            </formats>
+            <java>
+              <googleJavaFormat>
+                <version>1.17.0</version>
+                <reflowLongStrings>true</reflowLongStrings>
+              </googleJavaFormat>
+            </java>
+            <pom>
+              <sortPom>
+                <expandEmptyElements>false</expandEmptyElements>
+              </sortPom>
+            </pom>
+            <python>
+              <includes>
+                <include>*.py</include>
+              </includes>
+              <black />
+            </python>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
