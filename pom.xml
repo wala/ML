@@ -172,6 +172,12 @@
                 <expandEmptyElements>false</expandEmptyElements>
               </sortPom>
             </pom>
+            <python>
+              <includes>
+                <include>*.py</include>
+              </includes>
+              <black />
+            </python>
           </configuration>
         </plugin>
       </plugins>
