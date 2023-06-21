@@ -147,12 +147,23 @@
                   <include>*.md</include>
                   <include>.gitignore</include>
                 </includes>
-                <trimTrailingWhitespace/>
-                <endWithNewline/>
+                <trimTrailingWhitespace />
+                <endWithNewline />
                 <indent>
                   <tabs>true</tabs>
                   <spacesPerTab>4</spacesPerTab>
                 </indent>
+              </format>
+              <format>
+                <includes>
+                  <include>*.xml</include>
+                </includes>
+                <eclipseWtp>
+                  <type>XML</type>
+                  <files>
+                    <file>${maven.multiModuleProjectDirectory}/spotless.xml.prefs</file>
+                  </files>
+                </eclipseWtp>
               </format>
             </formats>
             <java>
