@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -29,6 +30,8 @@ import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 
 public class TestTensorflowModel extends TestPythonMLCallGraphShape {
+
+	private static final Logger logger = Logger.getLogger(TestTensorflowModel.class.getName());
 
 	@Test
 	public void testTf1() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
@@ -75,6 +78,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 		// testTf2("tf2n.py", "func2", 1, 2);
 		testTf2("tf2o.py", "add", 2, 2, 3);
 		testTf2("tf2p.py", "value_index", 2, 2, 3);
+		testTf2("tf2q.py", "add", 2, 2, 3);
 	}
 
 	private void testTf2(String filename, String functionName, int expectedNumberOfTensorParameters, int... expectedValueNumbers) throws ClassHierarchyException, CancelException, IOException {
@@ -100,32 +104,36 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 		// for each pointer key, tensor variable pair.
 		analysis.forEach(p -> {
 			PointerKey pointerKey = p.fst;
-			LocalPointerKey localPointerKey = (LocalPointerKey) pointerKey;
 
-			// get the call graph node associated with the
-			CGNode node = localPointerKey.getNode();
+			if (pointerKey instanceof LocalPointerKey) {
+				LocalPointerKey localPointerKey = (LocalPointerKey) pointerKey;
 
-			// get the method associated with the call graph node.
-			IMethod method = node.getMethod();
-			String methodSignature = method.getSignature();
+				// get the call graph node associated with the
+				CGNode node = localPointerKey.getNode();
 
-			// associate the method to the pointer key.
-			methodSignatureToPointerKeys.compute(methodSignature, (k, v) -> {
-				if (v == null)
-					v = new HashSet<>();
-				v.add(localPointerKey);
-				return v;
-			});
+				// get the method associated with the call graph node.
+				IMethod method = node.getMethod();
+				String methodSignature = method.getSignature();
 
-			TensorVariable tensorVariable = p.snd;
+				// associate the method to the pointer key.
+				methodSignatureToPointerKeys.compute(methodSignature, (k, v) -> {
+					if (v == null)
+						v = new HashSet<>();
+					v.add(localPointerKey);
+					return v;
+				});
 
-			// associate the method to the tensor variables.
-			methodSignatureToTensorVariables.compute(methodSignature, (k, v) -> {
-				if (v == null)
-					v = new HashSet<>();
-				v.add(tensorVariable);
-				return v;
-			});
+				TensorVariable tensorVariable = p.snd;
+
+				// associate the method to the tensor variables.
+				methodSignatureToTensorVariables.compute(methodSignature, (k, v) -> {
+					if (v == null)
+						v = new HashSet<>();
+					v.add(tensorVariable);
+					return v;
+				});
+			} else
+				logger.warning(() -> "Encountered: " + pointerKey.getClass());
 		});
 
 		// check the maps.
