@@ -1,9 +1,5 @@
 package com.ibm.wala.cast.python.ipa.summaries;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
@@ -17,6 +13,7 @@ import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.NewSiteReference;
 import com.ibm.wala.classLoader.SyntheticMethod;
+import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.Context;
@@ -47,279 +44,350 @@ import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.intset.EmptyIntSet;
 import com.ibm.wala.util.intset.IntSet;
 import com.ibm.wala.util.intset.IntSetUtil;
-import com.ibm.wala.core.util.strings.Atom;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
 
 public class PythonSuper {
 
-	private final IClassHierarchy cha;
-	
-	private final IMethod superStub;
-	
-	public PythonSuper(IClassHierarchy cha) {
-		this.cha = cha;
-		this.superStub = new SyntheticMethod(AstMethodReference.fnReference(PythonTypes.superfun), cha.lookupClass(PythonTypes.superfun), false, false);
-	}
+  private final IClassHierarchy cha;
 
-	private final ContextKey superClass = new ContextKey() {
-		public String toString() {
-			return "Super class";
-		}
-	};
+  private final IMethod superStub;
 
-	private final ContextKey superSelf = new ContextKey() {
-		public String toString() {
-			return "Super self";
-		}
-	};
+  public PythonSuper(IClassHierarchy cha) {
+    this.cha = cha;
+    this.superStub =
+        new SyntheticMethod(
+            AstMethodReference.fnReference(PythonTypes.superfun),
+            cha.lookupClass(PythonTypes.superfun),
+            false,
+            false);
+  }
 
-	private final Context implicitSuperContext = new Context() {
+  private final ContextKey superClass =
+      new ContextKey() {
+        public String toString() {
+          return "Super class";
+        }
+      };
 
-		@Override
-		public String toString() {
-			return "super call";
-		}
+  private final ContextKey superSelf =
+      new ContextKey() {
+        public String toString() {
+          return "Super self";
+        }
+      };
 
-		@Override
-		public ContextItem get(ContextKey name) {
-			return null;
-		}
-		
-	};
-	
-	private class ExplicitSuperContext extends Pair<IClass, InstanceKey> implements Context {
+  private final Context implicitSuperContext =
+      new Context() {
 
-		private static final long serialVersionUID = -7679970297641533615L;
+        @Override
+        public String toString() {
+          return "super call";
+        }
 
-		private ExplicitSuperContext(IClass fst, InstanceKey snd) {
-			super(fst, snd);
-		}
+        @Override
+        public ContextItem get(ContextKey name) {
+          return null;
+        }
+      };
 
-		@Override
-		public ContextItem get(ContextKey name) {
-			if (superClass.equals(name)) {
-				return new ContextItem.Value<>(fst);
-			} else if (superSelf.equals(name)) {
-				return new ContextItem.Value<>(snd);
-			} else {
-				return null;
-			}
-		}
-		
-		@Override
-		public String toString() {
-			return "[ExplicitSuper:" + fst + "," + snd + "]";
-		}
-	}
-	
-	private class SuperContextInterpreter implements SSAContextInterpreter {
-		private final FieldReference $class = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("$class"), PythonTypes.Root);
-		private final FieldReference $self = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("$self"), PythonTypes.Root);
+  private class ExplicitSuperContext extends Pair<IClass, InstanceKey> implements Context {
 
-		@Override
-		public Iterator<NewSiteReference> iterateNewSites(CGNode node) {
-			return EmptyIterator.instance();
-		}
+    private static final long serialVersionUID = -7679970297641533615L;
 
-		@Override
-		public Iterator<FieldReference> iterateFieldsRead(CGNode node) {
-			if (node.getContext().get(superClass) == null) {
-				return Arrays.asList($class, $self).iterator();	
-			} else {
-				return EmptyIterator.instance();
-			}
-		}
+    private ExplicitSuperContext(IClass fst, InstanceKey snd) {
+      super(fst, snd);
+    }
 
-		@Override
-		public Iterator<FieldReference> iterateFieldsWritten(CGNode node) {
-			return EmptyIterator.instance();
-		}
+    @Override
+    public ContextItem get(ContextKey name) {
+      if (superClass.equals(name)) {
+        return new ContextItem.Value<>(fst);
+      } else if (superSelf.equals(name)) {
+        return new ContextItem.Value<>(snd);
+      } else {
+        return null;
+      }
+    }
 
-		@Override
-		public boolean recordFactoryType(CGNode node, IClass klass) {
-			return false;
-		}
+    @Override
+    public String toString() {
+      return "[ExplicitSuper:" + fst + "," + snd + "]";
+    }
+  }
 
-		@Override
-		public boolean understands(CGNode node) {
-			return superStub.equals(node.getMethod());
-		}
+  private class SuperContextInterpreter implements SSAContextInterpreter {
+    private final FieldReference $class =
+        FieldReference.findOrCreate(
+            PythonTypes.Root, Atom.findOrCreateUnicodeAtom("$class"), PythonTypes.Root);
+    private final FieldReference $self =
+        FieldReference.findOrCreate(
+            PythonTypes.Root, Atom.findOrCreateUnicodeAtom("$self"), PythonTypes.Root);
 
-		@Override
-		public Iterator<CallSiteReference> iterateCallSites(CGNode node) {
-			if (node.getContext().get(superClass) == null) {
-				return new NonNullSingletonIterator<>(((SSAAbstractInvokeInstruction)getIR(node).getInstructions()[2]).getCallSite());
-			} else {
-				return EmptyIterator.instance();
-			}
-		}
+    @Override
+    public Iterator<NewSiteReference> iterateNewSites(CGNode node) {
+      return EmptyIterator.instance();
+    }
 
-		private final Map<IClass,PythonSummarizedFunction> ctors = HashMapFactory.make();
-		private final Map<CGNode,PythonSummarizedFunction> trampolines = HashMapFactory.make();
+    @Override
+    public Iterator<FieldReference> iterateFieldsRead(CGNode node) {
+      if (node.getContext().get(superClass) == null) {
+        return Arrays.asList($class, $self).iterator();
+      } else {
+        return EmptyIterator.instance();
+      }
+    }
 
-		@Override
-		public IR getIR(CGNode node) {
-			int v = 4;
-			int pc = 0;
-			if (node.getContext().get(superClass) == null) {
-				if (! trampolines.containsKey(node)) {
-					PythonSummary ctor = new PythonSummary(node.getMethod().getReference(), 1);
+    @Override
+    public Iterator<FieldReference> iterateFieldsWritten(CGNode node) {
+      return EmptyIterator.instance();
+    }
 
-					AstInstructionFactory insts = PythonLanguage.Python.instructionFactory();
+    @Override
+    public boolean recordFactoryType(CGNode node, IClass klass) {
+      return false;
+    }
 
-					int cls = v++;
-					ctor.addStatement(insts.GetInstruction(pc++, cls, 1, $class));
+    @Override
+    public boolean understands(CGNode node) {
+      return superStub.equals(node.getMethod());
+    }
 
-					int self = v++;
-					ctor.addStatement(insts.GetInstruction(pc++, self, 1, $self));
+    @Override
+    public Iterator<CallSiteReference> iterateCallSites(CGNode node) {
+      if (node.getContext().get(superClass) == null) {
+        return new NonNullSingletonIterator<>(
+            ((SSAAbstractInvokeInstruction) getIR(node).getInstructions()[2]).getCallSite());
+      } else {
+        return EmptyIterator.instance();
+      }
+    }
 
-					int result = v++;
-					int except = v++;
-					CallSiteReference ref = new DynamicCallSiteReference(AstMethodReference.fnReference(PythonTypes.superfun), pc++);
-					ctor.addStatement(new PythonInvokeInstruction(2, result, except, ref, new int[] {1, cls, self}, new Pair[0]));
+    private final Map<IClass, PythonSummarizedFunction> ctors = HashMapFactory.make();
+    private final Map<CGNode, PythonSummarizedFunction> trampolines = HashMapFactory.make();
 
-					ctor.addStatement(insts.ReturnInstruction(pc++, result, false));
-					
-					trampolines.put(node, new PythonSummarizedFunction(node.getMethod().getReference(), ctor, cha.lookupClass(PythonTypes.superfun)));
-				}
+    @Override
+    public IR getIR(CGNode node) {
+      int v = 4;
+      int pc = 0;
+      if (node.getContext().get(superClass) == null) {
+        if (!trampolines.containsKey(node)) {
+          PythonSummary ctor = new PythonSummary(node.getMethod().getReference(), 1);
 
-				return trampolines.get(node).makeIR(node.getContext(), SSAOptions.defaultOptions());
+          AstInstructionFactory insts = PythonLanguage.Python.instructionFactory();
 
-			} else {
-				@SuppressWarnings("unchecked")
-				IClass receiver = ((ContextItem.Value<IClass>) node.getContext().get(superClass)).getValue();
-				PythonClass x = (PythonClass)receiver.getSuperclass();
+          int cls = v++;
+          ctor.addStatement(insts.GetInstruction(pc++, cls, 1, $class));
 
-				if (! ctors.containsKey(x)) {
-					PythonSummary ctor = new PythonSummary(node.getMethod().getReference(), 3);
+          int self = v++;
+          ctor.addStatement(insts.GetInstruction(pc++, self, 1, $self));
 
-					AstInstructionFactory insts = PythonLanguage.Python.instructionFactory();
+          int result = v++;
+          int except = v++;
+          CallSiteReference ref =
+              new DynamicCallSiteReference(
+                  AstMethodReference.fnReference(PythonTypes.superfun), pc++);
+          ctor.addStatement(
+              new PythonInvokeInstruction(
+                  2, result, except, ref, new int[] {1, cls, self}, new Pair[0]));
 
-					int inst = v++;
-					ctor.addStatement(insts.NewInstruction(pc++, inst, NewSiteReference.make(pc, PythonTypes.object)));
+          ctor.addStatement(insts.ReturnInstruction(pc++, result, false));
 
-					int clss = v++;
-					ctor.addStatement(insts.GlobalRead(pc++, clss, FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("global " + x.getName().toString().substring(1)), PythonTypes.Root)));
+          trampolines.put(
+              node,
+              new PythonSummarizedFunction(
+                  node.getMethod().getReference(), ctor, cha.lookupClass(PythonTypes.superfun)));
+        }
 
-					for(TypeReference r : x.getInnerReferences()) {
-						int orig_t = v++;
-						String typeName = r.getName().toString();
-						typeName = typeName.substring(typeName.lastIndexOf('/')+1);
-						FieldReference inner = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom(typeName), PythonTypes.Root);
+        return trampolines.get(node).makeIR(node.getContext(), SSAOptions.defaultOptions());
 
-						ctor.addStatement(insts.GetInstruction(pc, orig_t, clss, inner));
-						pc++;
+      } else {
+        @SuppressWarnings("unchecked")
+        IClass receiver =
+            ((ContextItem.Value<IClass>) node.getContext().get(superClass)).getValue();
+        PythonClass x = (PythonClass) receiver.getSuperclass();
 
-						ctor.addStatement(insts.PutInstruction(pc, inst, orig_t, inner));
-						pc++;
-					}
+        if (!ctors.containsKey(x)) {
+          PythonSummary ctor = new PythonSummary(node.getMethod().getReference(), 3);
 
-					for(MethodReference r : x.getMethodReferences()) {
-						int f = v++;
-						ctor.addStatement(insts.NewInstruction(pc, f, NewSiteReference.make(pc, PythonInstanceMethodTrampoline.findOrCreate(r.getDeclaringClass(), receiver.getClassHierarchy()))));
-						pc++;
+          AstInstructionFactory insts = PythonLanguage.Python.instructionFactory();
 
-						ctor.addStatement(insts.PutInstruction(pc, f, 3, FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("$self"), PythonTypes.Root)));
-						pc++;
+          int inst = v++;
+          ctor.addStatement(
+              insts.NewInstruction(pc++, inst, NewSiteReference.make(pc, PythonTypes.object)));
 
-						int orig_f = v++;
-						ctor.addStatement(insts.GetInstruction(pc, orig_f, clss, FieldReference.findOrCreate(PythonTypes.Root, r.getName(), PythonTypes.Root)));
-						pc++;
+          int clss = v++;
+          ctor.addStatement(
+              insts.GlobalRead(
+                  pc++,
+                  clss,
+                  FieldReference.findOrCreate(
+                      PythonTypes.Root,
+                      Atom.findOrCreateUnicodeAtom("global " + x.getName().toString().substring(1)),
+                      PythonTypes.Root)));
 
-						ctor.addStatement(insts.PutInstruction(pc, f, orig_f, FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("$function"), PythonTypes.Root)));
-						pc++;
+          for (TypeReference r : x.getInnerReferences()) {
+            int orig_t = v++;
+            String typeName = r.getName().toString();
+            typeName = typeName.substring(typeName.lastIndexOf('/') + 1);
+            FieldReference inner =
+                FieldReference.findOrCreate(
+                    PythonTypes.Root, Atom.findOrCreateUnicodeAtom(typeName), PythonTypes.Root);
 
-						ctor.addStatement(insts.PutInstruction(pc, inst, f, FieldReference.findOrCreate(PythonTypes.Root, r.getName(), PythonTypes.Root)));
-						pc++;
-					}
+            ctor.addStatement(insts.GetInstruction(pc, orig_t, clss, inner));
+            pc++;
 
-					ctor.addStatement(insts.ReturnInstruction(pc++, inst, false));
+            ctor.addStatement(insts.PutInstruction(pc, inst, orig_t, inner));
+            pc++;
+          }
 
-					ctors.put(x, new PythonSummarizedFunction(node.getMethod().getReference(), ctor, receiver));
-				}
+          for (MethodReference r : x.getMethodReferences()) {
+            int f = v++;
+            ctor.addStatement(
+                insts.NewInstruction(
+                    pc,
+                    f,
+                    NewSiteReference.make(
+                        pc,
+                        PythonInstanceMethodTrampoline.findOrCreate(
+                            r.getDeclaringClass(), receiver.getClassHierarchy()))));
+            pc++;
 
-				return ctors.get(x).makeIR(node.getContext(), SSAOptions.defaultOptions());
-			}
-		}
+            ctor.addStatement(
+                insts.PutInstruction(
+                    pc,
+                    f,
+                    3,
+                    FieldReference.findOrCreate(
+                        PythonTypes.Root,
+                        Atom.findOrCreateUnicodeAtom("$self"),
+                        PythonTypes.Root)));
+            pc++;
 
-		@Override
-		public IRView getIRView(CGNode node) {
-			return getIR(node);
-		}
+            int orig_f = v++;
+            ctor.addStatement(
+                insts.GetInstruction(
+                    pc,
+                    orig_f,
+                    clss,
+                    FieldReference.findOrCreate(PythonTypes.Root, r.getName(), PythonTypes.Root)));
+            pc++;
 
-		@Override
-		public DefUse getDU(CGNode node) {
-			return new DefUse(getIR(node));
-		}
+            ctor.addStatement(
+                insts.PutInstruction(
+                    pc,
+                    f,
+                    orig_f,
+                    FieldReference.findOrCreate(
+                        PythonTypes.Root,
+                        Atom.findOrCreateUnicodeAtom("$function"),
+                        PythonTypes.Root)));
+            pc++;
 
-		@Override
-		public int getNumberOfStatements(CGNode node) {
-			return getIR(node).getInstructions().length;
-		}
+            ctor.addStatement(
+                insts.PutInstruction(
+                    pc,
+                    inst,
+                    f,
+                    FieldReference.findOrCreate(PythonTypes.Root, r.getName(), PythonTypes.Root)));
+            pc++;
+          }
 
-		@Override
-		public ControlFlowGraph<SSAInstruction, ISSABasicBlock> getCFG(CGNode n) {
-			return getIR(n).getControlFlowGraph();
-		}
-		
-	}
-	
-	private class SuperContextSelector implements ContextSelector {
-		private final ContextSelector base;
-		
-		public SuperContextSelector(ContextSelector base) {
-			this.base = base;
-		}
+          ctor.addStatement(insts.ReturnInstruction(pc++, inst, false));
 
-		@Override
-		public Context getCalleeTarget(CGNode caller, CallSiteReference site, IMethod callee,
-				InstanceKey[] actualParameters) {
-			if (superStub.equals(callee)) {
-				if (actualParameters.length >= 3 && 
-					actualParameters[1].getConcreteType().getSuperclass() instanceof PythonClass) {
-					return new ExplicitSuperContext(actualParameters[1].getConcreteType(), actualParameters[2]);
-				} if (actualParameters.length == 1) {
-					return new DelegatingContext(implicitSuperContext, base.getCalleeTarget(caller, site, callee, actualParameters));
-				} else {
-					return null;
-				}
-			} else {
-				return base.getCalleeTarget(caller, site, callee, actualParameters);
-			}
-		}
+          ctors.put(
+              x, new PythonSummarizedFunction(node.getMethod().getReference(), ctor, receiver));
+        }
 
-		@Override
-		public IntSet getRelevantParameters(CGNode caller, CallSiteReference site) {
-			SSAAbstractInvokeInstruction inst = caller.getIR().getCalls(site)[0];
-			if (inst.getNumberOfUses() > 2) {
-				if (site.getDeclaredTarget().getDeclaringClass().equals(PythonTypes.superfun)) {
-					return IntSetUtil.make(new int[] {0, 1, 2});
-				}
-			}
-			
-			return EmptyIntSet.instance;
-		}
-		
-	}
-	private class SuperMethodTargetSelector implements MethodTargetSelector {
-		private final MethodTargetSelector base;
-		
-		private SuperMethodTargetSelector(MethodTargetSelector base) {
-			this.base = base;
-		}
+        return ctors.get(x).makeIR(node.getContext(), SSAOptions.defaultOptions());
+      }
+    }
 
-		@Override
-		public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
-			if (receiver != null && cha.lookupClass(PythonTypes.superfun).equals(receiver)) {
-				return superStub;
-			} else {
-				return base.getCalleeTarget(caller, site, receiver);
-			}
-		}
-	}
-	
-	public void handleSuperCalls(SSAPropagationCallGraphBuilder builder, AnalysisOptions options) {
-		builder.setContextInterpreter(new DelegatingSSAContextInterpreter(new SuperContextInterpreter(), builder.getCFAContextInterpreter()));;
-		builder.setContextSelector(new SuperContextSelector(builder.getContextSelector()));
-		options.setSelector(new SuperMethodTargetSelector(options.getMethodTargetSelector()));
-	}
+    @Override
+    public IRView getIRView(CGNode node) {
+      return getIR(node);
+    }
+
+    @Override
+    public DefUse getDU(CGNode node) {
+      return new DefUse(getIR(node));
+    }
+
+    @Override
+    public int getNumberOfStatements(CGNode node) {
+      return getIR(node).getInstructions().length;
+    }
+
+    @Override
+    public ControlFlowGraph<SSAInstruction, ISSABasicBlock> getCFG(CGNode n) {
+      return getIR(n).getControlFlowGraph();
+    }
+  }
+
+  private class SuperContextSelector implements ContextSelector {
+    private final ContextSelector base;
+
+    public SuperContextSelector(ContextSelector base) {
+      this.base = base;
+    }
+
+    @Override
+    public Context getCalleeTarget(
+        CGNode caller, CallSiteReference site, IMethod callee, InstanceKey[] actualParameters) {
+      if (superStub.equals(callee)) {
+        if (actualParameters.length >= 3
+            && actualParameters[1].getConcreteType().getSuperclass() instanceof PythonClass) {
+          return new ExplicitSuperContext(
+              actualParameters[1].getConcreteType(), actualParameters[2]);
+        }
+        if (actualParameters.length == 1) {
+          return new DelegatingContext(
+              implicitSuperContext, base.getCalleeTarget(caller, site, callee, actualParameters));
+        } else {
+          return null;
+        }
+      } else {
+        return base.getCalleeTarget(caller, site, callee, actualParameters);
+      }
+    }
+
+    @Override
+    public IntSet getRelevantParameters(CGNode caller, CallSiteReference site) {
+      SSAAbstractInvokeInstruction inst = caller.getIR().getCalls(site)[0];
+      if (inst.getNumberOfUses() > 2) {
+        if (site.getDeclaredTarget().getDeclaringClass().equals(PythonTypes.superfun)) {
+          return IntSetUtil.make(new int[] {0, 1, 2});
+        }
+      }
+
+      return EmptyIntSet.instance;
+    }
+  }
+
+  private class SuperMethodTargetSelector implements MethodTargetSelector {
+    private final MethodTargetSelector base;
+
+    private SuperMethodTargetSelector(MethodTargetSelector base) {
+      this.base = base;
+    }
+
+    @Override
+    public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
+      if (receiver != null && cha.lookupClass(PythonTypes.superfun).equals(receiver)) {
+        return superStub;
+      } else {
+        return base.getCalleeTarget(caller, site, receiver);
+      }
+    }
+  }
+
+  public void handleSuperCalls(SSAPropagationCallGraphBuilder builder, AnalysisOptions options) {
+    builder.setContextInterpreter(
+        new DelegatingSSAContextInterpreter(
+            new SuperContextInterpreter(), builder.getCFAContextInterpreter()));
+    ;
+    builder.setContextSelector(new SuperContextSelector(builder.getContextSelector()));
+    options.setSelector(new SuperMethodTargetSelector(options.getMethodTargetSelector()));
+  }
 }

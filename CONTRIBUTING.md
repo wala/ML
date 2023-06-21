@@ -11,15 +11,15 @@ You must install the `jython-dev.jar` to your local maven repository.
 1. Build Jython 3: `ant`. That will produce the file `jython3/dist/jython-dev.jar`.
 1. Install the `jython-dev.jar` into your local maven repo (see [this post][SO post]):
 
-    ```bash
-    mvn install:install-file \
+	```bash
+	mvn install:install-file \
 	-Dfile=./jython-dev.jar \
 	-DgroupId="org.python" \
 	-DartifactId="jython3" \
 	-Dversion="0.0.1-SNAPSHOT" \
 	-Dpackaging="jar" \
 	-DgeneratePom=true
-    ```
+	```
 ### Installing IDE
 
 1. Clone the [IDE repository][IDE].

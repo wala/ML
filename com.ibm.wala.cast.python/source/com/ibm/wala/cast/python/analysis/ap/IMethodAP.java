@@ -4,6 +4,5 @@ import java.util.Set;
 
 public interface IMethodAP {
 
-	public Set<Integer> getInterestingParameters();
-	
+  public Set<Integer> getInterestingParameters();
 }
