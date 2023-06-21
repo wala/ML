@@ -158,6 +158,11 @@
                 <reflowLongStrings>true</reflowLongStrings>
               </googleJavaFormat>
             </java>
+            <pom>
+              <sortPom>
+                <expandEmptyElements>false</expandEmptyElements>
+              </sortPom>
+            </pom>
           </configuration>
         </plugin>
       </plugins>
