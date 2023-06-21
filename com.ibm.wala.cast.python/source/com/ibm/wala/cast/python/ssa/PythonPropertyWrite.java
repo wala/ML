@@ -10,12 +10,11 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.ssa;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import com.ibm.wala.cast.ir.ssa.AstPropertyWrite;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.types.TypeReference;
+import java.util.Collection;
+import java.util.Collections;
 
 public class PythonPropertyWrite extends AstPropertyWrite {
 
@@ -31,5 +30,4 @@ public class PythonPropertyWrite extends AstPropertyWrite {
   public Collection<TypeReference> getExceptionTypes() {
     return Collections.singleton(PythonTypes.Root);
   }
-
 }
