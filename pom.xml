@@ -1,12 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-    xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.ibm.wala</groupId>
   <artifactId>ml</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
+  <modules>
+    <module>com.ibm.wala.cast.python</module>
+    <module>com.ibm.wala.cast.python.jython</module>
+    <module>com.ibm.wala.cast.python.jython3</module>
+    <module>com.ibm.wala.cast.python.test</module>
+    <module>com.ibm.wala.cast.python.jython.test</module>
+    <module>com.ibm.wala.cast.python.jython3.test</module>
+    <module>com.ibm.wala.cast.python.ml</module>
+    <module>com.ibm.wala.cast.python.ml.test</module>
+  </modules>
+  <distributionManagement>
+    <repository>
+      <id>internal.repo</id>
+      <name>Temporary Staging Repository</name>
+      <url>file://${project.build.directory}/mvn-repo</url>
+    </repository>
+  </distributionManagement>
   <properties>
     <project-version>0.0.1-SNAPSHOT</project-version>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -18,23 +33,6 @@
     <spotless.version>2.37.0</spotless.version>
     <maven.surefire.version>3.0.0-M7</maven.surefire.version>
   </properties>
-  <distributionManagement>
-    <repository>
-      <id>internal.repo</id>
-      <name>Temporary Staging Repository</name>
-      <url>file://${project.build.directory}/mvn-repo</url>
-    </repository>
-  </distributionManagement>
-  <modules>
-    <module>com.ibm.wala.cast.python</module>
-    <module>com.ibm.wala.cast.python.jython</module>
-    <module>com.ibm.wala.cast.python.jython3</module>
-    <module>com.ibm.wala.cast.python.test</module>
-    <module>com.ibm.wala.cast.python.jython.test</module>
-    <module>com.ibm.wala.cast.python.jython3.test</module>
-    <module>com.ibm.wala.cast.python.ml</module>
-    <module>com.ibm.wala.cast.python.ml.test</module>
-  </modules>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -148,7 +146,7 @@
                 <endWithNewline/>
                 <indent>
                   <tabs>true</tabs>
-                <spacesPerTab>4</spacesPerTab>
+                  <spacesPerTab>4</spacesPerTab>
                 </indent>
               </format>
             </formats>
