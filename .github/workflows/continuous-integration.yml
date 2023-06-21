@@ -38,5 +38,7 @@ jobs:
       run: |
         cd ./IDE/com.ibm.wala.cast.lsp
         mvn clean install -B -q -DskipTests
+    - name: Check formatting with spotless.
+      run: mvn spotless:check -B
     - name: Build with Maven
       run: mvn clean verify -B
