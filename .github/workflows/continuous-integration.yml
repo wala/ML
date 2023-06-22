@@ -21,15 +21,15 @@ jobs:
       with:
         repository: wala/IDE
         # fetch-depth: 50
-        path: /tmp/IDE
+        path: ./IDE
     - name: Checkout juliandolby/jython3 sources.
       uses: actions/checkout@v3.5.2
       with:
         repository: juliandolby/jython3
-        path: /tmp/jython3
+        path: ./jython3
     - name: Install Jython3.
       run: |
-        pushd /tmp/jython3
+        pushd ./jython3
         ant
         pushd dist
         mvn install:install-file -Dfile=./jython-dev.jar -DgroupId="org.python" -DartifactId="jython3" -Dversion="0.0.1-SNAPSHOT" -Dpackaging="jar" -DgeneratePom=true
@@ -38,7 +38,7 @@ jobs:
       shell: bash
     - name: Install IDE.
       run: |
-        pushd /tmp/IDE/com.ibm.wala.cast.lsp
+        pushd ./IDE/com.ibm.wala.cast.lsp
         mvn clean install -B -q -DskipTests
         popd
     - name: Check formatting with spotless.
