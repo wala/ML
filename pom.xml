@@ -161,7 +161,7 @@
                 <excludes>
                   <exclude>**/plugin.xml</exclude>
                   <exclude>pom.xml</exclude>
-                  <exclude>/home/runner/work/ML/ML/jython3/dist/Lib/test/xmltestdata/test.xml</exclude>
+                  <exclude>./jython3/dist/Lib/test/xmltestdata/test.xml</exclude>
                 </excludes>
                 <eclipseWtp>
                   <type>XML</type>
