@@ -156,7 +156,7 @@
               </format>
               <format>
                 <includes>
-                  <include>**/*.xml</include>
+                  <include>${maven.multiModuleProjectDirectory}/**/*.xml</include>
                 </includes>
                 <excludes>
                   <exclude>**/plugin.xml</exclude>
