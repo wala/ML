@@ -151,8 +151,11 @@
               </format>
               <format>
                 <includes>
-                  <include>*.xml</include>
+                  <include>**/*.xml</include>
                 </includes>
+                <excludes>
+                  <exclude>**/plugin.xml</exclude>
+                </excludes>
                 <eclipseWtp>
                   <type>XML</type>
                   <files>
