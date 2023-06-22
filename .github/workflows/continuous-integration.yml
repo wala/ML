@@ -29,15 +29,18 @@ jobs:
         path: ./jython3
     - name: Install Jython3.
       run: |
-        cd ./jython3
+        pushd ./jython3
         ant
-        cd dist
+        pushd dist
         mvn install:install-file -Dfile=./jython-dev.jar -DgroupId="org.python" -DartifactId="jython3" -Dversion="0.0.1-SNAPSHOT" -Dpackaging="jar" -DgeneratePom=true
+        popd
+        popd
       shell: bash
     - name: Install IDE.
       run: |
-        cd ./IDE/com.ibm.wala.cast.lsp
+        pushd ./IDE/com.ibm.wala.cast.lsp
         mvn clean install -B -q -DskipTests
+        popd
     - name: Check formatting with spotless.
       run: mvn spotless:check -B
     - name: Build with Maven
