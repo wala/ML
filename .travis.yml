@@ -4,7 +4,7 @@ language: java
 jdk: openjdk11
 before_install:
  - git clone --depth=50 https://github.com/wala/IDE /tmp/IDE
- - git clone https://github.com/juliandolby/jython3.git /tmp/jython3
+ - git clone --depth=50 https://github.com/juliandolby/jython3.git /tmp/jython3
 install:
  - pushd /tmp/jython3
  - ant
