@@ -4,43 +4,29 @@
 <summary-spec>
   <classloader name="PythonLoader">
     <class name="functools" allocatable="true">
-      <method name="import"
-	      static="true"
-	      descriptor="()Lfunctools;">
-        <new def="x" class="Lfunctools"/>
+      <method name="import" static="true" descriptor="()Lfunctools;">
+        <new def="x" class="Lfunctools" />
 
-	<new def="reduce" class="Lfunctools/functions/reduce"/>
-	<putfield class="LRoot"
-                  field="reduce"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="reduce"/>
+        <new def="reduce" class="Lfunctools/functions/reduce" />
+        <putfield class="LRoot" field="reduce" fieldType="LRoot" ref="x" value="reduce" />
 
-	<return value="x"/>
+        <return value="x" />
       </method>
     </class>
 
     <package name="functools/functions">
 
       <class name="reduce" allocatable="true">
-	<method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self lambda data">
-	  <constant name="l" type="int" value="0"/>
-	  <aaload ref="data" def="v1" type="LRoot" index="l"/>
-	  <constant name="r" type="int" value="1"/>
-	  <aaload ref="data" def="v2" type="LRoot" index="r"/>
-	  <call class="LRoot"
-		name="do"
-		descriptor="()LRoot;"
-		type="virtual"
-		arg0="lambda"
-		arg1="v1"
-		arg2="v2"
-		numArgs="3"
-		def="v"/>
-	  <return value="v"/>
-	</method>
+        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self lambda data">
+          <constant name="l" type="int" value="0" />
+          <aaload ref="data" def="v1" type="LRoot" index="l" />
+          <constant name="r" type="int" value="1" />
+          <aaload ref="data" def="v2" type="LRoot" index="r" />
+          <call class="LRoot" name="do" descriptor="()LRoot;" type="virtual" arg0="lambda" arg1="v1" arg2="v2" numArgs="3" def="v" />
+          <return value="v" />
+        </method>
       </class>
-      
+
     </package>
   </classloader>
 </summary-spec>
