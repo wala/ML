@@ -41,11 +41,11 @@ public class TestTensorflowModelParsing extends TestPythonMLCallGraphShape {
     CallGraph CG = builder.makeCallGraph(builder.getOptions());
     assertNotNull(CG);
 
-    //		CAstCallGraphUtil.AVOID_DUMP = false;
-    //		CAstCallGraphUtil.dumpCG(builder.getCFAContextInterpreter(), builder.getPointerAnalysis(),
+    // CAstCallGraphUtil.AVOID_DUMP = false;
+    // CAstCallGraphUtil.dumpCG(builder.getCFAContextInterpreter(), builder.getPointerAnalysis(),
     // CG);
 
-    //		System.err.println(CG);
+    // System.err.println(CG);
 
     TensorTypeAnalysis analysis = E.performAnalysis(builder);
 
@@ -79,8 +79,8 @@ public class TestTensorflowModelParsing extends TestPythonMLCallGraphShape {
             logger.warning(() -> "Encountered pointer key type: " + pointerKey.getClass() + ".");
         });
 
-    // we should have two methods.
-    assertEquals(2, methodSignatureToPointerKeys.size());
+    // we should have 3 methods.
+    assertEquals(3, methodSignatureToPointerKeys.size());
 
     final String addFunctionSignature = "script " + filename + ".add.do()LRoot;";
 

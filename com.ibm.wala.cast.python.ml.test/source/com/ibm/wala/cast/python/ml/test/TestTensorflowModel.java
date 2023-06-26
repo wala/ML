@@ -37,11 +37,12 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     PythonSSAPropagationCallGraphBuilder builder = E.defaultCallGraphBuilder();
     CallGraph CG = builder.makeCallGraph(builder.getOptions());
 
-    //		CAstCallGraphUtil.AVOID_DUMP = false;
+    // CAstCallGraphUtil.AVOID_DUMP = false;
     //
-    //	CAstCallGraphUtil.dumpCG(((SSAPropagationCallGraphBuilder)builder).getCFAContextInterpreter(), builder.getPointerAnalysis(), CG);
+    // CAstCallGraphUtil.dumpCG(((SSAPropagationCallGraphBuilder)builder).getCFAContextInterpreter(),
+    // builder.getPointerAnalysis(), CG);
 
-    //		System.err.println(CG);
+    // System.err.println(CG);
 
     Collection<CGNode> nodes = getNodes(CG, "script tf1.py/model_fn");
     assert !nodes.isEmpty() : "model_fn should be called";
@@ -62,31 +63,56 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
   @Test
   public void testTf2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2.py", "add", 2, 2, 3);
-    testTf2("tf2b.py", "add", 2, 2, 3);
-    testTf2("tf2c.py", "add", 2, 2, 3);
-    testTf2("tf2d.py", "add", 2, 2, 3);
-    testTf2("tf2e.py", "add", 2, 2, 3);
-    testTf2("tf2f.py", "add", 2, 2, 3);
-    testTf2("tf2g.py", "add", 2, 2, 3);
-    testTf2("tf2h.py", "add", 2, 2, 3);
-    testTf2("tf2i.py", "add", 2, 2, 3);
-    testTf2("tf2j.py", "add", 2, 2, 3);
-    testTf2("tf2k.py", "add", 2, 2, 3);
-    testTf2("tf2l.py", "add", 2, 2, 3);
-    testTf2("tf2m.py", "add", 2, 2, 3);
-    // TODO: Uncomment below test when https://github.com/wala/ML/issues/49 is fixed.
-    // testTf2("tf2n.py", "func2", 1, 2);
-    testTf2("tf2o.py", "add", 2, 2, 3);
-    testTf2("tf2p.py", "value_index", 2, 2, 3);
-    testTf2("tf2q.py", "add", 2, 2, 3);
+    testTf2("tf2.py", "add", 2, 3, 2, 3);
+    testTf2("tf2b.py", "add", 2, 3, 2, 3);
+    testTf2("tf2c.py", "add", 2, 4, 2, 3);
+    testTf2("tf2d.py", "add", 2, 3, 2, 3);
+    testTf2("tf2d2.py", "add", 2, 3, 2, 3);
+    testTf2("tf2d3.py", "add", 2, 3, 2, 3);
+    testTf2("tf2d4.py", "add", 2, 4, 2, 3);
+    testTf2("tf2e.py", "add", 2, 3, 2, 3);
+    testTf2("tf2e2.py", "add", 2, 4, 2, 3);
+    testTf2("tf2e3.py", "add", 2, 3, 2, 3);
+    testTf2("tf2e4.py", "add", 2, 4, 2, 3);
+    testTf2("tf2e5.py", "add", 2, 3, 2, 3);
+    testTf2("tf2e6.py", "add", 2, 3, 2, 3);
+    testTf2("tf2e7.py", "add", 2, 3, 2, 3);
+    testTf2("tf2f.py", "add", 2, 3, 2, 3);
+    testTf2("tf2f2.py", "add", 2, 4, 2, 3);
+    testTf2("tf2f3.py", "add", 2, 4, 2, 3);
+    testTf2("tf2g.py", "add", 2, 3, 2, 3);
+    testTf2("tf2g2.py", "add", 2, 4, 2, 3);
+    testTf2("tf2h.py", "add", 2, 3, 2, 3);
+    testTf2("tf2h2.py", "add", 2, 4, 2, 3);
+    testTf2("tf2i.py", "add", 2, 3, 2, 3);
+    testTf2("tf2i2.py", "add", 2, 4, 2, 3);
+    testTf2("tf2j.py", "add", 2, 3, 2, 3);
+    testTf2("tf2j2.py", "add", 2, 4, 2, 3);
+    testTf2("tf2k.py", "add", 2, 3, 2, 3);
+    testTf2("tf2k2.py", "add", 2, 4, 2, 3);
+    testTf2("tf2l.py", "add", 2, 3, 2, 3);
+    testTf2("tf2l2.py", "add", 2, 4, 2, 3);
+    testTf2("tf2m.py", "add", 2, 3, 2, 3);
+    testTf2("tf2m2.py", "add", 2, 4, 2, 3);
+    testTf2("tf2n.py", "func2", 1, 4, 2);
+    testTf2("tf2n2.py", "func2", 1, 4, 2);
+    testTf2("tf2n3.py", "func2", 1, 4, 2);
+    testTf2("tf2o.py", "add", 2, 3, 2, 3);
+    testTf2("tf2o2.py", "add", 2, 4, 2, 3);
+    testTf2("tf2p.py", "value_index", 2, 4, 2, 3);
+    testTf2("tf2p2.py", "value_index", 2, 4, 2, 3);
+    testTf2("tf2q.py", "add", 2, 3, 2, 3);
+    testTf2("tf2r.py", "add", 2, 3, 2, 3);
+    // TODO: Uncomment below test when https://github.com/ponder-lab/ML/issues/34 is fixed.
+    // testTf2("tf2s.py", "add", 2, 3, 2, 3);
   }
 
   private void testTf2(
       String filename,
       String functionName,
       int expectedNumberOfTensorParameters,
-      int... expectedValueNumbers)
+      int expectedNumberOfTensorVariables,
+      int... expectedTensorParameterValueNumbers)
       throws ClassHierarchyException, CancelException, IOException {
     PythonAnalysisEngine<TensorTypeAnalysis> E = makeEngine(filename);
     PythonSSAPropagationCallGraphBuilder builder = E.defaultCallGraphBuilder();
@@ -94,11 +120,10 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     CallGraph CG = builder.makeCallGraph(builder.getOptions());
     assertNotNull(CG);
 
-    //		CAstCallGraphUtil.AVOID_DUMP = false;
-    //		CAstCallGraphUtil.dumpCG(builder.getCFAContextInterpreter(), builder.getPointerAnalysis(),
-    // CG);
-
-    //		System.err.println(CG);
+    // CAstCallGraphUtil.AVOID_DUMP = false;
+    // CAstCallGraphUtil.dumpCG(((SSAPropagationCallGraphBuilder)builder).getCFAContextInterpreter(),
+    // builder.getPointerAnalysis(), CG);
+    // System.err.println(CG);
 
     TensorTypeAnalysis analysis = E.performAnalysis(builder);
 
@@ -146,8 +171,8 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
         });
 
     // check the maps.
-    assertEquals(expectedNumberOfTensorParameters, methodSignatureToPointerKeys.size());
-    assertEquals(expectedNumberOfTensorParameters, methodSignatureToTensorVariables.size());
+    assertEquals(expectedNumberOfTensorVariables, methodSignatureToPointerKeys.size());
+    assertEquals(expectedNumberOfTensorVariables, methodSignatureToTensorVariables.size());
 
     final String functionSignature = "script " + filename + "." + functionName + ".do()LRoot;";
 
@@ -163,8 +188,9 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
             .map(LocalPointerKey::getValueNumber)
             .collect(Collectors.toSet());
 
-    assertEquals(expectedValueNumbers.length, actualValueNumberSet.size());
-    Arrays.stream(expectedValueNumbers).forEach(ev -> actualValueNumberSet.contains(ev));
+    assertEquals(expectedTensorParameterValueNumbers.length, actualValueNumberSet.size());
+    Arrays.stream(expectedTensorParameterValueNumbers)
+        .forEach(ev -> actualValueNumberSet.contains(ev));
 
     // get the tensor variables for the function.
     Set<TensorVariable> functionTensors = methodSignatureToTensorVariables.get(functionSignature);
