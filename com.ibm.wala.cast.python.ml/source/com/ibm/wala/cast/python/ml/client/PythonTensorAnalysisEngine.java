@@ -2,10 +2,8 @@ package com.ibm.wala.cast.python.ml.client;
 
 import com.ibm.wala.cast.lsp.AnalysisError;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
-import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
 import com.ibm.wala.cast.python.ml.types.TensorType;
-import com.ibm.wala.cast.python.ssa.PythonPropertyRead;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.classLoader.CallSiteReference;
@@ -19,9 +17,7 @@ import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
-import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.types.MethodReference;
-import com.ibm.wala.types.Selector;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
@@ -67,12 +63,6 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
               TypeName.string2TypeName("Ltensorflow/functions/set_shape")),
           AstMethodReference.fnSelector);
 
-  private static final MethodReference import_tensorflow =
-      MethodReference.findOrCreate(
-          TypeReference.findOrCreate(
-              PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow")),
-          Selector.make(PythonLanguage.Python, "import()Ltensorflow;"));
-
   private final Map<PointerKey, AnalysisError> errorLog = HashMapFactory.make();
 
   private static Set<PointsToSetVariable> getDataflowSources(Graph<PointsToSetVariable> dataflow) {
@@ -95,29 +85,6 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
       }
     }
     return sources;
-  }
-
-  /**
-   * True iff the given {@link PythonPropertyRead} corresponds to a TensorFlow API invocation.
-   *
-   * @param propertyRead The {@link PythonPropertyRead} to check.
-   * @param du The {@link DefUse} from the corresponding {@link CGNode}.
-   * @return True iff the given {@link PythonPropertyRead} corresponds to a TensorFlow API
-   *     invocation.
-   */
-  private static boolean isFromTensorFlow(PythonPropertyRead propertyRead, DefUse du) {
-    int objectRef = propertyRead.getObjectRef();
-    SSAInstruction objectRefDefinition = du.getDef(objectRef);
-
-    if (objectRefDefinition instanceof SSAInvokeInstruction) {
-      SSAInvokeInstruction objectRefInvocInstruction = (SSAInvokeInstruction) objectRefDefinition;
-      MethodReference objectRefInvocationDeclaredTarget =
-          objectRefInvocInstruction.getDeclaredTarget();
-      return objectRefInvocationDeclaredTarget.equals(import_tensorflow);
-    } else if (objectRefDefinition instanceof PythonPropertyRead)
-      // it's an import tree. Dig deeper to find the root.
-      return isFromTensorFlow((PythonPropertyRead) objectRefDefinition, du);
-    return false;
   }
 
   @FunctionalInterface
