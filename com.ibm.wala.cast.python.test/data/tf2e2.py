@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow import Variable
+from tensorflow.python.ops.variables import Variable
 
 def add(a, b):
   return a + b
