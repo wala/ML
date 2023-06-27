@@ -86,7 +86,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
           if (ni.getCallSite().getDeclaredTarget().getName().toString().equals("read_data")
               && ni.getException() != vn) {
             sources.add(src);
-            logger.info("Added dataflow source " + src.toString());
+            logger.info("Added dataflow source " + src + ".");
           }
         }
       }
