@@ -103,7 +103,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("tf2p2.py", "value_index", 2, 4, 2, 3);
     testTf2("tf2q.py", "add", 2, 3, 2, 3);
     testTf2("tf2r.py", "add", 2, 3, 2, 3);
-    // TODO: Uncomment below test when https://github.com/ponder-lab/ML/issues/34 is fixed.
+    // TODO: Uncomment below test when https://github.com/wala/ML/issues/65 is fixed.
     // testTf2("tf2s.py", "add", 2, 3, 2, 3);
   }
 
