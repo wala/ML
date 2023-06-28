@@ -64,8 +64,6 @@
         <configuration>
           <forkMode>once</forkMode>
           <argLine>-Dpython.import.site=false</argLine>
-          <parallel>both</parallel>
-          <threadCount>100</threadCount>
         </configuration>
       </plugin>
     </plugins>
