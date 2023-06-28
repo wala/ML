@@ -130,6 +130,12 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven.surefire.version}</version>
+          <configuration>
+            <systemPropertyVariables>
+              <!-- Set JUL Formatting -->
+              <java.util.logging.SimpleFormatter.format>[%4$s] %5$s%n</java.util.logging.SimpleFormatter.format>
+            </systemPropertyVariables>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>com.diffplug.spotless</groupId>
