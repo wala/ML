@@ -29,8 +29,12 @@ import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeAnalysis> {
+
+  private static final Logger logger = Logger.getLogger(PythonTensorAnalysisEngine.class.getName());
+
   private static final MethodReference conv2d =
       MethodReference.findOrCreate(
           TypeReference.findOrCreate(
@@ -80,7 +84,10 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
           SSAAbstractInvokeInstruction ni = (SSAAbstractInvokeInstruction) inst;
 
           if (ni.getCallSite().getDeclaredTarget().getName().toString().equals("read_data")
-              && ni.getException() != vn) sources.add(src);
+              && ni.getException() != vn) {
+            sources.add(src);
+            logger.info("Added dataflow source " + src + ".");
+          }
         }
       }
     }
