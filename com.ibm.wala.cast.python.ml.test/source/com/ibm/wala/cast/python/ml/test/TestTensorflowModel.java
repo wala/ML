@@ -105,6 +105,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("tf2r.py", "add", 2, 3, 2, 3);
     // TODO: Uncomment below test when https://github.com/wala/ML/issues/65 is fixed.
     // testTf2("tf2s.py", "add", 2, 3, 2, 3);
+    testTf2("tf2t.py", "add", 2, 3, 2, 3);
   }
 
   private void testTf2(
