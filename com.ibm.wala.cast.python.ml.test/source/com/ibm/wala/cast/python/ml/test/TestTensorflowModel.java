@@ -177,7 +177,6 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     assertEquals(expectedNumberOfTensorVariables, methodSignatureToPointerKeys.size());
     assertEquals(expectedNumberOfTensorVariables, methodSignatureToTensorVariables.size());
 
-
     final String functionSignature = "script " + filename + "." + functionName + ".do()LRoot;";
 
     // get the pointer keys for the function.

@@ -207,7 +207,7 @@
                 <endWithNewline/>
                 <indent>
                   <tabs>true</tabs>
-                <spacesPerTab>4</spacesPerTab>
+                  <spacesPerTab>4</spacesPerTab>
                 </indent>
               </format>
             </formats>
