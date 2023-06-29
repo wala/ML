@@ -133,6 +133,10 @@
           <configuration>
             <parallel>both</parallel>
             <threadCount>1</threadCount>
+            <systemPropertyVariables>
+              <!-- Set JUL Formatting -->
+              <java.util.logging.SimpleFormatter.format>[%4$s] %5$s%n</java.util.logging.SimpleFormatter.format>
+            </systemPropertyVariables>
           </configuration>
         </plugin>
         <plugin>
