@@ -10,11 +10,6 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.loader;
 
-import java.io.IOException;
-import java.util.List;
-
-import org.python.core.PyObject;
-
 import com.ibm.wala.cast.ir.translator.ConstantFoldingRewriter;
 import com.ibm.wala.cast.ir.translator.RewritingTranslatorToCAst;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
@@ -34,62 +29,84 @@ import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.SourceModule;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
+import java.io.IOException;
+import java.util.List;
+import org.python.core.PyObject;
 
 public class Python2Loader extends PythonLoader {
-	public Python2Loader(IClassHierarchy cha, IClassLoader parent) {
-		super(cha, parent);
-	}
+  public Python2Loader(IClassHierarchy cha, IClassLoader parent) {
+    super(cha, parent);
+  }
 
-	public Python2Loader(IClassHierarchy cha) {
-		super(cha);
-	}
+  public Python2Loader(IClassHierarchy cha) {
+    super(cha);
+  }
 
-	@Override
-	protected TranslatorToCAst getTranslatorToCAst(CAst ast, ModuleEntry M, List<Module> allModules) throws IOException {
-		RewritingTranslatorToCAst x = new RewritingTranslatorToCAst(M, new PythonModuleParser((SourceModule)M, typeDictionary, allModules) {
-			@Override
-			public CAstEntity translateToCAst() throws Error, IOException {
-				CAstEntity ce =  super.translateToCAst();
-				return new AstConstantFolder().fold(ce);
-			}
-		});
-		
-		x.addRewriter(new CAstRewriterFactory<NonCopyingContext,NoKey>() {
-			@Override
-			public PatternBasedRewriter createCAstRewriter(CAst ast) {
-				return new PatternBasedRewriter(ast, sliceAssign, (Segments s) -> { return rewriteSubscriptAssign(s); });
-			}
-		}, false);
+  @Override
+  protected TranslatorToCAst getTranslatorToCAst(CAst ast, ModuleEntry M, List<Module> allModules)
+      throws IOException {
+    RewritingTranslatorToCAst x =
+        new RewritingTranslatorToCAst(
+            M,
+            new PythonModuleParser((SourceModule) M, typeDictionary, allModules) {
+              @Override
+              public CAstEntity translateToCAst() throws Error, IOException {
+                CAstEntity ce = super.translateToCAst();
+                return new AstConstantFolder().fold(ce);
+              }
+            });
 
-		x.addRewriter(new CAstRewriterFactory<NonCopyingContext,NoKey>() {
-			@Override
-			public PatternBasedRewriter createCAstRewriter(CAst ast) {
-				return new PatternBasedRewriter(ast, sliceAssignOp, (Segments s) -> { return rewriteSubscriptAssignOp(s); });
-			}
-		}, false);
+    x.addRewriter(
+        new CAstRewriterFactory<NonCopyingContext, NoKey>() {
+          @Override
+          public PatternBasedRewriter createCAstRewriter(CAst ast) {
+            return new PatternBasedRewriter(
+                ast,
+                sliceAssign,
+                (Segments s) -> {
+                  return rewriteSubscriptAssign(s);
+                });
+          }
+        },
+        false);
 
-		x.addRewriter(new CAstRewriterFactory<NonCopyingContext,NoKey>() {
-			@Override
-			public ConstantFoldingRewriter createCAstRewriter(CAst ast) {
-				return new ConstantFoldingRewriter(ast) {
-					@Override
-					protected Object eval(CAstOperator op, Object lhs, Object rhs) {
-						try {
-							PyObject x = Python2Interpreter.getInterp().eval(lhs + " " + op.getValue() + " " + rhs);
-							if (x.isNumberType()) {
-								System.err.println(lhs + " " + op.getValue() + " " + rhs + " -> " + x.asInt());
-								return x.asInt();
-							}
-						} catch (Exception e) {
-							// interpreter died for some reason, so no information.
-						}
-						return null;
-					}
-				};
-			}
-			
-		}, false);
-		return x;
-	}
+    x.addRewriter(
+        new CAstRewriterFactory<NonCopyingContext, NoKey>() {
+          @Override
+          public PatternBasedRewriter createCAstRewriter(CAst ast) {
+            return new PatternBasedRewriter(
+                ast,
+                sliceAssignOp,
+                (Segments s) -> {
+                  return rewriteSubscriptAssignOp(s);
+                });
+          }
+        },
+        false);
 
+    x.addRewriter(
+        new CAstRewriterFactory<NonCopyingContext, NoKey>() {
+          @Override
+          public ConstantFoldingRewriter createCAstRewriter(CAst ast) {
+            return new ConstantFoldingRewriter(ast) {
+              @Override
+              protected Object eval(CAstOperator op, Object lhs, Object rhs) {
+                try {
+                  PyObject x =
+                      Python2Interpreter.getInterp().eval(lhs + " " + op.getValue() + " " + rhs);
+                  if (x.isNumberType()) {
+                    System.err.println(lhs + " " + op.getValue() + " " + rhs + " -> " + x.asInt());
+                    return x.asInt();
+                  }
+                } catch (Exception e) {
+                  // interpreter died for some reason, so no information.
+                }
+                return null;
+              }
+            };
+          }
+        },
+        false);
+    return x;
+  }
 }

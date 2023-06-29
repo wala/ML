@@ -16,6 +16,7 @@ install:
  - mvn clean install -B -q -DskipTests
  - popd
 script:
+ - mvn spotless:check -B
  - mvn clean verify -B
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
