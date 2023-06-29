@@ -60,6 +60,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
       </plugin>
     </plugins>
+    <sourceDirectory>source</sourceDirectory>
     <testSourceDirectory>source</testSourceDirectory>
   </build>
 </project>
