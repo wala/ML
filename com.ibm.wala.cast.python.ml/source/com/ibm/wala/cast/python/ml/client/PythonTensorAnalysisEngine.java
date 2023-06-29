@@ -1,12 +1,9 @@
 package com.ibm.wala.cast.python.ml.client;
 
-import com.google.common.base.Objects;
 import com.ibm.wala.cast.lsp.AnalysisError;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
-import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
 import com.ibm.wala.cast.python.ml.types.TensorType;
-import com.ibm.wala.cast.python.ssa.PythonPropertyRead;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.classLoader.CallSiteReference;
@@ -18,13 +15,9 @@ import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.DefUse;
-import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
-import com.ibm.wala.ssa.SSAInvokeInstruction;
-import com.ibm.wala.ssa.Value;
 import com.ibm.wala.types.MethodReference;
-import com.ibm.wala.types.Selector;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
@@ -34,12 +27,14 @@ import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
+import java.util.logging.Logger;
 
 public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeAnalysis> {
+
+  private static final Logger logger = Logger.getLogger(PythonTensorAnalysisEngine.class.getName());
+
   private static final MethodReference conv2d =
       MethodReference.findOrCreate(
           TypeReference.findOrCreate(
@@ -72,12 +67,6 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
               TypeName.string2TypeName("Ltensorflow/functions/set_shape")),
           AstMethodReference.fnSelector);
 
-  private static final MethodReference import_tensorflow =
-      MethodReference.findOrCreate(
-          TypeReference.findOrCreate(
-              PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow")),
-          Selector.make(PythonLanguage.Python, "import()Ltensorflow;"));
-
   private final Map<PointerKey, AnalysisError> errorLog = HashMapFactory.make();
 
   private static Set<PointsToSetVariable> getDataflowSources(Graph<PointsToSetVariable> dataflow) {
@@ -88,111 +77,21 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
       if (k instanceof LocalPointerKey) {
         LocalPointerKey kk = (LocalPointerKey) k;
         int vn = kk.getValueNumber();
-        CGNode node = kk.getNode();
-        DefUse du = node.getDU();
+        DefUse du = kk.getNode().getDU();
         SSAInstruction inst = du.getDef(vn);
 
         if (inst instanceof SSAAbstractInvokeInstruction) {
           SSAAbstractInvokeInstruction ni = (SSAAbstractInvokeInstruction) inst;
 
-          // A queue of API calls starting from the right-most API from the selection operator,
-          // e.g., tf.random.uniform.
-          Queue<String> tensorFlowAPIQueue = new LinkedList<>();
-
-          if (!ni.isStatic()) {
-            int receiver = ni.getReceiver();
-            SSAInstruction receiverDefinition = du.getDef(receiver);
-
-            if (receiverDefinition instanceof PythonPropertyRead) {
-              PythonPropertyRead propertyRead = (PythonPropertyRead) receiverDefinition;
-
-              // are we calling a TensorFlow API?
-              if (isFromTensorFlow(propertyRead, du)) {
-                int memberRef = propertyRead.getMemberRef();
-                SSAInstruction memberRefDefinition = du.getDef(memberRef);
-
-                // if the member reference can't be found.
-                if (memberRefDefinition == null) {
-                  // look it up in the IR.
-                  IR ir = node.getIR();
-                  Value memberRefValue = ir.getSymbolTable().getValue(memberRef);
-
-                  // while a member ref value exists and it's a string constant.
-                  while (memberRefValue != null && memberRefValue.isStringConstant()) {
-                    // push the API onto the queue.
-                    tensorFlowAPIQueue.add(ir.getSymbolTable().getStringValue(memberRef));
-
-                    // go back one "level."
-                    memberRefValue = ir.getSymbolTable().getValue(--memberRef);
-                  }
-                }
-              }
-            }
-          }
-
-          // process the API "levels."
-          if (ni.getException() != vn) {
-            if (!tensorFlowAPIQueue.isEmpty()) {
-              // pop the first element.
-              String tensorFlowAPI = tensorFlowAPIQueue.remove();
-
-              // Single-level APIs.
-              if (Objects.equal(tensorFlowAPI, "ones")
-                  || Objects.equal(tensorFlowAPI, "Variable")
-                  || Objects.equal(tensorFlowAPI, "zeros")
-                  || Objects.equal(tensorFlowAPI, "constant")
-                  || Objects.equal(tensorFlowAPI, "SparseTensor")
-                  || Objects.equal(tensorFlowAPI, "Tensor")
-                  || Objects.equal(tensorFlowAPI, "fill")
-                  || Objects.equal(tensorFlowAPI, "eye")
-                  || Objects.equal(tensorFlowAPI, "zeros_like")
-                  || Objects.equal(tensorFlowAPI, "one_hot")
-                  || Objects.equal(tensorFlowAPI, "convert_to_tensor")
-                  || Objects.equal(tensorFlowAPI, "range")) sources.add(src);
-              // Double-level APIs.
-              else if (Objects.equal(tensorFlowAPI, "uniform")) {
-                // Check the next "level".
-                if (tensorFlowAPIQueue.isEmpty())
-                  // not expecting this API call.
-                  throw new IllegalStateException("Encountered unexpected API call.");
-
-                tensorFlowAPI = tensorFlowAPIQueue.remove();
-
-                if (Objects.equal(tensorFlowAPI, "random")) sources.add(src);
-              }
-            } else if (ni.getCallSite()
-                .getDeclaredTarget()
-                .getName()
-                .toString()
-                .equals("read_data")) sources.add(src);
+          if (ni.getCallSite().getDeclaredTarget().getName().toString().equals("read_data")
+              && ni.getException() != vn) {
+            sources.add(src);
+            logger.info("Added dataflow source " + src + ".");
           }
         }
       }
     }
     return sources;
-  }
-
-  /**
-   * True iff the given {@link PythonPropertyRead} corresponds to a TensorFlow API invocation.
-   *
-   * @param propertyRead The {@link PythonPropertyRead} to check.
-   * @param du The {@link DefUse} from the corresponding {@link CGNode}.
-   * @return True iff the given {@link PythonPropertyRead} corresponds to a TensorFlow API
-   *     invocation.
-   */
-  private static boolean isFromTensorFlow(PythonPropertyRead propertyRead, DefUse du) {
-    int objectRef = propertyRead.getObjectRef();
-    SSAInstruction objectRefDefinition = du.getDef(objectRef);
-
-    if (objectRefDefinition instanceof SSAInvokeInstruction) {
-      SSAInvokeInstruction objectRefInvocInstruction = (SSAInvokeInstruction) objectRefDefinition;
-      MethodReference objectRefInvocationDeclaredTarget =
-          objectRefInvocInstruction.getDeclaredTarget();
-      return objectRefInvocationDeclaredTarget.equals(import_tensorflow);
-    } else if (objectRefDefinition instanceof PythonPropertyRead)
-      // it's an import tree. Dig deeper to find the root.
-      return isFromTensorFlow((PythonPropertyRead) objectRefDefinition, du);
-    return false;
   }
 
   @FunctionalInterface

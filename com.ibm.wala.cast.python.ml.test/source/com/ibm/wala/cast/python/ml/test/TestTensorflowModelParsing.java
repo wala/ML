@@ -22,10 +22,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
+
 import java.util.stream.Collectors;
 import org.junit.Test;
 
 public class TestTensorflowModelParsing extends TestPythonMLCallGraphShape {
+
+  private static final Logger logger = Logger.getLogger(TestTensorflowModelParsing.class.getName());
 
   /** Test a parsing bug (see https://github.com/wala/ML/pull/46#issue-1743032519). */
   @Test
@@ -38,11 +42,11 @@ public class TestTensorflowModelParsing extends TestPythonMLCallGraphShape {
     CallGraph CG = builder.makeCallGraph(builder.getOptions());
     assertNotNull(CG);
 
-    //		CAstCallGraphUtil.AVOID_DUMP = false;
-    //		CAstCallGraphUtil.dumpCG(builder.getCFAContextInterpreter(), builder.getPointerAnalysis(),
+    // CAstCallGraphUtil.AVOID_DUMP = false;
+    // CAstCallGraphUtil.dumpCG(builder.getCFAContextInterpreter(), builder.getPointerAnalysis(),
     // CG);
 
-    //		System.err.println(CG);
+    // System.err.println(CG);
 
     TensorTypeAnalysis analysis = E.performAnalysis(builder);
 
@@ -53,27 +57,31 @@ public class TestTensorflowModelParsing extends TestPythonMLCallGraphShape {
     analysis.forEach(
         p -> {
           PointerKey pointerKey = p.fst;
-          LocalPointerKey localPointerKey = (LocalPointerKey) pointerKey;
 
-          // get the call graph node associated with the
-          CGNode node = localPointerKey.getNode();
+          if (pointerKey instanceof LocalPointerKey) {
+            LocalPointerKey localPointerKey = (LocalPointerKey) pointerKey;
 
-          // get the method associated with the call graph node.
-          IMethod method = node.getMethod();
-          String methodSignature = method.getSignature();
+            // get the call graph node associated with the
+            CGNode node = localPointerKey.getNode();
 
-          // associate the method to the pointer key.
-          methodSignatureToPointerKeys.compute(
-              methodSignature,
-              (k, v) -> {
-                if (v == null) v = new HashSet<>();
-                v.add(localPointerKey);
-                return v;
-              });
+            // get the method associated with the call graph node.
+            IMethod method = node.getMethod();
+            String methodSignature = method.getSignature();
+
+            // associate the method to the pointer key.
+            methodSignatureToPointerKeys.compute(
+                methodSignature,
+                (k, v) -> {
+                  if (v == null) v = new HashSet<>();
+                  v.add(localPointerKey);
+                  return v;
+                });
+          } else
+            logger.warning(() -> "Encountered pointer key type: " + pointerKey.getClass() + ".");
         });
 
-    // we should have two methods.
-    assertEquals(2, methodSignatureToPointerKeys.size());
+    // we should have 3 methods.
+    assertEquals(3, methodSignatureToPointerKeys.size());
 
     final String addFunctionSignature = "script " + filename + ".add.do()LRoot;";
 

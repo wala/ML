@@ -4,44 +4,33 @@
 <summary-spec>
   <classloader name="PythonLoader">
     <class name="pandas" allocatable="true">
-      <method name="import"
-	      static="true"
-	      descriptor="()Lpandas;">
-        <new def="x" class="Lpandas"/>
+      <method name="import" static="true" descriptor="()Lpandas;">
+        <new def="x" class="Lpandas" />
 
-	<new def="read_excel" class="Lpandas/functions/read_excel"/>
-	<putfield class="LRoot"
-                  field="read_excel"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="read_excel"/>
+        <new def="read_excel" class="Lpandas/functions/read_excel" />
+        <putfield class="LRoot" field="read_excel" fieldType="LRoot" ref="x" value="read_excel" />
 
-	<new def="merge" class="Lpandas/functions/merge"/>
-	<putfield class="LRoot"
-                  field="merge"
-                  fieldType="LRoot"
-                  ref="x"
-                  value="merge"/>
+        <new def="merge" class="Lpandas/functions/merge" />
+        <putfield class="LRoot" field="merge" fieldType="LRoot" ref="x" value="merge" />
 
-	<return value="x"/>
+        <return value="x" />
       </method>
     </class>
 
     <package name="pandas/functions">
 
       <class name="read_excel" allocatable="true">
-	<method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self file sheet">
-	  <new def="v" class="Lobject"/>
-	  <return value="v"/>
-	</method>
+        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self file sheet">
+          <new def="v" class="Lobject" />
+          <return value="v" />
+        </method>
       </class>
 
       <class name="merge" allocatable="true">
-        <method name="do" descriptor="()LRoot;" numArgs="5"
-		paramNames="self left right on how">
-	  <return value="left"/>
-	  <return value="right"/>
-	</method>
+        <method name="do" descriptor="()LRoot;" numArgs="5" paramNames="self left right on how">
+          <return value="left" />
+          <return value="right" />
+        </method>
       </class>
     </package>
   </classloader>
