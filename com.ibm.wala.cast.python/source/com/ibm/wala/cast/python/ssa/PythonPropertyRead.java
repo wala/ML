@@ -10,12 +10,11 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.ssa;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import com.ibm.wala.cast.ir.ssa.AstPropertyRead;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.types.TypeReference;
+import java.util.Collection;
+import java.util.Collections;
 
 public class PythonPropertyRead extends AstPropertyRead {
   public PythonPropertyRead(int iindex, int result, int objectRef, int memberRef) {

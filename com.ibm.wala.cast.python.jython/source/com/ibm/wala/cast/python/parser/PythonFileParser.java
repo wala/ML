@@ -10,48 +10,48 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.parser;
 
+import com.ibm.wala.cast.tree.CAstEntity;
+import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
+import com.ibm.wala.cast.util.CAstPrinter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
 
-import com.ibm.wala.cast.tree.CAstEntity;
-import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
-import com.ibm.wala.cast.util.CAstPrinter;
-
 public class PythonFileParser extends PythonParser<File> {
 
-	private final File fileName;
-	
-	public PythonFileParser(File fileName, CAstTypeDictionaryImpl<String> types) {
-		super(types);
-		this.fileName  = fileName;
-	}
+  private final File fileName;
 
-	protected String scriptName() {
-		return fileName.getName();
-	}
-	
-	protected URL getParsedURL() throws IOException {
-		return fileName.toURI().toURL();
-	}
-	
-	protected WalaPythonParser makeParser() throws IOException {
-        org.antlr.runtime.ANTLRFileStream file = new org.antlr.runtime.ANTLRFileStream(fileName.getAbsolutePath());
-		return new WalaPythonParser(file, fileName.getAbsolutePath(), "UTF-8");
-	}
+  public PythonFileParser(File fileName, CAstTypeDictionaryImpl<String> types) {
+    super(types);
+    this.fileName = fileName;
+  }
 
-	public static void main(String[] args) throws Exception {
-		PythonParser<File> p = new PythonFileParser(new File(args[0]), new CAstTypeDictionaryImpl<String>());
-		CAstEntity script = p.translateToCAst();
-		System.err.println(script);
-		System.err.println(CAstPrinter.print(script));
-	}
+  protected String scriptName() {
+    return fileName.getName();
+  }
 
-	@Override
-	protected Reader getReader() throws IOException {
-		return new FileReader(fileName);
-	}
+  protected URL getParsedURL() throws IOException {
+    return fileName.toURI().toURL();
+  }
 
+  protected WalaPythonParser makeParser() throws IOException {
+    org.antlr.runtime.ANTLRFileStream file =
+        new org.antlr.runtime.ANTLRFileStream(fileName.getAbsolutePath());
+    return new WalaPythonParser(file, fileName.getAbsolutePath(), "UTF-8");
+  }
+
+  public static void main(String[] args) throws Exception {
+    PythonParser<File> p =
+        new PythonFileParser(new File(args[0]), new CAstTypeDictionaryImpl<String>());
+    CAstEntity script = p.translateToCAst();
+    System.err.println(script);
+    System.err.println(CAstPrinter.print(script));
+  }
+
+  @Override
+  protected Reader getReader() throws IOException {
+    return new FileReader(fileName);
+  }
 }

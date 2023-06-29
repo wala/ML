@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
@@ -43,7 +44,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>com.ibm.wala.cast.python.jython3</artifactId>
+      <artifactId>com.ibm.wala.cast.python.jython</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -56,7 +57,6 @@
     </dependency>
   </dependencies>
   <build>
-    <sourceDirectory>source</sourceDirectory>
     <resources>
       <resource>
         <directory>data</directory>
@@ -68,30 +68,30 @@
         <artifactId>maven-shade-plugin</artifactId>
         <version>2.3</version>
         <configuration>
-        <filters>
-          <filter>
-            <artifact>*:*</artifact>
-            <excludes>
-              <exclude>META-INF/*.SF</exclude>
-              <exclude>META-INF/*.DSA</exclude>
-              <exclude>META-INF/*.RSA</exclude>
-            </excludes>
-          </filter>
-        </filters>
-        <!-- Additional configuration. -->
+          <filters>
+            <filter>
+              <artifact>*:*</artifact>
+              <excludes>
+                <exclude>META-INF/*.SF</exclude>
+                <exclude>META-INF/*.DSA</exclude>
+                <exclude>META-INF/*.RSA</exclude>
+              </excludes>
+            </filter>
+          </filters>
+          <!-- Additional configuration. -->
         </configuration>
         <executions>
           <!-- Run shade goal on package phase -->
           <execution>
-            <phase>package</phase>
             <goals>
               <goal>shade</goal>
             </goals>
+            <phase>package</phase>
             <configuration>
               <transformers>
                 <!-- add Main-Class to manifest file -->
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                <mainClass>com.ibm.wala.cast.python.ml.driver.Ariadne</mainClass>
+                  <mainClass>com.ibm.wala.cast.python.ml.driver.Ariadne</mainClass>
                 </transformer>
               </transformers>
               <shadedArtifactAttached>true</shadedArtifactAttached>
@@ -100,5 +100,6 @@
         </executions>
       </plugin>
     </plugins>
+    <sourceDirectory>source</sourceDirectory>
   </build>
 </project>

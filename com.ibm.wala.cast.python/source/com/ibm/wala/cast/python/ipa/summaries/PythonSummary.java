@@ -33,6 +33,4 @@ public class PythonSummary extends MethodSummary {
   public TypeReference getParameterType(int i) {
     return PythonTypes.Root;
   }
-
 }
-

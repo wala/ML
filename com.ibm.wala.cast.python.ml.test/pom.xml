@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
@@ -12,7 +13,7 @@
       <artifactId>com.ibm.wala.cast.python.jython3.test</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
-   <dependency>
+    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>com.ibm.wala.cast.python.test</artifactId>
       <version>${project.version}</version>
@@ -53,7 +54,6 @@
     </dependency>
   </dependencies>
   <build>
-    <testSourceDirectory>source</testSourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -61,8 +61,10 @@
         <configuration>
           <forkMode>once</forkMode>
           <argLine>-Dpython.import.site=false</argLine>
+          <trimStackTrace>false</trimStackTrace>
         </configuration>
       </plugin>
     </plugins>
+    <testSourceDirectory>source</testSourceDirectory>
   </build>
 </project>

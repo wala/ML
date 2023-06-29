@@ -10,115 +10,118 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.ipa.summaries;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IField;
+import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.types.annotations.Annotation;
-import com.ibm.wala.core.util.strings.Atom;
+import java.util.Collection;
+import java.util.Collections;
 
 public class PythonInstanceMethodTrampoline extends PythonSyntheticClass {
-	private static final Atom selfName = Atom.findOrCreateUnicodeAtom("self");
-	
-	public static final FieldReference self = FieldReference.findOrCreate(PythonTypes.Root, selfName, PythonTypes.object);
-	
-	public static TypeReference findOrCreate(TypeReference cls, IClassHierarchy cha) {
-		TypeReference t = trampoline(cls);
-		if (cha.lookupClass(t) == null) {
-			new PythonInstanceMethodTrampoline(cls, cha);
-		}
-		return t;
-	}
-	
-	public static TypeReference trampoline(TypeReference x) {
-		return TypeReference.findOrCreate(x.getClassLoader(), "L$" + x.getName().toString().substring(1));
-	}
-	
-	private final IClass realClass;
-	
-	public PythonInstanceMethodTrampoline(TypeReference functionType, IClassHierarchy cha) {
-		super(trampoline(functionType), cha);
-		realClass = cha.lookupClass(functionType);
-		fields.put(selfName, new IField() {
-			@Override
-			public IClass getDeclaringClass() {
-				return PythonInstanceMethodTrampoline.this;
-			}
+  private static final Atom selfName = Atom.findOrCreateUnicodeAtom("self");
 
-			@Override
-			public Atom getName() {
-				return selfName;
-			}
+  public static final FieldReference self =
+      FieldReference.findOrCreate(PythonTypes.Root, selfName, PythonTypes.object);
 
-			@Override
-			public Collection<Annotation> getAnnotations() {
-				return Collections.emptySet();
-			}
+  public static TypeReference findOrCreate(TypeReference cls, IClassHierarchy cha) {
+    TypeReference t = trampoline(cls);
+    if (cha.lookupClass(t) == null) {
+      new PythonInstanceMethodTrampoline(cls, cha);
+    }
+    return t;
+  }
 
-			@Override
-			public IClassHierarchy getClassHierarchy() {
-				return PythonInstanceMethodTrampoline.this.getClassHierarchy();
-			}
+  public static TypeReference trampoline(TypeReference x) {
+    return TypeReference.findOrCreate(
+        x.getClassLoader(), "L$" + x.getName().toString().substring(1));
+  }
 
-			@Override
-			public TypeReference getFieldTypeReference() {
-				return PythonTypes.object;
-			}
+  private final IClass realClass;
 
-			@Override
-			public FieldReference getReference() {
-				return self;
-			}
+  public PythonInstanceMethodTrampoline(TypeReference functionType, IClassHierarchy cha) {
+    super(trampoline(functionType), cha);
+    realClass = cha.lookupClass(functionType);
+    fields.put(
+        selfName,
+        new IField() {
+          @Override
+          public IClass getDeclaringClass() {
+            return PythonInstanceMethodTrampoline.this;
+          }
 
-			@Override
-			public boolean isFinal() {
-				return true;
-			}
+          @Override
+          public Atom getName() {
+            return selfName;
+          }
 
-			@Override
-			public boolean isPrivate() {
-				return true;
-			}
+          @Override
+          public Collection<Annotation> getAnnotations() {
+            return Collections.emptySet();
+          }
 
-			@Override
-			public boolean isProtected() {
-				return false;
-			}
+          @Override
+          public IClassHierarchy getClassHierarchy() {
+            return PythonInstanceMethodTrampoline.this.getClassHierarchy();
+          }
 
-			@Override
-			public boolean isPublic() {
-				return false;
-			}
+          @Override
+          public TypeReference getFieldTypeReference() {
+            return PythonTypes.object;
+          }
 
-			@Override
-			public boolean isStatic() {
-				return false;
-			}
+          @Override
+          public FieldReference getReference() {
+            return self;
+          }
 
-			@Override
-			public boolean isVolatile() {
-				return false;
-			}
-		});
-		
-		cha.addClass(this);
-	}
+          @Override
+          public boolean isFinal() {
+            return true;
+          }
 
-	public String toString() {
-		return "Trampoline[" + getReference().getName().toString().substring(1) + "]";
-	}
+          @Override
+          public boolean isPrivate() {
+            return true;
+          }
 
-	@Override
-	public IClass getSuperclass() {
-		return getClassHierarchy().lookupClass(PythonTypes.trampoline);
-	}
+          @Override
+          public boolean isProtected() {
+            return false;
+          }
 
-	public IClass getRealClass() {
-		return realClass;
-	}
+          @Override
+          public boolean isPublic() {
+            return false;
+          }
+
+          @Override
+          public boolean isStatic() {
+            return false;
+          }
+
+          @Override
+          public boolean isVolatile() {
+            return false;
+          }
+        });
+
+    cha.addClass(this);
+  }
+
+  public String toString() {
+    return "Trampoline[" + getReference().getName().toString().substring(1) + "]";
+  }
+
+  @Override
+  public IClass getSuperclass() {
+    return getClassHierarchy().lookupClass(PythonTypes.trampoline);
+  }
+
+  public IClass getRealClass() {
+    return realClass;
+  }
 }

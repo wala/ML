@@ -1,8 +1,5 @@
 package com.ibm.wala.cast.python.test;
 
-import java.io.IOException;
-import java.util.Set;
-
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.client.PythonTurtleAnalysisEngine.EdgeType;
 import com.ibm.wala.cast.python.client.PythonTurtleAnalysisEngine.TurtlePath;
@@ -18,32 +15,38 @@ import com.ibm.wala.util.NullProgressMonitor;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.labeled.LabeledGraph;
+import java.io.IOException;
+import java.util.Set;
 
-public class TestPythonTurtleSKLearnClassifierCallGraphShape extends TestPythonTurtleCallGraphShape {
+public class TestPythonTurtleSKLearnClassifierCallGraphShape
+    extends TestPythonTurtleCallGraphShape {
 
-	public TestPythonTurtleSKLearnClassifierCallGraphShape() {
-		super(false);
-	}
+  public TestPythonTurtleSKLearnClassifierCallGraphShape() {
+    super(false);
+  }
 
-	@Override
-	protected PythonAnalysisEngine<LabeledGraph<TurtlePath, EdgeType>> makeEngine(String... name) throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		PythonAnalysisEngine<LabeledGraph<TurtlePath, EdgeType>> engine = new PythonTurtleSKLearnClassifierAnalysis();
-		Set<Module> modules = HashSetFactory.make();
-		for(String n : name) {
-			modules.add(getScript(n));
-		}
-		engine.setModuleFiles(modules);
-		return engine;
-	}
+  @Override
+  protected PythonAnalysisEngine<LabeledGraph<TurtlePath, EdgeType>> makeEngine(String... name)
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    PythonAnalysisEngine<LabeledGraph<TurtlePath, EdgeType>> engine =
+        new PythonTurtleSKLearnClassifierAnalysis();
+    Set<Module> modules = HashSetFactory.make();
+    for (String n : name) {
+      modules.add(getScript(n));
+    }
+    engine.setModuleFiles(modules);
+    return engine;
+  }
 
-	public static void main(String[] args) throws IllegalArgumentException, ClassHierarchyException, CancelException, IOException {
-		TestPythonTurtleSKLearnClassifierCallGraphShape driver = new TestPythonTurtleSKLearnClassifierCallGraphShape();
-		PythonAnalysisEngine<LabeledGraph<TurtlePath, EdgeType>> E = driver.makeEngine(args);
+  public static void main(String[] args)
+      throws IllegalArgumentException, ClassHierarchyException, CancelException, IOException {
+    TestPythonTurtleSKLearnClassifierCallGraphShape driver =
+        new TestPythonTurtleSKLearnClassifierCallGraphShape();
+    PythonAnalysisEngine<LabeledGraph<TurtlePath, EdgeType>> E = driver.makeEngine(args);
 
-		CallGraphBuilder<? super InstanceKey> builder = E.defaultCallGraphBuilder();
-		CallGraph CG = builder.makeCallGraph(E.getOptions(), new NullProgressMonitor());
+    CallGraphBuilder<? super InstanceKey> builder = E.defaultCallGraphBuilder();
+    CallGraph CG = builder.makeCallGraph(E.getOptions(), new NullProgressMonitor());
 
-		Graph<TurtlePath> analysis = E.performAnalysis((SSAPropagationCallGraphBuilder)builder);
-	}
-	
+    Graph<TurtlePath> analysis = E.performAnalysis((SSAPropagationCallGraphBuilder) builder);
+  }
 }

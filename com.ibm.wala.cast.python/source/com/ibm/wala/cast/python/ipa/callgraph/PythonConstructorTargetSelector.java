@@ -10,9 +10,6 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.ipa.callgraph;
 
-import java.util.Collections;
-import java.util.Map;
-
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.ipa.summaries.PythonInstanceMethodTrampoline;
 import com.ibm.wala.cast.python.ipa.summaries.PythonSummarizedFunction;
@@ -26,6 +23,7 @@ import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.NewSiteReference;
+import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.MethodTargetSelector;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
@@ -35,99 +33,149 @@ import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
-import com.ibm.wala.core.util.strings.Atom;
+import java.util.Collections;
+import java.util.Map;
 
 public class PythonConstructorTargetSelector implements MethodTargetSelector {
-	private final Map<IClass,IMethod> ctors = HashMapFactory.make();
-	
-	private final MethodTargetSelector base;
-		
-	public PythonConstructorTargetSelector(MethodTargetSelector base) {
-		this.base = base;
-	}
+  private final Map<IClass, IMethod> ctors = HashMapFactory.make();
 
-	@Override
-	public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
-		if (receiver != null) {
-			IClassHierarchy cha = receiver.getClassHierarchy();
-			if (cha.isSubclassOf(receiver, cha.lookupClass(PythonTypes.object)) && receiver instanceof PythonClass) {
-				if (!ctors.containsKey(receiver)) {
-					TypeReference ctorRef = TypeReference.findOrCreate(receiver.getClassLoader().getReference(), receiver.getName() + "/__init__");
-					IClass ctorCls = cha.lookupClass(ctorRef);
-					IMethod init = ctorCls==null? null: ctorCls.getMethod(AstMethodReference.fnSelector);
-					int params = init==null? 1: init.getNumberOfParameters();
-					int v = params+2;
-					int pc = 0;
-					int inst = v++;
-					MethodReference ref = MethodReference.findOrCreate(receiver.getReference(), site.getDeclaredTarget().getSelector());
-					PythonSummary ctor = new PythonSummary(ref, params);
-					SSAInstructionFactory insts = PythonLanguage.Python.instructionFactory();
-					ctor.addStatement(insts.NewInstruction(pc, inst, NewSiteReference.make(pc, PythonTypes.object)));
-					pc++;
+  private final MethodTargetSelector base;
 
-					PythonClass x = (PythonClass)receiver;
-					for(TypeReference r : x.getInnerReferences()) {
-						int orig_t = v++;
-						String typeName = r.getName().toString();
-						typeName = typeName.substring(typeName.lastIndexOf('/')+1);
-						FieldReference inner = FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom(typeName), PythonTypes.Root);
+  public PythonConstructorTargetSelector(MethodTargetSelector base) {
+    this.base = base;
+  }
 
-						ctor.addStatement(insts.GetInstruction(pc, orig_t, 1, inner));
-						pc++;
+  @Override
+  public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
+    if (receiver != null) {
+      IClassHierarchy cha = receiver.getClassHierarchy();
+      if (cha.isSubclassOf(receiver, cha.lookupClass(PythonTypes.object))
+          && receiver instanceof PythonClass) {
+        if (!ctors.containsKey(receiver)) {
+          TypeReference ctorRef =
+              TypeReference.findOrCreate(
+                  receiver.getClassLoader().getReference(), receiver.getName() + "/__init__");
+          IClass ctorCls = cha.lookupClass(ctorRef);
+          IMethod init = ctorCls == null ? null : ctorCls.getMethod(AstMethodReference.fnSelector);
+          int params = init == null ? 1 : init.getNumberOfParameters();
+          int v = params + 2;
+          int pc = 0;
+          int inst = v++;
+          MethodReference ref =
+              MethodReference.findOrCreate(
+                  receiver.getReference(), site.getDeclaredTarget().getSelector());
+          PythonSummary ctor = new PythonSummary(ref, params);
+          SSAInstructionFactory insts = PythonLanguage.Python.instructionFactory();
+          ctor.addStatement(
+              insts.NewInstruction(pc, inst, NewSiteReference.make(pc, PythonTypes.object)));
+          pc++;
 
-						ctor.addStatement(insts.PutInstruction(pc, inst, orig_t, inner));
-						pc++;
-					}
+          PythonClass x = (PythonClass) receiver;
+          for (TypeReference r : x.getInnerReferences()) {
+            int orig_t = v++;
+            String typeName = r.getName().toString();
+            typeName = typeName.substring(typeName.lastIndexOf('/') + 1);
+            FieldReference inner =
+                FieldReference.findOrCreate(
+                    PythonTypes.Root, Atom.findOrCreateUnicodeAtom(typeName), PythonTypes.Root);
 
-					for(MethodReference r : x.getMethodReferences()) {
-						int f = v++;
-						ctor.addStatement(insts.NewInstruction(pc, f, NewSiteReference.make(pc, PythonInstanceMethodTrampoline.findOrCreate(r.getDeclaringClass(), receiver.getClassHierarchy()))));
-						pc++;
+            ctor.addStatement(insts.GetInstruction(pc, orig_t, 1, inner));
+            pc++;
 
-						ctor.addStatement(insts.PutInstruction(pc, f, inst, FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("$self"), PythonTypes.Root)));
-						pc++;
+            ctor.addStatement(insts.PutInstruction(pc, inst, orig_t, inner));
+            pc++;
+          }
 
-						int orig_f = v++;
-						ctor.addStatement(insts.GetInstruction(pc, orig_f, 1, FieldReference.findOrCreate(PythonTypes.Root, r.getName(), PythonTypes.Root)));
-						pc++;
+          for (MethodReference r : x.getMethodReferences()) {
+            int f = v++;
+            ctor.addStatement(
+                insts.NewInstruction(
+                    pc,
+                    f,
+                    NewSiteReference.make(
+                        pc,
+                        PythonInstanceMethodTrampoline.findOrCreate(
+                            r.getDeclaringClass(), receiver.getClassHierarchy()))));
+            pc++;
 
-						ctor.addStatement(insts.PutInstruction(pc, f, orig_f, FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("$function"), PythonTypes.Root)));
-						pc++;
+            ctor.addStatement(
+                insts.PutInstruction(
+                    pc,
+                    f,
+                    inst,
+                    FieldReference.findOrCreate(
+                        PythonTypes.Root,
+                        Atom.findOrCreateUnicodeAtom("$self"),
+                        PythonTypes.Root)));
+            pc++;
 
-						ctor.addStatement(insts.PutInstruction(pc, inst, f, FieldReference.findOrCreate(PythonTypes.Root, r.getName(), PythonTypes.Root)));
-						pc++;
-					}
+            int orig_f = v++;
+            ctor.addStatement(
+                insts.GetInstruction(
+                    pc,
+                    orig_f,
+                    1,
+                    FieldReference.findOrCreate(PythonTypes.Root, r.getName(), PythonTypes.Root)));
+            pc++;
 
-					if (init != null) {
-						int fv = v++;
-						ctor.addStatement(insts.GetInstruction(pc, fv, 1, FieldReference.findOrCreate(PythonTypes.Root, Atom.findOrCreateUnicodeAtom("__init__"), PythonTypes.Root)));
-						pc++;
+            ctor.addStatement(
+                insts.PutInstruction(
+                    pc,
+                    f,
+                    orig_f,
+                    FieldReference.findOrCreate(
+                        PythonTypes.Root,
+                        Atom.findOrCreateUnicodeAtom("$function"),
+                        PythonTypes.Root)));
+            pc++;
 
-						int[] cps = new int[ init.getNumberOfParameters() ];
-						cps[0] = fv;
-						cps[1] = inst;
-						for(int j = 2; j < init.getNumberOfParameters(); j++) {
-							cps[j]= j;
-						}
+            ctor.addStatement(
+                insts.PutInstruction(
+                    pc,
+                    inst,
+                    f,
+                    FieldReference.findOrCreate(PythonTypes.Root, r.getName(), PythonTypes.Root)));
+            pc++;
+          }
 
-						int result = v++;
-						int except = v++;
-						CallSiteReference cref = new DynamicCallSiteReference(site.getDeclaredTarget(), pc);
-						ctor.addStatement(new PythonInvokeInstruction(2, result, except, cref, cps, new Pair[0]));
-						pc++;
-					}
+          if (init != null) {
+            int fv = v++;
+            ctor.addStatement(
+                insts.GetInstruction(
+                    pc,
+                    fv,
+                    1,
+                    FieldReference.findOrCreate(
+                        PythonTypes.Root,
+                        Atom.findOrCreateUnicodeAtom("__init__"),
+                        PythonTypes.Root)));
+            pc++;
 
-					ctor.addStatement(insts.ReturnInstruction(pc++, inst, false));
+            int[] cps = new int[init.getNumberOfParameters()];
+            cps[0] = fv;
+            cps[1] = inst;
+            for (int j = 2; j < init.getNumberOfParameters(); j++) {
+              cps[j] = j;
+            }
 
-					ctor.setValueNames(Collections.singletonMap(1, Atom.findOrCreateUnicodeAtom("self")));
+            int result = v++;
+            int except = v++;
+            CallSiteReference cref = new DynamicCallSiteReference(site.getDeclaredTarget(), pc);
+            ctor.addStatement(
+                new PythonInvokeInstruction(2, result, except, cref, cps, new Pair[0]));
+            pc++;
+          }
 
-					ctors.put(receiver, new PythonSummarizedFunction(ref, ctor, receiver));
-				}
+          ctor.addStatement(insts.ReturnInstruction(pc++, inst, false));
 
-				return ctors.get(receiver);
-			}
-		}
-		return base.getCalleeTarget(caller, site, receiver);
-	}
+          ctor.setValueNames(Collections.singletonMap(1, Atom.findOrCreateUnicodeAtom("self")));
 
+          ctors.put(receiver, new PythonSummarizedFunction(ref, ctor, receiver));
+        }
+
+        return ctors.get(receiver);
+      }
+    }
+    return base.getCalleeTarget(caller, site, receiver);
+  }
 }
