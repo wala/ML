@@ -137,6 +137,9 @@
               <!-- Set JUL Formatting -->
               <java.util.logging.SimpleFormatter.format>[%4$s] %5$s%n</java.util.logging.SimpleFormatter.format>
             </systemPropertyVariables>
+            <forkMode>once</forkMode>
+            <argLine>-Dpython.import.site=false</argLine>
+            <trimStackTrace>false</trimStackTrace>
           </configuration>
         </plugin>
         <plugin>
