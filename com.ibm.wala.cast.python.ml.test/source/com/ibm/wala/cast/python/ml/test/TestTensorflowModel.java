@@ -17,6 +17,7 @@ import com.ibm.wala.util.CancelException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -245,7 +246,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     final String functionSignature = "script " + filename + "." + functionName + ".do()LRoot;";
 
     // get the pointer keys for the function.
-    Set<LocalPointerKey> functionPointerKeys = methodSignatureToPointerKeys.get(functionSignature);
+    Set<LocalPointerKey> functionPointerKeys = methodSignatureToPointerKeys.getOrDefault(functionSignature, Collections.emptySet());
 
     // check tensor parameters.
     assertEquals(expectedNumberOfTensorParameters, functionPointerKeys.size());
@@ -261,7 +262,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
         .forEach(ev -> actualValueNumberSet.contains(ev));
 
     // get the tensor variables for the function.
-    Set<TensorVariable> functionTensors = methodSignatureToTensorVariables.get(functionSignature);
+    Set<TensorVariable> functionTensors = methodSignatureToTensorVariables.getOrDefault(functionSignature, Collections.emptySet());
 
     // check tensor parameters.
     assertEquals(expectedNumberOfTensorParameters, functionTensors.size());
