@@ -106,7 +106,11 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("tf2p2.py", "value_index", 2, 4, 2, 3);
     testTf2("tf2q.py", "add", 2, 3, 2, 3);
     testTf2("tf2r.py", "add", 2, 3, 2, 3);
-    testTf2("tf2s.py", "add", 0, 0); // NOTE: Set the expected number of tensor parameters, variables, and tensor parameter value numbers to 2, 3, and 2 and 3, respectively, when https://github.com/wala/ML/issues/65 is fixed.
+    testTf2(
+        "tf2s.py", "add", 0,
+        0); // NOTE: Set the expected number of tensor parameters, variables, and tensor parameter
+    // value numbers to 2, 3, and 2 and 3, respectively, when
+    // https://github.com/wala/ML/issues/65 is fixed.
     testTf2("tf2t.py", "add", 2, 3, 2, 3);
   }
 
@@ -182,7 +186,8 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     final String functionSignature = "script " + filename + "." + functionName + ".do()LRoot;";
 
     // get the pointer keys for the function.
-    Set<LocalPointerKey> functionPointerKeys = methodSignatureToPointerKeys.getOrDefault(functionSignature, Collections.emptySet());
+    Set<LocalPointerKey> functionPointerKeys =
+        methodSignatureToPointerKeys.getOrDefault(functionSignature, Collections.emptySet());
 
     // check tensor parameters.
     assertEquals(expectedNumberOfTensorParameters, functionPointerKeys.size());
@@ -198,7 +203,8 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
         .forEach(ev -> actualValueNumberSet.contains(ev));
 
     // get the tensor variables for the function.
-    Set<TensorVariable> functionTensors = methodSignatureToTensorVariables.getOrDefault(functionSignature, Collections.emptySet());
+    Set<TensorVariable> functionTensors =
+        methodSignatureToTensorVariables.getOrDefault(functionSignature, Collections.emptySet());
 
     // check tensor parameters.
     assertEquals(expectedNumberOfTensorParameters, functionTensors.size());
