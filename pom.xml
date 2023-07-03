@@ -32,6 +32,7 @@
     <wala.version>1.6.0</wala.version>
     <spotless.version>2.37.0</spotless.version>
     <maven.surefire.version>3.0.0-M7</maven.surefire.version>
+    <logging.config.file>${maven.multiModuleProjectDirectory}/logging.properties</logging.config.file>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -140,7 +141,7 @@
             <threadCount>1</threadCount>
             <systemPropertyVariables>
               <!-- Set JUL Formatting -->
-              <java.util.logging.SimpleFormatter.format>[%4$s] %5$s%n</java.util.logging.SimpleFormatter.format>
+              <java.util.logging.config.file>${logging.config.file}</java.util.logging.config.file>
             </systemPropertyVariables>
             <forkMode>once</forkMode>
             <argLine>-Dpython.import.site=false</argLine>

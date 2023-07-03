@@ -29,9 +29,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class TensorType implements Iterable<Dimension<?>> {
+
+  private static final Logger logger = Logger.getLogger(TensorType.class.getName());
 
   public enum Format {
     CString,
@@ -327,7 +330,7 @@ public class TensorType implements Iterable<Dimension<?>> {
   }
 
   public static TensorType shapeArg(CGNode node, int literalVn) {
-    //		System.err.println(node.getIR());
+    logger.fine(() -> node.getIR().toString());
     ArrayList<Dimension<?>> r = new ArrayList<>();
     DefUse du = node.getDU();
     SymbolTable S = node.getIR().getSymbolTable();

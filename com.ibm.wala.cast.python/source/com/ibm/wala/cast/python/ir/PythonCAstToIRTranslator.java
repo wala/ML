@@ -62,9 +62,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class PythonCAstToIRTranslator extends AstTranslator {
+
+  private static final Logger logger = Logger.getLogger(PythonCAstToIRTranslator.class.getName());
 
   private final Map<CAstType, TypeName> walaTypeNames = HashMapFactory.make();
   private final Set<Pair<Scope, String>> globalDeclSet = new HashSet<>();
@@ -683,7 +686,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
     ((CAstControlFlowRecorder) context.getControlFlow()).map(call, call);
 
     if (context.getControlFlow().getTargetLabels(call).isEmpty()) {
-      //			System.err.println("no exceptions for " + CAstPrinter.print(call));
+      logger.fine("no exceptions for " + CAstPrinter.print(call));
       context.cfg().addPreEdgeToExit(call, true);
     } else {
       context
