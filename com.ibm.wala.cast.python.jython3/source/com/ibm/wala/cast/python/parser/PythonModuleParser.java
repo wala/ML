@@ -31,12 +31,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CharStream;
 import org.python.antlr.ast.ImportFrom;
 
 public class PythonModuleParser extends PythonParser<ModuleEntry> {
+
+  private static final Logger logger = Logger.getLogger(PythonModuleParser.class.getName());
 
   private final Set<String> localModules = HashSetFactory.make();
 
@@ -118,7 +121,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                                   accept(sm);
                                 });
                       } else {
-                        System.err.println("**CLS: " + scriptName((SourceModule) f));
+                        logger.fine(() -> "**CLS: " + scriptName((SourceModule) f));
                         localModules.add(scriptName((SourceModule) f));
                       }
                     }
