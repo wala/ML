@@ -10,6 +10,9 @@
         <new def="train" class="Lobject" />
         <putfield class="LRoot" field="train" fieldType="LRoot" ref="x" value="train" />
 
+        <new def="function" class="Ltensorflow/class/function" />
+        <putfield class="LRoot" field="function" fieldType="LRoot" ref="x" value="function" />
+
         <new def="AdamOptimizer" class="Ltensorflow/functions/AdamOptimizer" />
         <putfield class="LRoot" field="AdamOptimizer" fieldType="LRoot" ref="train" value="AdamOptimizer" />
 
@@ -279,6 +282,36 @@
         <return value="x" />
       </method>
     </class>
+
+    <package name="tensorflow/class">
+
+      <class name="Function" allocatable="true">
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self test">
+
+          <putfield class="LRoot" field="params" fieldType="LRoot" ref="test" value="self" />
+
+          <return value="test" />
+        </method>
+      </class>
+
+      <class name="function" allocatable="true">
+        <!-- These parameters are from TensorFlow v.2.9 https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/function -->
+        <method name="do" descriptor="()LRoot;" numArgs="10" paramNames="func input_signature autograph jit_compile reduce_retracing experimental_implements experimental_autograph_options experimental_relax_shapes experimental_compile experimental_follow_type_hints">
+          <new def="params" class="Ltensorflow/class/Function" />
+          <putfield class="LRoot" field="func" fieldType="LRoot" ref="params" value="func" />
+          <putfield class="LRoot" field="input_signature" fieldType="LRoot" ref="params" value="input_signature" />
+          <putfield class="LRoot" field="autograph" fieldType="LRoot" ref="params" value="autograph" />
+          <putfield class="LRoot" field="jit_compile" fieldType="LRoot" ref="params" value="jit_compile" />
+          <putfield class="LRoot" field="reduce_retracing" fieldType="LRoot" ref="params" value="reduce_retracing" />
+          <putfield class="LRoot" field="experimental_implements" fieldType="LRoot" ref="params" value="experimental_implements" />
+          <putfield class="LRoot" field="experimental_autograph_options" fieldType="LRoot" ref="params" value="experimental_autograph_options" />
+          <putfield class="LRoot" field="experimental_relax_shapes" fieldType="LRoot" ref="params" value="experimental_relax_shapes" />
+          <putfield class="LRoot" field="experimental_compile" fieldType="LRoot" ref="params" value="experimental_compile" />
+          <putfield class="LRoot" field="experimental_follow_type_hints" fieldType="LRoot" ref="params" value="experimental_follow_type_hints" />
+          <return value="params" />
+        </method>
+      </class>
+    </package>
 
     <package name="tensorflow/objects">
       <class name="feature" allocatable="true" />

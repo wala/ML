@@ -185,6 +185,16 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("tf2oo2.py", "func2", 1, 4, 2);
     testTf2("tf2oo3.py", "func2", 1, 4, 2);
     testTf2("tf2oo4.py", "func2", 1, 4, 2);
+    testTf2("tf2_testing_decorator.py", "returned", 1, 3, 2);
+    testTf2("tf2_testing_decorator2.py", "returned", 1, 3, 2);
+    testTf2("tf2_testing_decorator3.py", "returned", 1, 3, 2);
+    testTf2("tf2_testing_decorator4.py", "returned", 1, 3, 2);
+    testTf2("tf2_testing_decorator5.py", "returned", 1, 3, 2);
+    testTf2("tf2_testing_decorator6.py", "returned", 1, 3, 2);
+    testTf2("tf2_testing_decorator7.py", "returned", 1, 3, 2);
+    testTf2("tf2_testing_decorator8.py", "returned", 1, 3, 2);
+    testTf2("tf2_testing_decorator9.py", "returned", 1, 3, 2);
+    testTf2("tf2_testing_decorator10.py", "returned", 1, 3, 2);
   }
 
   private void testTf2(
