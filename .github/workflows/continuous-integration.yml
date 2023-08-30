@@ -21,8 +21,8 @@ jobs:
         cache: maven
     - name: Checkout wala/IDE sources.
       run: git clone --depth=1 https://github.com/wala/IDE ${{ runner.temp }}/IDE
-    - name: Checkout juliandolby/jython3 sources.
-      run: git clone --depth=1 https://github.com/juliandolby/jython3.git ${{ runner.temp }}/jython3
+    - name: Checkout ponder-lab/jython3 sources.
+      run: git clone --depth=1 https://github.com/ponder-lab/jython3.git ${{ runner.temp }}/jython3
     - name: Install Jython3.
       run: |
         pushd ${{ runner.temp }}/jython3
