@@ -58,7 +58,6 @@ import com.ibm.wala.types.Selector;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.WalaException;
-import com.ibm.wala.util.WalaRuntimeException;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import java.io.IOException;
@@ -66,6 +65,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public abstract class PythonAnalysisEngine<T>
@@ -135,17 +135,23 @@ public abstract class PythonAnalysisEngine<T>
 
   @Override
   public IClassHierarchy buildClassHierarchy() {
+    IClassHierarchy cha = null;
+
     try {
-      IClassHierarchy cha = SeqClassHierarchyFactory.make(scope, loader);
-      Util.checkForFrontEndErrors(cha);
-      setClassHierarchy(cha);
-      return cha;
+	  cha = SeqClassHierarchyFactory.make(scope, loader);
     } catch (ClassHierarchyException e) {
       assert false : e;
       return null;
-    } catch (WalaException e) {
-      throw new WalaRuntimeException(e.getMessage(), e);
     }
+
+    try {
+      Util.checkForFrontEndErrors(cha);
+    } catch (WalaException e) {
+      logger.log(Level.SEVERE, e, () -> "Encountered WALA exception, most likely from front-end parsing errors.");
+    }
+
+    setClassHierarchy(cha);
+    return cha;
   }
 
   protected void addSummaryBypassLogic(AnalysisOptions options, String summary) {
