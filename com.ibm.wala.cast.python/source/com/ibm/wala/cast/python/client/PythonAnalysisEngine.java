@@ -145,7 +145,7 @@ public abstract class PythonAnalysisEngine<T>
     try {
       Util.checkForFrontEndErrors(cha);
     } catch (WalaException e) {
-      logger.log(Level.SEVERE, e, () -> "Encountered WALA exception, most likely from front-end parsing errors.");
+      logger.log(Level.WARNING, e, () -> "Encountered WALA exception, most likely from front-end parsing errors.");
     }
 
     setClassHierarchy(cha);
