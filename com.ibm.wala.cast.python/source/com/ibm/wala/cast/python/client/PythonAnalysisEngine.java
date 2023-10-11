@@ -138,7 +138,7 @@ public abstract class PythonAnalysisEngine<T>
     IClassHierarchy cha = null;
 
     try {
-	  cha = SeqClassHierarchyFactory.make(scope, loader);
+      cha = SeqClassHierarchyFactory.make(scope, loader);
     } catch (ClassHierarchyException e) {
       assert false : e;
       return null;
@@ -147,7 +147,10 @@ public abstract class PythonAnalysisEngine<T>
     try {
       Util.checkForFrontEndErrors(cha);
     } catch (WalaException e) {
-      logger.log(Level.WARNING, e, () -> "Encountered WALA exception, most likely from front-end parsing errors.");
+      logger.log(
+          Level.WARNING,
+          e,
+          () -> "Encountered WALA exception, most likely from front-end parsing errors.");
     }
 
     setClassHierarchy(cha);
