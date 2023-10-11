@@ -202,6 +202,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
         0,
         0); // NOTE: Change to testTf2("tf2_test_dataset.py", "add", 2, 3, 2, 3) once
     // https://github.com/wala/ML/issues/89 is fixed.
+    testTf2("tf2_test_tensor_list.py", "add", 2, 3, 2, 3);
     testTf2("tf2_test_model_call.py", "SequentialModel.__call__", 1, 4, 3);
     testTf2("tf2_test_model_call2.py", "SequentialModel.call", 1, 4, 3);
     testTf2("tf2_test_model_call3.py", "SequentialModel.call", 1, 4, 3);
