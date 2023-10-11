@@ -195,6 +195,12 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("tf2_testing_decorator8.py", "returned", 1, 3, 2);
     testTf2("tf2_testing_decorator9.py", "returned", 1, 3, 2);
     testTf2("tf2_testing_decorator10.py", "returned", 1, 3, 2);
+    testTf2(
+        "tf2_test_dataset.py",
+        "add",
+        0,
+        0); // NOTE: Change to testTf2("tf2_test_dataset.py", "add", 2, 3, 2, 3) once
+    // https://github.com/wala/ML/issues/89 is fixed.
   }
 
   private void testTf2(
