@@ -16,7 +16,7 @@
         <return value="x" />
       </method>
     </class>
-    le
+
     <package name="pytest/class">
 
       <class name="Parametrize" allocatable="true">
