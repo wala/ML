@@ -24,15 +24,14 @@ import org.junit.Test;
 
 public class TestPythonModRefAnalysis extends TestPythonCallGraphShape {
 
-  @Test
-  public void testComputeModCallGraphPointerAnalysisOfT()
-      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    PythonAnalysisEngine<?> engine = makeEngine("globals.py");
+  private OrdinalSet<PointerKey> getModSet(String filename)
+      throws ClassHierarchyException, CancelException, IOException {
+    PythonAnalysisEngine<?> engine = makeEngine(filename);
     SSAPropagationCallGraphBuilder builder =
         (SSAPropagationCallGraphBuilder) engine.defaultCallGraphBuilder();
     CallGraph CG = builder.makeCallGraph(builder.getOptions());
 
-    Collection<CGNode> nodes = getNodes(CG, "script globals.py/f");
+    Collection<CGNode> nodes = getNodes(CG, "script " + filename + "/f");
     assertEquals(1, nodes.size());
 
     assertTrue(nodes.iterator().hasNext());
@@ -43,6 +42,13 @@ public class TestPythonModRefAnalysis extends TestPythonCallGraphShape {
 
     // what heap locations does f() (transitively) modify?
     OrdinalSet<PointerKey> modSet = mod.get(fNode);
+    return modSet;
+  }
+
+  @Test
+  public void testGlobalMods()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    OrdinalSet<PointerKey> modSet = getModSet("globals.py");
 
     // should only modify the global.
     assertEquals(1, modSet.size());
@@ -56,5 +62,12 @@ public class TestPythonModRefAnalysis extends TestPythonCallGraphShape {
     IField field = staticFieldKey.getField();
     Atom name = field.getName();
     assertEquals(Atom.findOrCreateAsciiAtom("global a"), name);
+  }
+
+  @Test
+  public void testKeywordArgs()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    OrdinalSet<PointerKey> modSet = getModSet("kw_args.py");
+    assertEquals("Should be no modifications to heap locations in this file.", 0, modSet.size());
   }
 }
