@@ -2,11 +2,15 @@ package com.ibm.wala.cast.python.modref;
 
 import com.ibm.wala.cast.ipa.callgraph.AstHeapModel;
 import com.ibm.wala.cast.ipa.modref.AstModRef;
+import com.ibm.wala.cast.ir.ssa.AstGlobalWrite;
 import com.ibm.wala.cast.python.ssa.PythonInstructionVisitor;
+import com.ibm.wala.classLoader.IField;
+import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
+import com.ibm.wala.ipa.callgraph.propagation.StaticFieldKey;
 import com.ibm.wala.ipa.modref.ExtendedHeapModel;
 import java.util.Collection;
 
@@ -40,6 +44,23 @@ public class PythonModRef extends AstModRef<InstanceKey> {
         PointerAnalysis<T> pa,
         boolean ignoreAllocHeapDefs) {
       super(n, result, (AstHeapModel) h, pa);
+    }
+
+    @Override
+    public void visitAstGlobalWrite(AstGlobalWrite instruction) {
+      super.visitAstGlobalWrite(instruction);
+      String globalName = instruction.getGlobalName();
+
+      // find the pointer key corresponding to this global.
+      for (PointerKey pk : this.pa.getPointerKeys()) {
+        if (pk instanceof StaticFieldKey) {
+          StaticFieldKey staticFieldKey = (StaticFieldKey) pk;
+          IField field = staticFieldKey.getField();
+          Atom fieldName = field.getName();
+          if (fieldName.toString().equals(globalName))
+            this.result.add(this.h.getPointerKeyForStaticField(field));
+        }
+      }
     }
   }
 
