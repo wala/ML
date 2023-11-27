@@ -58,11 +58,12 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
   public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
     if (receiver != null) {
       IClassHierarchy cha = receiver.getClassHierarchy();
-      if (cha.isSubclassOf(receiver, cha.lookupClass(PythonTypes.trampoline))
-          || receiver.getReference().equals(PythonTypes.object)) {
+      final boolean isCallable = receiver.getReference().equals(PythonTypes.object);
+
+      if (cha.isSubclassOf(receiver, cha.lookupClass(PythonTypes.trampoline)) || isCallable) {
         PythonInvokeInstruction call = (PythonInvokeInstruction) caller.getIR().getCalls(site)[0];
 
-        if (receiver.getReference().equals(PythonTypes.object)) {
+        if (isCallable) {
           // It's a callable. Change the receiver.
           receiver = getCallable(caller, cha, call);
 
