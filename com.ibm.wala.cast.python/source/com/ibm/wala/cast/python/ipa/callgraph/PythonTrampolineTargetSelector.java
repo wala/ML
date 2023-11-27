@@ -31,9 +31,9 @@ import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKeyFactory;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.SSAReturnInstruction;
-import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
+import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
@@ -147,19 +147,20 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
   private IClass getCallable(CGNode caller, IClassHierarchy cha, PythonInvokeInstruction call) {
     PythonSSAPropagationCallGraphBuilder builder = this.getEngine().getCachedCallGraphBuilder();
 
-    // Look up the __call__ method.
+    // Lookup the __call__ method.
     PointerKeyFactory pkf = builder.getPointerKeyFactory();
-    PointerKey test = pkf.getPointerKeyForLocal(caller, call.getUse(0));
-    OrdinalSet<InstanceKey> testObjs = builder.getPointerAnalysis().getPointsToSet(test);
-    for (InstanceKey o : testObjs) {
+    PointerKey receiver = pkf.getPointerKeyForLocal(caller, call.getUse(0));
+    OrdinalSet<InstanceKey> objs = builder.getPointerAnalysis().getPointsToSet(receiver);
+    for (InstanceKey o : objs) {
       NormalAllocationInNode instanceKey = (NormalAllocationInNode) o;
       CGNode node = instanceKey.getNode();
       IMethod method = node.getMethod();
       IClass declaringClass = method.getDeclaringClass();
-      ClassLoaderReference classLoaderReference = declaringClass.getClassLoader().getReference();
+      TypeName declaringClassName = declaringClass.getName();
+      String packageName = "$" + declaringClassName.toString().substring(1);
       TypeReference typeReference =
           TypeReference.findOrCreateClass(
-              classLoaderReference, "$script tf2_test_model_call.py/SequentialModel", "__call__");
+              declaringClass.getClassLoader().getReference(), packageName, "__call__");
       return cha.lookupClass(typeReference);
     }
 
