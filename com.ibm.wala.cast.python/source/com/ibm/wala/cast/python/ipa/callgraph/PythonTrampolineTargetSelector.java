@@ -11,6 +11,7 @@
 package com.ibm.wala.cast.python.ipa.callgraph;
 
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
+import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.ipa.summaries.PythonInstanceMethodTrampoline;
 import com.ibm.wala.cast.python.ipa.summaries.PythonSummarizedFunction;
 import com.ibm.wala.cast.python.ipa.summaries.PythonSummary;
@@ -24,19 +25,30 @@ import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.MethodTargetSelector;
+import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
+import com.ibm.wala.ipa.callgraph.propagation.NormalAllocationInNode;
+import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
+import com.ibm.wala.ipa.callgraph.propagation.PointerKeyFactory;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.SSAReturnInstruction;
+import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
+import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
+import com.ibm.wala.util.intset.OrdinalSet;
 import java.util.Map;
 
-public class PythonTrampolineTargetSelector implements MethodTargetSelector {
+public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
   private final MethodTargetSelector base;
 
-  public PythonTrampolineTargetSelector(MethodTargetSelector base) {
+  private PythonAnalysisEngine<T> engine;
+
+  public PythonTrampolineTargetSelector(
+      MethodTargetSelector base, PythonAnalysisEngine<T> pythonAnalysisEngine) {
     this.base = base;
+    this.engine = pythonAnalysisEngine;
   }
 
   private final Map<Pair<IClass, Integer>, IMethod> codeBodies = HashMapFactory.make();
@@ -46,8 +58,17 @@ public class PythonTrampolineTargetSelector implements MethodTargetSelector {
   public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
     if (receiver != null) {
       IClassHierarchy cha = receiver.getClassHierarchy();
-      if (cha.isSubclassOf(receiver, cha.lookupClass(PythonTypes.trampoline)) || receiver.getReference().equals(PythonTypes.object)) {
+      if (cha.isSubclassOf(receiver, cha.lookupClass(PythonTypes.trampoline))
+          || receiver.getReference().equals(PythonTypes.object)) {
         PythonInvokeInstruction call = (PythonInvokeInstruction) caller.getIR().getCalls(site)[0];
+
+        if (receiver.getReference().equals(PythonTypes.object)) {
+          // It's a callable. Change the receiver.
+          receiver = getCallable(caller, cha, call);
+
+          if (receiver == null) return null; // not found.
+        }
+
         Pair<IClass, Integer> key = Pair.make(receiver, call.getNumberOfTotalParameters());
         if (!codeBodies.containsKey(key)) {
           Map<Integer, Atom> names = HashMapFactory.make();
@@ -121,5 +142,31 @@ public class PythonTrampolineTargetSelector implements MethodTargetSelector {
     }
 
     return base.getCalleeTarget(caller, site, receiver);
+  }
+
+  private IClass getCallable(CGNode caller, IClassHierarchy cha, PythonInvokeInstruction call) {
+    PythonSSAPropagationCallGraphBuilder builder = this.getEngine().getCachedCallGraphBuilder();
+
+    // Look up the __call__ method.
+    PointerKeyFactory pkf = builder.getPointerKeyFactory();
+    PointerKey test = pkf.getPointerKeyForLocal(caller, call.getUse(0));
+    OrdinalSet<InstanceKey> testObjs = builder.getPointerAnalysis().getPointsToSet(test);
+    for (InstanceKey o : testObjs) {
+      NormalAllocationInNode instanceKey = (NormalAllocationInNode) o;
+      CGNode node = instanceKey.getNode();
+      IMethod method = node.getMethod();
+      IClass declaringClass = method.getDeclaringClass();
+      ClassLoaderReference classLoaderReference = declaringClass.getClassLoader().getReference();
+      TypeReference typeReference =
+          TypeReference.findOrCreateClass(
+              classLoaderReference, "$script tf2_test_model_call.py/SequentialModel", "__call__");
+      return cha.lookupClass(typeReference);
+    }
+
+    return null;
+  }
+
+  public PythonAnalysisEngine<T> getEngine() {
+    return engine;
   }
 }
