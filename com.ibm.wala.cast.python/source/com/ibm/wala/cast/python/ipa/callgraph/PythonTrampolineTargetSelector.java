@@ -160,7 +160,7 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
       IMethod method = node.getMethod();
       IClass declaringClass = method.getDeclaringClass();
       TypeName declaringClassName = declaringClass.getName();
-      String packageName = "$" + declaringClassName.toString().substring(1);
+      final String packageName = "$" + declaringClassName.toString().substring(1);
       TypeReference typeReference =
           TypeReference.findOrCreateClass(
               declaringClass.getClassLoader().getReference(), packageName, CALL);
