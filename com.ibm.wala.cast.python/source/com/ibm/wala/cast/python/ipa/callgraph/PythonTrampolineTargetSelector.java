@@ -154,6 +154,7 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
     PointerKeyFactory pkf = builder.getPointerKeyFactory();
     PointerKey receiver = pkf.getPointerKeyForLocal(caller, call.getUse(0));
     OrdinalSet<InstanceKey> objs = builder.getPointerAnalysis().getPointsToSet(receiver);
+    
     for (InstanceKey o : objs) {
       NormalAllocationInNode instanceKey = (NormalAllocationInNode) o;
       CGNode node = instanceKey.getNode();
@@ -164,7 +165,10 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
       TypeReference typeReference =
           TypeReference.findOrCreateClass(
               declaringClass.getClassLoader().getReference(), packageName, CALL);
-      return cha.lookupClass(typeReference);
+      IClass lookupClass = cha.lookupClass(typeReference);
+      
+      if (lookupClass != null)
+        return lookupClass;
     }
 
     return null;
