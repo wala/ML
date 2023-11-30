@@ -2,19 +2,20 @@ package com.ibm.wala.cast.python.test;
 
 import static org.junit.Assert.assertTrue;
 
-import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
-import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.logging.Logger;
 import org.junit.Test;
 
 public class TestCallables extends TestPythonCallGraphShape {
+
+  private static Logger logger = Logger.getLogger(TestCallables.class.getName());
 
   @Test
   public void testCallables()
@@ -38,8 +39,12 @@ public class TestCallables extends TestPythonCallGraphShape {
             .getName()
             .toString()
             .equals("Lscript " + fileName)) {
+
           for (Iterator<CGNode> it = CG.getSuccNodes(node); it.hasNext(); ) {
             CGNode callee = it.next();
+
+            logger.info("Found callee: " + callee.getMethod().getSignature());
+
             if (callee
                 .getMethod()
                 .getDeclaringClass()
