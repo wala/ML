@@ -2,6 +2,7 @@ package com.ibm.wala.cast.python.ml.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
@@ -308,7 +309,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 
     assertEquals(expectedTensorParameterValueNumbers.length, actualValueNumberSet.size());
     Arrays.stream(expectedTensorParameterValueNumbers)
-        .forEach(ev -> actualValueNumberSet.contains(ev));
+        .forEach(ev -> assertTrue(actualValueNumberSet.contains(ev)));
 
     // get the tensor variables for the function.
     Set<TensorVariable> functionTensors =
