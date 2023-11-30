@@ -19,7 +19,7 @@ public class TestCallables extends TestPythonCallGraphShape {
   @Test
   public void testCallables()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    final String[] testFileNames = {"callables.py", "callables2.py"};
+    final String[] testFileNames = {"callables.py", "callables2.py", "callables3.py", "callables4.py"};
 
     for (String fileName : testFileNames) {
       PythonAnalysisEngine<?> E = makeEngine(fileName);
