@@ -2,8 +2,6 @@ package com.ibm.wala.cast.python.test;
 
 import static org.junit.Assert.assertTrue;
 
-import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
-import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
@@ -30,14 +28,7 @@ public class TestCallables extends TestPythonCallGraphShape {
     };
 
     for (String fileName : testFileNames) {
-      PythonAnalysisEngine<?> E = makeEngine(fileName);
-      PythonSSAPropagationCallGraphBuilder B = E.defaultCallGraphBuilder();
-      CallGraph CG = B.makeCallGraph(B.getOptions());
-
-      CAstCallGraphUtil.AVOID_DUMP = false;
-      CAstCallGraphUtil.dumpCG(
-          (SSAContextInterpreter) B.getContextInterpreter(), B.getPointerAnalysis(), CG);
-
+      CallGraph CG = process(fileName);
       boolean found = false;
 
       for (CGNode node : CG) {
