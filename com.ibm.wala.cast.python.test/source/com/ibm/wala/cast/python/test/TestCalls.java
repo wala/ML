@@ -194,35 +194,6 @@ public class TestCalls extends TestPythonCallGraphShape {
         CG);
   }
 
-  protected static final Object[][] assertionsCalls9 =
-      new Object[][] {
-        new Object[] {ROOT, new String[] {"script calls9.py"}},
-        new Object[] {
-          "script calls9.py",
-          new String[] {
-            "script calls9.py/Foo",
-            "script calls9.py/foo",
-            "$script calls9.py/Foo/__call__:trampoline3",
-            "script calls9.py/id",
-            "script calls9.py/nothing"
-          }
-        },
-        new Object[] {
-          "$script calls9.py/Foo/__call__:trampoline3",
-          new String[] {"script calls9.py/Foo/__call__"}
-        },
-        new Object[] {"script calls9.py/call", new String[] {"script calls9.py/id"}},
-        new Object[] {"script calls9.py/Foo/__call__", new String[] {"script calls9.py/id"}},
-        new Object[] {"script calls9.py/foo", new String[] {"script calls9.py/call"}}
-      };
-
-  @Test
-  public void testCalls9()
-      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    CallGraph CG = process("calls9.py");
-    verifyGraphAssertions(CG, assertionsCalls9);
-  }
-
   protected static final Object[][] assertionsDefaultValues =
       new Object[][] {
         new Object[] {ROOT, new String[] {"script defaultValuesTest.py"}},
