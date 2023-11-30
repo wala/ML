@@ -66,6 +66,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 public abstract class PythonAnalysisEngine<T>
     extends AbstractAnalysisEngine<InstanceKey, PythonSSAPropagationCallGraphBuilder, T> {
