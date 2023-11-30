@@ -214,7 +214,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
         0,
         2); // NOTE: Change to testTf2("tf2_test_model_call2.py", "SequentialModel.call", 1, 4, 2)
     // once
-    // https://github.com/wala/ML/issues/24 is fixed.
+    // https://github.com/wala/ML/issues/106 is fixed.
     testTf2("tf2_test_model_call3.py", "SequentialModel.call", 1, 4, 2);
     testTf2("tf2_test_model_call4.py", "SequentialModel.__call__", 1, 4, 2);
   }
