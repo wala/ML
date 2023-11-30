@@ -73,6 +73,8 @@ public abstract class PythonAnalysisEngine<T>
 
   private static final Logger logger = Logger.getLogger(PythonAnalysisEngine.class.getName());
 
+  protected PythonSSAPropagationCallGraphBuilder builder;
+
   static {
     try {
       Class<?> j3 = Class.forName("com.ibm.wala.cast.python.loader.Python3LoaderFactory");
@@ -286,9 +288,10 @@ public abstract class PythonAnalysisEngine<T>
 
   protected void addBypassLogic(IClassHierarchy cha, AnalysisOptions options) {
     options.setSelector(
-        new PythonTrampolineTargetSelector(
+        new PythonTrampolineTargetSelector<T>(
             new PythonConstructorTargetSelector(
-                new PythonComprehensionTrampolines(options.getMethodTargetSelector()))));
+                new PythonComprehensionTrampolines(options.getMethodTargetSelector())),
+            this));
 
     BuiltinFunctions builtins = new BuiltinFunctions(cha);
     options.setSelector(builtins.builtinClassTargetSelector(options.getClassTargetSelector()));
@@ -349,7 +352,11 @@ public abstract class PythonAnalysisEngine<T>
 
     new PythonSuper(cha).handleSuperCalls(builder, options);
 
-    return builder;
+    return this.builder = builder;
+  }
+
+  public PythonSSAPropagationCallGraphBuilder getCachedCallGraphBuilder() {
+    return this.builder;
   }
 
   protected PythonSSAPropagationCallGraphBuilder makeBuilder(
