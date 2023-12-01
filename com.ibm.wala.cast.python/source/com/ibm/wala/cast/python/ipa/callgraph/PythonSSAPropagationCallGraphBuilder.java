@@ -222,7 +222,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
           // If we are looking at the implicit parameter of a callable.
           if (call.getCallSite().isDispatch() && i == 0 && isCallable(rval)) {
             // Ensure that lval's variable refers to the callable method instead of callable object.
-            IClass callable = getCallable(target);
+            IClass callable = target.getMethod().getDeclaringClass();
             IntSet instanceKeysForCallable = this.getSystem().getInstanceKeysForClass(callable);
 
             for (IntIterator it = instanceKeysForCallable.intIterator(); it.hasNext(); ) {
@@ -290,18 +290,6 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
       PointerKey lret = getPointerKeyForLocal(caller, call.getReturnValue(0));
       getSystem().newConstraint(lret, assignOperator, rret);
     }
-  }
-
-  private IClass getCallable(CGNode target) {
-    IMethod method = target.getMethod();
-    IClass declaringClass = method.getDeclaringClass();
-    TypeName declaringClassName = declaringClass.getName();
-
-    TypeReference typeReference =
-        TypeReference.findOrCreate(
-            declaringClass.getClassLoader().getReference(), declaringClassName);
-
-    return this.getClassHierarchy().lookupClass(typeReference);
   }
 
   protected boolean isCallable(PointerKey rval) {
