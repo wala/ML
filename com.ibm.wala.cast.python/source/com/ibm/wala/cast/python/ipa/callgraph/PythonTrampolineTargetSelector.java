@@ -42,6 +42,12 @@ import java.util.Map;
 
 public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
 
+  /**
+   * The method name that is used for Python callables.
+   *
+   * @see <a href="https://docs.python.org/3/reference/datamodel.html#class-instances">Python
+   *     documentation</a>.
+   */
   private static final String CALLABLE_METHOD_NAME = "__call__";
 
   private final MethodTargetSelector base;
