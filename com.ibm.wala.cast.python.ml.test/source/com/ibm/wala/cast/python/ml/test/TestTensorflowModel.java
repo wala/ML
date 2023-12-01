@@ -2,6 +2,7 @@ package com.ibm.wala.cast.python.ml.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
@@ -207,15 +208,15 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("tf2_test_tensor_list.py", "add", 2, 3, 2, 3);
     testTf2("tf2_test_tensor_list2.py", "add", 0, 2);
     testTf2("tf2_test_tensor_list3.py", "add", 0, 2);
-    testTf2("tf2_test_model_call.py", "SequentialModel.__call__", 1, 4, 2);
+    testTf2("tf2_test_model_call.py", "SequentialModel.__call__", 1, 4, 3);
     testTf2(
         "tf2_test_model_call2.py",
         "SequentialModel.call",
         0,
-        2); // NOTE: Change to testTf2("tf2_test_model_call2.py", "SequentialModel.call", 1, 4, 2)
+        2); // NOTE: Change to testTf2("tf2_test_model_call2.py", "SequentialModel.call", 1, 4, 3)
     // once https://github.com/wala/ML/issues/106 is fixed.
-    testTf2("tf2_test_model_call3.py", "SequentialModel.call", 1, 4, 2);
-    testTf2("tf2_test_model_call4.py", "SequentialModel.__call__", 1, 4, 2);
+    testTf2("tf2_test_model_call3.py", "SequentialModel.call", 1, 4, 3);
+    testTf2("tf2_test_model_call4.py", "SequentialModel.__call__", 1, 4, 3);
   }
 
   private void testTf2(
@@ -308,7 +309,11 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 
     assertEquals(expectedTensorParameterValueNumbers.length, actualValueNumberSet.size());
     Arrays.stream(expectedTensorParameterValueNumbers)
-        .forEach(ev -> actualValueNumberSet.contains(ev));
+        .forEach(
+            ev ->
+                assertTrue(
+                    "Expecting " + actualValueNumberSet + " to contain " + ev + ".",
+                    actualValueNumberSet.contains(ev)));
 
     // get the tensor variables for the function.
     Set<TensorVariable> functionTensors =
