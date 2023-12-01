@@ -230,7 +230,9 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
               InstanceKey instanceKey = this.getSystem().getInstanceKey(instanceKeyIndex);
               this.getSystem().newConstraint(lval, instanceKey);
             }
-          } else getSystem().newConstraint(lval, assignOperator, rval);
+          } else {
+            getSystem().newConstraint(lval, assignOperator, rval);
+          }
         }
       }
 
