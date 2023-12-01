@@ -154,6 +154,15 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
     return base.getCalleeTarget(caller, site, receiver);
   }
 
+  /**
+   * Returns the callable method of the receiver of the given {@link PythonInvokeInstruction}.
+   *
+   * @param caller The {@link CGNode} representing the caller of the given {@link
+   *     PythonInvokeInstruction}.
+   * @param cha The receiver's {@link IClassHierarchy}.
+   * @param call The {@link PythonInvokeInstruction} in question.
+   * @return The callable method the given {@link PythonInvokeInstruction}'s receiver.
+   */
   private IClass getCallable(CGNode caller, IClassHierarchy cha, PythonInvokeInstruction call) {
     PythonSSAPropagationCallGraphBuilder builder = this.getEngine().getCachedCallGraphBuilder();
 
