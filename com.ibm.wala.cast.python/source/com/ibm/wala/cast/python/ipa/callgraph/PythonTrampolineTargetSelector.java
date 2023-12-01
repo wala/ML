@@ -41,7 +41,8 @@ import com.ibm.wala.util.intset.OrdinalSet;
 import java.util.Map;
 
 public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
-  private static final String CALL = "__call__";
+
+  private static final String CALLABLE_METHOD_NAME = "__call__";
 
   private final MethodTargetSelector base;
 
@@ -164,7 +165,7 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
       final String packageName = "$" + declaringClassName.toString().substring(1);
       TypeReference typeReference =
           TypeReference.findOrCreateClass(
-              declaringClass.getClassLoader().getReference(), packageName, CALL);
+              declaringClass.getClassLoader().getReference(), packageName, CALLABLE_METHOD_NAME);
       IClass lookupClass = cha.lookupClass(typeReference);
 
       if (lookupClass != null) return lookupClass;
