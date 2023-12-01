@@ -309,7 +309,11 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 
     assertEquals(expectedTensorParameterValueNumbers.length, actualValueNumberSet.size());
     Arrays.stream(expectedTensorParameterValueNumbers)
-        .forEach(ev -> assertTrue(actualValueNumberSet.contains(ev)));
+        .forEach(
+            ev ->
+                assertTrue(
+                    "Expecting " + actualValueNumberSet + " to contain " + ev + ".",
+                    actualValueNumberSet.contains(ev)));
 
     // get the tensor variables for the function.
     Set<TensorVariable> functionTensors =
