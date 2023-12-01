@@ -19,7 +19,6 @@ import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IField;
-import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.fixpoint.AbstractOperator;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
@@ -40,7 +39,6 @@ import com.ibm.wala.ssa.SSABinaryOpInstruction;
 import com.ibm.wala.ssa.SSAGetInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.FieldReference;
-import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
@@ -220,9 +218,9 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
           PointerKey rval = getPointerKeyForLocal(caller, call.getUse(i));
 
           // If we are looking at the implicit parameter of a callable.
-          if (call.getCallSite().isDispatch() && i == 0 && isCallable(rval)) {
+          if (call.getCallSite().isDispatch() && i == 0 && refersToAnObject(rval)) {
             // Ensure that lval's variable refers to the callable method instead of callable object.
-            IClass callable = getCallable(target);
+            IClass callable = target.getMethod().getDeclaringClass();
             IntSet instanceKeysForCallable = this.getSystem().getInstanceKeysForClass(callable);
 
             for (IntIterator it = instanceKeysForCallable.intIterator(); it.hasNext(); ) {
@@ -230,7 +228,9 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
               InstanceKey instanceKey = this.getSystem().getInstanceKey(instanceKeyIndex);
               this.getSystem().newConstraint(lval, instanceKey);
             }
-          } else getSystem().newConstraint(lval, assignOperator, rval);
+          } else {
+            getSystem().newConstraint(lval, assignOperator, rval);
+          }
         }
       }
 
@@ -290,21 +290,17 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
     }
   }
 
-  private IClass getCallable(CGNode target) {
-    IMethod method = target.getMethod();
-    IClass declaringClass = method.getDeclaringClass();
-    TypeName declaringClassName = declaringClass.getName();
-
-    TypeReference typeReference =
-        TypeReference.findOrCreate(
-            declaringClass.getClassLoader().getReference(), declaringClassName);
-
-    return this.getClassHierarchy().lookupClass(typeReference);
-  }
-
-  protected boolean isCallable(PointerKey rval) {
+  /**
+   * Returns true iff the given {@link PointerKey} points to at least one instance whose concrete
+   * type equals {@link PythonTypes#object}.
+   *
+   * @param pointerKey The {@link PointerKey} in question.
+   * @return True iff the given {@link PointerKey} points to at least one object whose concrete type
+   *     equals {@link PythonTypes#object}.,
+   */
+  protected boolean refersToAnObject(PointerKey pointerKey) {
     PointerAnalysis<InstanceKey> pointerAnalysis = this.getPointerAnalysis();
-    OrdinalSet<InstanceKey> pointsToSet = pointerAnalysis.getPointsToSet(rval);
+    OrdinalSet<InstanceKey> pointsToSet = pointerAnalysis.getPointsToSet(pointerKey);
 
     for (InstanceKey instanceKey : pointsToSet) {
       IClass concreteType = instanceKey.getConcreteType();
