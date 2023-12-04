@@ -1,6 +1,5 @@
 package com.ibm.wala.cast.python.client;
 
-import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.python.loader.PytestLoader;
 import com.ibm.wala.cast.python.loader.PytestLoaderFactory;
 import com.ibm.wala.classLoader.CallSiteReference;
@@ -10,7 +9,6 @@ import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.CGNode;
-import com.ibm.wala.ipa.callgraph.IAnalysisCacheView;
 import com.ibm.wala.ipa.callgraph.MethodTargetSelector;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
@@ -22,8 +20,6 @@ import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.intset.OrdinalSet;
 
 public class PytestAnalysisEngine<T> extends PythonAnalysisEngine<T> {
-
-  private PythonSSAPropagationCallGraphBuilder builder;
 
   private class PytestTargetSelector implements MethodTargetSelector {
     private final MethodTargetSelector base;
@@ -86,12 +82,6 @@ public class PytestAnalysisEngine<T> extends PythonAnalysisEngine<T> {
     options.setSelector(new PytestTargetSelector(options.getMethodTargetSelector()));
 
     addSummaryBypassLogic(options, "pytest.xml");
-  }
-
-  @Override
-  protected PythonSSAPropagationCallGraphBuilder getCallGraphBuilder(
-      IClassHierarchy cha, AnalysisOptions options, IAnalysisCacheView cache) {
-    return builder = super.getCallGraphBuilder(cha, options, cache);
   }
 
   @Override

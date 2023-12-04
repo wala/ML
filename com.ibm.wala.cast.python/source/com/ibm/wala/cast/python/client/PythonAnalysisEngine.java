@@ -66,9 +66,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 public abstract class PythonAnalysisEngine<T>
     extends AbstractAnalysisEngine<InstanceKey, PythonSSAPropagationCallGraphBuilder, T> {
+
+  private static final Logger logger = Logger.getLogger(PythonAnalysisEngine.class.getName());
+
+  protected PythonSSAPropagationCallGraphBuilder builder;
 
   static {
     try {
@@ -274,9 +279,10 @@ public abstract class PythonAnalysisEngine<T>
 
   protected void addBypassLogic(IClassHierarchy cha, AnalysisOptions options) {
     options.setSelector(
-        new PythonTrampolineTargetSelector(
+        new PythonTrampolineTargetSelector<T>(
             new PythonConstructorTargetSelector(
-                new PythonComprehensionTrampolines(options.getMethodTargetSelector()))));
+                new PythonComprehensionTrampolines(options.getMethodTargetSelector())),
+            this));
 
     BuiltinFunctions builtins = new BuiltinFunctions(cha);
     options.setSelector(builtins.builtinClassTargetSelector(options.getClassTargetSelector()));
@@ -337,7 +343,11 @@ public abstract class PythonAnalysisEngine<T>
 
     new PythonSuper(cha).handleSuperCalls(builder, options);
 
-    return builder;
+    return this.builder = builder;
+  }
+
+  public PythonSSAPropagationCallGraphBuilder getCachedCallGraphBuilder() {
+    return this.builder;
   }
 
   protected PythonSSAPropagationCallGraphBuilder makeBuilder(
