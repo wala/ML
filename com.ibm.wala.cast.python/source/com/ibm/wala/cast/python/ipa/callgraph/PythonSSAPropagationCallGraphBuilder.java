@@ -17,6 +17,7 @@ import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.ssa.PythonInstructionVisitor;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.types.PythonTypes;
+import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.fixpoint.AbstractOperator;
@@ -25,6 +26,7 @@ import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.IAnalysisCacheView;
 import com.ibm.wala.ipa.callgraph.propagation.AbstractFieldPointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
+import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKeyFactory;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
@@ -40,8 +42,11 @@ import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
+import com.ibm.wala.util.intset.IntIterator;
+import com.ibm.wala.util.intset.IntSet;
 import com.ibm.wala.util.intset.IntSetUtil;
 import com.ibm.wala.util.intset.MutableIntSet;
+import com.ibm.wala.util.intset.OrdinalSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
@@ -211,7 +216,21 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
           }
         } else {
           PointerKey rval = getPointerKeyForLocal(caller, call.getUse(i));
-          getSystem().newConstraint(lval, assignOperator, rval);
+
+          // If we are looking at the implicit parameter of a callable.
+          if (call.getCallSite().isDispatch() && i == 0 && refersToAnObject(rval)) {
+            // Ensure that lval's variable refers to the callable method instead of callable object.
+            IClass callable = target.getMethod().getDeclaringClass();
+            IntSet instanceKeysForCallable = this.getSystem().getInstanceKeysForClass(callable);
+
+            for (IntIterator it = instanceKeysForCallable.intIterator(); it.hasNext(); ) {
+              int instanceKeyIndex = it.next();
+              InstanceKey instanceKey = this.getSystem().getInstanceKey(instanceKeyIndex);
+              this.getSystem().newConstraint(lval, instanceKey);
+            }
+          } else {
+            getSystem().newConstraint(lval, assignOperator, rval);
+          }
         }
       }
 
@@ -269,6 +288,29 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
       PointerKey lret = getPointerKeyForLocal(caller, call.getReturnValue(0));
       getSystem().newConstraint(lret, assignOperator, rret);
     }
+  }
+
+  /**
+   * Returns true iff the given {@link PointerKey} points to at least one instance whose concrete
+   * type equals {@link PythonTypes#object}.
+   *
+   * @param pointerKey The {@link PointerKey} in question.
+   * @return True iff the given {@link PointerKey} points to at least one object whose concrete type
+   *     equals {@link PythonTypes#object}.,
+   */
+  protected boolean refersToAnObject(PointerKey pointerKey) {
+    PointerAnalysis<InstanceKey> pointerAnalysis = this.getPointerAnalysis();
+    OrdinalSet<InstanceKey> pointsToSet = pointerAnalysis.getPointsToSet(pointerKey);
+
+    for (InstanceKey instanceKey : pointsToSet) {
+      IClass concreteType = instanceKey.getConcreteType();
+      TypeReference reference = concreteType.getReference();
+
+      // If it's an "object" method.
+      if (reference.equals(PythonTypes.object)) return true;
+    }
+
+    return false;
   }
 
   @Override
