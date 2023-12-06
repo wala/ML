@@ -36,6 +36,9 @@
         <new def="estimator" class="Lobject" />
         <putfield class="LRoot" field="estimator" fieldType="LRoot" ref="x" value="estimator" />
 
+        <new def="distribute" class="Lobject" />
+        <putfield class="LRoot" field="distribute" fieldType="LRoot" ref="x" value="distribute" />
+
         <new def="nn" class="Lobject" />
         <putfield class="LRoot" field="nn" fieldType="LRoot" ref="x" value="nn" />
         <new def="random" class="Lobject" />
@@ -57,6 +60,9 @@
 
         <new def="Estimator" class="Ltensorflow/estimator/Estimator" />
         <putfield class="LRoot" field="Estimator" fieldType="LRoot" ref="estimator" value="Estimator" />
+
+        <new def="MirroredStrategy" class="Ltensorflow/distribute/MirroredStrategy" />
+        <putfield class="LRoot" field="MirroredStrategy" fieldType="LRoot" ref="distribute" value="MirroredStrategy" />
 
         <new def="inputs" class="Lobject" />
         <putfield class="LRoot" field="inputs" fieldType="LRoot" ref="estimator" value="inputs" />
@@ -781,6 +787,26 @@
           <getfield class="LRoot" field="$callback" fieldType="LRoot" ref="arg0" def="xx" />
           <getfield class="LRoot" field="data" fieldType="LRoot" ref="arg1" def="data" />
           <call class="LRoot" name="do" descriptor="()LRoot;" type="virtual" arg0="xx" arg1="data" arg2="3" numArgs="3" def="v" />
+          <return value="v" />
+        </method>
+      </class>
+    </package>
+
+    <package name="tensorflow/distribute">
+      <class name="MirroredStrategy" allocatable="true">
+        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self devices cross_device_ops">
+          <new def="x" class="Ltensorflow/distribute/run/run" />
+          <putfield class="LRoot" field="run" fieldType="LRoot" ref="self" value="x" />
+          <return value="arg0" />
+        </method>
+      </class>
+    </package>
+
+    <package name="tensorflow/distribute/run">
+      <class name="run" allocatable="true">
+        <method name="do" descriptor="()LRoot;" numArgs="3">
+          <getfield class="LRoot" field="0" fieldType="LRoot" ref="arg2" def="x" />
+          <call class="LRoot" name="do" descriptor="()LRoot;" type="virtual" arg0="arg1" arg1="x" numArgs="2" def="v" />
           <return value="v" />
         </method>
       </class>
