@@ -31,6 +31,7 @@ import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKeyFactory;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.SSAReturnInstruction;
+import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
@@ -49,6 +50,16 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
    *     documentation</a>.
    */
   private static final String CALLABLE_METHOD_NAME = "__call__";
+
+  /**
+   * The method name that is used for tf.keras.Models callables. This is a workaround for
+   * https://github.com/wala/ML/issues/106.
+   *
+   * @see <a
+   *     href="https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/keras/Model#call">TensorFlow
+   *     documentation</a>.
+   */
+  private static final String CALLABLE_METHOD_NAME_FOR_KERAS_MODELS = "call";
 
   private final MethodTargetSelector base;
 
@@ -166,7 +177,7 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
   private IClass getCallable(CGNode caller, IClassHierarchy cha, PythonInvokeInstruction call) {
     PythonSSAPropagationCallGraphBuilder builder = this.getEngine().getCachedCallGraphBuilder();
 
-    // Lookup the __call__ method.
+    // Lookup the callable method.
     PointerKeyFactory pkf = builder.getPointerKeyFactory();
     PointerKey receiver = pkf.getPointerKeyForLocal(caller, call.getUse(0));
     OrdinalSet<InstanceKey> objs = builder.getPointerAnalysis().getPointsToSet(receiver);
@@ -176,14 +187,26 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
       CGNode node = instanceKey.getNode();
       IMethod method = node.getMethod();
       IClass declaringClass = method.getDeclaringClass();
+      final ClassLoaderReference classLoaderReference =
+          declaringClass.getClassLoader().getReference();
       TypeName declaringClassName = declaringClass.getName();
       final String packageName = "$" + declaringClassName.toString().substring(1);
-      TypeReference typeReference =
-          TypeReference.findOrCreateClass(
-              declaringClass.getClassLoader().getReference(), packageName, CALLABLE_METHOD_NAME);
-      IClass lookupClass = cha.lookupClass(typeReference);
 
-      if (lookupClass != null) return lookupClass;
+      IClass callable =
+          cha.lookupClass(
+              TypeReference.findOrCreateClass(
+                  classLoaderReference, packageName, CALLABLE_METHOD_NAME));
+
+      // TODO: Remove this code once https://github.com/wala/ML/issues/118 is completed.
+      if (callable == null)
+        // try the workaround for https://github.com/wala/ML/issues/106. NOTE: We cannot verify that
+        // the super class is tf.keras.Model due to https://github.com/wala/ML/issues/118.
+        callable =
+            cha.lookupClass(
+                TypeReference.findOrCreateClass(
+                    classLoaderReference, packageName, CALLABLE_METHOD_NAME_FOR_KERAS_MODELS));
+
+      if (callable != null) return callable;
     }
 
     return null;
