@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.ibm.wala</groupId>
     <artifactId>ml</artifactId>
-    <version>0.15.0-SNAPSHOT</version>
+    <version>0.15.0</version>
   </parent>
   <artifactId>com.ibm.wala.cast.python.jython</artifactId>
   <dependencies>
