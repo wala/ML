@@ -148,7 +148,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
                     CGNode callee = succNodes.next();
                     IMethod calledMethod = callee.getMethod();
 
-                    // Does this method call the sythetic "marker?"
+                    // Does this method call the synthetic "marker?"
                     if (calledMethod
                         .getName()
                         .toString()
