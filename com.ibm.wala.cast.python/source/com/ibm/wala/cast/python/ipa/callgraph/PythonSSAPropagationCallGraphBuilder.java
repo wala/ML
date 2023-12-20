@@ -12,8 +12,8 @@ package com.ibm.wala.cast.python.ipa.callgraph;
 
 import com.ibm.wala.cast.ipa.callgraph.AstSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.ipa.callgraph.GlobalObjectKey;
-import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.ir.ssa.AstPropertyRead;
+import com.ibm.wala.cast.ir.ssa.EachElementGetInstruction;
 import com.ibm.wala.cast.python.ipa.summaries.BuiltinFunctions.BuiltinFunction;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.ssa.PythonInstructionVisitor;
@@ -187,34 +187,29 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
         PythonPropertyRead ppr = (PythonPropertyRead) instruction;
         SSAInstruction memberRefDef = du.getDef(ppr.getMemberRef());
 
-        if (memberRefDef != null && memberRefDef instanceof AstGlobalRead) {
-          AstGlobalRead agr = (AstGlobalRead) memberRefDef;
+        if (memberRefDef != null && memberRefDef instanceof EachElementGetInstruction) {
+          // most likely a for each "property."
+          final PointerKey memberRefKey = this.getPointerKeyForLocal(ppr.getMemberRef());
 
-          if (agr.isStatic()) {
-            // most likely a for each "property."
-            final PointerKey memberRefKey = this.getPointerKeyForLocal(ppr.getMemberRef());
+          // for each def of the property read.
+          for (int i = 0; i < ppr.getNumberOfDefs(); i++) {
+            PointerKey defKey = this.getPointerKeyForLocal(ppr.getDef(i));
 
-            // for each def of the property read.
-            for (int i = 0; i < ppr.getNumberOfDefs(); i++) {
-              PointerKey defKey = this.getPointerKeyForLocal(ppr.getDef(i));
-
-              // add an assignment constraint straight away as the traversal variable won't have a
-              // non-empty points-to set but still may be used for a dataflow analysis.
-              if (this.system.newConstraint(defKey, assignOperator, memberRefKey))
-                logger.fine(
-                    () ->
-                        "Added new system constraint for global read from: "
-                            + defKey
-                            + " to: "
-                            + memberRefKey
-                            + " for instruction: "
-                            + instruction
-                            + ".");
-              else
-                logger.fine(
-                    () ->
-                        "No constraint added for global read in instruction: " + instruction + ".");
-            }
+            // add an assignment constraint straight away as the traversal variable won't have a
+            // non-empty points-to set but still may be used for a dataflow analysis.
+            if (this.system.newConstraint(defKey, assignOperator, memberRefKey))
+              logger.fine(
+                  () ->
+                      "Added new system constraint for global read from: "
+                          + defKey
+                          + " to: "
+                          + memberRefKey
+                          + " for instruction: "
+                          + instruction
+                          + ".");
+            else
+              logger.fine(
+                  () -> "No constraint added for global read in instruction: " + instruction + ".");
           }
         }
       }
