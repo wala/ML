@@ -196,12 +196,15 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("tf2_testing_decorator8.py", "returned", 1, 3, 2);
     testTf2("tf2_testing_decorator9.py", "returned", 1, 3, 2);
     testTf2("tf2_testing_decorator10.py", "returned", 1, 3, 2);
-    testTf2(
-        "tf2_test_dataset.py",
-        "add",
-        0,
-        0); // NOTE: Change to testTf2("tf2_test_dataset.py", "add", 2, 3, 2, 3) once
-    // https://github.com/wala/ML/issues/89 is fixed.
+    // FIXME: Test tf2_test_dataset.py really has three tensors in its dataset. We are currently
+    // treating it as one. But, in the literal case, it should be possible to model it like the list
+    // tests below.
+    testTf2("tf2_test_dataset.py", "add", 2, 2, 2, 3);
+    testTf2("tf2_test_tensor_list.py", "add", 2, 3, 2, 3);
+    testTf2("tf2_test_tensor_list2.py", "add", 0, 2);
+    testTf2("tf2_test_tensor_list3.py", "add", 0, 2);
+    testTf2("tf2_test_tensor_list4.py", "add", 0, 0);
+    testTf2("tf2_test_tensor_list5.py", "add", 0, 2);
     testTf2("tf2_test_model_call.py", "SequentialModel.__call__", 1, 4, 3);
     testTf2("tf2_test_model_call2.py", "SequentialModel.call", 1, 4, 3);
     testTf2("tf2_test_model_call3.py", "SequentialModel.call", 1, 4, 3);
