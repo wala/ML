@@ -120,9 +120,9 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
           EachElementGetInstruction eachElementGetInstruction = (EachElementGetInstruction) inst;
 
           // Find the potential tensor iterable creation site.
-          SSAInstruction iterableDef = du.getDef(eachElementGetInstruction.getUse(0));
+          SSAInstruction def = du.getDef(eachElementGetInstruction.getUse(0));
 
-          if (createsTensorIterable(iterableDef, localPointerKeyNode, callGraph, pointerAnalysis)) {
+          if (createsTensorIterable(def, localPointerKeyNode, callGraph, pointerAnalysis)) {
             sources.add(src);
             logger.info("Added dataflow source from tensor iterable: " + src + ".");
           }
@@ -148,39 +148,41 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
       CallGraph callGraph,
       PointerAnalysis<InstanceKey> pointerAnalysis) {
     if (instruction instanceof SSAAbstractInvokeInstruction) {
-      SSAAbstractInvokeInstruction iterableGenInvocationInstruction =
+      SSAAbstractInvokeInstruction invocationInstruction =
           (SSAAbstractInvokeInstruction) instruction;
 
-      // What function are we calling?
-      int use = iterableGenInvocationInstruction.getUse(0);
-      PointerKey pointerKeyForLocal =
-          pointerAnalysis.getHeapModel().getPointerKeyForLocal(node, use);
-      OrdinalSet<InstanceKey> pointsToSet = pointerAnalysis.getPointsToSet(pointerKeyForLocal);
+      if (invocationInstruction.getNumberOfUses() > 0) {
+        // What function are we calling?
+        int use = invocationInstruction.getUse(0);
+        PointerKey pointerKeyForLocal =
+            pointerAnalysis.getHeapModel().getPointerKeyForLocal(node, use);
+        OrdinalSet<InstanceKey> pointsToSet = pointerAnalysis.getPointsToSet(pointerKeyForLocal);
 
-      for (InstanceKey ik : pointsToSet) {
-        if (ik instanceof AllocationSiteInNode) {
-          AllocationSiteInNode asin = (AllocationSiteInNode) ik;
-          IClass concreteType = asin.getConcreteType();
-          TypeReference reference = concreteType.getReference();
-          MethodReference methodReference = fnReference(reference);
+        for (InstanceKey ik : pointsToSet) {
+          if (ik instanceof AllocationSiteInNode) {
+            AllocationSiteInNode asin = (AllocationSiteInNode) ik;
+            IClass concreteType = asin.getConcreteType();
+            TypeReference reference = concreteType.getReference();
+            MethodReference methodReference = fnReference(reference);
 
-          // Get the nodes this method calls.
-          Set<CGNode> iterableNodes = callGraph.getNodes(methodReference);
+            // Get the nodes this method calls.
+            Set<CGNode> iterableNodes = callGraph.getNodes(methodReference);
 
-          for (CGNode itNode : iterableNodes)
-            for (Iterator<CGNode> succNodes = callGraph.getSuccNodes(itNode);
-                succNodes.hasNext(); ) {
-              CGNode callee = succNodes.next();
-              IMethod calledMethod = callee.getMethod();
+            for (CGNode itNode : iterableNodes)
+              for (Iterator<CGNode> succNodes = callGraph.getSuccNodes(itNode);
+                  succNodes.hasNext(); ) {
+                CGNode callee = succNodes.next();
+                IMethod calledMethod = callee.getMethod();
 
-              // Does this method call the synthetic "marker?"
-              if (calledMethod
-                  .getName()
-                  .toString()
-                  .equals(TENSOR_ITERABLE_SYNTHETIC_FUNCTION_NAME)) {
-                return true;
+                // Does this method call the synthetic "marker?"
+                if (calledMethod
+                    .getName()
+                    .toString()
+                    .equals(TENSOR_ITERABLE_SYNTHETIC_FUNCTION_NAME)) {
+                  return true;
+                }
               }
-            }
+          }
         }
       }
     }
