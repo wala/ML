@@ -1,5 +1,8 @@
 package com.ibm.wala.cast.python.ml.client;
 
+import static com.ibm.wala.cast.types.AstMethodReference.fnReference;
+
+import com.ibm.wala.cast.ir.ssa.EachElementGetInstruction;
 import com.ibm.wala.cast.lsp.AnalysisError;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
@@ -7,9 +10,15 @@ import com.ibm.wala.cast.python.ml.types.TensorType;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.classLoader.CallSiteReference;
+import com.ibm.wala.classLoader.IClass;
+import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.CGNode;
+import com.ibm.wala.ipa.callgraph.CallGraph;
+import com.ibm.wala.ipa.callgraph.propagation.AllocationSiteInNode;
+import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.LocalPointerKey;
+import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
@@ -26,12 +35,21 @@ import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
+import com.ibm.wala.util.intset.OrdinalSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
 public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeAnalysis> {
+
+  /** A "fake" function name in the summaries that indicates that an API produces a new tensor. */
+  private static final String TENSOR_GENERATOR_SYNTHETIC_FUNCTION_NAME = "read_data";
+
+  /**
+   * A "fake" function name in the summaries that indicates that an API produces a tensor iterable.
+   */
+  private static final String TENSOR_ITERABLE_SYNTHETIC_FUNCTION_NAME = "read_dataset";
 
   private static final Logger logger = Logger.getLogger(PythonTensorAnalysisEngine.class.getName());
 
@@ -69,7 +87,10 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 
   private final Map<PointerKey, AnalysisError> errorLog = HashMapFactory.make();
 
-  private static Set<PointsToSetVariable> getDataflowSources(Graph<PointsToSetVariable> dataflow) {
+  private static Set<PointsToSetVariable> getDataflowSources(
+      Graph<PointsToSetVariable> dataflow,
+      CallGraph callGraph,
+      PointerAnalysis<InstanceKey> pointerAnalysis) {
     Set<PointsToSetVariable> sources = HashSetFactory.make();
     for (PointsToSetVariable src : dataflow) {
       PointerKey k = src.getPointerKey();
@@ -77,21 +98,95 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
       if (k instanceof LocalPointerKey) {
         LocalPointerKey kk = (LocalPointerKey) k;
         int vn = kk.getValueNumber();
-        DefUse du = kk.getNode().getDU();
+        CGNode localPointerKeyNode = kk.getNode();
+        DefUse du = localPointerKeyNode.getDU();
         SSAInstruction inst = du.getDef(vn);
 
         if (inst instanceof SSAAbstractInvokeInstruction) {
+          // We potentially have a function call that generates a tensor.
           SSAAbstractInvokeInstruction ni = (SSAAbstractInvokeInstruction) inst;
 
-          if (ni.getCallSite().getDeclaredTarget().getName().toString().equals("read_data")
+          if (ni.getCallSite()
+                  .getDeclaredTarget()
+                  .getName()
+                  .toString()
+                  .equals(TENSOR_GENERATOR_SYNTHETIC_FUNCTION_NAME)
               && ni.getException() != vn) {
             sources.add(src);
-            logger.info("Added dataflow source " + src + ".");
+            logger.info("Added dataflow source from tensor generator: " + src + ".");
+          }
+        } else if (inst instanceof EachElementGetInstruction) {
+          // We are potentially pulling a tensor out of a tensor iterable.
+          EachElementGetInstruction eachElementGetInstruction = (EachElementGetInstruction) inst;
+
+          // Find the potential tensor iterable creation site.
+          SSAInstruction def = du.getDef(eachElementGetInstruction.getUse(0));
+
+          if (createsTensorIterable(def, localPointerKeyNode, callGraph, pointerAnalysis)) {
+            sources.add(src);
+            logger.info("Added dataflow source from tensor iterable: " + src + ".");
           }
         }
       }
     }
     return sources;
+  }
+
+  /**
+   * Returns true iff the fiven {@link SSAInstruction} creates an iterable of tensors.
+   *
+   * @param instruction The {@link SSAInstruction} in question.
+   * @param node The {@link CGNode} of the function containing the given {@link SSAInstruction}.
+   * @param callGraph The {@link CallGraph} that includes a node corresponding to the given {@link
+   *     SSAInstruction}.
+   * @param pointerAnalysis The {@link PointerAnalysis} built from the given {@link CallGraph}.
+   * @return True iff the given {@link SSAInstruction} creates an iterable over tensors.
+   */
+  private static boolean createsTensorIterable(
+      SSAInstruction instruction,
+      CGNode node,
+      CallGraph callGraph,
+      PointerAnalysis<InstanceKey> pointerAnalysis) {
+    if (instruction instanceof SSAAbstractInvokeInstruction) {
+      SSAAbstractInvokeInstruction invocationInstruction =
+          (SSAAbstractInvokeInstruction) instruction;
+
+      if (invocationInstruction.getNumberOfUses() > 0) {
+        // What function are we calling?
+        int use = invocationInstruction.getUse(0);
+        PointerKey pointerKeyForLocal =
+            pointerAnalysis.getHeapModel().getPointerKeyForLocal(node, use);
+        OrdinalSet<InstanceKey> pointsToSet = pointerAnalysis.getPointsToSet(pointerKeyForLocal);
+
+        for (InstanceKey ik : pointsToSet) {
+          if (ik instanceof AllocationSiteInNode) {
+            AllocationSiteInNode asin = (AllocationSiteInNode) ik;
+            IClass concreteType = asin.getConcreteType();
+            TypeReference reference = concreteType.getReference();
+            MethodReference methodReference = fnReference(reference);
+
+            // Get the nodes this method calls.
+            Set<CGNode> iterableNodes = callGraph.getNodes(methodReference);
+
+            for (CGNode itNode : iterableNodes)
+              for (Iterator<CGNode> succNodes = callGraph.getSuccNodes(itNode);
+                  succNodes.hasNext(); ) {
+                CGNode callee = succNodes.next();
+                IMethod calledMethod = callee.getMethod();
+
+                // Does this method call the synthetic "marker?"
+                if (calledMethod
+                    .getName()
+                    .toString()
+                    .equals(TENSOR_ITERABLE_SYNTHETIC_FUNCTION_NAME)) {
+                  return true;
+                }
+              }
+          }
+        }
+      }
+    }
+    return false;
   }
 
   @FunctionalInterface
@@ -165,7 +260,8 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
         SlowSparseNumberedGraph.duplicate(
             builder.getPropagationSystem().getFlowGraphIncludingImplicitConstraints());
 
-    Set<PointsToSetVariable> sources = getDataflowSources(dataflow);
+    Set<PointsToSetVariable> sources =
+        getDataflowSources(dataflow, builder.getCallGraph(), builder.getPointerAnalysis());
 
     TensorType mnistData = TensorType.mnistInput();
     Map<PointsToSetVariable, TensorType> init = HashMapFactory.make();
