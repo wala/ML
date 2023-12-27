@@ -133,7 +133,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
   }
 
   /**
-   * Returns true iff the fiven {@link SSAInstruction} creates an iterable of tensors.
+   * Returns true iff the given {@link SSAInstruction} creates an iterable of tensors.
    *
    * @param instruction The {@link SSAInstruction} in question.
    * @param node The {@link CGNode} of the function containing the given {@link SSAInstruction}.
