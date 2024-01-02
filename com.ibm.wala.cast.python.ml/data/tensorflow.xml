@@ -36,15 +36,14 @@
         <new def="estimator" class="Lobject" />
         <putfield class="LRoot" field="estimator" fieldType="LRoot" ref="x" value="estimator" />
 
+        <new def="data" class="Lobject" />
+        <putfield class="LRoot" field="data" fieldType="LRoot" ref="x" value="data" />
+
         <new def="distribute" class="Lobject" />
         <putfield class="LRoot" field="distribute" fieldType="LRoot" ref="x" value="distribute" />
 
         <new def="nn" class="Lobject" />
         <putfield class="LRoot" field="nn" fieldType="LRoot" ref="x" value="nn" />
-        <new def="data" class="Lobject" />
-        <putfield class="LRoot" field="data" fieldType="LRoot" ref="x" value="data" />
-        <new def="Dataset" class="Lobject" />
-        <putfield class="LRoot" field="Dataset" fieldType="LRoot" ref="data" value="Dataset" />
         <new def="random" class="Lobject" />
         <putfield class="LRoot" field="random" fieldType="LRoot" ref="x" value="random" />
         <new def="sparse" class="Lobject" />
@@ -65,6 +64,9 @@
         <new def="Estimator" class="Ltensorflow/estimator/Estimator" />
         <putfield class="LRoot" field="Estimator" fieldType="LRoot" ref="estimator" value="Estimator" />
 
+        <new def="Dataset" class="Ltensorflow/data/Dataset" />
+        <putfield class="LRoot" field="Dataset" fieldType="LRoot" ref="data" value="Dataset" />
+
         <new def="MirroredStrategy" class="Ltensorflow/distribute/MirroredStrategy" />
         <putfield class="LRoot" field="MirroredStrategy" fieldType="LRoot" ref="distribute" value="MirroredStrategy" />
 
@@ -73,6 +75,9 @@
 
         <new def="numpy_input_fn" class="Ltensorflow/estimator/numpy_input_fn" />
         <putfield class="LRoot" field="numpy_input_fn" fieldType="LRoot" ref="inputs" value="numpy_input_fn" />
+
+        <new def="from_tensor_slices" class="Ltensorflow/data/Dataset/from_tensor_slices" />
+        <putfield class="LRoot" field="from_tensor_slices" fieldType="LRoot" ref="Dataset" value="from_tensor_slices" />
 
         <new def="reshape" class="Ltensorflow/functions/reshape" />
         <putfield class="LRoot" field="reshape" fieldType="LRoot" ref="x" value="reshape" />
@@ -126,9 +131,6 @@
         <new def="array_ops" class="Lobject" />
         <putfield class="LRoot" field="array_ops" fieldType="LRoot" ref="ops" value="array_ops" />
 
-        <new def="data_ops" class="Lobject" />
-        <putfield class="LRoot" field="data_ops" fieldType="LRoot" ref="ops" value="data_ops" />
-
         <new def="random_ops" class="Lobject" />
         <putfield class="LRoot" field="random_ops" fieldType="LRoot" ref="ops" value="random_ops" />
 
@@ -173,10 +175,6 @@
         <new def="ones" class="Ltensorflow/functions/ones" />
         <putfield class="LRoot" field="ones" fieldType="LRoot" ref="x" value="ones" />
         <putfield class="LRoot" field="ones" fieldType="LRoot" ref="array_ops" value="ones" />
-
-        <new def="from_tensor_slices" class="Ltensorflow/functions/from_tensor_slices" />
-        <putfield class="LRoot" field="from_tensor_slices" fieldType="LRoot" ref="Dataset" value="from_tensor_slices" />
-        <putfield class="LRoot" field="from_tensor_slices" fieldType="LRoot" ref="data_ops" value="from_tensor_slices" />
 
         <new def="zeros" class="Ltensorflow/functions/zeros" />
         <putfield class="LRoot" field="zeros" fieldType="LRoot" ref="x" value="zeros" />
@@ -406,18 +404,6 @@
         </method>
         <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="shape dtype name">
           <call class="LRoot" name="read_data" descriptor="()LRoot;" type="virtual" arg0="arg0" def="x" />
-          <return value="x" />
-        </method>
-      </class>
-
-      <class name="from_tensor_slices" allocatable="true">
-        <!-- "read_dataset" means that this function reads a tensor iterable. -->
-        <method name="read_dataset" descriptor="()LRoot;">
-          <new def="x" class="Ltensorflow/python/ops/data_ops/from_tensor_slices" />
-          <return value="x" />
-        </method>
-        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="tensors name">
-          <call class="LRoot" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="arg0" def="x" />
           <return value="x" />
         </method>
       </class>
@@ -799,6 +785,53 @@
           <new def="xx" class="Lobject" />
           <putfield class="LRoot" field="data" fieldType="LRoot" ref="xx" value="2" />
           <putfield class="LRoot" field="labels" fieldType="LRoot" ref="xx" value="3" />
+          <return value="xx" />
+        </method>
+      </class>
+    </package>
+
+    <package name="tensorflow/data">
+      <class name="Dataset" allocatable="true">
+        <!-- "read_dataset" means that this function reads a tensor iterable. -->
+        <method name="read_dataset" descriptor="()LRoot;">
+          <new def="shuffle" class="Ltensorflow/data/shuffle" />
+          <putfield class="LRoot" field="shuffle" fieldType="LRoot" ref="arg0" value="shuffle" />
+          <new def="batch" class="Ltensorflow/data/batch" />
+          <putfield class="LRoot" field="batch" fieldType="LRoot" ref="arg0" value="batch" />
+          <return value="arg0" />
+        </method>
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self variant_tensor">
+          <call class="LRoot" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="arg0" def="x" />
+          <return value="x" />
+        </method>
+      </class>
+
+      <class name="shuffle" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#shuffle -->
+        <method name="do" descriptor="()LRoot;" numArgs="5" paramNames="self buffer_size seed reshuffle_each_iteration name">
+          <!-- FIXME: Workaround for https://github.com/wala/ML/issues/127. This method (shuffle) doesn't really return a "new" dataset but rather a modified version of the receiver. But, the receiver isn't available without a trampoline AFAIK. -->
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+
+      <class name="batch" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#batch -->
+        <method name="do" descriptor="()LRoot;" numArgs="6" paramNames="self batch_size drop_remainder num_parallel_calls deterministic name">
+          <!-- FIXME: Workaround for https://github.com/wala/ML/issues/127. -->
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+    </package>
+
+    <package name="tensorflow/data/Dataset">
+      <class name="from_tensor_slices" allocatable="true">
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="tensors name">
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
           <return value="xx" />
         </method>
       </class>
