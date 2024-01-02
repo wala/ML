@@ -796,6 +796,8 @@
         <method name="read_dataset" descriptor="()LRoot;">
           <new def="shuffle" class="Ltensorflow/data/shuffle" />
           <putfield class="LRoot" field="shuffle" fieldType="LRoot" ref="arg0" value="shuffle" />
+          <new def="batch" class="Ltensorflow/data/batch" />
+          <putfield class="LRoot" field="batch" fieldType="LRoot" ref="arg0" value="batch" />
           <return value="arg0" />
         </method>
         <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self variant_tensor">
@@ -808,6 +810,16 @@
         <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#shuffle -->
         <method name="do" descriptor="()LRoot;" numArgs="5" paramNames="self buffer_size seed reshuffle_each_iteration name">
           <!-- FIXME: Workaround for https://github.com/wala/ML/issues/127. This method (shuffle) doesn't really return a "new" dataset but rather a modified version of the receiver. But, the receiver isn't available without a trampoline AFAIK. -->
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+
+      <class name="batch" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#batch-->
+        <method name="do" descriptor="()LRoot;" numArgs="6" paramNames="self batch_size drop_remainder num_parallel_calls deterministic name">
+          <!-- FIXME: Workaround for https://github.com/wala/ML/issues/127. -->
           <new def="x" class="Ltensorflow/data/Dataset" />
           <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
           <return value="xx" />
