@@ -203,6 +203,9 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     // treating it as one. But, in the literal case, it should be possible to model it like the list
     // tests below.
     testTf2("tf2_test_dataset.py", "add", 2, 2, 2, 3);
+    testTf2("tf2_test_dataset2.py", "add", 2, 2, 2, 3);
+    testTf2("tf2_test_dataset3.py", "add", 2, 2, 2, 3);
+    testTf2("tf2_test_dataset4.py", "add", 2, 2, 2, 3);
     testTf2("tf2_test_tensor_list.py", "add", 2, 3, 2, 3);
     testTf2("tf2_test_tensor_list2.py", "add", 0, 2);
     testTf2("tf2_test_tensor_list3.py", "add", 0, 2);

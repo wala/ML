@@ -119,10 +119,11 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
           // We are potentially pulling a tensor out of a tensor iterable.
           EachElementGetInstruction eachElementGetInstruction = (EachElementGetInstruction) inst;
 
-          // Find the potential tensor iterable creation site.
-          SSAInstruction def = du.getDef(eachElementGetInstruction.getUse(0));
+          // Find the potential tensor iterable definition.
+          int use = eachElementGetInstruction.getUse(0);
+          SSAInstruction def = du.getDef(use);
 
-          if (createsTensorIterable(def, localPointerKeyNode, callGraph, pointerAnalysis)) {
+          if (definesTensorIterable(def, localPointerKeyNode, callGraph, pointerAnalysis)) {
             sources.add(src);
             logger.info("Added dataflow source from tensor iterable: " + src + ".");
           }
@@ -133,16 +134,16 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
   }
 
   /**
-   * Returns true iff the given {@link SSAInstruction} creates an iterable of tensors.
+   * Returns true iff the given {@link SSAInstruction} defines an iterable of tensors.
    *
    * @param instruction The {@link SSAInstruction} in question.
    * @param node The {@link CGNode} of the function containing the given {@link SSAInstruction}.
    * @param callGraph The {@link CallGraph} that includes a node corresponding to the given {@link
    *     SSAInstruction}.
    * @param pointerAnalysis The {@link PointerAnalysis} built from the given {@link CallGraph}.
-   * @return True iff the given {@link SSAInstruction} creates an iterable over tensors.
+   * @return True iff the given {@link SSAInstruction} defines an iterable over tensors.
    */
-  private static boolean createsTensorIterable(
+  private static boolean definesTensorIterable(
       SSAInstruction instruction,
       CGNode node,
       CallGraph callGraph,
