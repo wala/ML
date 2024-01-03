@@ -262,7 +262,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
           if (pointerKey instanceof LocalPointerKey) {
             LocalPointerKey localPointerKey = (LocalPointerKey) pointerKey;
 
-            // get the call graph node associated with the
+            // get the call graph node associated with the pointer key.
             CGNode node = localPointerKey.getNode();
 
             // get the method associated with the call graph node.
