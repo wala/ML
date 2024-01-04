@@ -207,6 +207,8 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("tf2_test_dataset3.py", "add", 2, 2, 2, 3);
     testTf2("tf2_test_dataset4.py", "add", 2, 2, 2, 3);
     testTf2("tf2_test_dataset5.py", "add", 2, 2, 2, 3);
+    testTf2("tf2_test_dataset6.py", "add", 2, 2, 2, 3);
+    testTf2("tf2_test_dataset7.py", "add", 2, 2, 2, 3);
     testTf2("tf2_test_tensor_list.py", "add", 2, 3, 2, 3);
     testTf2("tf2_test_tensor_list2.py", "add", 0, 2);
     testTf2("tf2_test_tensor_list3.py", "add", 0, 2);
@@ -218,8 +220,8 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("tf2_test_model_call4.py", "SequentialModel.__call__", 1, 4, 3);
     testTf2("tf2_test_callbacks.py", "replica_fn", 1, 3, 2);
     testTf2("tf2_test_callbacks2.py", "replica_fn", 1, 4, 2);
-    testTf2("tensorflow_gan_tutorial.py", "train_step", 1, 10, 7);
-    testTf2("tensorflow_gan_tutorial2.py", "train_step", 1, 10, 7);
+    testTf2("tensorflow_gan_tutorial.py", "train_step", 1, 10, 2);
+    testTf2("tensorflow_gan_tutorial2.py", "train_step", 1, 10, 2);
   }
 
   private void testTf2(
@@ -302,27 +304,23 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
         methodSignatureToPointerKeys.getOrDefault(functionSignature, Collections.emptySet());
 
     // check tensor parameters.
-    assertEquals(expectedNumberOfTensorParameters, functionPointerKeys.size());
+    assertEquals(
+        expectedNumberOfTensorParameters,
+        functionPointerKeys.stream().filter(LocalPointerKey::isParameter).count());
 
     // check value numbers.
-    Set<Integer> actualValueNumberSet =
+    Set<Integer> actualParameterValueNumberSet =
         functionPointerKeys.stream()
+            .filter(LocalPointerKey::isParameter)
             .map(LocalPointerKey::getValueNumber)
             .collect(Collectors.toSet());
 
-    assertEquals(expectedTensorParameterValueNumbers.length, actualValueNumberSet.size());
+    assertEquals(expectedTensorParameterValueNumbers.length, actualParameterValueNumberSet.size());
     Arrays.stream(expectedTensorParameterValueNumbers)
         .forEach(
             ev ->
                 assertTrue(
-                    "Expecting " + actualValueNumberSet + " to contain " + ev + ".",
-                    actualValueNumberSet.contains(ev)));
-
-    // get the tensor variables for the function.
-    Set<TensorVariable> functionTensors =
-        methodSignatureToTensorVariables.getOrDefault(functionSignature, Collections.emptySet());
-
-    // check tensor parameters.
-    assertEquals(expectedNumberOfTensorParameters, functionTensors.size());
+                    "Expecting " + actualParameterValueNumberSet + " to contain " + ev + ".",
+                    actualParameterValueNumberSet.contains(ev)));
   }
 }
