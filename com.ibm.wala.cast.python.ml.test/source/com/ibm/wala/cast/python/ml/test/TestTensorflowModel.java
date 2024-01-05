@@ -209,6 +209,8 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("tf2_test_dataset5.py", "add", 2, 2, 2, 3);
     testTf2("tf2_test_dataset6.py", "add", 2, 2, 2, 3);
     testTf2("tf2_test_dataset7.py", "add", 2, 2, 2, 3);
+    testTf2("tf2_test_dataset8.py", "add", 2, 2, 2, 3);
+    testTf2("tf2_test_dataset9.py", "add", 2, 2, 2, 3);
     testTf2("tf2_test_tensor_list.py", "add", 2, 3, 2, 3);
     testTf2("tf2_test_tensor_list2.py", "add", 0, 2);
     testTf2("tf2_test_tensor_list3.py", "add", 0, 2);
@@ -222,6 +224,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("tf2_test_callbacks2.py", "replica_fn", 1, 4, 2);
     testTf2("tensorflow_gan_tutorial.py", "train_step", 1, 10, 2);
     testTf2("tensorflow_gan_tutorial2.py", "train_step", 1, 10, 2);
+    testTf2("tensorflow_eager_execution.py", "MyModel.call", 1, 5, 3);
   }
 
   private void testTf2(
