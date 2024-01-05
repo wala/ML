@@ -125,7 +125,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
           SSAInstruction def = du.getDef(use);
 
           if (def == null) {
-            logger.warning(
+            logger.info(
                 () ->
                     "Can't find potential tensor iterable definition for use: "
                         + use
