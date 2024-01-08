@@ -142,7 +142,13 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
           int objectRef = propertyRead.getObjectRef();
           SSAInstruction def = du.getDef(objectRef);
 
-          if (def instanceof EachElementGetInstruction || def instanceof PythonPropertyRead) {
+          if (def == null) {
+            // definition is unavailable from the local DefUse. Use interprocedural analysis using
+            // the PA.
+            processInstructionInterprocedurally(
+                propertyRead, objectRef, localPointerKeyNode, src, sources, pointerAnalysis);
+          } else if (def instanceof EachElementGetInstruction
+              || def instanceof PythonPropertyRead) {
             processInstruction(
                 def, du, localPointerKeyNode, src, sources, callGraph, pointerAnalysis);
           }
@@ -164,34 +170,46 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
     SSAInstruction def = du.getDef(use);
 
     if (def == null) {
-      logger.info(
-          () ->
-              "Can't find potential tensor iterable definition for use: "
-                  + use
-                  + " of instruction: "
-                  + instruction
-                  + ". Trying interprocedural analysis...");
-
-      // Look up the use in the pointer analysis to see if it points to a dataset.
-      PointerKey usePointerKey =
-          pointerAnalysis.getHeapModel().getPointerKeyForLocal(localPointerKeyNode, use);
-
-      for (InstanceKey ik : pointerAnalysis.getPointsToSet(usePointerKey)) {
-        if (ik instanceof AllocationSiteInNode) {
-          AllocationSiteInNode asin = (AllocationSiteInNode) ik;
-          IClass concreteType = asin.getConcreteType();
-          TypeReference reference = concreteType.getReference();
-
-          if (reference.equals(DATASET)) {
-            sources.add(src);
-            logger.info("Added dataflow source from tensor dataset: " + src + ".");
-            break;
-          }
-        }
-      }
+      // definition is unavailable from the local DefUse. Use interprocedural analysis using the PA.
+      processInstructionInterprocedurally(
+          instruction, use, localPointerKeyNode, src, sources, pointerAnalysis);
     } else if (definesTensorIterable(def, localPointerKeyNode, callGraph, pointerAnalysis)) {
       sources.add(src);
       logger.info("Added dataflow source from tensor iterable: " + src + ".");
+    }
+  }
+
+  private static void processInstructionInterprocedurally(
+      SSAInstruction instruction,
+      int use,
+      CGNode localPointerKeyNode,
+      PointsToSetVariable src,
+      Set<PointsToSetVariable> sources,
+      PointerAnalysis<InstanceKey> pointerAnalysis) {
+    logger.info(
+        () ->
+            "Can't find potential tensor iterable definition for use: "
+                + use
+                + " of instruction: "
+                + instruction
+                + ". Trying interprocedural analysis...");
+
+    // Look up the use in the pointer analysis to see if it points to a dataset.
+    PointerKey usePointerKey =
+        pointerAnalysis.getHeapModel().getPointerKeyForLocal(localPointerKeyNode, use);
+
+    for (InstanceKey ik : pointerAnalysis.getPointsToSet(usePointerKey)) {
+      if (ik instanceof AllocationSiteInNode) {
+        AllocationSiteInNode asin = (AllocationSiteInNode) ik;
+        IClass concreteType = asin.getConcreteType();
+        TypeReference reference = concreteType.getReference();
+
+        if (reference.equals(DATASET)) {
+          sources.add(src);
+          logger.info("Added dataflow source from tensor dataset: " + src + ".");
+          break;
+        }
+      }
     }
   }
 
