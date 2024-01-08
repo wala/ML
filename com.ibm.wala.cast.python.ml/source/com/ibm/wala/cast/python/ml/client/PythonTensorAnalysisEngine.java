@@ -123,7 +123,17 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 
           // Don't add the source if the container has elements in it. In that case, we want to add
           // the individual elements themselves as sources instead.
-          if (!definitionIsNonScalar(eachElementGetInstruction, du)) {
+          if (definitionIsNonScalar(eachElementGetInstruction, du))
+            logger.info(
+                "Definition of instruction: "
+                    + eachElementGetInstruction
+                    + " is non-scalar. Skipping...");
+          else {
+            logger.info(
+                "Definition of instruction: "
+                    + eachElementGetInstruction
+                    + " is scalar. Processing...");
+
             // Find the potential tensor iterable definition.
             processInstruction(
                 eachElementGetInstruction,
