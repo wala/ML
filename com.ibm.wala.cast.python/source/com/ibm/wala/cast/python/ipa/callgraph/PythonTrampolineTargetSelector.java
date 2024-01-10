@@ -88,10 +88,13 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
         PythonInvokeInstruction call = (PythonInvokeInstruction) caller.getIR().getCalls(site)[0];
 
         if (callable) {
+          logger.fine("Encountered callable.");
+
           // It's a callable. Change the receiver.
           receiver = getCallable(caller, cha, call);
 
           if (receiver == null) return null; // not found.
+          else logger.fine("Substituting the receiver with one derived from a callable.");
         }
 
         Pair<IClass, Integer> key = Pair.make(receiver, call.getNumberOfTotalParameters());
@@ -202,13 +205,19 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
                   classLoaderReference, packageName, CALLABLE_METHOD_NAME));
 
       // TODO: Remove this code once https://github.com/wala/ML/issues/118 is completed.
-      if (callable == null)
+      if (callable == null) {
         // try the workaround for https://github.com/wala/ML/issues/106. NOTE: We cannot verify that
         // the super class is tf.keras.Model due to https://github.com/wala/ML/issues/118.
+        logger.fine("Attempting callable workaround for https://github.com/wala/ML/issues/118.");
+
         callable =
             cha.lookupClass(
                 TypeReference.findOrCreateClass(
                     classLoaderReference, packageName, CALLABLE_METHOD_NAME_FOR_KERAS_MODELS));
+
+        if (callable != null)
+          logger.info("Applying callable workaround for https://github.com/wala/ML/issues/118.");
+      }
 
       if (callable != null) return callable;
     }
