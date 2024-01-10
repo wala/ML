@@ -40,8 +40,12 @@ import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.intset.OrdinalSet;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
+
+	private static final Logger logger =
+    Logger.getLogger(PythonSSAPropagationCallGraphBuilder.class.getName())
 
   /**
    * The method name that is used for Python callables.
