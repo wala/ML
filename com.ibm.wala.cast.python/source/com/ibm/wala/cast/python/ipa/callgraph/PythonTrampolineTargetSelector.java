@@ -10,6 +10,7 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.ipa.callgraph;
 
+import com.ibm.wala.cast.ipa.callgraph.ScopeMappingInstanceKeys.ScopeMappingInstanceKey;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.ipa.summaries.PythonInstanceMethodTrampoline;
@@ -25,8 +26,8 @@ import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.MethodTargetSelector;
+import com.ibm.wala.ipa.callgraph.propagation.AllocationSiteInNode;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
-import com.ibm.wala.ipa.callgraph.propagation.NormalAllocationInNode;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKeyFactory;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
@@ -190,7 +191,7 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
     OrdinalSet<InstanceKey> objs = builder.getPointerAnalysis().getPointsToSet(receiver);
 
     for (InstanceKey o : objs) {
-      NormalAllocationInNode instanceKey = (NormalAllocationInNode) o;
+      AllocationSiteInNode instanceKey = getAllocationSiteInNode(o);
       CGNode node = instanceKey.getNode();
       IMethod method = node.getMethod();
       IClass declaringClass = method.getDeclaringClass();
@@ -223,6 +224,40 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
     }
 
     return null;
+  }
+
+  /**
+   * Extracts the {@link AllocationSiteInNode} from the given {@link InstanceKey}. If the given
+   * {@link InstanceKey} is an instance of {@link AllocationSiteInNode}, then it itself is returned.
+   * If the given {@link InstanceKey} is a {@link ScopeMappingInstanceKey}, then it's base {@link
+   * InstanceKey} is returned if it is an instance {@link AllocationSiteInNode}.
+   *
+   * @param instanceKey The {@link InstanceKey} in question.
+   * @return The {@link AllocationSiteInNode} corresponding to the given {@link InstanceKey}
+   *     according to the above scheme.
+   */
+  private static AllocationSiteInNode getAllocationSiteInNode(InstanceKey instanceKey) {
+    if (instanceKey instanceof AllocationSiteInNode) return (AllocationSiteInNode) instanceKey;
+    else if (instanceKey instanceof ScopeMappingInstanceKey) {
+      ScopeMappingInstanceKey smik = (ScopeMappingInstanceKey) instanceKey;
+      InstanceKey baseInstanceKey = smik.getBase();
+
+      if (baseInstanceKey instanceof AllocationSiteInNode)
+        return (AllocationSiteInNode) baseInstanceKey;
+      else
+        throw new IllegalArgumentException(
+            "Can't extract AllocationSiteInNode from: "
+                + baseInstanceKey
+                + ". Not expecting: "
+                + baseInstanceKey.getClass()
+                + ".");
+    } else
+      throw new IllegalArgumentException(
+          "Can't extract AllocationSiteInNode from: "
+              + instanceKey
+              + ". Not expecting: "
+              + instanceKey.getClass()
+              + ".");
   }
 
   public PythonAnalysisEngine<T> getEngine() {
