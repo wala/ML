@@ -27,6 +27,7 @@ import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.MethodTargetSelector;
 import com.ibm.wala.ipa.callgraph.propagation.AllocationSiteInNode;
+import com.ibm.wala.ipa.callgraph.propagation.ConstantKey;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKeyFactory;
@@ -192,35 +193,37 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
 
     for (InstanceKey o : objs) {
       AllocationSiteInNode instanceKey = getAllocationSiteInNode(o);
-      CGNode node = instanceKey.getNode();
-      IMethod method = node.getMethod();
-      IClass declaringClass = method.getDeclaringClass();
-      final ClassLoaderReference classLoaderReference =
-          declaringClass.getClassLoader().getReference();
-      TypeName declaringClassName = declaringClass.getName();
-      final String packageName = "$" + declaringClassName.toString().substring(1);
+      if (instanceKey != null) {
+        CGNode node = instanceKey.getNode();
+        IMethod method = node.getMethod();
+        IClass declaringClass = method.getDeclaringClass();
+        final ClassLoaderReference classLoaderReference =
+            declaringClass.getClassLoader().getReference();
+        TypeName declaringClassName = declaringClass.getName();
+        final String packageName = "$" + declaringClassName.toString().substring(1);
 
-      IClass callable =
-          cha.lookupClass(
-              TypeReference.findOrCreateClass(
-                  classLoaderReference, packageName, CALLABLE_METHOD_NAME));
-
-      // TODO: Remove this code once https://github.com/wala/ML/issues/118 is completed.
-      if (callable == null) {
-        // try the workaround for https://github.com/wala/ML/issues/106. NOTE: We cannot verify
-        // that the super class is tf.keras.Model due to https://github.com/wala/ML/issues/118.
-        logger.fine("Attempting callable workaround for https://github.com/wala/ML/issues/118.");
-
-        callable =
+        IClass callable =
             cha.lookupClass(
                 TypeReference.findOrCreateClass(
-                    classLoaderReference, packageName, CALLABLE_METHOD_NAME_FOR_KERAS_MODELS));
+                    classLoaderReference, packageName, CALLABLE_METHOD_NAME));
 
-        if (callable != null)
-          logger.info("Applying callable workaround for https://github.com/wala/ML/issues/118.");
+        // TODO: Remove this code once https://github.com/wala/ML/issues/118 is completed.
+        if (callable == null) {
+          // try the workaround for https://github.com/wala/ML/issues/106. NOTE: We cannot verify
+          // that the super class is tf.keras.Model due to https://github.com/wala/ML/issues/118.
+          logger.fine("Attempting callable workaround for https://github.com/wala/ML/issues/118.");
+
+          callable =
+              cha.lookupClass(
+                  TypeReference.findOrCreateClass(
+                      classLoaderReference, packageName, CALLABLE_METHOD_NAME_FOR_KERAS_MODELS));
+
+          if (callable != null)
+            logger.info("Applying callable workaround for https://github.com/wala/ML/issues/118.");
+        }
+
+        if (callable != null) return callable;
       }
-
-      if (callable != null) return callable;
     }
 
     return null;
@@ -244,13 +247,17 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
 
       if (baseInstanceKey instanceof AllocationSiteInNode)
         return (AllocationSiteInNode) baseInstanceKey;
-      else
+      else if (baseInstanceKey instanceof ConstantKey) {
+        return getAllocationSiteInNode((ConstantKey<?>) baseInstanceKey);
+      } else
         throw new IllegalArgumentException(
             "Can't extract AllocationSiteInNode from: "
                 + baseInstanceKey
                 + ". Not expecting: "
                 + baseInstanceKey.getClass()
                 + ".");
+    } else if (instanceKey instanceof ConstantKey) {
+      return getAllocationSiteInNode((ConstantKey<?>) instanceKey);
     } else
       throw new IllegalArgumentException(
           "Can't extract AllocationSiteInNode from: "
@@ -258,6 +265,33 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
               + ". Not expecting: "
               + instanceKey.getClass()
               + ".");
+  }
+
+  /**
+   * If the given {@link ConstantKey}'s value is <code>null</code>, then issue a warning and return
+   * <code>null</code>. Otherwise, throw an {@link IllegalArgumentException} stating that an {@link
+   * AllocationSiteInNode} cannot be extracted from the given {@link ConstantKey}. A value of <code>
+   * null</code> most likely indicates that a receiver can potentially be <code>null</code>.
+   *
+   * @param constantKey The {@link ConstantKey} from which to extract the correspondoing {@link
+   *     AllocationSiteInNode}.
+   * @return <code>null</code> if the given {@link ConstantKey}'s value is <code>null</code>.
+   * @throws IllegalArgumentException If the constant's value is another else other than <code>null
+   *     </code>.
+   */
+  private static AllocationSiteInNode getAllocationSiteInNode(ConstantKey<?> constantKey) {
+    Object value = constantKey.getValue();
+
+    if (value == null) {
+      logger.warning("Can't extract AllocationSiteInNode from: " + constantKey + ".");
+      return null;
+    } else
+      throw new IllegalArgumentException(
+          "Can't extract AllocationSiteInNode from: "
+              + constantKey
+              + ". Not expecting value of: "
+              + value
+              + " from ConstantKey.");
   }
 
   public PythonAnalysisEngine<T> getEngine() {
