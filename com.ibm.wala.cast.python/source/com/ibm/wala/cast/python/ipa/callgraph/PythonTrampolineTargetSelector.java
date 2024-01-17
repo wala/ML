@@ -207,8 +207,8 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
 
       // TODO: Remove this code once https://github.com/wala/ML/issues/118 is completed.
       if (callable == null) {
-        // try the workaround for https://github.com/wala/ML/issues/106. NOTE: We cannot verify that
-        // the super class is tf.keras.Model due to https://github.com/wala/ML/issues/118.
+        // try the workaround for https://github.com/wala/ML/issues/106. NOTE: We cannot verify
+        // that the super class is tf.keras.Model due to https://github.com/wala/ML/issues/118.
         logger.fine("Attempting callable workaround for https://github.com/wala/ML/issues/118.");
 
         callable =
