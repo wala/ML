@@ -198,11 +198,11 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
       PointerAnalysis<InstanceKey> pointerAnalysis) {
     logger.info(
         () ->
-            "Can't find potential tensor iterable definition for use: "
+            "Using interprocedural analysis to find potential tensor iterable definition for use: "
                 + use
                 + " of instruction: "
                 + instruction
-                + ". Trying interprocedural analysis...");
+                + ".");
 
     // Look up the use in the pointer analysis to see if it points to a dataset.
     PointerKey usePointerKey =
