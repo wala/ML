@@ -176,6 +176,8 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
       Set<PointsToSetVariable> sources,
       CallGraph callGraph,
       PointerAnalysis<InstanceKey> pointerAnalysis) {
+    logger.fine(() -> "Processing instruction: " + instruction + ".");
+
     int use = instruction.getUse(0);
     SSAInstruction def = du.getDef(use);
 
