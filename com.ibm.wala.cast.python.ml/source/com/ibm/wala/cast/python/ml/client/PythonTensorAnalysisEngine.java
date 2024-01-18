@@ -168,33 +168,76 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
     return sources;
   }
 
-  private static void processInstruction(
+  /**
+   * Processes the given {@link SSAInstruction} to decide if the given {@link PointsToSetVariable}
+   * is added to the given {@link Set} of {@link PointsToSetVariable}s as tensor dataflow sources.
+   *
+   * @param instruction The {@link SSAInstruction} to process.
+   * @param du The {@link DefUse} corresponding to the siven {@link SSAInstruction}.
+   * @param node The {@link CGNode} containing the given {@link SSAInstruction}.
+   * @param src The {@link PointsToSetVariable} under question as to whether it shoudl be considered
+   *     a tensor dataflow source.
+   * @param sources The {@link Set} of tensor dataflow sources.
+   * @param callGraph The {@link CallGraph} containing the given {@link SSAInstruction}.
+   * @param pointerAnalysis The {@link PointerAnalysis} corresponding to the given {@link
+   *     CallGraph}.
+   * @return True iff the given {@link PointsToSetVariable} was added to the given {@link Set} of
+   *     {@link PointsToSetVariable} dataflow sources.
+   */
+  private static boolean processInstruction(
       SSAInstruction instruction,
       DefUse du,
-      CGNode localPointerKeyNode,
+      CGNode node,
       PointsToSetVariable src,
       Set<PointsToSetVariable> sources,
       CallGraph callGraph,
       PointerAnalysis<InstanceKey> pointerAnalysis) {
     logger.fine(() -> "Processing instruction: " + instruction + ".");
 
-    int use = instruction.getUse(0);
-    SSAInstruction def = du.getDef(use);
+    if (instruction != null && instruction.getNumberOfUses() > 0) {
+      int use = instruction.getUse(0);
+      SSAInstruction def = du.getDef(use);
 
-    if (def == null) {
-      // definition is unavailable from the local DefUse. Use interprocedural analysis using the PA.
-      processInstructionInterprocedurally(
-          instruction, use, localPointerKeyNode, src, sources, pointerAnalysis);
-    } else if (definesTensorIterable(def, localPointerKeyNode, callGraph, pointerAnalysis)) {
-      sources.add(src);
-      logger.info("Added dataflow source from tensor iterable: " + src + ".");
+      // First try intraprocedural analysis.
+      if (definesTensorIterable(def, node, callGraph, pointerAnalysis)) {
+        sources.add(src);
+        logger.info("Added dataflow source from tensor iterable: " + src + ".");
+        return true;
+      } else {
+        // Use interprocedural analysis using the PA.
+        boolean added =
+            processInstructionInterprocedurally(
+                instruction, use, node, src, sources, pointerAnalysis);
+
+        if (added) return true;
+        else
+          // keep going up.
+          return processInstruction(def, du, node, src, sources, callGraph, pointerAnalysis);
+      }
     }
+
+    return false;
   }
 
-  private static void processInstructionInterprocedurally(
+  /**
+   * Similar to processInstruction but does so using the given {@link PointerAnalysis}.
+   *
+   * @param instruction The {@link SSAInstruction} to be processed.
+   * @param use The {@link DefUse} corresponding to the given {@link SSAInstruction}.
+   * @param node The {@link CGNode} containing the given {@link SSAInstruction}.
+   * @param src The {@link PointsToSetVariable} being decided upon whether it should be considered
+   *     as a tensor dataflow source.
+   * @param sources The {@link Set} of all tensor dataflow sources, i.e., {@link
+   *     PointsToSetVariable}s.
+   * @param pointerAnalysis The {@link PointerAnalysis} built from the given {@link CGNode}'s {@link
+   *     CallGraph}.
+   * @return True iff the given {@link PointsToSetVariable} was added to the given set of tensor
+   *     dataflow sources, i.e., the given {@link Set} of {@link PointsToSetVariable}s.
+   */
+  private static boolean processInstructionInterprocedurally(
       SSAInstruction instruction,
       int use,
-      CGNode localPointerKeyNode,
+      CGNode node,
       PointsToSetVariable src,
       Set<PointsToSetVariable> sources,
       PointerAnalysis<InstanceKey> pointerAnalysis) {
@@ -207,8 +250,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
                 + ".");
 
     // Look up the use in the pointer analysis to see if it points to a dataset.
-    PointerKey usePointerKey =
-        pointerAnalysis.getHeapModel().getPointerKeyForLocal(localPointerKeyNode, use);
+    PointerKey usePointerKey = pointerAnalysis.getHeapModel().getPointerKeyForLocal(node, use);
 
     for (InstanceKey ik : pointerAnalysis.getPointsToSet(usePointerKey)) {
       if (ik instanceof AllocationSiteInNode) {
@@ -219,10 +261,12 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
         if (reference.equals(DATASET)) {
           sources.add(src);
           logger.info("Added dataflow source from tensor dataset: " + src + ".");
-          break;
+          return true;
         }
       }
     }
+
+    return false;
   }
 
   /**
