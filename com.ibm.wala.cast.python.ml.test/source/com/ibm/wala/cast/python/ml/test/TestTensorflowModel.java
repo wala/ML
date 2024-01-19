@@ -228,12 +228,23 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("tensorflow_gan_tutorial.py", "train_step", 1, 2, 2);
     testTf2("tensorflow_gan_tutorial2.py", "train_step", 1, 2, 2);
     testTf2("tensorflow_eager_execution.py", "MyModel.call", 1, 1, 3);
-    testTf2("neural_network.py", "NeuralNet.call", 1, 5, 3);
-    testTf2("neural_network.py", "cross_entropy_loss", 2, 6, 2, 3);
-    testTf2("neural_network.py", "run_optimization", 2, 3, 2, 3);
-    // FIXME: This test is disabled because, currently, the number of expected tensor parameters
-    // differs between calls to accuracy(). They should be consistent.
-    // testTf2("neural_network.py", "accuracy", 2, 5, 2, 3);
+    testTf2("neural_network.py", "NeuralNet.call", 1, 1, 3);
+    testTf2(
+        "neural_network.py",
+        "cross_entropy_loss",
+        1,
+        4,
+        3); // NOTE: Change to 2 tensor parameters once https://github.com/wala/ML/issues/127 is
+    // fixed. Values 2 and 3 will correspond to the tensor parameters.
+    testTf2("neural_network.py", "run_optimization", 2, 2, 2, 3);
+    testTf2(
+        "neural_network.py",
+        "accuracy",
+        1,
+        3,
+        3); // NOTE: Change to 2 tensor parameters and 5 tensor variables once
+    // https://github.com/wala/ML/issues/127 is fixed. Values 2 and 3 will correspond to the
+    // tensor parameters.
   }
 
   private void testTf2(

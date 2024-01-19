@@ -122,6 +122,8 @@
         <new def="Input" class="Ltensorflow/functions/Input" />
         <putfield class="LRoot" field="Input" fieldType="LRoot" ref="keras" value="Input" />
         <putfield class="LRoot" field="Input" fieldType="LRoot" ref="layers" value="Input" />
+        <new def="Dense" class="Ltensorflow/keras/layers/Dense" />
+        <putfield class="LRoot" field="Dense" fieldType="LRoot" ref="layers" value="Dense" />
         <new def="Variable" class="Ltensorflow/functions/Variable" />
         <putfield class="LRoot" field="Variable" fieldType="LRoot" ref="x" value="Variable" />
         <putfield class="LRoot" field="Variable" fieldType="LRoot" ref="variables" value="Variable" />
@@ -660,6 +662,32 @@
           <putfield class="LRoot" field="data" fieldType="LRoot" ref="xx" value="2" />
           <putfield class="LRoot" field="labels" fieldType="LRoot" ref="xx" value="3" />
           <return value="xx" />
+        </method>
+      </class>
+    </package>
+    <package name="tensorflow/keras/layers">
+      <class name="Dense" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/keras/layers/Dense -->
+        <method name="do" descriptor="()LRoot;" numArgs="11" paramNames="self units activation use_bias kernel_initializer bias_initializer kernel_regularizer bias_regularizer activity_regularizer kernel_constraint bias_constraint">
+          <new def="__call__" class="Ltensorflow/keras/layers/__call__" />
+          <putfield class="LRoot" field="__call__" fieldType="LRoot" ref="arg0" value="__call__" />
+          <new def="call" class="Ltensorflow/keras/layers/call" />
+          <putfield class="LRoot" field="call" fieldType="LRoot" ref="arg0" value="call" />
+          <return value="arg0" />
+        </method>
+      </class>
+      <!-- FIXME: These methods must be called explicitly. The implicit cases blocked on https://github.com/wala/ML/issues/127. -->
+      <class name="__call__" allocatable="true">
+        <!-- https://github.com/keras-team/keras/blob/07e13740fd181fc3ddec7d9a594d8a08666645f6/keras/layers/core/dense.py#L166-L240 -->
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self inputs">
+          <return value="inputs" />
+        </method>
+      </class>
+      <!-- FIXME: Workaround for https://github.com/wala/ML/issues/106. -->
+      <class name="call" allocatable="true">
+        <!-- https://github.com/keras-team/keras/blob/07e13740fd181fc3ddec7d9a594d8a08666645f6/keras/layers/core/dense.py#L166-L240 -->
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self inputs">
+          <return value="inputs" />
         </method>
       </class>
     </package>
