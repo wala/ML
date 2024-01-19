@@ -330,8 +330,8 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
             .filter(LocalPointerKey::isParameter)
             .collect(groupingBy(lpk -> lpk.getNode().getContext(), toSet()));
 
-    // check tensor parameters.
     for (Context ctx : contextToFunctionParameterPointerKeys.keySet()) {
+      // check tensor parameters.
       Set<LocalPointerKey> functionParameterPointerKeys =
           contextToFunctionParameterPointerKeys.get(ctx);
 
