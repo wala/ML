@@ -1,5 +1,6 @@
 package com.ibm.wala.cast.python.ml.test;
 
+import static java.util.Collections.emptySet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -20,7 +21,6 @@ import com.ibm.wala.util.CancelException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -304,27 +304,27 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 
     // get the tensor variables for the function.
     Set<TensorVariable> functionTensorVariables =
-        functionSignatureToTensorVariables.getOrDefault(functionSignature, Collections.emptySet());
+        functionSignatureToTensorVariables.getOrDefault(functionSignature, emptySet());
 
     assertEquals(expectedNumberOfTensorVariables, functionTensorVariables.size());
 
     // get the pointer keys for the function.
-    Set<LocalPointerKey> functionPointerKeys =
-        functionSignatureToPointerKeys.getOrDefault(functionSignature, Collections.emptySet());
+    Set<LocalPointerKey> functionParameterPointerKeys =
+        functionSignatureToPointerKeys.getOrDefault(functionSignature, emptySet()).stream()
+            .filter(LocalPointerKey::isParameter)
+            .collect(Collectors.toSet());
 
     // check tensor parameters.
-    assertEquals(
-        expectedNumberOfTensorParameters,
-        functionPointerKeys.stream().filter(LocalPointerKey::isParameter).count());
+    assertEquals(expectedNumberOfTensorParameters, functionParameterPointerKeys.size());
 
     // check value numbers.
     Set<Integer> actualParameterValueNumberSet =
-        functionPointerKeys.stream()
-            .filter(LocalPointerKey::isParameter)
+        functionParameterPointerKeys.stream()
             .map(LocalPointerKey::getValueNumber)
             .collect(Collectors.toSet());
 
     assertEquals(expectedTensorParameterValueNumbers.length, actualParameterValueNumberSet.size());
+
     Arrays.stream(expectedTensorParameterValueNumbers)
         .forEach(
             ev ->
