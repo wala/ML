@@ -773,6 +773,7 @@
       </class>
 
       <class name="softmax" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/nn/softmax -->
         <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self logits axis name">
           <return value="logits" />
         </method>
