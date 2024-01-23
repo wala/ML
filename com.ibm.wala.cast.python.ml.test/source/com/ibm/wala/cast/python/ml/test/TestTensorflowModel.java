@@ -245,6 +245,10 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
         3); // NOTE: Change to 2 tensor parameters and 5 tensor variables once
     // https://github.com/wala/ML/issues/127 is fixed. Values 2 and 3 will correspond to the
     // tensor parameters.
+    testTf2("autoencoder.py", "encoder", 1, 10, 2);
+    testTf2("autoencoder.py", "mean_square", 1, 1, 3);
+    testTf2("autoencoder.py", "run_optimization", 1, 1, 2);
+    testTf2("autoencoder.py", "decoder", 1, 8, 2);
   }
 
   private void testTf2(
