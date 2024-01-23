@@ -6,42 +6,29 @@
     <class name="pytest" allocatable="true">
       <method name="import" static="true" descriptor="()Lpytest;">
         <new def="x" class="Lpytest" />
-
         <new def="mark" class="Lobject" />
         <putfield class="LRoot" field="mark" fieldType="LRoot" ref="x" value="mark" />
-
         <new def="parametrize" class="Lpytest/class/parametrize" />
         <putfield class="LRoot" field="parametrize" fieldType="LRoot" ref="mark" value="parametrize" />
-
         <return value="x" />
       </method>
     </class>
-
     <package name="pytest/class">
-
       <class name="Parametrize" allocatable="true">
         <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self test">
-
           <putfield class="LRoot" field="params" fieldType="LRoot" ref="test" value="self" />
-
           <return value="test" />
         </method>
       </class>
-
       <class name="parametrize" allocatable="true">
         <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self params values extra">
           <new def="closure" class="Lpytest/class/Parametrize" />
-
           <putfield class="LRoot" field="test" fieldType="LRoot" ref="closure" value="self" />
-
           <putfield class="LRoot" field="params" fieldType="LRoot" ref="closure" value="params" />
-
           <putfield class="LRoot" field="values" fieldType="LRoot" ref="closure" value="values" />
-
           <return value="closure" />
         </method>
       </class>
     </package>
-
   </classloader>
 </summary-spec>
