@@ -93,6 +93,9 @@
         <new def="softmax" class="Ltensorflow/functions/softmax" />
         <putfield class="LRoot" field="softmax" fieldType="LRoot" ref="nn" value="softmax" />
 
+        <new def="sigmoid" class="Ltensorflow/functions/sigmoid" />
+        <putfield class="LRoot" field="sigmoid" fieldType="LRoot" ref="nn" value="sigmoid" />
+
         <new def="placeholder" class="Ltensorflow/functions/placeholder" />
         <putfield class="LRoot" field="placeholder" fieldType="LRoot" ref="x" value="placeholder" />
 
@@ -779,6 +782,13 @@
         <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/nn/softmax -->
         <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self logits axis name">
           <return value="logits" />
+        </method>
+      </class>
+
+      <class name="sigmoid" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/nn/sigmoid -->
+        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self x name">
+          <return value="x" />
         </method>
       </class>
     </package>
