@@ -74,6 +74,9 @@
         <new def="sigmoid" class="Ltensorflow/math/sigmoid" />
         <putfield class="LRoot" field="sigmoid" fieldType="LRoot" ref="nn" value="sigmoid" />
         <putfield class="LRoot" field="sigmoid" fieldType="LRoot" ref="math" value="sigmoid" />
+        <new def="add" class="Ltensorflow/math/add" />
+        <putfield class="LRoot" field="add" fieldType="LRoot" ref="x" value="add" />
+        <putfield class="LRoot" field="add" fieldType="LRoot" ref="math" value="add" />
         <new def="placeholder" class="Ltensorflow/functions/placeholder" />
         <putfield class="LRoot" field="placeholder" fieldType="LRoot" ref="x" value="placeholder" />
         <new def="examples" class="Lobject" />
@@ -261,6 +264,18 @@
         <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/nn/sigmoid -->
         <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self x name">
           <return value="x" />
+        </method>
+      </class>
+      <class name="add" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/add -->
+        <method name="read_data" descriptor="()LRoot;">
+          <new def="x" class="Ltensorflow/math/add" />
+          <return value="x" />
+        </method>
+        <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self x y name">
+          <!-- Even though tf.add() isn't a tensor "generator," it can convert its non-tensor arguments to tensors. -->
+          <call class="LRoot" name="read_data" descriptor="()LRoot;" type="virtual" arg0="arg0" def="xx" />
+          <return value="xx" />
         </method>
       </class>
     </package>
