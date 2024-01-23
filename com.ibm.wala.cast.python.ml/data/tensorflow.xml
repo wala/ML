@@ -32,6 +32,8 @@
         <putfield class="LRoot" field="distribute" fieldType="LRoot" ref="x" value="distribute" />
         <new def="nn" class="Lobject" />
         <putfield class="LRoot" field="nn" fieldType="LRoot" ref="x" value="nn" />
+        <new def="math" class="Lobject" />
+        <putfield class="LRoot" field="math" fieldType="LRoot" ref="x" value="math" />
         <new def="random" class="Lobject" />
         <putfield class="LRoot" field="random" fieldType="LRoot" ref="x" value="random" />
         <new def="sparse" class="Lobject" />
@@ -69,8 +71,9 @@
         <putfield class="LRoot" field="conv3d" fieldType="LRoot" ref="nn" value="conv3d" />
         <new def="softmax" class="Ltensorflow/functions/softmax" />
         <putfield class="LRoot" field="softmax" fieldType="LRoot" ref="nn" value="softmax" />
-        <new def="sigmoid" class="Ltensorflow/functions/sigmoid" />
+        <new def="sigmoid" class="Ltensorflow/math/sigmoid" />
         <putfield class="LRoot" field="sigmoid" fieldType="LRoot" ref="nn" value="sigmoid" />
+        <putfield class="LRoot" field="sigmoid" fieldType="LRoot" ref="math" value="sigmoid" />
         <new def="placeholder" class="Ltensorflow/functions/placeholder" />
         <putfield class="LRoot" field="placeholder" fieldType="LRoot" ref="x" value="placeholder" />
         <new def="examples" class="Lobject" />
@@ -252,6 +255,14 @@
     </package>
     <package name="keras/objects">
       <class name="feature" allocatable="true" />
+    </package>
+    <package name="tensorflow/math">
+      <class name="sigmoid" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/nn/sigmoid -->
+        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self x name">
+          <return value="x" />
+        </method>
+      </class>
     </package>
     <package name="tensorflow/functions">
       <class name="AdamOptimizer" allocatable="true">
@@ -641,12 +652,6 @@
         <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/nn/softmax -->
         <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self logits axis name">
           <return value="logits" />
-        </method>
-      </class>
-      <class name="sigmoid" allocatable="true">
-        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/nn/sigmoid -->
-        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self x name">
-          <return value="x" />
         </method>
       </class>
     </package>

@@ -249,6 +249,8 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("autoencoder.py", "mean_square", 1, 1, 3);
     testTf2("autoencoder.py", "run_optimization", 1, 1, 2);
     testTf2("autoencoder.py", "decoder", 1, 8, 2);
+    testTf2("tf2_test_sigmoid.py", "f", 1, 1, 2);
+    testTf2("tf2_test_sigmoid2.py", "f", 1, 1, 2);
   }
 
   private void testTf2(
