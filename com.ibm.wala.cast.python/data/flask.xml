@@ -6,45 +6,33 @@
     <class name="flask" allocatable="true">
       <method name="import" static="true" descriptor="()Lflask;">
         <new def="x" class="Lflask" />
-
         <new def="flask" class="Lflask/class/Flask" />
         <putfield class="LRoot" field="Flask" fieldType="LRoot" ref="x" value="flask" />
-
         <new def="request" class="Lobject" />
         <putfield class="LRoot" field="request" fieldType="LRoot" ref="x" value="request" />
-
         <new def="form" class="Lobject" />
         <putfield class="LRoot" field="form" fieldType="LRoot" ref="request" value="form" />
-
-
         <return value="x" />
       </method>
     </class>
-
     <class name="subprocess" allocatable="true">
       <method name="import" static="true" descriptor="()Lsubprocess;">
         <new def="x" class="Lsubprocess" />
-
         <new def="call" class="Lsubprocess/function/call" />
         <putfield class="LRoot" field="call" fieldType="LRoot" ref="x" value="call" />
-
         <return value="x" />
       </method>
     </class>
-
     <package name="flask/class">
       <class name="Flask" allocatable="true">
         <method name="do" descriptor="()LRoot;">
           <new def="v" class="Lobject" />
-
           <new def="route" class="Lflask/function/route" />
           <putfield class="LRoot" field="route" fieldType="LRoot" ref="v" value="route" />
-
           <return value="v" />
         </method>
       </class>
     </package>
-
     <package name="flask/function">
       <class name="route" allocatable="true">
         <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self entry">
@@ -59,7 +47,6 @@
         </method>
       </class>
     </package>
-
     <package name="subprocess/function">
       <class name="call" allocatable="true">
         <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self value shell">
@@ -67,6 +54,5 @@
         </method>
       </class>
     </package>
-
   </classloader>
 </summary-spec>
