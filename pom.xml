@@ -168,7 +168,9 @@
                 <excludes>
                   <exclude>**/plugin.xml</exclude>
                   <exclude>**/pom.xml</exclude>
+                  <exclude>**/dependency-reduced-pom.xml</exclude>
                   <exclude>**/gradle.xml</exclude>
+                  <exclude>**/target/</exclude>
                 </excludes>
                 <eclipseWtp>
                   <type>XML</type>
