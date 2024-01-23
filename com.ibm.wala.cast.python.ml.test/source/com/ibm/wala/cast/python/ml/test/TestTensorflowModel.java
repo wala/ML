@@ -107,8 +107,8 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("tf2n.py", "func2", 1, 1, 2);
     testTf2("tf2n2.py", "func2", 1, 1, 2);
     testTf2("tf2n3.py", "func2", 1, 1, 2);
-    testTf2("tf2o.py", "add", 2, 2, 2, 3);
-    testTf2("tf2o2.py", "add", 2, 2, 2, 3);
+    testTf2("tf2o.py", "add", 2, 3, 2, 3);
+    testTf2("tf2o2.py", "add", 2, 3, 2, 3);
     testTf2("tf2p.py", "value_index", 2, 2, 2, 3);
     testTf2("tf2p2.py", "value_index", 2, 2, 2, 3);
     testTf2("tf2q.py", "add", 2, 2, 2, 3);
@@ -245,12 +245,18 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
         3); // NOTE: Change to 2 tensor parameters and 5 tensor variables once
     // https://github.com/wala/ML/issues/127 is fixed. Values 2 and 3 will correspond to the
     // tensor parameters.
-    testTf2("autoencoder.py", "encoder", 1, 10, 2);
-    testTf2("autoencoder.py", "mean_square", 1, 1, 3);
-    testTf2("autoencoder.py", "run_optimization", 1, 1, 2);
-    testTf2("autoencoder.py", "decoder", 1, 8, 2);
+    testTf2("autoencoder.py", "encoder", 1, 18, 2);
+    testTf2("autoencoder.py", "mean_square", 2, 2, 2, 3);
+    testTf2("autoencoder.py", "run_optimization", 1, 3, 2);
+    testTf2("autoencoder.py", "decoder", 1, 18, 2);
     testTf2("tf2_test_sigmoid.py", "f", 1, 1, 2);
     testTf2("tf2_test_sigmoid2.py", "f", 1, 1, 2);
+    testTf2("tf2_test_add.py", "f", 1, 1, 2);
+    testTf2("tf2_test_add2.py", "f", 1, 1, 2);
+    testTf2("tf2_test_add3.py", "f", 1, 1, 2);
+    testTf2("tf2_test_add4.py", "f", 1, 1, 2);
+    testTf2("tf2_test_add5.py", "f", 1, 1, 2);
+    testTf2("tf2_test_add6.py", "f", 1, 1, 2);
   }
 
   private void testTf2(
