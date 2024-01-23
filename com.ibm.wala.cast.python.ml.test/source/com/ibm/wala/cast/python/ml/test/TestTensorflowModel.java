@@ -348,6 +348,11 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
             .filter(LocalPointerKey::isParameter)
             .collect(groupingBy(lpk -> lpk.getNode().getContext(), toSet()));
 
+    assertTrue(
+        "Because tensor parameters are inferred via function arguments, we need at least one"
+            + " calling context if we are expecting at least one tensor parameter.",
+        expectedNumberOfTensorParameters <= 0 || contextToFunctionParameterPointerKeys.size() > 0);
+
     for (Context ctx : contextToFunctionParameterPointerKeys.keySet()) {
       // check tensor parameters.
       Set<LocalPointerKey> functionParameterPointerKeys =
