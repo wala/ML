@@ -328,6 +328,12 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
 
     assertEquals(expectedNumberOfTensorVariables, functionTensorVariables.size());
 
+    // check value numbers.
+    assertEquals(
+        "Each tensor parameter should have a unique value number.",
+        expectedNumberOfTensorParameters,
+        expectedTensorParameterValueNumbers.length);
+
     // get the pointer keys for the function by their contexts.
     Map<Context, Set<LocalPointerKey>> contextToFunctionParameterPointerKeys =
         functionSignatureToPointerKeys.getOrDefault(functionSignature, emptySet()).stream()
@@ -342,11 +348,6 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
       assertEquals(expectedNumberOfTensorParameters, functionParameterPointerKeys.size());
 
       // check value numbers.
-      assertEquals(
-          "Each tensor parameter should have a unique value number.",
-          expectedNumberOfTensorParameters,
-          expectedTensorParameterValueNumbers.length);
-
       Set<Integer> actualParameterValueNumberSet =
           functionParameterPointerKeys.stream()
               .map(LocalPointerKey::getValueNumber)
