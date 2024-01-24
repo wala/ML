@@ -6,16 +6,12 @@
     <class name="functools" allocatable="true">
       <method name="import" static="true" descriptor="()Lfunctools;">
         <new def="x" class="Lfunctools" />
-
         <new def="reduce" class="Lfunctools/functions/reduce" />
         <putfield class="LRoot" field="reduce" fieldType="LRoot" ref="x" value="reduce" />
-
         <return value="x" />
       </method>
     </class>
-
     <package name="functools/functions">
-
       <class name="reduce" allocatable="true">
         <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self lambda data">
           <constant name="l" type="int" value="0" />
@@ -26,7 +22,6 @@
           <return value="v" />
         </method>
       </class>
-
     </package>
   </classloader>
 </summary-spec>
