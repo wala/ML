@@ -61,6 +61,8 @@
         <putfield class="LRoot" field="numpy_input_fn" fieldType="LRoot" ref="inputs" value="numpy_input_fn" />
         <new def="from_tensor_slices" class="Ltensorflow/data/Dataset/from_tensor_slices" />
         <putfield class="LRoot" field="from_tensor_slices" fieldType="LRoot" ref="Dataset" value="from_tensor_slices" />
+        <new def="from_generator" class="Ltensorflow/data/Dataset/from_generator" />
+        <putfield class="LRoot" field="from_generator" fieldType="LRoot" ref="Dataset" value="from_generator" />
         <new def="reshape" class="Ltensorflow/functions/reshape" />
         <putfield class="LRoot" field="reshape" fieldType="LRoot" ref="x" value="reshape" />
         <new def="conv2d" class="Ltensorflow/functions/conv2d" />
@@ -793,6 +795,14 @@
       <class name="from_tensor_slices" allocatable="true">
         <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#from_tensor_slices -->
         <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="tensors name">
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+      <class name="from_generator" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#from_generator -->
+        <method name="do" descriptor="()LRoot;" numArgs="6" paramNames="generator output_types output_shapes args output_signature name">
           <new def="x" class="Ltensorflow/data/Dataset" />
           <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
           <return value="xx" />
