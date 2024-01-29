@@ -665,7 +665,6 @@
           <return value="x" />
         </method>
       </class>
-
       <class name="softmax" allocatable="true">
         <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/nn/softmax -->
         <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self logits axis name">
@@ -756,7 +755,6 @@
           <return value="xx" />
         </method>
       </class>
-
       <class name="repeat" allocatable="true">
         <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#repeat -->
         <method name="do" descriptor="()LRoot;" numArgs="6" paramNames="self count name">
@@ -766,7 +764,6 @@
           <return value="xx" />
         </method>
       </class>
-
       <class name="prefetch" allocatable="true">
         <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#prefetch -->
         <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self buffer_size name">
@@ -776,7 +773,6 @@
           <return value="xx" />
         </method>
       </class>
-
       <class name="take" allocatable="true">
         <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#take -->
         <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self count name">
