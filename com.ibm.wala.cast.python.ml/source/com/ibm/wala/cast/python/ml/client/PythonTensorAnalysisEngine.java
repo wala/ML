@@ -1,5 +1,6 @@
 package com.ibm.wala.cast.python.ml.client;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static com.ibm.wala.cast.python.ml.types.TensorFlowTypes.DATASET;
 import static com.ibm.wala.cast.types.AstMethodReference.fnReference;
 
@@ -142,7 +143,8 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
                 src,
                 sources,
                 callGraph,
-                pointerAnalysis);
+                pointerAnalysis,
+                newHashSet());
           }
         } else if (inst instanceof PythonPropertyRead) {
           // We are potentially pulling a tensor out of a non-scalar tensor iterable.
@@ -160,7 +162,14 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
           } else if (def instanceof EachElementGetInstruction
               || def instanceof PythonPropertyRead) {
             processInstruction(
-                def, du, localPointerKeyNode, src, sources, callGraph, pointerAnalysis);
+                def,
+                du,
+                localPointerKeyNode,
+                src,
+                sources,
+                callGraph,
+                pointerAnalysis,
+                newHashSet());
           }
         }
       }
@@ -181,6 +190,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
    * @param callGraph The {@link CallGraph} containing the given {@link SSAInstruction}.
    * @param pointerAnalysis The {@link PointerAnalysis} corresponding to the given {@link
    *     CallGraph}.
+   * @param seen A {@link Set} of previously processed {@link SSAInstruction}.
    * @return True iff the given {@link PointsToSetVariable} was added to the given {@link Set} of
    *     {@link PointsToSetVariable} dataflow sources.
    */
@@ -191,28 +201,35 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
       PointsToSetVariable src,
       Set<PointsToSetVariable> sources,
       CallGraph callGraph,
-      PointerAnalysis<InstanceKey> pointerAnalysis) {
-    logger.fine(() -> "Processing instruction: " + instruction + ".");
+      PointerAnalysis<InstanceKey> pointerAnalysis,
+      Set<SSAInstruction> seen) {
+    if (seen.contains(instruction))
+      logger.fine(() -> "Skipping instruction: " + instruction + ". We've seen it before.");
+    else {
+      logger.fine(() -> "Processing instruction: " + instruction + ".");
+      seen.add(instruction);
 
-    if (instruction != null && instruction.getNumberOfUses() > 0) {
-      int use = instruction.getUse(0);
-      SSAInstruction def = du.getDef(use);
+      if (instruction != null && instruction.getNumberOfUses() > 0) {
+        int use = instruction.getUse(0);
+        SSAInstruction def = du.getDef(use);
 
-      // First try intraprocedural analysis.
-      if (definesTensorIterable(def, node, callGraph, pointerAnalysis)) {
-        sources.add(src);
-        logger.info("Added dataflow source from tensor iterable: " + src + ".");
-        return true;
-      } else {
-        // Use interprocedural analysis using the PA.
-        boolean added =
-            processInstructionInterprocedurally(
-                instruction, use, node, src, sources, pointerAnalysis);
+        // First try intraprocedural analysis.
+        if (definesTensorIterable(def, node, callGraph, pointerAnalysis)) {
+          sources.add(src);
+          logger.info("Added dataflow source from tensor iterable: " + src + ".");
+          return true;
+        } else {
+          // Use interprocedural analysis using the PA.
+          boolean added =
+              processInstructionInterprocedurally(
+                  instruction, use, node, src, sources, pointerAnalysis);
 
-        if (added) return true;
-        else
-          // keep going up.
-          return processInstruction(def, du, node, src, sources, callGraph, pointerAnalysis);
+          if (added) return true;
+          else
+            // keep going up.
+            return processInstruction(
+                def, du, node, src, sources, callGraph, pointerAnalysis, seen);
+        }
       }
     }
 
