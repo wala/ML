@@ -7,7 +7,6 @@ import tensorflow.keras as keras
 
 
 class MyModel(keras.Model):
-
     def __init__(self):
         super(MyModel, self).__init__()
         self.conv1 = keras.layers.Conv2D(32, 3, activation="relu")
@@ -62,7 +61,9 @@ y_train = y_train[:num_train]
 
 x_test = x_test[..., tf.newaxis]
 
-train_ds = tf.data.Dataset.from_tensor_slices((x_train, y_train)).shuffle(10000).batch(32)
+train_ds = (
+    tf.data.Dataset.from_tensor_slices((x_train, y_train)).shuffle(10000).batch(32)
+)
 valid_ds = tf.data.Dataset.from_tensor_slices((x_valid, y_valid)).batch(32)
 test_ds = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(32)
 
@@ -101,12 +102,16 @@ for epoch in range(EPOCHS):
         min_weights = model.get_weights()
 
     template = "Epoch {}, Loss: {:.4f}, Acc: {:.4f}, Val Loss: {:.4f}, Val Acc: {:.4f}, Min Loss: {:.4f}"
-    print(template.format(epoch + 1,
-                          train_loss.result(),
-                          train_accuracy.result() * 100,
-                          valid_loss.result(),
-                          valid_accuracy.result() * 100,
-                          min_loss))
+    print(
+        template.format(
+            epoch + 1,
+            train_loss.result(),
+            train_accuracy.result() * 100,
+            valid_loss.result(),
+            valid_accuracy.result() * 100,
+            min_loss,
+        )
+    )
 
     train_loss.reset_states()
     train_accuracy.reset_states()
@@ -118,5 +123,8 @@ model.set_weights(min_weights)
 for test_images, test_labels in test_ds:
     test_step(model, test_loss, test_accuracy, test_images, test_labels)
 
-print("Test Loss: {:.4f}, Test Accuracy: {:.4f}".format(test_loss.result(), test_accuracy.result()))
-
+print(
+    "Test Loss: {:.4f}, Test Accuracy: {:.4f}".format(
+        test_loss.result(), test_accuracy.result()
+    )
+)

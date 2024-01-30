@@ -3,7 +3,6 @@ class D:
 
 
 class C(D):
-
     def __call__(self, x):
         return x * x
 

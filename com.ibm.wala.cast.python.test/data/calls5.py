@@ -3,14 +3,14 @@ def bad():
 
 
 def id(x):
-	return x
+    return x
 
 
 class Foo(object):
-	def foo(self, a, b):
-		return a(b)
+    def foo(self, a, b):
+        return a(b)
 
-    
+
 m = Foo()
 n = m.foo(b=bad, a=id)
 

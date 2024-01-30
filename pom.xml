@@ -33,6 +33,7 @@
     <spotless.version>2.37.0</spotless.version>
     <maven.surefire.version>3.0.0-M7</maven.surefire.version>
     <logging.config.file>${maven.multiModuleProjectDirectory}/logging.properties</logging.config.file>
+    <black.version>24.1.1</black.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -200,9 +201,16 @@
             </pom>
             <python>
               <includes>
-                <include>*.py</include>
+                <include>**/*.py</include>
               </includes>
-              <black/>
+              <excludes>
+                <!-- Don't format generated files. -->
+                <exclude>**/bin/</exclude>
+                <exclude>**/target/</exclude>
+              </excludes>
+              <black>
+                <version>${black.version}</version>
+              </black>
             </python>
           </configuration>
         </plugin>

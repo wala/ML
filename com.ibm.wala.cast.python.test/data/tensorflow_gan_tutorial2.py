@@ -18,13 +18,19 @@ def make_generator_model():
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.LeakyReLU()(x)
     x = tf.keras.layers.Reshape((7, 7, 256))(x)
-    x = tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(1, 1), padding="same", use_bias=False)(x)
+    x = tf.keras.layers.Conv2DTranspose(
+        128, (5, 5), strides=(1, 1), padding="same", use_bias=False
+    )(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.LeakyReLU()(x)
-    x = tf.keras.layers.Conv2DTranspose(64, (5, 5), strides=(2, 2), padding="same", use_bias=False)(x)
+    x = tf.keras.layers.Conv2DTranspose(
+        64, (5, 5), strides=(2, 2), padding="same", use_bias=False
+    )(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.LeakyReLU()(x)
-    x = tf.keras.layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), padding="same", use_bias=False)(x)
+    x = tf.keras.layers.Conv2DTranspose(
+        1, (5, 5), strides=(2, 2), padding="same", use_bias=False
+    )(x)
     output_node = x
 
     return tf.keras.models.Model(input_node, output_node)
@@ -61,7 +67,9 @@ def generator_loss(fake_output):
 
 
 @tf.function
-def train_step(images, generator, discriminator, generator_optimizer, discriminator_optimizer):
+def train_step(
+    images, generator, discriminator, generator_optimizer, discriminator_optimizer
+):
     noise = tf.random.normal([images.shape[0], noise_dim])
 
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
@@ -77,18 +85,33 @@ def train_step(images, generator, discriminator, generator_optimizer, discrimina
     disc_grads = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
 
     generator_optimizer.apply_gradients(zip(gen_grads, generator.trainable_variables))
-    discriminator_optimizer.apply_gradients(zip(disc_grads, discriminator.trainable_variables))
+    discriminator_optimizer.apply_gradients(
+        zip(disc_grads, discriminator.trainable_variables)
+    )
 
 
-def train(dataset, epochs, checkpoint, generator, discriminator,
-          generator_optimizer, discriminator_optimizer, seed):
+def train(
+    dataset,
+    epochs,
+    checkpoint,
+    generator,
+    discriminator,
+    generator_optimizer,
+    discriminator_optimizer,
+    seed,
+):
     # for epoch in range(epochs, epochs*2):
     for epoch in range(epochs):
         start = time.time()
 
         for image_batch in dataset:
-            train_step(image_batch, generator, discriminator,
-                       generator_optimizer, discriminator_optimizer)
+            train_step(
+                image_batch,
+                generator,
+                discriminator,
+                generator_optimizer,
+                discriminator_optimizer,
+            )
 
         generate_and_save_images(generator, epoch + 1, seed)
 
@@ -128,9 +151,13 @@ train_images = (train_images - 127.5) / 127.5
 buffer_size = train_images.shape[0]
 batch_size = 256
 
-train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(buffer_size).batch(batch_size)
+train_dataset = (
+    tf.data.Dataset.from_tensor_slices(train_images)
+    .shuffle(buffer_size)
+    .batch(batch_size)
+)
 
-generator = make_generator_model();
+generator = make_generator_model()
 # generator.summary()
 
 # noise = tf.random.normal([1, 100])
@@ -148,10 +175,12 @@ discriminator = make_discriminator_model()
 generator_optimizer = tf.keras.optimizers.Adam(1e-4)
 discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
 
-checkpoint = tf.train.Checkpoint(generator_optimizer=generator_optimizer,
-                                 discriminator_optimizer=discriminator_optimizer,
-                                 generator=generator,
-                                 discriminator=discriminator)
+checkpoint = tf.train.Checkpoint(
+    generator_optimizer=generator_optimizer,
+    discriminator_optimizer=discriminator_optimizer,
+    generator=generator,
+    discriminator=discriminator,
+)
 
 # checkpoint_dir = "./training_checkpoints"
 # checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
@@ -162,5 +191,13 @@ num_examples_to_generate = 16
 
 seed = tf.random.normal([num_examples_to_generate, noise_dim])
 
-train(train_dataset, epochs, checkpoint, generator, discriminator,
-      generator_optimizer, discriminator_optimizer, seed)
+train(
+    train_dataset,
+    epochs,
+    checkpoint,
+    generator,
+    discriminator,
+    generator_optimizer,
+    discriminator_optimizer,
+    seed,
+)

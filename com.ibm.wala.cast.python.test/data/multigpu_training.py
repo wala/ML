@@ -57,43 +57,61 @@ fc1_units = 2048  # number of neurons for 1st fully-connected layer.
 # %%
 # Prepare MNIST data.
 from tensorflow.keras.datasets import cifar10
+
 (x_train, y_train), (x_test, y_test) = cifar10.load_data()
 # Convert to float32.
 x_train, x_test = np.array(x_train, np.float32), np.array(x_test, np.float32)
 # Normalize images value from [0, 255] to [0, 1].
-x_train, x_test = x_train / 255., x_test / 255.
+x_train, x_test = x_train / 255.0, x_test / 255.0
 y_train, y_test = np.reshape(y_train, (-1)), np.reshape(y_test, (-1))
 
 # %%
 # Use tf.data API to shuffle and batch data.
 train_data = tf.data.Dataset.from_tensor_slices((x_train, y_train))
-train_data = train_data.repeat().shuffle(batch_size * 10).batch(batch_size).prefetch(num_gpus)
+train_data = (
+    train_data.repeat().shuffle(batch_size * 10).batch(batch_size).prefetch(num_gpus)
+)
 
 
 # %%
 class ConvNet(Model):
-
     # Set layers.
     def __init__(self):
         super(ConvNet, self).__init__()
 
         # Convolution Layer with 64 filters and a kernel size of 3.
-        self.conv1_1 = layers.Conv2D(conv1_filters, kernel_size=3, padding='SAME', activation=tf.nn.relu)
-        self.conv1_2 = layers.Conv2D(conv1_filters, kernel_size=3, padding='SAME', activation=tf.nn.relu)
+        self.conv1_1 = layers.Conv2D(
+            conv1_filters, kernel_size=3, padding="SAME", activation=tf.nn.relu
+        )
+        self.conv1_2 = layers.Conv2D(
+            conv1_filters, kernel_size=3, padding="SAME", activation=tf.nn.relu
+        )
         # Max Pooling (down-sampling) with kernel size of 2 and strides of 2.
         self.maxpool1 = layers.MaxPool2D(2, strides=2)
 
         # Convolution Layer with 128 filters and a kernel size of 3.
-        self.conv2_1 = layers.Conv2D(conv2_filters, kernel_size=3, padding='SAME', activation=tf.nn.relu)
-        self.conv2_2 = layers.Conv2D(conv2_filters, kernel_size=3, padding='SAME', activation=tf.nn.relu)
-        self.conv2_3 = layers.Conv2D(conv2_filters, kernel_size=3, padding='SAME', activation=tf.nn.relu)
+        self.conv2_1 = layers.Conv2D(
+            conv2_filters, kernel_size=3, padding="SAME", activation=tf.nn.relu
+        )
+        self.conv2_2 = layers.Conv2D(
+            conv2_filters, kernel_size=3, padding="SAME", activation=tf.nn.relu
+        )
+        self.conv2_3 = layers.Conv2D(
+            conv2_filters, kernel_size=3, padding="SAME", activation=tf.nn.relu
+        )
         # Max Pooling (down-sampling) with kernel size of 2 and strides of 2.
         self.maxpool2 = layers.MaxPool2D(2, strides=2)
 
         # Convolution Layer with 256 filters and a kernel size of 3.
-        self.conv3_1 = layers.Conv2D(conv3_filters, kernel_size=3, padding='SAME', activation=tf.nn.relu)
-        self.conv3_2 = layers.Conv2D(conv3_filters, kernel_size=3, padding='SAME', activation=tf.nn.relu)
-        self.conv3_3 = layers.Conv2D(conv3_filters, kernel_size=3, padding='SAME', activation=tf.nn.relu)
+        self.conv3_1 = layers.Conv2D(
+            conv3_filters, kernel_size=3, padding="SAME", activation=tf.nn.relu
+        )
+        self.conv3_2 = layers.Conv2D(
+            conv3_filters, kernel_size=3, padding="SAME", activation=tf.nn.relu
+        )
+        self.conv3_3 = layers.Conv2D(
+            conv3_filters, kernel_size=3, padding="SAME", activation=tf.nn.relu
+        )
 
         # Flatten the data to a 1-D vector for the fully connected layer.
         self.flatten = layers.Flatten()
@@ -183,7 +201,7 @@ def average_gradients(tower_grads):
 
 
 # %%
-with tf.device('/cpu:0'):
+with tf.device("/cpu:0"):
     # Build convnet.
     conv_net = ConvNet()
     # Stochastic gradient descent optimizer.
@@ -198,15 +216,15 @@ def run_optimization(x, y):
     # Variables to update, i.e. trainable variables.
     trainable_variables = conv_net.trainable_variables
 
-    with tf.device('/cpu:0'):
+    with tf.device("/cpu:0"):
         for i in range(num_gpus):
             # Split data between GPUs.
             gpu_batch_size = int(batch_size / num_gpus)
-            batch_x = x[i * gpu_batch_size: (i + 1) * gpu_batch_size]
-            batch_y = y[i * gpu_batch_size: (i + 1) * gpu_batch_size]
+            batch_x = x[i * gpu_batch_size : (i + 1) * gpu_batch_size]
+            batch_y = y[i * gpu_batch_size : (i + 1) * gpu_batch_size]
 
             # Build the neural net on each GPU.
-            with tf.device('/gpu:%i' % i):
+            with tf.device("/gpu:%i" % i):
                 grad = backprop(batch_x, batch_y, trainable_variables)
                 tower_grads.append(grad)
 
@@ -231,5 +249,10 @@ for step, (batch_x, batch_y) in enumerate(train_data.take(training_steps), 1):
         pred = conv_net(batch_x)
         loss = cross_entropy_loss(pred, batch_y)
         acc = accuracy(pred, batch_y)
-        print(("step: %i, loss: %f, accuracy: %f, speed: %f examples/sec" % (step, loss, acc, speed)))
+        print(
+            (
+                "step: %i, loss: %f, accuracy: %f, speed: %f examples/sec"
+                % (step, loss, acc, speed)
+            )
+        )
         ts = time.time()

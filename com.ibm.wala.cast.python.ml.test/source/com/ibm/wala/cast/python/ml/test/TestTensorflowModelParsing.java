@@ -107,7 +107,7 @@ public class TestTensorflowModelParsing extends TestPythonMLCallGraphShape {
       Position parameterPosition = method.getParameterPosition(paramIndex);
 
       // check the line.
-      assertEquals(3, parameterPosition.getFirstLine());
+      assertEquals(4, parameterPosition.getFirstLine());
 
       // check the columns.
       if (lpk.getValueNumber() == 2) {
