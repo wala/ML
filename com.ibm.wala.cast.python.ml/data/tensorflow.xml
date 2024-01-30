@@ -83,6 +83,9 @@
         <new def="add" class="Ltensorflow/math/add" />
         <putfield class="LRoot" field="add" fieldType="LRoot" ref="x" value="add" />
         <putfield class="LRoot" field="add" fieldType="LRoot" ref="math" value="add" />
+        <new def="multiply" class="Ltensorflow/math/multiply" />
+        <putfield class="LRoot" field="multiply" fieldType="LRoot" ref="x" value="multiply" />
+        <putfield class="LRoot" field="multiply" fieldType="LRoot" ref="math" value="multiply" />
         <new def="reduce_mean" class="Ltensorflow/math/reduce_mean" />
         <putfield class="LRoot" field="reduce_mean" fieldType="LRoot" ref="x" value="reduce_mean" />
         <putfield class="LRoot" field="reduce_mean" fieldType="LRoot" ref="math" value="reduce_mean" />
@@ -283,6 +286,18 @@
         </method>
         <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self x y name">
           <!-- Even though tf.add() isn't a tensor "generator," it can convert its non-tensor arguments to tensors. -->
+          <call class="LRoot" name="read_data" descriptor="()LRoot;" type="virtual" arg0="arg0" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+      <class name="multiply" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/multiply -->
+        <method name="read_data" descriptor="()LRoot;">
+          <new def="x" class="Ltensorflow/math/multiply" />
+          <return value="x" />
+        </method>
+        <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self x y name">
+          <!-- Even though tf.multiply() isn't a tensor "generator," it can convert its non-tensor arguments to tensors. -->
           <call class="LRoot" name="read_data" descriptor="()LRoot;" type="virtual" arg0="arg0" def="xx" />
           <return value="xx" />
         </method>
