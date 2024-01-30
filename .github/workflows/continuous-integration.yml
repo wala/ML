@@ -37,6 +37,13 @@ jobs:
         pushd ${{ runner.temp }}/IDE/com.ibm.wala.cast.lsp
         mvn clean install -B -q -DskipTests
         popd
+    - name: Install Python.
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+    - name: Install Python dependencies.
+      run: pip install -r requirements.txt
     - name: Check formatting with spotless.
       run: mvn spotless:check -B
     - name: Build with Maven

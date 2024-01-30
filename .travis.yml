@@ -1,5 +1,5 @@
 os: linux
-dist: focal
+dist: jammy
 language: java
 jdk: openjdk11
 before_install:
@@ -15,6 +15,7 @@ install:
  - pushd /tmp/IDE/com.ibm.wala.cast.lsp
  - mvn clean install -B -q -DskipTests
  - popd
+ - pip install -r requirements.txt
 script:
  - mvn spotless:check -B
  - mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties clean verify -B
