@@ -1,7 +1,8 @@
 import tensorflow as tf
 
-
 # Create an override model to classify pictures
+
+
 class SequentialModel(tf.keras.Model):
 
   def __init__(self, **kwargs):
@@ -27,6 +28,7 @@ class SequentialModel(tf.keras.Model):
     x = self.dense_2(x)
 
     return x
+
 
 input_data = tf.random.uniform([20, 28, 28])
 

@@ -32,6 +32,8 @@
         <putfield class="LRoot" field="distribute" fieldType="LRoot" ref="x" value="distribute" />
         <new def="nn" class="Lobject" />
         <putfield class="LRoot" field="nn" fieldType="LRoot" ref="x" value="nn" />
+        <new def="math" class="Lobject" />
+        <putfield class="LRoot" field="math" fieldType="LRoot" ref="x" value="math" />
         <new def="random" class="Lobject" />
         <putfield class="LRoot" field="random" fieldType="LRoot" ref="x" value="random" />
         <new def="sparse" class="Lobject" />
@@ -59,6 +61,8 @@
         <putfield class="LRoot" field="numpy_input_fn" fieldType="LRoot" ref="inputs" value="numpy_input_fn" />
         <new def="from_tensor_slices" class="Ltensorflow/data/Dataset/from_tensor_slices" />
         <putfield class="LRoot" field="from_tensor_slices" fieldType="LRoot" ref="Dataset" value="from_tensor_slices" />
+        <new def="from_generator" class="Ltensorflow/data/Dataset/from_generator" />
+        <putfield class="LRoot" field="from_generator" fieldType="LRoot" ref="Dataset" value="from_generator" />
         <new def="reshape" class="Ltensorflow/functions/reshape" />
         <putfield class="LRoot" field="reshape" fieldType="LRoot" ref="x" value="reshape" />
         <new def="conv2d" class="Ltensorflow/functions/conv2d" />
@@ -67,6 +71,14 @@
         <putfield class="LRoot" field="conv2d" fieldType="LRoot" ref="layers" value="conv2d" />
         <new def="conv3d" class="Ltensorflow/functions/conv3d" />
         <putfield class="LRoot" field="conv3d" fieldType="LRoot" ref="nn" value="conv3d" />
+        <new def="softmax" class="Ltensorflow/functions/softmax" />
+        <putfield class="LRoot" field="softmax" fieldType="LRoot" ref="nn" value="softmax" />
+        <new def="sigmoid" class="Ltensorflow/math/sigmoid" />
+        <putfield class="LRoot" field="sigmoid" fieldType="LRoot" ref="nn" value="sigmoid" />
+        <putfield class="LRoot" field="sigmoid" fieldType="LRoot" ref="math" value="sigmoid" />
+        <new def="add" class="Ltensorflow/math/add" />
+        <putfield class="LRoot" field="add" fieldType="LRoot" ref="x" value="add" />
+        <putfield class="LRoot" field="add" fieldType="LRoot" ref="math" value="add" />
         <new def="placeholder" class="Ltensorflow/functions/placeholder" />
         <putfield class="LRoot" field="placeholder" fieldType="LRoot" ref="x" value="placeholder" />
         <new def="examples" class="Lobject" />
@@ -120,6 +132,8 @@
         <new def="Input" class="Ltensorflow/functions/Input" />
         <putfield class="LRoot" field="Input" fieldType="LRoot" ref="keras" value="Input" />
         <putfield class="LRoot" field="Input" fieldType="LRoot" ref="layers" value="Input" />
+        <new def="Dense" class="Ltensorflow/keras/layers/Dense" />
+        <putfield class="LRoot" field="Dense" fieldType="LRoot" ref="layers" value="Dense" />
         <new def="Variable" class="Ltensorflow/functions/Variable" />
         <putfield class="LRoot" field="Variable" fieldType="LRoot" ref="x" value="Variable" />
         <putfield class="LRoot" field="Variable" fieldType="LRoot" ref="variables" value="Variable" />
@@ -246,6 +260,26 @@
     </package>
     <package name="keras/objects">
       <class name="feature" allocatable="true" />
+    </package>
+    <package name="tensorflow/math">
+      <class name="sigmoid" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/nn/sigmoid -->
+        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self x name">
+          <return value="x" />
+        </method>
+      </class>
+      <class name="add" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/add -->
+        <method name="read_data" descriptor="()LRoot;">
+          <new def="x" class="Ltensorflow/math/add" />
+          <return value="x" />
+        </method>
+        <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self x y name">
+          <!-- Even though tf.add() isn't a tensor "generator," it can convert its non-tensor arguments to tensors. -->
+          <call class="LRoot" name="read_data" descriptor="()LRoot;" type="virtual" arg0="arg0" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
     </package>
     <package name="tensorflow/functions">
       <class name="AdamOptimizer" allocatable="true">
@@ -631,6 +665,12 @@
           <return value="x" />
         </method>
       </class>
+      <class name="softmax" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/nn/softmax -->
+        <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self logits axis name">
+          <return value="logits" />
+        </method>
+      </class>
     </package>
     <package name="tensorflow/estimator">
       <class name="Estimator" allocatable="true">
@@ -650,6 +690,32 @@
         </method>
       </class>
     </package>
+    <package name="tensorflow/keras/layers">
+      <class name="Dense" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/keras/layers/Dense -->
+        <method name="do" descriptor="()LRoot;" numArgs="11" paramNames="self units activation use_bias kernel_initializer bias_initializer kernel_regularizer bias_regularizer activity_regularizer kernel_constraint bias_constraint">
+          <new def="__call__" class="Ltensorflow/keras/layers/__call__" />
+          <putfield class="LRoot" field="__call__" fieldType="LRoot" ref="arg0" value="__call__" />
+          <new def="call" class="Ltensorflow/keras/layers/call" />
+          <putfield class="LRoot" field="call" fieldType="LRoot" ref="arg0" value="call" />
+          <return value="arg0" />
+        </method>
+      </class>
+      <!-- FIXME: These methods must be called explicitly. The implicit cases blocked on https://github.com/wala/ML/issues/127. -->
+      <class name="__call__" allocatable="true">
+        <!-- https://github.com/keras-team/keras/blob/07e13740fd181fc3ddec7d9a594d8a08666645f6/keras/layers/core/dense.py#L166-L240 -->
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self inputs">
+          <return value="inputs" />
+        </method>
+      </class>
+      <!-- FIXME: Workaround for https://github.com/wala/ML/issues/106. -->
+      <class name="call" allocatable="true">
+        <!-- https://github.com/keras-team/keras/blob/07e13740fd181fc3ddec7d9a594d8a08666645f6/keras/layers/core/dense.py#L166-L240 -->
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self inputs">
+          <return value="inputs" />
+        </method>
+      </class>
+    </package>
     <package name="tensorflow/data">
       <class name="Dataset" allocatable="true">
         <!-- "read_dataset" means that this function reads a tensor iterable. -->
@@ -658,6 +724,12 @@
           <putfield class="LRoot" field="shuffle" fieldType="LRoot" ref="arg0" value="shuffle" />
           <new def="batch" class="Ltensorflow/data/batch" />
           <putfield class="LRoot" field="batch" fieldType="LRoot" ref="arg0" value="batch" />
+          <new def="repeat" class="Ltensorflow/data/repeat" />
+          <putfield class="LRoot" field="repeat" fieldType="LRoot" ref="arg0" value="repeat" />
+          <new def="prefetch" class="Ltensorflow/data/prefetch" />
+          <putfield class="LRoot" field="prefetch" fieldType="LRoot" ref="arg0" value="prefetch" />
+          <new def="take" class="Ltensorflow/data/take" />
+          <putfield class="LRoot" field="take" fieldType="LRoot" ref="arg0" value="take" />
           <return value="arg0" />
         </method>
         <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self variant_tensor">
@@ -683,10 +755,46 @@
           <return value="xx" />
         </method>
       </class>
+      <class name="repeat" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#repeat -->
+        <method name="do" descriptor="()LRoot;" numArgs="6" paramNames="self count name">
+          <!-- FIXME: Workaround for https://github.com/wala/ML/issues/127. -->
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+      <class name="prefetch" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#prefetch -->
+        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self buffer_size name">
+          <!-- FIXME: Workaround for https://github.com/wala/ML/issues/127. -->
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+      <class name="take" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#take -->
+        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self count name">
+          <!-- FIXME: Workaround for https://github.com/wala/ML/issues/127. -->
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
     </package>
     <package name="tensorflow/data/Dataset">
       <class name="from_tensor_slices" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#from_tensor_slices -->
         <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="tensors name">
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+      <class name="from_generator" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#from_generator -->
+        <method name="do" descriptor="()LRoot;" numArgs="6" paramNames="generator output_types output_shapes args output_signature name">
           <new def="x" class="Ltensorflow/data/Dataset" />
           <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
           <return value="xx" />

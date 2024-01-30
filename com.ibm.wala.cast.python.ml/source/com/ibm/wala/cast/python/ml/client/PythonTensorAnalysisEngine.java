@@ -1,5 +1,7 @@
 package com.ibm.wala.cast.python.ml.client;
 
+import static com.google.common.collect.Sets.newHashSet;
+import static com.ibm.wala.cast.python.ml.types.TensorFlowTypes.DATASET;
 import static com.ibm.wala.cast.types.AstMethodReference.fnReference;
 
 import com.ibm.wala.cast.ir.ssa.EachElementGetInstruction;
@@ -7,6 +9,7 @@ import com.ibm.wala.cast.lsp.AnalysisError;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
 import com.ibm.wala.cast.python.ml.types.TensorType;
+import com.ibm.wala.cast.python.ssa.PythonPropertyRead;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.classLoader.CallSiteReference;
@@ -119,18 +122,206 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
           // We are potentially pulling a tensor out of a tensor iterable.
           EachElementGetInstruction eachElementGetInstruction = (EachElementGetInstruction) inst;
 
-          // Find the potential tensor iterable definition.
-          int use = eachElementGetInstruction.getUse(0);
-          SSAInstruction def = du.getDef(use);
+          // Don't add the source if the container has elements in it. In that case, we want to add
+          // the individual elements themselves as sources instead.
+          if (definitionIsNonScalar(eachElementGetInstruction, du))
+            logger.info(
+                "Definition of instruction: "
+                    + eachElementGetInstruction
+                    + " is non-scalar. Skipping...");
+          else {
+            logger.info(
+                "Definition of instruction: "
+                    + eachElementGetInstruction
+                    + " is scalar. Processing...");
 
-          if (definesTensorIterable(def, localPointerKeyNode, callGraph, pointerAnalysis)) {
-            sources.add(src);
-            logger.info("Added dataflow source from tensor iterable: " + src + ".");
+            // Find the potential tensor iterable definition.
+            processInstruction(
+                eachElementGetInstruction,
+                du,
+                localPointerKeyNode,
+                src,
+                sources,
+                callGraph,
+                pointerAnalysis,
+                newHashSet());
+          }
+        } else if (inst instanceof PythonPropertyRead) {
+          // We are potentially pulling a tensor out of a non-scalar tensor iterable.
+          PythonPropertyRead propertyRead = (PythonPropertyRead) inst;
+
+          // Find the potential tensor iterable definition.
+          int objectRef = propertyRead.getObjectRef();
+          SSAInstruction def = du.getDef(objectRef);
+
+          if (def == null) {
+            // definition is unavailable from the local DefUse. Use interprocedural analysis using
+            // the PA.
+            processInstructionInterprocedurally(
+                propertyRead, objectRef, localPointerKeyNode, src, sources, pointerAnalysis);
+          } else if (def instanceof EachElementGetInstruction
+              || def instanceof PythonPropertyRead) {
+            processInstruction(
+                def,
+                du,
+                localPointerKeyNode,
+                src,
+                sources,
+                callGraph,
+                pointerAnalysis,
+                newHashSet());
           }
         }
       }
     }
     return sources;
+  }
+
+  /**
+   * Processes the given {@link SSAInstruction} to decide if the given {@link PointsToSetVariable}
+   * is added to the given {@link Set} of {@link PointsToSetVariable}s as tensor dataflow sources.
+   *
+   * @param instruction The {@link SSAInstruction} to process.
+   * @param du The {@link DefUse} corresponding to the siven {@link SSAInstruction}.
+   * @param node The {@link CGNode} containing the given {@link SSAInstruction}.
+   * @param src The {@link PointsToSetVariable} under question as to whether it shoudl be considered
+   *     a tensor dataflow source.
+   * @param sources The {@link Set} of tensor dataflow sources.
+   * @param callGraph The {@link CallGraph} containing the given {@link SSAInstruction}.
+   * @param pointerAnalysis The {@link PointerAnalysis} corresponding to the given {@link
+   *     CallGraph}.
+   * @param seen A {@link Set} of previously processed {@link SSAInstruction}.
+   * @return True iff the given {@link PointsToSetVariable} was added to the given {@link Set} of
+   *     {@link PointsToSetVariable} dataflow sources.
+   */
+  private static boolean processInstruction(
+      SSAInstruction instruction,
+      DefUse du,
+      CGNode node,
+      PointsToSetVariable src,
+      Set<PointsToSetVariable> sources,
+      CallGraph callGraph,
+      PointerAnalysis<InstanceKey> pointerAnalysis,
+      Set<SSAInstruction> seen) {
+    if (seen.contains(instruction))
+      logger.fine(() -> "Skipping instruction: " + instruction + ". We've seen it before.");
+    else {
+      logger.fine(() -> "Processing instruction: " + instruction + ".");
+      seen.add(instruction);
+
+      if (instruction != null && instruction.getNumberOfUses() > 0) {
+        int use = instruction.getUse(0);
+        SSAInstruction def = du.getDef(use);
+
+        // First try intraprocedural analysis.
+        if (definesTensorIterable(def, node, callGraph, pointerAnalysis)) {
+          sources.add(src);
+          logger.info("Added dataflow source from tensor iterable: " + src + ".");
+          return true;
+        } else {
+          // Use interprocedural analysis using the PA.
+          boolean added =
+              processInstructionInterprocedurally(
+                  instruction, use, node, src, sources, pointerAnalysis);
+
+          if (added) return true;
+          else
+            // keep going up.
+            return processInstruction(
+                def, du, node, src, sources, callGraph, pointerAnalysis, seen);
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Similar to processInstruction but does so using the given {@link PointerAnalysis}.
+   *
+   * @param instruction The {@link SSAInstruction} to be processed.
+   * @param use The {@link DefUse} corresponding to the given {@link SSAInstruction}.
+   * @param node The {@link CGNode} containing the given {@link SSAInstruction}.
+   * @param src The {@link PointsToSetVariable} being decided upon whether it should be considered
+   *     as a tensor dataflow source.
+   * @param sources The {@link Set} of all tensor dataflow sources, i.e., {@link
+   *     PointsToSetVariable}s.
+   * @param pointerAnalysis The {@link PointerAnalysis} built from the given {@link CGNode}'s {@link
+   *     CallGraph}.
+   * @return True iff the given {@link PointsToSetVariable} was added to the given set of tensor
+   *     dataflow sources, i.e., the given {@link Set} of {@link PointsToSetVariable}s.
+   */
+  private static boolean processInstructionInterprocedurally(
+      SSAInstruction instruction,
+      int use,
+      CGNode node,
+      PointsToSetVariable src,
+      Set<PointsToSetVariable> sources,
+      PointerAnalysis<InstanceKey> pointerAnalysis) {
+    logger.info(
+        () ->
+            "Using interprocedural analysis to find potential tensor iterable definition for use: "
+                + use
+                + " of instruction: "
+                + instruction
+                + ".");
+
+    // Look up the use in the pointer analysis to see if it points to a dataset.
+    PointerKey usePointerKey = pointerAnalysis.getHeapModel().getPointerKeyForLocal(node, use);
+
+    for (InstanceKey ik : pointerAnalysis.getPointsToSet(usePointerKey)) {
+      if (ik instanceof AllocationSiteInNode) {
+        AllocationSiteInNode asin = (AllocationSiteInNode) ik;
+        IClass concreteType = asin.getConcreteType();
+        TypeReference reference = concreteType.getReference();
+
+        if (reference.equals(DATASET)) {
+          sources.add(src);
+          logger.info("Added dataflow source from tensor dataset: " + src + ".");
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * True iff the given {@link EachElementGetInstruction} constitutes individual elements.
+   *
+   * @param eachElementGetInstruction The {@link EachElementGetInstruction} in question.
+   * @param du The {@link DefUse} for the containing {@link CGNode}.
+   * @return True iff the definition of the given {@link EachElementGetInstruction} is non-scalar.
+   */
+  private static boolean definitionIsNonScalar(
+      EachElementGetInstruction eachElementGetInstruction, DefUse du) {
+    int def = eachElementGetInstruction.getDef();
+    logger.info(
+        "Processing definition: " + def + " of instruction: " + eachElementGetInstruction + ".");
+
+    int numberOfUses = du.getNumberOfUses(def);
+    logger.info(
+        "Definition: "
+            + def
+            + " of instruction: "
+            + eachElementGetInstruction
+            + " has "
+            + numberOfUses
+            + " uses.");
+
+    for (Iterator<SSAInstruction> uses = du.getUses(def); uses.hasNext(); ) {
+      SSAInstruction instruction = uses.next();
+      logger.info("Processing use: " + instruction + ".");
+
+      if (instruction instanceof PythonPropertyRead) {
+        PythonPropertyRead read = (PythonPropertyRead) instruction;
+        logger.info("Found property read use: " + read + ".");
+
+        // if the definition appears on the LHS of the read.
+        if (read.getObjectRef() == def) return true;
+      }
+    }
+    return false;
   }
 
   /**
