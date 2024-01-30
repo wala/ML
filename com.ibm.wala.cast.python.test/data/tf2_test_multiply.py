@@ -2,8 +2,10 @@
 
 import tensorflow as tf
 
+
 def f(a):
     pass
+
 
 x = tf.constant(([1, 2, 3, 4]))
 f(tf.math.multiply(x, x))
