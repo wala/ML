@@ -51,6 +51,8 @@
         <putfield class="LRoot" field="run" fieldType="LRoot" ref="app" value="run" />
         <new def="Estimator" class="Ltensorflow/estimator/Estimator" />
         <putfield class="LRoot" field="Estimator" fieldType="LRoot" ref="estimator" value="Estimator" />
+        <new def="GradientTape" class="Ltensorflow/GradientTape" />
+        <putfield class="LRoot" field="GradientTape" fieldType="LRoot" ref="x" value="GradientTape" />
         <new def="Dataset" class="Ltensorflow/data/Dataset" />
         <putfield class="LRoot" field="Dataset" fieldType="LRoot" ref="data" value="Dataset" />
         <new def="MirroredStrategy" class="Ltensorflow/distribute/MirroredStrategy" />
@@ -722,6 +724,22 @@
         <!-- https://github.com/keras-team/keras/blob/07e13740fd181fc3ddec7d9a594d8a08666645f6/keras/layers/core/dense.py#L166-L240 -->
         <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self inputs">
           <return value="inputs" />
+        </method>
+      </class>
+    </package>
+    <package name="tensorflow">
+      <class name="GradientTape" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/GradientTape -->
+        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self persistent watch_accessed_variables">
+          <new def="gradient" class="Ltensorflow/gradient" />
+          <putfield class="LRoot" field="gradient" fieldType="LRoot" ref="arg0" value="gradient" />
+          <return value="arg0" />
+        </method>
+      </class>
+      <class name="gradient" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/GradientTape#gradient -->
+        <method name="do" descriptor="()LRoot;" numArgs="5" paramNames="self target sources output_gradients unconnected_gradients">
+          <return value="sources" />
         </method>
       </class>
     </package>
