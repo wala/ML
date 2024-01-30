@@ -259,6 +259,10 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("tf2_test_add5.py", "f", 1, 1, 2);
     testTf2("tf2_test_add6.py", "f", 1, 1, 2);
     testTf2("multigpu_training.py", "run_optimization", 2, 4, 2, 3);
+    testTf2("tf2_test_reduce_mean.py", "f", 1, 1, 2);
+    testTf2("tf2_test_reduce_mean.py", "g", 1, 1, 2);
+    testTf2("tf2_test_reduce_mean.py", "h", 1, 1, 2);
+    testTf2("tf2_test_gradient.py", "f", 1, 1, 2);
   }
 
   private void testTf2(
