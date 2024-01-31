@@ -10,12 +10,9 @@ import com.ibm.wala.util.CancelException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.logging.Logger;
 import org.junit.Test;
 
 public class TestTensorflowModel extends TestPythonMLCallGraphShape {
-
-  private static final Logger logger = Logger.getLogger(TestTensorflowModel.class.getName());
 
   @Test
   public void testTf1()
