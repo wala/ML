@@ -1111,19 +1111,19 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
   }
 
   @Test
-  public void testTf2MultiGPUTraining2()
+  public void testTf2TestReduceMean()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     testTf2("tf2_test_reduce_mean.py", "f", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestReduceMean()
+  public void testTf2TestReduceMean2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     testTf2("tf2_test_reduce_mean.py", "g", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestReduceMean2()
+  public void testTf2TestReduceMean3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     testTf2("tf2_test_reduce_mean.py", "h", 1, 1, 2);
   }
