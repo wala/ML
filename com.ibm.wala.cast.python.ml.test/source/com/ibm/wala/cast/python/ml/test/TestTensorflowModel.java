@@ -1108,6 +1108,11 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
         "average_gradients",
         0,
         0); // NOTE: Change to 1, 1, 2 once https://github.com/wala/ML/issues/136 is fixed.
+  }
+
+  @Test
+  public void testTf2MultiGPUTraining2()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     testTf2("tf2_test_reduce_mean.py", "f", 1, 1, 2);
   }
 
