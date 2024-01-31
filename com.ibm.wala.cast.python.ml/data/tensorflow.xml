@@ -75,6 +75,8 @@
         <putfield class="LRoot" field="conv3d" fieldType="LRoot" ref="nn" value="conv3d" />
         <new def="softmax" class="Ltensorflow/functions/softmax" />
         <putfield class="LRoot" field="softmax" fieldType="LRoot" ref="nn" value="softmax" />
+        <new def="sparse_softmax_cross_entropy_with_logits" class="Ltensorflow/functions/sparse_softmax_cross_entropy_with_logits" />
+        <putfield class="LRoot" field="sparse_softmax_cross_entropy_with_logits" fieldType="LRoot" ref="nn" value="sparse_softmax_cross_entropy_with_logits" />
         <new def="sigmoid" class="Ltensorflow/math/sigmoid" />
         <putfield class="LRoot" field="sigmoid" fieldType="LRoot" ref="nn" value="sigmoid" />
         <putfield class="LRoot" field="sigmoid" fieldType="LRoot" ref="math" value="sigmoid" />
@@ -680,6 +682,12 @@
         <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/nn/softmax -->
         <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self logits axis name">
           <return value="logits" />
+        </method>
+      </class>
+      <class name="sparse_softmax_cross_entropy_with_logits" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/nn/sparse_softmax_cross_entropy_with_logits -->
+        <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self labels logits name">
+          <return value="labels" />
         </method>
       </class>
     </package>
