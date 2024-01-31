@@ -217,7 +217,11 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("tf2_test_dataset10.py", "add", 2, 2, 2, 3);
     testTf2("tf2_test_tensor_list.py", "add", 2, 2, 2, 3);
     testTf2("tf2_test_tensor_list2.py", "add", 0, 0);
-    testTf2("tf2_test_tensor_list3.py", "add", 0, 0);
+    testTf2(
+        "tf2_test_tensor_list3.py",
+        "add",
+        0,
+        0); // NOTE: Change to 2, 2, 2, 3 once https://github.com/wala/ML/issues/136 is fixed.
     testTf2("tf2_test_tensor_list4.py", "add", 0, 0);
     testTf2("tf2_test_tensor_list5.py", "add", 0, 0);
     testTf2("tf2_test_model_call.py", "SequentialModel.__call__", 1, 1, 3);
@@ -234,10 +238,10 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
         "neural_network.py",
         "cross_entropy_loss",
         1,
-        4,
+        8,
         3); // NOTE: Change to 2 tensor parameters once https://github.com/wala/ML/issues/127 is
     // fixed. Values 2 and 3 will correspond to the tensor parameters.
-    testTf2("neural_network.py", "run_optimization", 2, 2, 2, 3);
+    testTf2("neural_network.py", "run_optimization", 2, 3, 2, 3);
     testTf2(
         "neural_network.py",
         "accuracy",
@@ -259,6 +263,11 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("tf2_test_add5.py", "f", 1, 1, 2);
     testTf2("tf2_test_add6.py", "f", 1, 1, 2);
     testTf2("multigpu_training.py", "run_optimization", 2, 4, 2, 3);
+    testTf2(
+        "multigpu_training.py",
+        "average_gradients",
+        0,
+        0); // NOTE: Change to 1, 1, 2 once https://github.com/wala/ML/issues/136 is fixed.
     testTf2("tf2_test_reduce_mean.py", "f", 1, 1, 2);
     testTf2("tf2_test_reduce_mean.py", "g", 1, 1, 2);
     testTf2("tf2_test_reduce_mean.py", "h", 1, 1, 2);
@@ -266,6 +275,7 @@ public class TestTensorflowModel extends TestPythonMLCallGraphShape {
     testTf2("tf2_test_gradient2.py", "f", 1, 1, 2);
     testTf2("tf2_test_multiply.py", "f", 1, 1, 2);
     testTf2("tf2_test_multiply2.py", "f", 1, 1, 2);
+    testTf2("tf2_test_sparse_softmax_cross_entropy_with_logits.py", "f", 1, 1, 2);
   }
 
   private void testTf2(
