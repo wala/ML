@@ -931,7 +931,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   }
 
   @Test
-  public void testCallbacks()
+  public void testCallbacks2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test("tf2_test_callbacks2.py", "replica_fn", 1, 1, 2);
   }
