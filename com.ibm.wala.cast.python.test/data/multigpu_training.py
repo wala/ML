@@ -42,11 +42,11 @@ num_gpus = 4
 
 # Training parameters.
 learning_rate = 0.001
-training_steps = 1000
+training_steps = 1
 # Split batch size equally between GPUs.
 # Note: Reduce batch size if you encounter OOM Errors.
 batch_size = 1024 * num_gpus
-display_step = 20
+display_step = 1
 
 # Network parameters.
 conv1_filters = 64  # number of filters for 1st conv layer.
