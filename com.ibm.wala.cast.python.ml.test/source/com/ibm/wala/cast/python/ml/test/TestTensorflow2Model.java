@@ -38,261 +38,261 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   private static final Logger logger = Logger.getLogger(TestTensorflow2Model.class.getName());
 
   @Test
-  public void testTf2()
+  public void test()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2.py", "add", 2, 2, 2, 3);
+    test("tf2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2b()
+  public void testB()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2b.py", "add", 2, 2, 2, 3);
+    test("tf2b.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2c()
+  public void testC()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2c.py", "add", 2, 2, 2, 3);
+    test("tf2c.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2d()
+  public void testD()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2d.py", "add", 2, 2, 2, 3);
+    test("tf2d.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2d2()
+  public void testD2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2d2.py", "add", 2, 2, 2, 3);
+    test("tf2d2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2d3()
+  public void testD3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2d3.py", "add", 2, 2, 2, 3);
+    test("tf2d3.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2d4()
+  public void testD4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2d4.py", "add", 2, 2, 2, 3);
+    test("tf2d4.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2d5()
+  public void testD5()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2d5.py", "add", 2, 2, 2, 3);
+    test("tf2d5.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2e()
+  public void testE()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2e.py", "add", 2, 2, 2, 3);
+    test("tf2e.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2e2()
+  public void testE2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2e2.py", "add", 2, 2, 2, 3);
+    test("tf2e2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2e3()
+  public void testE3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2e3.py", "add", 2, 2, 2, 3);
+    test("tf2e3.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2e4()
+  public void testE4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2e4.py", "add", 2, 2, 2, 3);
+    test("tf2e4.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2e5()
+  public void testE5()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2e5.py", "add", 2, 2, 2, 3);
+    test("tf2e5.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2e6()
+  public void testE6()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2e6.py", "add", 2, 2, 2, 3);
+    test("tf2e6.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2e7()
+  public void testE7()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2e7.py", "add", 2, 2, 2, 3);
+    test("tf2e7.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2e8()
+  public void testE8()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2e8.py", "add", 2, 2, 2, 3);
+    test("tf2e8.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2f()
+  public void testF()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2f.py", "add", 2, 2, 2, 3);
+    test("tf2f.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2f2()
+  public void testF2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2f2.py", "add", 2, 2, 2, 3);
+    test("tf2f2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2f3()
+  public void testF3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2f3.py", "add", 2, 2, 2, 3);
+    test("tf2f3.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2g()
+  public void testG()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2g.py", "add", 2, 2, 2, 3);
+    test("tf2g.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2g2()
+  public void testG2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2g2.py", "add", 2, 2, 2, 3);
+    test("tf2g2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2h()
+  public void testH()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2h.py", "add", 2, 2, 2, 3);
+    test("tf2h.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2h2()
+  public void testH2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2h2.py", "add", 2, 2, 2, 3);
+    test("tf2h2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2i()
+  public void testI()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2i.py", "add", 2, 2, 2, 3);
+    test("tf2i.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2i2()
+  public void testI2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2i2.py", "add", 2, 2, 2, 3);
+    test("tf2i2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2j()
+  public void testJ()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2j.py", "add", 2, 2, 2, 3);
+    test("tf2j.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2j2()
+  public void testJ2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2j2.py", "add", 2, 2, 2, 3);
+    test("tf2j2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2k()
+  public void testK()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2k.py", "add", 2, 2, 2, 3);
+    test("tf2k.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2k2()
+  public void testK2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2k2.py", "add", 2, 2, 2, 3);
+    test("tf2k2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2l()
+  public void testL()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2l.py", "add", 2, 2, 2, 3);
+    test("tf2l.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2l2()
+  public void testL2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2l2.py", "add", 2, 2, 2, 3);
+    test("tf2l2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2m()
+  public void testM()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2m.py", "add", 2, 2, 2, 3);
+    test("tf2m.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2m2()
+  public void testM2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2m2.py", "add", 2, 2, 2, 3);
+    test("tf2m2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2n()
+  public void testN()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2n.py", "func2", 1, 1, 2);
+    test("tf2n.py", "func2", 1, 1, 2);
   }
 
   @Test
-  public void testTf2n2()
+  public void testN2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2n2.py", "func2", 1, 1, 2);
+    test("tf2n2.py", "func2", 1, 1, 2);
   }
 
   @Test
-  public void testTf2n3()
+  public void testN3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2n3.py", "func2", 1, 1, 2);
+    test("tf2n3.py", "func2", 1, 1, 2);
   }
 
   @Test
-  public void testTf2o()
+  public void testO()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2o.py", "add", 2, 3, 2, 3);
+    test("tf2o.py", "add", 2, 3, 2, 3);
   }
 
   @Test
-  public void testTf2o2()
+  public void testO2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2o2.py", "add", 2, 3, 2, 3);
+    test("tf2o2.py", "add", 2, 3, 2, 3);
   }
 
   @Test
-  public void testTf2p()
+  public void testP()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2p.py", "value_index", 2, 2, 2, 3);
+    test("tf2p.py", "value_index", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2p2()
+  public void testP2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2p2.py", "value_index", 2, 2, 2, 3);
+    test("tf2p2.py", "value_index", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2q()
+  public void testQ()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2q.py", "add", 2, 2, 2, 3);
+    test("tf2q.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2r()
+  public void testR()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2r.py", "add", 2, 2, 2, 3);
+    test("tf2r.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2s()
+  public void testS()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2(
+    test(
         "tf2s.py", "add", 0,
         0); // NOTE: Set the expected number of tensor parameters, variables, and tensor parameter
     // value numbers to 2, 3, and 2 and 3, respectively, when
@@ -300,588 +300,588 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   }
 
   @Test
-  public void testTf2t()
+  public void testT()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2t.py", "add", 2, 2, 2, 3);
+    test("tf2t.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2u()
+  public void testU()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2u.py", "add", 2, 2, 2, 3);
+    test("tf2u.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2u2()
+  public void testU2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2u2.py", "add", 2, 2, 2, 3);
+    test("tf2u2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2u3()
+  public void testU3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2u3.py", "add", 2, 2, 2, 3);
+    test("tf2u3.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2v()
+  public void testV()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2v.py", "add", 2, 2, 2, 3);
+    test("tf2v.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2v2()
+  public void testV2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2v2.py", "add", 2, 2, 2, 3);
+    test("tf2v2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2v3()
+  public void testV3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2v3.py", "add", 2, 2, 2, 3);
+    test("tf2v3.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2v4()
+  public void testV4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2v4.py", "add", 2, 2, 2, 3);
+    test("tf2v4.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2v5()
+  public void testV5()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2v5.py", "add", 2, 2, 2, 3);
+    test("tf2v5.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2w()
+  public void testW()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2w.py", "add", 2, 2, 2, 3);
+    test("tf2w.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2w2()
+  public void testW2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2w2.py", "add", 2, 2, 2, 3);
+    test("tf2w2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2w3()
+  public void testW3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2w3.py", "add", 2, 2, 2, 3);
+    test("tf2w3.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2w4()
+  public void testW4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2w4.py", "add", 2, 2, 2, 3);
+    test("tf2w4.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2x()
+  public void testX()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2x.py", "add", 2, 2, 2, 3);
+    test("tf2x.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2x2()
+  public void testX2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2x2.py", "add", 2, 2, 2, 3);
+    test("tf2x2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2x3()
+  public void testX3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2x3.py", "add", 2, 2, 2, 3);
+    test("tf2x3.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2y()
+  public void testY()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2y.py", "add", 2, 2, 2, 3);
+    test("tf2y.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2y2()
+  public void testY2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2y2.py", "add", 2, 2, 2, 3);
+    test("tf2y2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2y3()
+  public void testY3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2y3.py", "add", 2, 2, 2, 3);
+    test("tf2y3.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2y4()
+  public void testY4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2y4.py", "add", 2, 2, 2, 3);
+    test("tf2y4.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2y5()
+  public void testY5()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2y5.py", "add", 2, 2, 2, 3);
+    test("tf2y5.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2y6()
+  public void testY6()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2y6.py", "add", 2, 2, 2, 3);
+    test("tf2y6.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2z()
+  public void testZ()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2z.py", "add", 2, 2, 2, 3);
+    test("tf2z.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2z2()
+  public void testZ2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2z2.py", "add", 2, 2, 2, 3);
+    test("tf2z2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2z3()
+  public void testZ3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2z3.py", "add", 2, 2, 2, 3);
+    test("tf2z3.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2z4()
+  public void testZ4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2z4.py", "add", 2, 2, 2, 3);
+    test("tf2z4.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2aa()
+  public void testAA()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2aa.py", "add", 2, 2, 2, 3);
+    test("tf2aa.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2aa2()
+  public void testAA2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2aa2.py", "add", 2, 2, 2, 3);
+    test("tf2aa2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2aa3()
+  public void testAA3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2aa3.py", "add", 2, 2, 2, 3);
+    test("tf2aa3.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2aa4()
+  public void testAA4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2aa4.py", "add", 2, 2, 2, 3);
+    test("tf2aa4.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2aa5()
+  public void testAA5()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2aa5.py", "add", 2, 2, 2, 3);
+    test("tf2aa5.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2aa6()
+  public void testAA6()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2aa6.py", "add", 2, 2, 2, 3);
+    test("tf2aa6.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2aa7()
+  public void testAA7()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2aa7.py", "add", 2, 2, 2, 3);
+    test("tf2aa7.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2aa8()
+  public void testAA8()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2aa8.py", "add", 2, 2, 2, 3);
+    test("tf2aa8.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2bb()
+  public void testBB()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2bb.py", "add", 2, 2, 2, 3);
+    test("tf2bb.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2bb2()
+  public void testBB2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2bb2.py", "add", 2, 2, 2, 3);
+    test("tf2bb2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2bb3()
+  public void testBB3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2bb3.py", "add", 2, 2, 2, 3);
+    test("tf2bb3.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2bb4()
+  public void testBB4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2bb4.py", "add", 2, 2, 2, 3);
+    test("tf2bb4.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2cc()
+  public void testCC()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2cc.py", "add", 2, 2, 2, 3);
+    test("tf2cc.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2cc2()
+  public void testCC2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2cc2.py", "add", 2, 2, 2, 3);
+    test("tf2cc2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2cc3()
+  public void testCC3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2cc3.py", "add", 2, 2, 2, 3);
+    test("tf2cc3.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2dd()
+  public void testDD()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2dd.py", "add", 2, 2, 2, 3);
+    test("tf2dd.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2dd2()
+  public void testDD2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2dd2.py", "add", 2, 2, 2, 3);
+    test("tf2dd2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2ee()
+  public void testEE()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2ee.py", "add", 2, 2, 2, 3);
+    test("tf2ee.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2ee2()
+  public void testEE2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2ee2.py", "add", 2, 2, 2, 3);
+    test("tf2ee2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2ff()
+  public void testFF()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2ff.py", "add", 2, 2, 2, 3);
+    test("tf2ff.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2ff2()
+  public void testFF2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2ff2.py", "add", 2, 2, 2, 3);
+    test("tf2ff2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2gg()
+  public void testGG()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2gg.py", "add", 2, 2, 2, 3);
+    test("tf2gg.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2gg2()
+  public void testGG2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2gg2.py", "add", 2, 2, 2, 3);
+    test("tf2gg2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2gg3()
+  public void testGG3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2gg3.py", "add", 2, 2, 2, 3);
+    test("tf2gg3.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2hh()
+  public void testHH()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2hh.py", "add", 2, 2, 2, 3);
+    test("tf2hh.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2hh2()
+  public void testHH2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2hh2.py", "add", 2, 2, 2, 3);
+    test("tf2hh2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2hh3()
+  public void testHH3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2hh3.py", "add", 2, 2, 2, 3);
+    test("tf2hh3.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2hh4()
+  public void testHH4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2hh4.py", "add", 2, 2, 2, 3);
+    test("tf2hh4.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2ii()
+  public void testII()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2ii.py", "add", 2, 2, 2, 3);
+    test("tf2ii.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2ii2()
+  public void testII2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2ii2.py", "add", 2, 2, 2, 3);
+    test("tf2ii2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2ii3()
+  public void testII3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2ii3.py", "add", 2, 2, 2, 3);
+    test("tf2ii3.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2jj()
+  public void testJJ()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2jj.py", "add", 2, 2, 2, 3);
+    test("tf2jj.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2jj2()
+  public void testJJ2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2jj2.py", "add", 2, 2, 2, 3);
+    test("tf2jj2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2kk()
+  public void testKK()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2kk.py", "add", 2, 2, 2, 3);
+    test("tf2kk.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2kk2()
+  public void testKK2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2kk2.py", "add", 2, 2, 2, 3);
+    test("tf2kk2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2ll()
+  public void testLL()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2ll.py", "add", 2, 2, 2, 3);
+    test("tf2ll.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2ll2()
+  public void testLL2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2ll2.py", "add", 2, 2, 2, 3);
+    test("tf2ll2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2ll3()
+  public void testLL3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2ll3.py", "add", 2, 2, 2, 3);
+    test("tf2ll3.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2mm()
+  public void testMM()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2mm.py", "add", 2, 2, 2, 3);
+    test("tf2mm.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2mm2()
+  public void testMM2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2mm2.py", "add", 2, 2, 2, 3);
+    test("tf2mm2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2nn()
+  public void testNN()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2nn.py", "value_index", 2, 2, 2, 3);
+    test("tf2nn.py", "value_index", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2nn2()
+  public void testNN2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2nn2.py", "value_index", 2, 2, 2, 3);
+    test("tf2nn2.py", "value_index", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2nn3()
+  public void testNN3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2nn3.py", "value_index", 2, 2, 2, 3);
+    test("tf2nn3.py", "value_index", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2nn4()
+  public void testNN4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2nn4.py", "value_index", 2, 2, 2, 3);
+    test("tf2nn4.py", "value_index", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2oo()
+  public void testOO()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2oo.py", "func2", 1, 1, 2);
+    test("tf2oo.py", "func2", 1, 1, 2);
   }
 
   @Test
-  public void testTf2oo2()
+  public void testOO2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2oo2.py", "func2", 1, 1, 2);
+    test("tf2oo2.py", "func2", 1, 1, 2);
   }
 
   @Test
-  public void testTf2oo3()
+  public void testOO3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2oo3.py", "func2", 1, 1, 2);
+    test("tf2oo3.py", "func2", 1, 1, 2);
   }
 
   @Test
-  public void testTf2oo4()
+  public void testOO4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2oo4.py", "func2", 1, 1, 2);
+    test("tf2oo4.py", "func2", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestingDecorator()
+  public void testDecorator()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_testing_decorator.py", "returned", 1, 1, 2);
+    test("tf2_testing_decorator.py", "returned", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestingDecorator2()
+  public void testDecorator2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_testing_decorator2.py", "returned", 1, 1, 2);
+    test("tf2_testing_decorator2.py", "returned", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestingDecorator3()
+  public void testDecorator3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_testing_decorator3.py", "returned", 1, 1, 2);
+    test("tf2_testing_decorator3.py", "returned", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestingDecorator4()
+  public void testDecorator4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_testing_decorator4.py", "returned", 1, 1, 2);
+    test("tf2_testing_decorator4.py", "returned", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestingDecorator5()
+  public void testDecorator5()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_testing_decorator5.py", "returned", 1, 1, 2);
+    test("tf2_testing_decorator5.py", "returned", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestingDecorator6()
+  public void testDecorator6()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_testing_decorator6.py", "returned", 1, 1, 2);
+    test("tf2_testing_decorator6.py", "returned", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestingDecorator7()
+  public void testDecorator7()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_testing_decorator7.py", "returned", 1, 1, 2);
+    test("tf2_testing_decorator7.py", "returned", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestingDecorator8()
+  public void testDecorator8()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_testing_decorator8.py", "returned", 1, 1, 2);
+    test("tf2_testing_decorator8.py", "returned", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestingDecorator9()
+  public void testDecorator9()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_testing_decorator9.py", "returned", 1, 1, 2);
+    test("tf2_testing_decorator9.py", "returned", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestingDecorator10()
+  public void testDecorator10()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_testing_decorator10.py", "returned", 1, 1, 2);
+    test("tf2_testing_decorator10.py", "returned", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestDataset()
+  public void testDataset()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     // FIXME: Test tf2_test_dataset.py really has three tensors in its dataset. We are currently
     // treating it as one. But, in the literal case, it should be possible to model it like the list
     // tests below.
-    testTf2("tf2_test_dataset.py", "add", 2, 2, 2, 3);
+    test("tf2_test_dataset.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2TestDataset2()
+  public void testDataset2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_dataset2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_dataset2.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2TestDataset3()
+  public void testDataset3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_dataset3.py", "add", 2, 2, 2, 3);
+    test("tf2_test_dataset3.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2TestDataset4()
+  public void testDataset4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_dataset4.py", "add", 2, 2, 2, 3);
+    test("tf2_test_dataset4.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2TestDataset5()
+  public void testDataset5()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_dataset5.py", "add", 2, 2, 2, 3);
+    test("tf2_test_dataset5.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2TestDataset6()
+  public void testDataset6()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_dataset6.py", "add", 2, 2, 2, 3);
+    test("tf2_test_dataset6.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2TestDataset7()
+  public void testDataset7()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_dataset7.py", "add", 2, 2, 2, 3);
+    test("tf2_test_dataset7.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2TestDataset8()
+  public void testDataset8()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_dataset8.py", "add", 2, 2, 2, 3);
+    test("tf2_test_dataset8.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2TestDataset9()
+  public void testDataset9()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_dataset9.py", "add", 2, 2, 2, 3);
+    test("tf2_test_dataset9.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2TestDataset10()
+  public void testDataset10()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_dataset10.py", "add", 2, 2, 2, 3);
+    test("tf2_test_dataset10.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2TestTensorList()
+  public void testTensorList()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_tensor_list.py", "add", 2, 2, 2, 3);
+    test("tf2_test_tensor_list.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2TestTensorList2()
+  public void testTensorList2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_tensor_list2.py", "add", 0, 0);
+    test("tf2_test_tensor_list2.py", "add", 0, 0);
   }
 
   @Test
-  public void testTf2TestTensorList3()
+  public void testTensorList3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2(
+    test(
         "tf2_test_tensor_list3.py",
         "add",
         0,
@@ -889,81 +889,81 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   }
 
   @Test
-  public void testTf2TestTensorList4()
+  public void testTensorList4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_tensor_list4.py", "add", 0, 0);
+    test("tf2_test_tensor_list4.py", "add", 0, 0);
   }
 
   @Test
-  public void testTf2TestTensorList5()
+  public void testTensorList5()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_tensor_list5.py", "add", 0, 0);
+    test("tf2_test_tensor_list5.py", "add", 0, 0);
   }
 
   @Test
-  public void testTf2TestModelCall()
+  public void testModelCall()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_model_call.py", "SequentialModel.__call__", 1, 1, 3);
+    test("tf2_test_model_call.py", "SequentialModel.__call__", 1, 1, 3);
   }
 
   @Test
-  public void testTf2TestModelCall2()
+  public void testModelCall2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_model_call2.py", "SequentialModel.call", 1, 1, 3);
+    test("tf2_test_model_call2.py", "SequentialModel.call", 1, 1, 3);
   }
 
   @Test
-  public void testTf2TestModelCall3()
+  public void testModelCall3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_model_call3.py", "SequentialModel.call", 1, 1, 3);
+    test("tf2_test_model_call3.py", "SequentialModel.call", 1, 1, 3);
   }
 
   @Test
-  public void testTf2TestModelCall4()
+  public void testModelCall4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_model_call4.py", "SequentialModel.__call__", 1, 1, 3);
+    test("tf2_test_model_call4.py", "SequentialModel.__call__", 1, 1, 3);
   }
 
   @Test
-  public void testTf2TestCallbacks()
+  public void testCallbacks()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_callbacks.py", "replica_fn", 1, 1, 2);
+    test("tf2_test_callbacks.py", "replica_fn", 1, 1, 2);
   }
 
   @Test
-  public void testTf2Callbacks()
+  public void testCallbacks()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_callbacks2.py", "replica_fn", 1, 1, 2);
+    test("tf2_test_callbacks2.py", "replica_fn", 1, 1, 2);
   }
 
   @Test
-  public void testTf2GanTutorial()
+  public void testGanTutorial()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tensorflow_gan_tutorial.py", "train_step", 1, 2, 2);
+    test("tensorflow_gan_tutorial.py", "train_step", 1, 2, 2);
   }
 
   @Test
-  public void testTf2GanTutorial2()
+  public void testGanTutorial2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tensorflow_gan_tutorial2.py", "train_step", 1, 2, 2);
+    test("tensorflow_gan_tutorial2.py", "train_step", 1, 2, 2);
   }
 
   @Test
-  public void testTf2EagerExecution()
+  public void testEagerExecution()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tensorflow_eager_execution.py", "MyModel.call", 1, 1, 3);
+    test("tensorflow_eager_execution.py", "MyModel.call", 1, 1, 3);
   }
 
   @Test
-  public void testTf2NeuralNetwork()
+  public void testNeuralNetwork()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("neural_network.py", "NeuralNet.call", 1, 1, 3);
+    test("neural_network.py", "NeuralNet.call", 1, 1, 3);
   }
 
   @Test
-  public void testTf2NeuralNetwork2()
+  public void testNeuralNetwork2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2(
+    test(
         "neural_network.py",
         "cross_entropy_loss",
         1,
@@ -973,15 +973,15 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   }
 
   @Test
-  public void testTf2NeuralNetwork3()
+  public void testNeuralNetwork3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("neural_network.py", "run_optimization", 2, 3, 2, 3);
+    test("neural_network.py", "run_optimization", 2, 3, 2, 3);
   }
 
   @Test
-  public void testTf2NeuralNetwork4()
+  public void testNeuralNetwork4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2(
+    test(
         "neural_network.py",
         "accuracy",
         1,
@@ -992,87 +992,87 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   }
 
   @Test
-  public void testTf2Autoencoder()
+  public void testAutoencoder()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("autoencoder.py", "encoder", 1, 18, 2);
+    test("autoencoder.py", "encoder", 1, 18, 2);
   }
 
   @Test
-  public void testTf2Autoencoder2()
+  public void testAutoencoder2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("autoencoder.py", "mean_square", 2, 2, 2, 3);
+    test("autoencoder.py", "mean_square", 2, 2, 2, 3);
   }
 
   @Test
-  public void testTf2Autoencoder3()
+  public void testAutoencoder3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("autoencoder.py", "run_optimization", 1, 3, 2);
+    test("autoencoder.py", "run_optimization", 1, 3, 2);
   }
 
   @Test
-  public void testTf2Autoencoder4()
+  public void testAutoencoder4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("autoencoder.py", "decoder", 1, 18, 2);
+    test("autoencoder.py", "decoder", 1, 18, 2);
   }
 
   @Test
-  public void testTf2TestSigmoid()
+  public void testSigmoid()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_sigmoid.py", "f", 1, 1, 2);
+    test("tf2_test_sigmoid.py", "f", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestSigmoid2()
+  public void testSigmoid2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_sigmoid2.py", "f", 1, 1, 2);
+    test("tf2_test_sigmoid2.py", "f", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestAdd()
+  public void testAdd()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_add.py", "f", 1, 1, 2);
+    test("tf2_test_add.py", "f", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestAdd2()
+  public void testAdd2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_add2.py", "f", 1, 1, 2);
+    test("tf2_test_add2.py", "f", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestAdd3()
+  public void testAdd3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_add3.py", "f", 1, 1, 2);
+    test("tf2_test_add3.py", "f", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestAdd4()
+  public void testAdd4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_add4.py", "f", 1, 1, 2);
+    test("tf2_test_add4.py", "f", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestAdd5()
+  public void testAdd5()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_add5.py", "f", 1, 1, 2);
+    test("tf2_test_add5.py", "f", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestAdd6()
+  public void testAdd6()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_add6.py", "f", 1, 1, 2);
+    test("tf2_test_add6.py", "f", 1, 1, 2);
   }
 
   @Test
-  public void testTf2MultiGPUTraining()
+  public void testMultiGPUTraining()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("multigpu_training.py", "run_optimization", 2, 4, 2, 3);
+    test("multigpu_training.py", "run_optimization", 2, 4, 2, 3);
   }
 
   @Test
-  public void testTf2MultiGPUTraining2()
+  public void testMultiGPUTraining2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2(
+    test(
         "multigpu_training.py",
         "average_gradients",
         0,
@@ -1080,54 +1080,54 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   }
 
   @Test
-  public void testTf2TestReduceMean()
+  public void testReduceMean()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_reduce_mean.py", "f", 1, 1, 2);
+    test("tf2_test_reduce_mean.py", "f", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestReduceMean2()
+  public void testReduceMean2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_reduce_mean.py", "g", 1, 1, 2);
+    test("tf2_test_reduce_mean.py", "g", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestReduceMean3()
+  public void testReduceMean3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_reduce_mean.py", "h", 1, 1, 2);
+    test("tf2_test_reduce_mean.py", "h", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestGradient()
+  public void testGradient()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_gradient.py", "f", 1, 1, 2);
+    test("tf2_test_gradient.py", "f", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestGradient2()
+  public void testGradient2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_gradient2.py", "f", 1, 1, 2);
+    test("tf2_test_gradient2.py", "f", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestMultiply()
+  public void testMultiply()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_multiply.py", "f", 1, 1, 2);
+    test("tf2_test_multiply.py", "f", 1, 1, 2);
   }
 
   @Test
-  public void testTf2Multiply2()
+  public void testMultiply2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_multiply2.py", "f", 1, 1, 2);
+    test("tf2_test_multiply2.py", "f", 1, 1, 2);
   }
 
   @Test
-  public void testTf2TestSparseSoftmaxCrossEntropyWithLogits()
+  public void testSparseSoftmaxCrossEntropyWithLogits()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    testTf2("tf2_test_sparse_softmax_cross_entropy_with_logits.py", "f", 1, 1, 2);
+    test("tf2_test_sparse_softmax_cross_entropy_with_logits.py", "f", 1, 1, 2);
   }
 
-  private void testTf2(
+  private void test(
       String filename,
       String functionName,
       int expectedNumberOfTensorParameters,
