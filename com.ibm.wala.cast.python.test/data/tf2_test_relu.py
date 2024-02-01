@@ -2,7 +2,9 @@
 
 import tensorflow as tf
 
+
 def f(a):
     pass
 
-f(tf.nn.relu(tf.constant([-2., 0., 3.])))
+
+f(tf.nn.relu(tf.constant([-2.0, 0.0, 3.0])))
