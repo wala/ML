@@ -7,7 +7,7 @@ import com.ibm.wala.types.TypeReference;
 /**
  * Types found in the TensorFlow library.
  *
- * @author <a href="mailto:khatchd@hunter.cuny.edu">Raffi Khatchadourian</a>
+ * @author <a href="mailto:khatchad@hunter.cuny.edu">Raffi Khatchadourian</a>
  */
 public class TensorFlowTypes extends PythonTypes {
 
