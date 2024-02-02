@@ -296,11 +296,11 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
   private static boolean definitionIsNonScalar(
       SSAInstruction instruction, DefUse du) {
     int def = instruction.getDef();
-    logger.info(
+    logger.fine(
         "Processing definition: " + def + " of instruction: " + instruction + ".");
 
     int numberOfUses = du.getNumberOfUses(def);
-    logger.info(
+    logger.fine(
         "Definition: "
             + def
             + " of instruction: "
@@ -311,11 +311,11 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 
     for (Iterator<SSAInstruction> uses = du.getUses(def); uses.hasNext(); ) {
       SSAInstruction useInstruction = uses.next();
-      logger.info("Processing use: " + useInstruction + ".");
+      logger.fine("Processing use: " + useInstruction + ".");
 
       if (useInstruction instanceof PythonPropertyRead) {
         PythonPropertyRead read = (PythonPropertyRead) useInstruction;
-        logger.info("Found property read use: " + read + ".");
+        logger.fine("Found property read use: " + read + ".");
 
         // if the definition appears on the LHS of the read.
         if (read.getObjectRef() == def) return true;
