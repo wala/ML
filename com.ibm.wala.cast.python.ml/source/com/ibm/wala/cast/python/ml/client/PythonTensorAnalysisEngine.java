@@ -182,9 +182,9 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
    * is added to the given {@link Set} of {@link PointsToSetVariable}s as tensor dataflow sources.
    *
    * @param instruction The {@link SSAInstruction} to process.
-   * @param du The {@link DefUse} corresponding to the siven {@link SSAInstruction}.
+   * @param du The {@link DefUse} corresponding to the given {@link SSAInstruction}.
    * @param node The {@link CGNode} containing the given {@link SSAInstruction}.
-   * @param src The {@link PointsToSetVariable} under question as to whether it shoudl be considered
+   * @param src The {@link PointsToSetVariable} under question as to whether it should be considered
    *     a tensor dataflow source.
    * @param sources The {@link Set} of tensor dataflow sources.
    * @param callGraph The {@link CallGraph} containing the given {@link SSAInstruction}.
@@ -240,7 +240,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
    * Similar to processInstruction but does so using the given {@link PointerAnalysis}.
    *
    * @param instruction The {@link SSAInstruction} to be processed.
-   * @param use The {@link DefUse} corresponding to the given {@link SSAInstruction}.
+   * @param use The use in the {@link Instruction} to analyze.
    * @param node The {@link CGNode} containing the given {@link SSAInstruction}.
    * @param src The {@link PointsToSetVariable} being decided upon whether it should be considered
    *     as a tensor dataflow source.
