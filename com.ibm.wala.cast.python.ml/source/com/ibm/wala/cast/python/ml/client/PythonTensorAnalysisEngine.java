@@ -293,11 +293,9 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
    * @param du The {@link DefUse} for the containing {@link CGNode}.
    * @return True iff the definition of the given {@link EachElementGetInstruction} is non-scalar.
    */
-  private static boolean definitionIsNonScalar(
-      SSAInstruction instruction, DefUse du) {
+  private static boolean definitionIsNonScalar(SSAInstruction instruction, DefUse du) {
     int def = instruction.getDef();
-    logger.fine(
-        "Processing definition: " + def + " of instruction: " + instruction + ".");
+    logger.fine("Processing definition: " + def + " of instruction: " + instruction + ".");
 
     int numberOfUses = du.getNumberOfUses(def);
     logger.fine(
