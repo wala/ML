@@ -287,34 +287,34 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
   }
 
   /**
-   * True iff the given {@link EachElementGetInstruction} constitutes individual elements.
+   * True iff the given {@link SSAInstruction} constitutes individual elements.
    *
-   * @param eachElementGetInstruction The {@link EachElementGetInstruction} in question.
+   * @param instruction The {@link SSAInstruction} in question.
    * @param du The {@link DefUse} for the containing {@link CGNode}.
    * @return True iff the definition of the given {@link EachElementGetInstruction} is non-scalar.
    */
   private static boolean definitionIsNonScalar(
-      EachElementGetInstruction eachElementGetInstruction, DefUse du) {
-    int def = eachElementGetInstruction.getDef();
+      SSAInstruction instruction, DefUse du) {
+    int def = instruction.getDef();
     logger.info(
-        "Processing definition: " + def + " of instruction: " + eachElementGetInstruction + ".");
+        "Processing definition: " + def + " of instruction: " + instruction + ".");
 
     int numberOfUses = du.getNumberOfUses(def);
     logger.info(
         "Definition: "
             + def
             + " of instruction: "
-            + eachElementGetInstruction
+            + instruction
             + " has "
             + numberOfUses
             + " uses.");
 
     for (Iterator<SSAInstruction> uses = du.getUses(def); uses.hasNext(); ) {
-      SSAInstruction instruction = uses.next();
-      logger.info("Processing use: " + instruction + ".");
+      SSAInstruction useInstruction = uses.next();
+      logger.info("Processing use: " + useInstruction + ".");
 
-      if (instruction instanceof PythonPropertyRead) {
-        PythonPropertyRead read = (PythonPropertyRead) instruction;
+      if (useInstruction instanceof PythonPropertyRead) {
+        PythonPropertyRead read = (PythonPropertyRead) useInstruction;
         logger.info("Found property read use: " + read + ".");
 
         // if the definition appears on the LHS of the read.
