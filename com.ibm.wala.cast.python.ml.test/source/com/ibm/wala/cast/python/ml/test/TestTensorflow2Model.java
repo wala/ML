@@ -1127,6 +1127,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_sparse_softmax_cross_entropy_with_logits.py", "f", 1, 1, 2);
   }
 
+  @Test
+  public void testRelu()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_relu.py", "f", 1, 1, 2);
+  }
+
   private void test(
       String filename,
       String functionName,

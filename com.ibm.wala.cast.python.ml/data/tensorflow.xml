@@ -75,6 +75,8 @@
         <putfield class="LRoot" field="conv3d" fieldType="LRoot" ref="nn" value="conv3d" />
         <new def="softmax" class="Ltensorflow/functions/softmax" />
         <putfield class="LRoot" field="softmax" fieldType="LRoot" ref="nn" value="softmax" />
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/nn/relu -->
+        <putfield class="LRoot" field="relu" fieldType="LRoot" ref="nn" value="pass_through" />
         <new def="sparse_softmax_cross_entropy_with_logits" class="Ltensorflow/functions/sparse_softmax_cross_entropy_with_logits" />
         <putfield class="LRoot" field="sparse_softmax_cross_entropy_with_logits" fieldType="LRoot" ref="nn" value="sparse_softmax_cross_entropy_with_logits" />
         <new def="sigmoid" class="Ltensorflow/math/sigmoid" />
