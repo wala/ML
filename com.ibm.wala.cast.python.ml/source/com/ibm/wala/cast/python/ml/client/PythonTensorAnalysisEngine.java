@@ -182,9 +182,9 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
    * is added to the given {@link Set} of {@link PointsToSetVariable}s as tensor dataflow sources.
    *
    * @param instruction The {@link SSAInstruction} to process.
-   * @param du The {@link DefUse} corresponding to the siven {@link SSAInstruction}.
+   * @param du The {@link DefUse} corresponding to the given {@link SSAInstruction}.
    * @param node The {@link CGNode} containing the given {@link SSAInstruction}.
-   * @param src The {@link PointsToSetVariable} under question as to whether it shoudl be considered
+   * @param src The {@link PointsToSetVariable} under question as to whether it should be considered
    *     a tensor dataflow source.
    * @param sources The {@link Set} of tensor dataflow sources.
    * @param callGraph The {@link CallGraph} containing the given {@link SSAInstruction}.
@@ -240,7 +240,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
    * Similar to processInstruction but does so using the given {@link PointerAnalysis}.
    *
    * @param instruction The {@link SSAInstruction} to be processed.
-   * @param use The {@link DefUse} corresponding to the given {@link SSAInstruction}.
+   * @param use The use in the {@link Instruction} to analyze.
    * @param node The {@link CGNode} containing the given {@link SSAInstruction}.
    * @param src The {@link PointsToSetVariable} being decided upon whether it should be considered
    *     as a tensor dataflow source.
@@ -287,35 +287,33 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
   }
 
   /**
-   * True iff the given {@link EachElementGetInstruction} constitutes individual elements.
+   * True iff the given {@link SSAInstruction} constitutes individual elements.
    *
-   * @param eachElementGetInstruction The {@link EachElementGetInstruction} in question.
+   * @param instruction The {@link SSAInstruction} in question.
    * @param du The {@link DefUse} for the containing {@link CGNode}.
    * @return True iff the definition of the given {@link EachElementGetInstruction} is non-scalar.
    */
-  private static boolean definitionIsNonScalar(
-      EachElementGetInstruction eachElementGetInstruction, DefUse du) {
-    int def = eachElementGetInstruction.getDef();
-    logger.info(
-        "Processing definition: " + def + " of instruction: " + eachElementGetInstruction + ".");
+  private static boolean definitionIsNonScalar(SSAInstruction instruction, DefUse du) {
+    int def = instruction.getDef();
+    logger.fine("Processing definition: " + def + " of instruction: " + instruction + ".");
 
     int numberOfUses = du.getNumberOfUses(def);
-    logger.info(
+    logger.fine(
         "Definition: "
             + def
             + " of instruction: "
-            + eachElementGetInstruction
+            + instruction
             + " has "
             + numberOfUses
             + " uses.");
 
     for (Iterator<SSAInstruction> uses = du.getUses(def); uses.hasNext(); ) {
-      SSAInstruction instruction = uses.next();
-      logger.info("Processing use: " + instruction + ".");
+      SSAInstruction useInstruction = uses.next();
+      logger.fine("Processing use: " + useInstruction + ".");
 
-      if (instruction instanceof PythonPropertyRead) {
-        PythonPropertyRead read = (PythonPropertyRead) instruction;
-        logger.info("Found property read use: " + read + ".");
+      if (useInstruction instanceof PythonPropertyRead) {
+        PythonPropertyRead read = (PythonPropertyRead) useInstruction;
+        logger.fine("Found property read use: " + read + ".");
 
         // if the definition appears on the LHS of the read.
         if (read.getObjectRef() == def) return true;
