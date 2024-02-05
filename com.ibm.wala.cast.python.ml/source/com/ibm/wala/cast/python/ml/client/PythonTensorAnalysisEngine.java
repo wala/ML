@@ -91,7 +91,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
               TypeName.string2TypeName("Ltensorflow/functions/set_shape")),
           AstMethodReference.fnSelector);
 
-  private static final MethodReference enumerate =
+  private static final MethodReference ENUMERATE =
       MethodReference.findOrCreate(
           TypeReference.findOrCreate(
               PythonTypes.pythonLoader, TypeName.string2TypeName("Lwala/builtin/enumerate")),
@@ -327,7 +327,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
           IClass type = typeKey.getType();
           TypeReference typeReference = type.getReference();
 
-          if (typeReference.equals(enumerate.getDeclaringClass())) {
+          if (typeReference.equals(ENUMERATE.getDeclaringClass())) {
             // it's a call to enumerate(), where the returned value is an iterator over
             // tuples. Each tuple consists of the enumeration number and the dataset
             // element. Check that we are not looking at the enumeration number.
