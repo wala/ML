@@ -613,6 +613,20 @@ public class PythonCAstToIRTranslator extends AstTranslator {
                             .PutInstruction(code.cfg().getCurrentInstruction(), v, val, fr));
               });
     }
+
+    code.cfg()
+        .unknownInstructions(
+            () -> {
+              FieldReference fnField =
+                  FieldReference.findOrCreate(
+                      PythonTypes.Root,
+                      Atom.findOrCreateUnicodeAtom(n.getName()),
+                      PythonTypes.Root);
+              code.cfg()
+                  .addInstruction(
+                      Python.instructionFactory()
+                          .PutInstruction(code.cfg().getCurrentInstruction(), 1, v, fnField));
+            });
   }
 
   @Override
