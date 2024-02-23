@@ -35,6 +35,7 @@ gradle-app.setting
 
 # Cache of project
 .gradletasknamecache
+/.pytest_cache/
 
 # Eclipse Gradle plugin generated files
 # Eclipse Core
