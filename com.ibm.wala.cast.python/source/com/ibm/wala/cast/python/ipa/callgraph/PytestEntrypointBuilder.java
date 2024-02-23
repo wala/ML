@@ -1,14 +1,15 @@
 package com.ibm.wala.cast.python.ipa.callgraph;
 
+import static com.ibm.wala.cast.python.types.Util.getFilename;
 import static java.util.Objects.requireNonNull;
 
 import com.ibm.wala.cast.python.loader.PythonLoader.DynamicMethodBody;
 import com.ibm.wala.cast.python.loader.PythonLoader.PythonClass;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.classLoader.IClass;
+import com.ibm.wala.client.AbstractAnalysisEngine.EntrypointBuilder;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.callgraph.Entrypoint;
-import com.ibm.wala.ipa.callgraph.impl.DefaultEntrypoint;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
@@ -21,16 +22,17 @@ import java.util.logging.Logger;
  * functions are those invoked by the pytest framework reflectively. The entry points can be used to
  * specify entry points of a call graph.
  */
-public class PytestEntryPoints {
+public class PytestEntrypointBuilder implements EntrypointBuilder {
 
-  private static final Logger logger = Logger.getLogger(PytestEntryPoints.class.getName());
+  private static final Logger logger = Logger.getLogger(PytestEntrypointBuilder.class.getName());
 
   /**
    * Construct pytest entrypoints for all the pytest test functions in the given scope.
    *
    * @throws NullPointerException If the given {@link IClassHierarchy} is null.
    */
-  public static Iterable<Entrypoint> make(IClassHierarchy cha) {
+  @Override
+  public Iterable<Entrypoint> createEntrypoints(IClassHierarchy cha) {
     requireNonNull(cha);
 
     final HashSet<Entrypoint> result = HashSetFactory.make();
@@ -43,10 +45,12 @@ public class PytestEntryPoints {
         MethodReference methodReference =
             MethodReference.findOrCreate(klass.getReference(), AstMethodReference.fnSelector);
 
-        result.add(new DefaultEntrypoint(methodReference, cha));
+        result.add(new PytesttEntrypoint(methodReference, cha));
+
         logger.fine(() -> "Adding test method as entry point: " + methodReference.getName() + ".");
       }
     }
+
     return result::iterator;
   }
 
@@ -65,55 +69,44 @@ public class PytestEntryPoints {
       final String fileName = getFilename(typeName);
       final Atom className = typeName.getClassName();
 
+      // In Ariadne, a script is an invokable entity like a function.
       final boolean script = className.toString().endsWith(".py");
 
-      if (!script) { // A script isn't a pytest entry point according to https://bit.ly/3wj8nPY.
-        if (fileName.startsWith("test_") || fileName.endsWith("_test")) {
-          // we're inside of a "test" file.
-          if (!(klass instanceof PythonClass)) { // classes aren't entrypoints.
-            if (klass instanceof DynamicMethodBody) {
-              // It's a method.
-              DynamicMethodBody dmb = (DynamicMethodBody) klass;
-              IClass container = dmb.getContainer();
-              String containerName = container.getReference().getName().getClassName().toString();
+      if (!script // it's not an invokable script.
+          && (fileName.startsWith("test_")
+              || fileName.endsWith("_test")) // we're inside of a "test" file,
+          && !(klass instanceof PythonClass)) { // classes aren't entrypoints.
+        if (klass instanceof DynamicMethodBody) {
+          // It's a method. In Ariadne, functions are also classes.
+          DynamicMethodBody dmb = (DynamicMethodBody) klass;
+          IClass container = dmb.getContainer();
+          String containerName = container.getReference().getName().getClassName().toString();
 
-              if (containerName.startsWith("Test")) {
-                if (container instanceof PythonClass) {
-                  PythonClass containerClass = (PythonClass) container;
+          if (containerName.startsWith("Test") && container instanceof PythonClass) {
+            // It's a test class.
+            PythonClass containerClass = (PythonClass) container;
 
-                  final boolean hasCtor =
-                      containerClass.getMethodReferences().stream()
-                          .anyMatch(
-                              mr -> {
-                                return mr.getName().toString().equals("__init__");
-                              });
+            final boolean hasCtor =
+                containerClass.getMethodReferences().stream()
+                    .anyMatch(
+                        mr -> {
+                          return mr.getName().toString().equals("__init__");
+                        });
 
-                  if (!hasCtor) {
-                    String methodName = className.toString();
+            // Test classes can't have constructors.
+            if (!hasCtor) {
+              // In Ariadne, methods are modeled as classes. Thus, a class name in this case is the
+              // method name.
+              String methodName = className.toString();
 
-                    if (methodName.startsWith("test")) return true;
-                  }
-                }
-              }
-
-            } else {
-              // It's a function.
-              if (className.toString().startsWith("test")) return true;
+              // If the method starts with "test."
+              if (methodName.startsWith("test")) return true;
             }
           }
-        }
+        } else if (className.toString().startsWith("test")) return true; // It's a function.
       }
     }
 
     return false;
-  }
-
-  private static String getFilename(final TypeName typeName) {
-    String ret = typeName.toString();
-    ret = ret.substring("Lscript ".length());
-
-    if (ret.indexOf('/') != -1) ret = ret.substring(0, ret.indexOf('/'));
-
-    return ret;
   }
 }
