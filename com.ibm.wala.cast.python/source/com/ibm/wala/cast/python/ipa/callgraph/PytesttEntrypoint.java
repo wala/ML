@@ -41,13 +41,14 @@ public class PytesttEntrypoint extends DefaultEntrypoint {
    */
   @Override
   public SSAAbstractInvokeInstruction addCall(AbstractRootMethod m) {
-    int paramValues[];
-    paramValues = new int[getNumberOfParameters()];
+    int paramValues[] = new int[getNumberOfParameters()];
 
     for (int j = 0; j < paramValues.length; j++) {
       AstInstructionFactory insts = PythonLanguage.Python.instructionFactory();
 
-      if (j == 0 && getMethod().getDeclaringClass().getName().toString().contains("/")) {
+      String methodDeclaringClassName = getMethod().getDeclaringClass().getName().toString();
+
+      if (j == 0 && methodDeclaringClassName.contains("/")) {
         int v = m.nextLocal++;
         paramValues[j] = v;
 
@@ -57,22 +58,14 @@ public class PytesttEntrypoint extends DefaultEntrypoint {
                   PythonTypes.Root,
                   Atom.findOrCreateUnicodeAtom(
                       "global "
-                          + getMethod()
-                              .getDeclaringClass()
-                              .getName()
-                              .toString()
-                              .substring(
-                                  1,
-                                  getMethod()
-                                      .getDeclaringClass()
-                                      .getName()
-                                      .toString()
-                                      .lastIndexOf('/'))),
+                          + methodDeclaringClassName.substring(
+                              1, methodDeclaringClassName.lastIndexOf('/'))),
                   PythonTypes.Root);
 
           int idx = m.statements.size();
           int cls = m.nextLocal++;
           int obj = m.nextLocal++;
+
           m.statements.add(insts.GlobalRead(m.statements.size(), cls, global));
           idx = m.statements.size();
 
@@ -87,10 +80,11 @@ public class PytesttEntrypoint extends DefaultEntrypoint {
                   new Pair[0]);
 
           m.statements.add(invokeInstruction);
-
           idx = m.statements.size();
-          String method = getMethod().getDeclaringClass().getName().toString();
+
+          String method = methodDeclaringClassName;
           String field = method.substring(method.lastIndexOf('/') + 1);
+
           FieldReference f =
               FieldReference.findOrCreate(
                   PythonTypes.Root, Atom.findOrCreateUnicodeAtom(field), PythonTypes.Root);
@@ -100,21 +94,16 @@ public class PytesttEntrypoint extends DefaultEntrypoint {
           FieldReference global =
               FieldReference.findOrCreate(
                   PythonTypes.Root,
-                  Atom.findOrCreateUnicodeAtom(
-                      "global "
-                          + getMethod().getDeclaringClass().getName().toString().substring(1)),
+                  Atom.findOrCreateUnicodeAtom("global " + methodDeclaringClassName.substring(1)),
                   PythonTypes.Root);
 
           m.statements.add(insts.GlobalRead(m.statements.size(), v, global));
         }
-      } else {
-        paramValues[j] = makeArgument(m, j);
-      }
+      } else paramValues[j] = makeArgument(m, j);
 
-      if (paramValues[j] == -1) {
+      if (paramValues[j] == -1)
         // there was a problem
         return null;
-      }
 
       TypeReference x[] = getParameterTypes(j);
 
