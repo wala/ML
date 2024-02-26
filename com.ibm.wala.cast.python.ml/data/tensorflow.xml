@@ -463,7 +463,9 @@
       </class>
       <class name="range" allocatable="true">
         <method name="read_data" descriptor="()LRoot;">
-          <new def="x" class="Ltensorflow/python/ops/math_ops/range" />
+          <new def="x" class="Llist" />
+          <call class="Ltensorflow/functions/constant" name="do" descriptor="()LRoot;" type="virtual" arg0="1" def="y" />
+          <putfield class="LRoot" field="0" fieldType="LRoot" ref="x" value="y" />
           <return value="x" />
         </method>
         <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="limit delta dtype name">
