@@ -535,7 +535,6 @@ public class TurtleSummary {
       @Override
       public SSAAbstractInvokeInstruction addCall(AbstractRootMethod m) {
         int paramValues[];
-        IClassHierarchy cha = m.getClassHierarchy();
         paramValues = new int[getNumberOfParameters()];
         for (int j = 0; j < paramValues.length; j++) {
           AstInstructionFactory insts = PythonLanguage.Python.instructionFactory();
