@@ -1,25 +1,20 @@
 package com.ibm.wala.cast.python.test;
 
-import static com.google.common.collect.Iterables.concat;
+import static com.ibm.wala.cast.python.util.Util.addPytestEntrypoints;
 import static java.util.Collections.singleton;
 
 import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
-import com.ibm.wala.cast.python.ipa.callgraph.PytestEntrypointBuilder;
 import com.ibm.wala.ipa.callgraph.CallGraph;
-import com.ibm.wala.ipa.callgraph.Entrypoint;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.logging.Logger;
 import org.junit.Test;
 
 public class TestCalls extends TestPythonCallGraphShape {
-
-  private static final Logger LOGGER = Logger.getLogger(TestCalls.class.getName());
 
   protected static final Object[][] assertionsCalls1 =
       new Object[][] {
@@ -280,21 +275,6 @@ public class TestCalls extends TestPythonCallGraphShape {
         callGraph);
 
     verifyGraphAssertions(callGraph, PYTEST_ASSERTIONS);
-  }
-
-  private static void addPytestEntrypoints(PropagationCallGraphBuilder callGraphBuilder) {
-    Iterable<? extends Entrypoint> defaultEntrypoints =
-        callGraphBuilder.getOptions().getEntrypoints();
-
-    Iterable<Entrypoint> pytestEntrypoints =
-        new PytestEntrypointBuilder().createEntrypoints(callGraphBuilder.getClassHierarchy());
-
-    Iterable<Entrypoint> entrypoints = concat(defaultEntrypoints, pytestEntrypoints);
-
-    callGraphBuilder.getOptions().setEntrypoints(entrypoints);
-
-    for (Entrypoint ep : callGraphBuilder.getOptions().getEntrypoints())
-      LOGGER.info(() -> "Using entrypoint: " + ep.getMethod().getDeclaringClass().getName() + ".");
   }
 
   protected static final Object[][] PYTEST_ASSERTIONS2 =
