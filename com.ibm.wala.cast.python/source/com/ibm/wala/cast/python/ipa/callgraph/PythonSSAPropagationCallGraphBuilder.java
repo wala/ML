@@ -12,13 +12,10 @@ package com.ibm.wala.cast.python.ipa.callgraph;
 
 import com.ibm.wala.cast.ipa.callgraph.AstSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.ipa.callgraph.GlobalObjectKey;
-import com.ibm.wala.cast.ir.ssa.AstPropertyRead;
-import com.ibm.wala.cast.ir.ssa.EachElementGetInstruction;
 import com.ibm.wala.cast.python.ipa.summaries.BuiltinFunctions.BuiltinFunction;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.ssa.PythonInstructionVisitor;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
-import com.ibm.wala.cast.python.ssa.PythonPropertyRead;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IField;
@@ -40,7 +37,6 @@ import com.ibm.wala.ssa.SSAArrayLoadInstruction;
 import com.ibm.wala.ssa.SSAArrayStoreInstruction;
 import com.ibm.wala.ssa.SSABinaryOpInstruction;
 import com.ibm.wala.ssa.SSAGetInstruction;
-import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.TypeReference;
@@ -177,42 +173,6 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 
       // TODO Auto-generated method stub
       super.visitGet(instruction);
-    }
-
-    @Override
-    public void visitPropertyRead(AstPropertyRead instruction) {
-      super.visitPropertyRead(instruction);
-
-      if (instruction instanceof PythonPropertyRead) {
-        PythonPropertyRead ppr = (PythonPropertyRead) instruction;
-        SSAInstruction memberRefDef = du.getDef(ppr.getMemberRef());
-
-        if (memberRefDef != null && memberRefDef instanceof EachElementGetInstruction) {
-          // most likely a for each "property."
-          final PointerKey memberRefKey = this.getPointerKeyForLocal(ppr.getMemberRef());
-
-          // for each def of the property read.
-          for (int i = 0; i < ppr.getNumberOfDefs(); i++) {
-            PointerKey defKey = this.getPointerKeyForLocal(ppr.getDef(i));
-
-            // add an assignment constraint straight away as the traversal variable won't have a
-            // non-empty points-to set but still may be used for a dataflow analysis.
-            if (this.system.newConstraint(defKey, assignOperator, memberRefKey))
-              logger.fine(
-                  () ->
-                      "Added new system constraint for global read from: "
-                          + defKey
-                          + " to: "
-                          + memberRefKey
-                          + " for instruction: "
-                          + instruction
-                          + ".");
-            else
-              logger.fine(
-                  () -> "No constraint added for global read in instruction: " + instruction + ".");
-          }
-        }
-      }
     }
 
     @Override
