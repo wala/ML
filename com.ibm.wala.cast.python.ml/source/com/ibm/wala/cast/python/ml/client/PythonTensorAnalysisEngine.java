@@ -169,7 +169,8 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
             processInstructionInterprocedurally(
                 propertyRead, objectRef, localPointerKeyNode, src, sources, pointerAnalysis);
           } else if (def instanceof EachElementGetInstruction
-              || def instanceof PythonPropertyRead) {
+              || def instanceof PythonPropertyRead
+              || def instanceof PythonInvokeInstruction) {
             processInstruction(
                 def,
                 du,
