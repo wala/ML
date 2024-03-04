@@ -45,6 +45,8 @@
         <new def="layers" class="Lobject" />
         <putfield class="LRoot" field="layers" fieldType="LRoot" ref="x" value="layers" />
         <putfield class="LRoot" field="layers" fieldType="LRoot" ref="keras" value="layers" />
+        <new def="models" class="Lobject" />
+        <putfield class="LRoot" field="models" fieldType="LRoot" ref="keras" value="models" />
         <new def="app" class="Lobject" />
         <putfield class="LRoot" field="app" fieldType="LRoot" ref="x" value="app" />
         <new def="run" class="Ltensorflow/app/run" />
@@ -146,6 +148,9 @@
         <putfield class="LRoot" field="Input" fieldType="LRoot" ref="layers" value="Input" />
         <new def="Dense" class="Ltensorflow/keras/layers/Dense" />
         <putfield class="LRoot" field="Dense" fieldType="LRoot" ref="layers" value="Dense" />
+        <new def="Model" class="Ltensorflow/keras/models/Model" />
+        <putfield class="LRoot" field="Model" fieldType="LRoot" ref="keras" value="Model" />
+        <putfield class="LRoot" field="Model" fieldType="LRoot" ref="models" value="Model" />
         <new def="Variable" class="Ltensorflow/functions/Variable" />
         <putfield class="LRoot" field="Variable" fieldType="LRoot" ref="x" value="Variable" />
         <putfield class="LRoot" field="Variable" fieldType="LRoot" ref="variables" value="Variable" />
@@ -726,6 +731,42 @@
           <putfield class="LRoot" field="data" fieldType="LRoot" ref="xx" value="2" />
           <putfield class="LRoot" field="labels" fieldType="LRoot" ref="xx" value="3" />
           <return value="xx" />
+        </method>
+      </class>
+    </package>
+    <package name="tensorflow/keras/models">
+      <class name="Model" allocatable="true">
+        <method name="read_data" descriptor="()LRoot;">
+          <new def="x" class="Ltensorflow/keras/Model/attribute" />
+          <return value="x" />
+        </method>
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/keras/models/Model -->
+        <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self inputs outputs name">
+          <new def="__call__" class="Ltensorflow/keras/models/__call__" />
+          <putfield class="LRoot" field="__call__" fieldType="LRoot" ref="arg0" value="__call__" />
+          <new def="call" class="Ltensorflow/keras/models/call" />
+          <putfield class="LRoot" field="call" fieldType="LRoot" ref="arg0" value="call" />
+          <new def="x" class="Llist" />
+          <call class="LRoot" name="read_data" descriptor="()LRoot;" type="virtual" arg0="arg0" def="xx" />
+          <putfield class="LRoot" field="0" fieldType="LRoot" ref="x" value="xx" />
+          <!-- https://www.tensorflow.org/guide/keras/transfer_learning#freezing_layers_understanding_the_trainable_attribute -->
+          <putfield class="LRoot" field="trainable_weights" fieldType="LRoot" ref="arg0" value="x" />
+          <putfield class="LRoot" field="weights" fieldType="LRoot" ref="arg0" value="x" />
+          <putfield class="LRoot" field="non_trainable_weights" fieldType="LRoot" ref="arg0" value="x" />
+          <return value="arg0" />
+        </method>
+      </class>
+      <class name="__call__" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/keras/Model#call -->
+        <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self inputs training mask">
+          <return value="inputs" />
+        </method>
+      </class>
+      <!-- FIXME: Workaround for https://github.com/wala/ML/issues/106. -->
+      <class name="call" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/keras/Model#call -->
+        <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self inputs training mask">
+          <return value="inputs" />
         </method>
       </class>
     </package>
