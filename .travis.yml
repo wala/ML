@@ -16,8 +16,9 @@ install:
  - mvn clean install -B -q -DskipTests
  - popd
  - pip install -r requirements.txt
-script:
+before_script:
  - mvn spotless:check -B
+script:
  - mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties clean verify -B
 deploy:
   provider: script
