@@ -300,7 +300,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
    * Returns true iff the given {@link PointsToSetVariable} refers to a tensor dataset element of
    * the dataset defined by the given value number in the given {@link CGNode}.
    *
-   * @param src The {@link PointsToSetVariable} to consider.
+   * @param variable The {@link PointsToSetVariable} to consider.
    * @param val The value in the given {@link CGNode} representing the tensor dataset.
    * @param node The {@link CGNode} containing the given {@link PointsToSetVariable} and value.
    * @param pointerAnalysis The {@link PointerAnalysis} that includes points-to information for the
@@ -309,7 +309,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
    *     val in node.
    */
   private static boolean isDatasetTensorElement(
-      PointsToSetVariable src, int val, CGNode node, PointerAnalysis<InstanceKey> pointerAnalysis) {
+      PointsToSetVariable variable, int val, CGNode node, PointerAnalysis<InstanceKey> pointerAnalysis) {
     SSAInstruction def = node.getDU().getDef(val);
 
     if (def instanceof PythonInvokeInstruction) {
@@ -335,7 +335,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 
             PythonPropertyRead srcDef =
                 (PythonPropertyRead)
-                    node.getDU().getDef(((LocalPointerKey) src.getPointerKey()).getValueNumber());
+                    node.getDU().getDef(((LocalPointerKey) variable.getPointerKey()).getValueNumber());
 
             // What does the member reference point to?
             PointerKey memberRefPointerKey =
