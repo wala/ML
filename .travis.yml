@@ -13,13 +13,13 @@ install:
  - popd
  - popd
  - pushd /tmp/IDE/com.ibm.wala.cast.lsp
- - mvn clean install -B -q -DskipTests
+ - mvn install -B -q -DskipTests
  - popd
  - pip install -r requirements.txt
 before_script:
  - mvn spotless:check -B
 script:
- - mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties clean verify -B
+ - mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties verify -B
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
