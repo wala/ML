@@ -152,8 +152,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
                 src,
                 sources,
                 callGraph,
-                pointerAnalysis,
-                newHashSet());
+                pointerAnalysis);
           }
         } else if (inst instanceof PythonPropertyRead) {
           // We are potentially pulling a tensor out of a non-scalar tensor iterable.
@@ -172,19 +171,40 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
               || def instanceof PythonPropertyRead
               || def instanceof PythonInvokeInstruction) {
             processInstruction(
-                def,
-                du,
-                localPointerKeyNode,
-                src,
-                sources,
-                callGraph,
-                pointerAnalysis,
-                newHashSet());
+                def, du, localPointerKeyNode, src, sources, callGraph, pointerAnalysis);
           }
         }
       }
     }
     return sources;
+  }
+
+  /**
+   * Processes the given {@link SSAInstruction} to decide if the given {@link PointsToSetVariable}
+   * is added to the given {@link Set} of {@link PointsToSetVariable}s as tensor dataflow sources.
+   *
+   * @param instruction The {@link SSAInstruction} to process.
+   * @param du The {@link DefUse} corresponding to the given {@link SSAInstruction}.
+   * @param node The {@link CGNode} containing the given {@link SSAInstruction}.
+   * @param src The {@link PointsToSetVariable} under question as to whether it should be considered
+   *     a tensor dataflow source.
+   * @param sources The {@link Set} of tensor dataflow sources.
+   * @param callGraph The {@link CallGraph} containing the given {@link SSAInstruction}.
+   * @param pointerAnalysis The {@link PointerAnalysis} corresponding to the given {@link
+   *     CallGraph}.
+   * @return True iff the given {@link PointsToSetVariable} was added to the given {@link Set} of
+   *     {@link PointsToSetVariable} dataflow sources.
+   */
+  private static boolean processInstruction(
+      SSAInstruction instruction,
+      DefUse du,
+      CGNode node,
+      PointsToSetVariable src,
+      Set<PointsToSetVariable> sources,
+      CallGraph callGraph,
+      PointerAnalysis<InstanceKey> pointerAnalysis) {
+    return processInstruction(
+        instruction, du, node, src, sources, callGraph, pointerAnalysis, newHashSet());
   }
 
   /**
