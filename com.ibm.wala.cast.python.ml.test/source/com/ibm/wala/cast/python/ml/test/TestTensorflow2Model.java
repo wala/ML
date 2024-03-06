@@ -819,9 +819,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_dataset2.py", "add", 2, 2, 2, 3);
   }
 
-  /**
-   * This is not a legal case; no tensors.
-   */
+  /** This is not a legal case; no tensors. */
   @Test
   public void testDataset3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
