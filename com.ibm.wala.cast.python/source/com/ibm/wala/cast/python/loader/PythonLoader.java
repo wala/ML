@@ -205,7 +205,7 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
   final CoreClass superfun =
       new CoreClass(PythonTypes.superfun.getName(), PythonTypes.CodeBody.getName(), this, null);
   final CoreClass iterator =
-	  new CoreClass(PythonTypes.iterator.getName(), PythonTypes.object.getName(), this, null);
+      new CoreClass(PythonTypes.iterator.getName(), PythonTypes.object.getName(), this, null);
 
   public PythonLoader(IClassHierarchy cha, IClassLoader parent) {
     super(cha, parent);
