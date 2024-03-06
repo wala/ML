@@ -329,7 +329,10 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
    *     val in node.
    */
   private static boolean isDatasetTensorElement(
-      PointsToSetVariable variable, int val, CGNode node, PointerAnalysis<InstanceKey> pointerAnalysis) {
+      PointsToSetVariable variable,
+      int val,
+      CGNode node,
+      PointerAnalysis<InstanceKey> pointerAnalysis) {
     SSAInstruction def = node.getDU().getDef(val);
 
     if (def instanceof PythonInvokeInstruction) {
@@ -355,7 +358,8 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 
             PythonPropertyRead srcDef =
                 (PythonPropertyRead)
-                    node.getDU().getDef(((LocalPointerKey) variable.getPointerKey()).getValueNumber());
+                    node.getDU()
+                        .getDef(((LocalPointerKey) variable.getPointerKey()).getValueNumber());
 
             // What does the member reference point to?
             PointerKey memberRefPointerKey =
