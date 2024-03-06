@@ -72,4 +72,10 @@ public class PythonTypes extends AstTypeReference {
 
   public static final TypeReference superfun =
       TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lsuperfun"));
+
+  /**
+   * https://docs.python.org/3/library/stdtypes.html#typeiter.
+   */
+  public static final TypeReference iterator =
+      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Literator"));
 }
