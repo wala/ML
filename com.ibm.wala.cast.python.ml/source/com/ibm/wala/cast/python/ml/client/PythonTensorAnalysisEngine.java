@@ -97,6 +97,12 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
               PythonTypes.pythonLoader, TypeName.string2TypeName("Lwala/builtin/enumerate")),
           AstMethodReference.fnSelector);
 
+  private static final MethodReference NEXT =
+      MethodReference.findOrCreate(
+          TypeReference.findOrCreate(
+              PythonTypes.pythonLoader, TypeName.string2TypeName("Lwala/builtin/next")),
+          AstMethodReference.fnSelector);
+
   private final Map<PointerKey, AnalysisError> errorLog = HashMapFactory.make();
 
   private static Set<PointsToSetVariable> getDataflowSources(
@@ -126,6 +132,37 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
               && ni.getException() != vn) {
             sources.add(src);
             logger.info("Added dataflow source from tensor generator: " + src + ".");
+          } else if (ni.getNumberOfUses() > 1) {
+            // Get the invoked function from the PA.
+            int target = ni.getUse(0);
+            PointerKey targetKey =
+                pointerAnalysis.getHeapModel().getPointerKeyForLocal(localPointerKeyNode, target);
+
+            for (InstanceKey ik : pointerAnalysis.getPointsToSet(targetKey)) {
+              if (ik instanceof ConcreteTypeKey) {
+                ConcreteTypeKey ctk = (ConcreteTypeKey) ik;
+                IClass type = ctk.getType();
+                TypeReference reference = type.getReference();
+
+                if (reference.equals(NEXT.getDeclaringClass())) {
+                  // it's a call to `next()`. Look up the call to `iter()`.
+                  int iterator = ni.getUse(1);
+                  SSAInstruction iteratorDef = du.getDef(iterator);
+
+                  // Let's see if the iterator is over a tensor dataset.
+                  if (iteratorDef != null && iteratorDef.getNumberOfUses() > 1) {
+                    // Get the argument.
+                    int iterArg = iteratorDef.getUse(1);
+                    processInstructionInterprocedurally(
+                        iteratorDef, iterArg, localPointerKeyNode, src, sources, pointerAnalysis);
+                  } else
+                    // Use the original instruction. NOTE: We can only do this because `iter()` is
+                    // currently just passing-through its argument.
+                    processInstructionInterprocedurally(
+                        ni, iterator, localPointerKeyNode, src, sources, pointerAnalysis);
+                }
+              }
+            }
           }
         } else if (inst instanceof EachElementGetInstruction) {
           // We are potentially pulling a tensor out of a tensor iterable.
@@ -290,7 +327,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
       PointerAnalysis<InstanceKey> pointerAnalysis) {
     logger.info(
         () ->
-            "Using interprocedural analysis to find potential tensor iterable definition for use: "
+            "Using interprocedural analysis to find potential tensor definition for use: "
                 + use
                 + " of instruction: "
                 + instruction
