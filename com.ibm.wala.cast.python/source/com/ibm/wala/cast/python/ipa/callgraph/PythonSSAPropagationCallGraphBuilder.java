@@ -98,9 +98,6 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
   private static final Collection<TypeReference> types =
       Arrays.asList(PythonTypes.string, TypeReference.Int);
 
-  private final Map<Pair<String, TypeReference>, BuiltinFunction> primitives =
-      HashMapFactory.make();
-
   public static class PythonConstraintVisitor extends AstConstraintVisitor
       implements PythonInstructionVisitor {
 
