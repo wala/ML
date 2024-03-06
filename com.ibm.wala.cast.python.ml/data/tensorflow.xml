@@ -55,7 +55,7 @@
         <putfield class="LRoot" field="Estimator" fieldType="LRoot" ref="estimator" value="Estimator" />
         <new def="GradientTape" class="Ltensorflow/GradientTape" />
         <putfield class="LRoot" field="GradientTape" fieldType="LRoot" ref="x" value="GradientTape" />
-        <new def="Dataset" class="Ltensorflow/data/Dataset" />
+        <new def="Dataset" class="Lobject" />
         <putfield class="LRoot" field="Dataset" fieldType="LRoot" ref="data" value="Dataset" />
         <new def="MirroredStrategy" class="Ltensorflow/distribute/MirroredStrategy" />
         <putfield class="LRoot" field="MirroredStrategy" fieldType="LRoot" ref="distribute" value="MirroredStrategy" />
