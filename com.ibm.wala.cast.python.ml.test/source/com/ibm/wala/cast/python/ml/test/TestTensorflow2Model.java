@@ -948,6 +948,13 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_dataset18.py", "g", 0, 2);
   }
 
+  /** Test a dataset that uses an iterator. */
+  @Test
+  public void testDataset19()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset19.py", "distributed_train_step", 1, 1, 2);
+  }
+
   /**
    * Test enumerating a dataset (https://github.com/wala/ML/issues/140). The first element of the
    * tuple returned isn't a tensor.
