@@ -1,4 +1,4 @@
-# From
+# From https://github.com/YunYang1994/TensorFlow2.0-Examples/blob/299fd6689f242d0f647a96b8844e86325e9fcb46/7-Utils/multi_gpu_train.py.
 
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
