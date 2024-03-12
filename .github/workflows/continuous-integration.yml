@@ -35,7 +35,7 @@ jobs:
     - name: Install IDE.
       run: |
         pushd ${{ runner.temp }}/IDE/com.ibm.wala.cast.lsp
-        mvn clean install -B -q -DskipTests
+        mvn install -B -q -DskipTests
         popd
     - name: Install Python.
       uses: actions/setup-python@v5
@@ -47,4 +47,4 @@ jobs:
     - name: Check formatting with spotless.
       run: mvn spotless:check -B
     - name: Build with Maven
-      run: mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties clean verify -B
+      run: mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties verify -B
