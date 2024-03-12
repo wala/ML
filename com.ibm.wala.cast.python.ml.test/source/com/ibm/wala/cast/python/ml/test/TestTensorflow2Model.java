@@ -826,7 +826,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   }
 
   @Test
-  public void testDataset4()
+public void testDataset4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test("tf2_test_dataset4.py", "add", 2, 2, 2, 3);
   }
@@ -920,6 +920,142 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test("tf2_test_dataset14.py", "f", 0, 0);
     test("tf2_test_dataset14.py", "g", 1, 1, 2);
+  }
+
+  @Test
+  public void testDataset20()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset20.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testDataset21()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset21.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testDataset22()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset22.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testDataset23()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset23.py", "f", 1, 1, 2);
+    test("tf2_test_dataset23.py", "g", 1, 1, 2);
+  }
+
+  @Test
+  public void testDataset24()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset24.py", "f", 1, 1, 2);
+    test("tf2_test_dataset24.py", "g", 1, 1, 2);
+  }
+
+  @Test
+  public void testDataset25()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
+    test("tf2_test_dataset25.py", "f", 0, 0);
+    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
+    test("tf2_test_dataset25.py", "g", 0, 0);
+    // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/165 is fixed.
+    test("tf2_test_dataset25.py", "h", 1, 1, 2);
+  }
+
+  @Test
+  public void testDataset26()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
+    test("tf2_test_dataset26.py", "f", 0, 0);
+    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
+    test("tf2_test_dataset26.py", "g1", 0, 0);
+    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
+    test("tf2_test_dataset26.py", "g2", 0, 0);
+    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
+    test("tf2_test_dataset26.py", "g3", 0, 0);
+    // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/165 is fixed.
+    test("tf2_test_dataset26.py", "h", 1, 1, 2);
+  }
+
+  @Test
+  public void testDataset27()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset27.py", "f", 1, 1, 2);
+    // TODO: Change to 1, 1, 2 when https://github.com/wala/ML/issues/164 is fixed:
+    test("tf2_test_dataset27.py", "g", 0, 0);
+    // TODO: Change to 1, 1, 2 when https://github.com/wala/ML/issues/164 is fixed:
+    test("tf2_test_dataset27.py", "h", 0, 0);
+    // TODO: Change to 1, 1, 2 when https://github.com/wala/ML/issues/164 is fixed:
+    test("tf2_test_dataset27.py", "i", 0, 0);
+  }
+
+  @Test
+  public void testDataset28()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    // TODO: Change to 1, 1, 2 when https://github.com/wala/ML/issues/164 is fixed:
+    test("tf2_test_dataset28.py", "f", 0, 0);
+    // TODO: Change to 1, 1, 2 when https://github.com/wala/ML/issues/164 is fixed:
+    test("tf2_test_dataset28.py", "g", 0, 0);
+    // TODO: Change to 0, 0 when https://github.com/wala/ML/issues/164 is fixed:
+    test("tf2_test_dataset28.py", "h", 1, 1, 2);
+  }
+
+  @Test
+  public void testDataset29()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset29.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testDataset30()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset30.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testDataset31()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/166 is fixed.
+    test("tf2_test_dataset31.py", "f", 1, 1, 2);
+    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
+    test("tf2_test_dataset31.py", "g1", 0, 0);
+    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
+    test("tf2_test_dataset31.py", "g2", 0, 0);
+    // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/166 is fixed.
+    test("tf2_test_dataset31.py", "h", 1, 1, 2);
+    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
+    test("tf2_test_dataset31.py", "i1", 0, 0);
+    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
+    test("tf2_test_dataset31.py", "i2", 0, 0);
+    // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/166 is fixed.
+    test("tf2_test_dataset31.py", "j", 1, 1, 2);
+    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
+    test("tf2_test_dataset31.py", "k1", 0, 0);
+    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
+    test("tf2_test_dataset31.py", "k2", 0, 0);
+    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
+    test("tf2_test_dataset31.py", "k2", 0, 0);
+    // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/166 is fixed.
+    test("tf2_test_dataset31.py", "l", 1, 1, 2);
+    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
+    test("tf2_test_dataset31.py", "m1", 0, 0);
+    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
+    test("tf2_test_dataset31.py", "m2", 0, 0);
+  }
+
+  @Test
+  public void testDataset32()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset32.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testDataset33()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset33.py", "f", 1, 1, 2);
   }
 
   /**

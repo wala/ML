@@ -65,8 +65,22 @@
         <putfield class="LRoot" field="numpy_input_fn" fieldType="LRoot" ref="inputs" value="numpy_input_fn" />
         <new def="from_tensor_slices" class="Ltensorflow/data/Dataset/from_tensor_slices" />
         <putfield class="LRoot" field="from_tensor_slices" fieldType="LRoot" ref="Dataset" value="from_tensor_slices" />
+        <new def="sample_from_datasets" class="Ltensorflow/data/Dataset/sample_from_datasets" />
+        <putfield class="LRoot" field="sample_from_datasets" fieldType="LRoot" ref="Dataset" value="sample_from_datasets" />
+        <new def="list_files" class="Ltensorflow/data/Dataset/list_files" />
+        <putfield class="LRoot" field="list_files" fieldType="LRoot" ref="Dataset" value="list_files" />
+        <new def="choose_from_datasets" class="Ltensorflow/data/Dataset/choose_from_datasets" />
+        <putfield class="LRoot" field="choose_from_datasets" fieldType="LRoot" ref="Dataset" value="choose_from_datasets" />
         <new def="from_generator" class="Ltensorflow/data/Dataset/from_generator" />
         <putfield class="LRoot" field="from_generator" fieldType="LRoot" ref="Dataset" value="from_generator" />
+        <new def="zip" class="Ltensorflow/data/Dataset/zip" />
+        <putfield class="LRoot" field="zip" fieldType="LRoot" ref="Dataset" value="zip" />
+        <new def="dsrange" class="Ltensorflow/data/Dataset/range" />
+        <putfield class="LRoot" field="range" fieldType="LRoot" ref="Dataset" value="dsrange" />
+        <new def="dsrandom" class="Ltensorflow/data/Dataset/random" />
+        <putfield class="LRoot" field="random" fieldType="LRoot" ref="Dataset" value="dsrandom" />
+        <new def="from_tensors" class="Ltensorflow/data/Dataset/from_tensors" />
+        <putfield class="LRoot" field="from_tensors" fieldType="LRoot" ref="Dataset" value="from_tensors" />
         <new def="reshape" class="Ltensorflow/functions/reshape" />
         <putfield class="LRoot" field="reshape" fieldType="LRoot" ref="x" value="reshape" />
         <new def="conv2d" class="Ltensorflow/functions/conv2d" />
@@ -827,6 +841,18 @@
           <new def="take" class="Ltensorflow/data/take" />
           <putfield class="LRoot" field="take" fieldType="LRoot" ref="arg0" value="take" />
           <return value="arg0" />
+          <new def="map" class="Ltensorflow/data/map" />
+          <putfield class="LRoot" field="map" fieldType="LRoot" ref="arg0" value="map" />
+          <return value="arg0" />
+          <new def="filter" class="Ltensorflow/data/filter" />
+          <putfield class="LRoot" field="filter" fieldType="LRoot" ref="arg0" value="filter" />
+          <new def="concatenate" class="Ltensorflow/data/concatenate" />
+          <putfield class="LRoot" field="concatenate" fieldType="LRoot" ref="arg0" value="concatenate" />
+          <new def="reduce" class="Ltensorflow/data/reduce" />
+          <putfield class="LRoot" field="reduce" fieldType="LRoot" ref="arg0" value="reduce" />
+          <new def="enumerate" class="Ltensorflow/data/enumerate" />
+          <putfield class="LRoot" field="enumerate" fieldType="LRoot" ref="arg0" value="enumerate" />
+          <return value="arg0" />
         </method>
         <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self variant_tensor">
           <call class="LRoot" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="arg0" def="x" />
@@ -878,8 +904,60 @@
           <return value="xx" />
         </method>
       </class>
+      <class name="map" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#map -->
+        <method name="do" descriptor="()LRoot;" numArgs="5" paramNames="self map_func num_parallel_calls deterministic name">
+          <!-- FIXME: Workaround for https://github.com/wala/ML/issues/127. -->
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+      <class name="filter" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#filter -->
+        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self predicate name">
+          <!-- FIXME: Workaround for https://github.com/wala/ML/issues/127. -->
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+      <class name="concatenate" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#concatenate -->
+        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self predicate name">
+          <!-- FIXME: Workaround for https://github.com/wala/ML/issues/127. -->
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+      <class name="reduce" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#reduce -->
+        <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self initial_state reduce_func name">
+          <call class="LRoot" name="read_data" descriptor="()LRoot;" type="virtual" arg0="arg0" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+      <class name="enumerate" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#enumerate -->
+        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self predicate name">
+          <!-- FIXME: Workaround for https://github.com/wala/ML/issues/127. -->
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
     </package>
     <package name="tensorflow/data/Dataset">
+      <class name="from_tensors" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#from_tensors -->
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="tensors name">
+          <!-- FIXME: We should encode the tensors argument here. See https://github.com/wala/ML/issues/164. -->
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
       <class name="from_tensor_slices" allocatable="true">
         <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#from_tensor_slices -->
         <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="tensors name">
@@ -888,9 +966,58 @@
           <return value="xx" />
         </method>
       </class>
+      <class name="sample_from_datasets" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#sample_from_datasets -->
+        <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="datasets weights seed stop_on_empty_dataset">
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+      <class name="list_files" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#list_files -->
+        <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="file_pattern shuffle seed name">
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+      <class name="choose_from_datasets" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#choose_from_datasets -->
+        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="datasets choice_dataset stop_on_empty_dataset">
+          <!-- Return the first one in the list. -->
+          <getfield class="Llist" field="0" fieldType="Ltensorflow/data/Dataset" ref="datasets" def="x" />
+          <return value="x" />
+        </method>
+      </class>
       <class name="from_generator" allocatable="true">
         <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#from_generator -->
         <method name="do" descriptor="()LRoot;" numArgs="6" paramNames="generator output_types output_shapes args output_signature name">
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+      <class name="zip" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#zip -->
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="datasets name">
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <!-- FIXME: This could return tuples of tensors. See https://github.com/wala/ML/issues/165. -->
+          <return value="xx" />
+        </method>
+      </class>
+      <class name="range" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#range -->
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="args kwargs">
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+      <class name="random" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#random -->
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="seed name">
           <new def="x" class="Ltensorflow/data/Dataset" />
           <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
           <return value="xx" />
