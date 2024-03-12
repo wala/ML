@@ -36,7 +36,7 @@ import org.junit.Test;
 /** Test TF2 APIs. */
 public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
-  private static final Logger logger = Logger.getLogger(TestTensorflow2Model.class.getName());
+  private static final Logger LOGGER = Logger.getLogger(TestTensorflow2Model.class.getName());
 
   @Test
   public void test()
@@ -1437,18 +1437,18 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     CallGraph CG = builder.makeCallGraph(builder.getOptions());
     assertNotNull(CG);
 
-    if (logger.isLoggable(Level.FINE)) {
+    if (LOGGER.isLoggable(Level.FINE)) {
       CAstCallGraphUtil.AVOID_DUMP = false;
       CAstCallGraphUtil.dumpCG(
           ((SSAPropagationCallGraphBuilder) builder).getCFAContextInterpreter(),
           builder.getPointerAnalysis(),
           CG);
-      logger.fine("Call graph:\n" + CG);
+      LOGGER.fine("Call graph:\n" + CG);
     }
 
     TensorTypeAnalysis analysis = E.performAnalysis(builder);
 
-    logger.info("Tensor analysis: " + analysis);
+    LOGGER.info("Tensor analysis: " + analysis);
 
     // Create a mapping from function signatures to pointer keys.
     Map<String, Set<LocalPointerKey>> functionSignatureToPointerKeys = new HashMap<>();
@@ -1490,7 +1490,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
                   v.add(tensorVariable);
                   return v;
                 });
-          } else logger.warning(() -> "Encountered: " + pointerKey.getClass());
+          } else LOGGER.warning(() -> "Encountered: " + pointerKey.getClass());
         });
 
     final String functionSignature = "script " + filename + "." + functionName + ".do()LRoot;";
