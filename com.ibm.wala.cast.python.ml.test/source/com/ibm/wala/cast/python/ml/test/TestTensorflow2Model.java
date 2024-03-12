@@ -819,12 +819,14 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_dataset2.py", "add", 2, 2, 2, 3);
   }
 
+  /** This is not a legal case. */
   @Test
   public void testDataset3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test("tf2_test_dataset3.py", "add", 2, 2, 2, 3);
   }
 
+  /** This is not a legal case. */
   @Test
   public void testDataset4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
@@ -920,6 +922,37 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test("tf2_test_dataset14.py", "f", 0, 0);
     test("tf2_test_dataset14.py", "g", 1, 1, 2);
+  }
+
+  /** Test a dataset that uses an iterator. */
+  @Test
+  public void testDataset16()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset16.py", "add", 2, 2, 2, 3);
+  }
+
+  /** Test a dataset that uses an iterator. */
+  @Test
+  public void testDataset17()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset17.py", "add", 2, 2, 2, 3);
+    test("tf2_test_dataset17.py", "f", 1, 1, 2);
+  }
+
+  /** Test a dataset that uses an iterator. */
+  @Test
+  public void testDataset18()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset18.py", "add", 2, 2, 2, 3);
+    test("tf2_test_dataset18.py", "f", 1, 1, 2);
+    test("tf2_test_dataset18.py", "g", 0, 2);
+  }
+
+  /** Test a dataset that uses an iterator. */
+  @Test
+  public void testDataset19()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset19.py", "distributed_train_step", 1, 1, 2);
   }
 
   @Test

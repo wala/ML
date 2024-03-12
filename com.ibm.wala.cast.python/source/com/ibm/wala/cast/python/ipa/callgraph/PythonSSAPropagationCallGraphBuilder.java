@@ -12,7 +12,6 @@ package com.ibm.wala.cast.python.ipa.callgraph;
 
 import com.ibm.wala.cast.ipa.callgraph.AstSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.ipa.callgraph.GlobalObjectKey;
-import com.ibm.wala.cast.python.ipa.summaries.BuiltinFunctions.BuiltinFunction;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.ssa.PythonInstructionVisitor;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
@@ -40,7 +39,6 @@ import com.ibm.wala.ssa.SSAGetInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.TypeReference;
-import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.intset.IntIterator;
 import com.ibm.wala.util.intset.IntSet;
@@ -49,7 +47,6 @@ import com.ibm.wala.util.intset.MutableIntSet;
 import com.ibm.wala.util.intset.OrdinalSet;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
 import java.util.logging.Logger;
 
 public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallGraphBuilder {
@@ -97,9 +94,6 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 
   private static final Collection<TypeReference> types =
       Arrays.asList(PythonTypes.string, TypeReference.Int);
-
-  private final Map<Pair<String, TypeReference>, BuiltinFunction> primitives =
-      HashMapFactory.make();
 
   public static class PythonConstraintVisitor extends AstConstraintVisitor
       implements PythonInstructionVisitor {

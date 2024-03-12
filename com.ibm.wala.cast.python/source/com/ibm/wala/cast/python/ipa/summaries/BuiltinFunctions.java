@@ -288,6 +288,10 @@ public class BuiltinFunctions {
     builtinFunctions.put("__delete__", Either.forRight(2));
     // https://docs.python.org/3/library/functions.html#print
     builtinFunctions.put("print", Either.forLeft(TypeReference.Void));
+    // https://docs.python.org/3/library/functions.html#iter
+    builtinFunctions.put("iter", Either.forRight(2));
+    // https://docs.python.org/3/library/functions.html#next
+    builtinFunctions.put("next", Either.forLeft(PythonTypes.object));
   }
 
   public static Set<String> builtins() {
