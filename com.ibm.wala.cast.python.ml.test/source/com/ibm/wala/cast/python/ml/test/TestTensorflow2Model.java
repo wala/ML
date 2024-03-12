@@ -826,7 +826,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   }
 
   @Test
-public void testDataset4()
+  public void testDataset4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test("tf2_test_dataset4.py", "add", 2, 2, 2, 3);
   }
