@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 
 public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallGraphBuilder {
 
+  @SuppressWarnings("unused")
   private static final Logger logger =
       Logger.getLogger(PythonSSAPropagationCallGraphBuilder.class.getName());
 
