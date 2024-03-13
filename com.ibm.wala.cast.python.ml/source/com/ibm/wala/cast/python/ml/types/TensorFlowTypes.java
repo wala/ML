@@ -11,6 +11,9 @@ import com.ibm.wala.types.TypeReference;
  */
 public class TensorFlowTypes extends PythonTypes {
 
+  public static final TypeReference TENSORFLOW =
+      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Ltensorflow"));
+
   public static final TypeReference DATASET =
       TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Ltensorflow/data/Dataset"));
 
