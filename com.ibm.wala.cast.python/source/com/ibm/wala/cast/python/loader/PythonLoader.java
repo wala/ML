@@ -176,7 +176,7 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
 
   @Override
   protected TranslatorToIR initTranslator(Set<Pair<CAstEntity, ModuleEntry>> topLevelEntities) {
-    return new PythonCAstToIRTranslator(this, topLevelEntities);
+    return new PythonCAstToIRTranslator(this);
   }
 
   final CoreClass CodeBody =
