@@ -39,7 +39,7 @@ public class PytestLoader extends Python3Loader {
 
   @Override
   protected TranslatorToIR initTranslator(Set<Pair<CAstEntity, ModuleEntry>> topLevelEntities) {
-    return new PythonCAstToIRTranslator(this, topLevelEntities) {
+    return new PythonCAstToIRTranslator(this) {
 
       private boolean isPytestEntry(CAstEntity F) {
         if (F.getType() instanceof CAstType.Function) {
