@@ -61,6 +61,7 @@ import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -221,7 +222,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
       if (this.ir.getSymbolTable().isConstant(memberRef)) {
         Object constantValue = this.ir.getSymbolTable().getConstantValue(memberRef);
 
-        if (constantValue.equals(IMPORT_WILDCARD_CHARACTER)) {
+        if (Objects.equals(constantValue, IMPORT_WILDCARD_CHARACTER)) {
           // We have a wildcard.
           logger.fine("Detected wildcard for " + memberRef + " in " + instruction + ".");
 
