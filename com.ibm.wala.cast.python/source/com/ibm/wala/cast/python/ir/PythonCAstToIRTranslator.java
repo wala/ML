@@ -71,7 +71,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
   private final Map<CAstType, TypeName> walaTypeNames = HashMapFactory.make();
   private final Set<Pair<Scope, String>> globalDeclSet = new HashSet<>();
-  private static boolean signleFileAnalysis = true;
+  private static boolean singleFileAnalysis = true;
   private final Set<Pair<CAstEntity, ModuleEntry>> topLevelEntities;
 
   public PythonCAstToIRTranslator(
@@ -81,11 +81,11 @@ public class PythonCAstToIRTranslator extends AstTranslator {
   }
 
   public static boolean isSingleFileAnalysis() {
-    return signleFileAnalysis;
+    return singleFileAnalysis;
   }
 
   public static void setSingleFileAnalysis(boolean singleFile) {
-    PythonCAstToIRTranslator.signleFileAnalysis = singleFile;
+    PythonCAstToIRTranslator.singleFileAnalysis = singleFile;
   }
 
   @Override
@@ -899,7 +899,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
   }
 
   boolean isGlobal(WalkContext context, String varName) {
-    if (signleFileAnalysis) return false;
+    if (singleFileAnalysis) return false;
     else {
       if (context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY) return true;
       else {
