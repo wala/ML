@@ -293,11 +293,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   @Test
   public void testS()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test(
-        "tf2s.py", "add", 0,
-        0); // NOTE: Set the expected number of tensor parameters, variables, and tensor parameter
-    // value numbers to 2, 3, and 2 and 3, respectively, when
-    // https://github.com/wala/ML/issues/65 is fixed.
+    // NOTE: Set the expected number of tensor variables to 3 once
+    // https://github.com/wala/ML/issues/135 is fixed.
+    test("tf2s.py", "add", 2, 2, 2, 3);
   }
 
   @Test
@@ -1420,6 +1418,75 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   public void testTFRange3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test("test_tf_range.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testImport()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_import.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testImport2()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_import2.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testImport3()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_import3.py", "f", 1, 2, 2);
+    test("tf2_test_import3.py", "g", 1, 1, 2);
+  }
+
+  @Test
+  public void testImport4()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_import4.py", "f", 1, 2, 2);
+    test("tf2_test_import4.py", "g", 1, 1, 2);
+  }
+
+  @Test
+  public void testImport5()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_import5.py", "f", 0, 1);
+    test("tf2_test_import5.py", "g", 1, 1, 2);
+  }
+
+  @Test
+  public void testImport6()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_import6.py", "f", 0, 1);
+    test("tf2_test_import6.py", "g", 1, 1, 2);
+  }
+
+  /**
+   * This is an invalid case. If there are no wildcard imports, we should resolve them like they
+   * are.
+   */
+  @Test
+  public void testImport7()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_import7.py", "f", 0, 0);
+    test("tf2_test_import7.py", "g", 0, 0);
+  }
+
+  /**
+   * This is an invalid case. If there are no wildcard imports, we should resolve them like they
+   * are.
+   */
+  @Test
+  public void testImport8()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_import8.py", "f", 0, 0);
+    test("tf2_test_import8.py", "g", 0, 0);
+  }
+
+  @Test
+  public void testImport9()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_import9.py", "f", 1, 1, 2);
+    test("tf2_test_import9.py", "g", 1, 1, 2);
   }
 
   private void test(
