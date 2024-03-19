@@ -64,4 +64,64 @@ public class TestMulti extends TestPythonCallGraphShape {
         (SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), CG);
     verifyGraphAssertions(CG, assertionsMulti2);
   }
+
+  protected static final Object[][] assertionsMulti3 =
+      new Object[][] {
+        new Object[] {ROOT, new String[] {"script multi3.py", "script multi2.py"}},
+        new Object[] {"script multi3.py", new String[] {"script multi2.py/silly"}},
+        new Object[] {"script multi2.py/silly", new String[] {"script multi2.py/silly/inner"}},
+      };
+
+  @Test
+  public void testMulti3()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    PythonAnalysisEngine<?> engine = makeEngine("multi2.py", "multi3.py");
+    PropagationCallGraphBuilder builder =
+        (PropagationCallGraphBuilder) engine.defaultCallGraphBuilder();
+    CallGraph CG = builder.makeCallGraph(engine.getOptions(), new NullProgressMonitor());
+    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.dumpCG(
+        (SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), CG);
+    verifyGraphAssertions(CG, assertionsMulti3);
+  }
+
+  protected static final Object[][] assertionsMulti4 =
+      new Object[][] {
+        new Object[] {ROOT, new String[] {"script multi4.py", "script multi2.py"}},
+        new Object[] {"script multi4.py", new String[] {"script multi2.py/silly"}},
+        new Object[] {"script multi2.py/silly", new String[] {"script multi2.py/silly/inner"}},
+      };
+
+  @Test
+  public void testMulti4()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    PythonAnalysisEngine<?> engine = makeEngine("multi2.py", "multi4.py");
+    PropagationCallGraphBuilder builder =
+        (PropagationCallGraphBuilder) engine.defaultCallGraphBuilder();
+    CallGraph CG = builder.makeCallGraph(engine.getOptions(), new NullProgressMonitor());
+    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.dumpCG(
+        (SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), CG);
+    verifyGraphAssertions(CG, assertionsMulti4);
+  }
+
+  protected static final Object[][] assertionsMulti5 =
+      new Object[][] {
+        new Object[] {ROOT, new String[] {"script multi5.py", "script multi2.py"}},
+        new Object[] {"script multi5.py", new String[] {"script multi2.py/silly"}},
+        new Object[] {"script multi2.py/silly", new String[] {"script multi2.py/silly/inner"}},
+      };
+
+  @Test
+  public void testMulti5()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    PythonAnalysisEngine<?> engine = makeEngine("multi2.py", "multi5.py");
+    PropagationCallGraphBuilder builder =
+        (PropagationCallGraphBuilder) engine.defaultCallGraphBuilder();
+    CallGraph CG = builder.makeCallGraph(engine.getOptions(), new NullProgressMonitor());
+    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.dumpCG(
+        (SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), CG);
+    verifyGraphAssertions(CG, assertionsMulti5);
+  }
 }
