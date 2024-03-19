@@ -3,7 +3,7 @@ from tensorflow.python.framework.ops import Tensor
 
 
 def func2(t):
-    pass
+    assert isinstance(t, tf.Tensor)
 
 
 @tf.function

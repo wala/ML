@@ -39,7 +39,6 @@ import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
-import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.NewSiteReference;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.shrike.shrikeBT.IBinaryOpInstruction;
@@ -71,21 +70,18 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
   private final Map<CAstType, TypeName> walaTypeNames = HashMapFactory.make();
   private final Set<Pair<Scope, String>> globalDeclSet = new HashSet<>();
-  private static boolean signleFileAnalysis = true;
-  private final Set<Pair<CAstEntity, ModuleEntry>> topLevelEntities;
+  private static boolean singleFileAnalysis = true;
 
-  public PythonCAstToIRTranslator(
-      IClassLoader loader, Set<Pair<CAstEntity, ModuleEntry>> topLevelEntities) {
+  public PythonCAstToIRTranslator(IClassLoader loader) {
     super(loader);
-    this.topLevelEntities = topLevelEntities;
   }
 
   public static boolean isSingleFileAnalysis() {
-    return signleFileAnalysis;
+    return singleFileAnalysis;
   }
 
   public static void setSingleFileAnalysis(boolean singleFile) {
-    PythonCAstToIRTranslator.signleFileAnalysis = singleFile;
+    PythonCAstToIRTranslator.singleFileAnalysis = singleFile;
   }
 
   @Override
@@ -899,7 +895,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
   }
 
   boolean isGlobal(WalkContext context, String varName) {
-    if (signleFileAnalysis) return false;
+    if (singleFileAnalysis) return false;
     else {
       if (context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY) return true;
       else {
