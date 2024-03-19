@@ -1489,6 +1489,18 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_import9.py", "g", 1, 1, 2);
   }
 
+  @Test
+  public void testModule()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"tf2_test_module2.py", "tf2_test_module.py"},
+        "tf2_test_module2.py",
+        "f",
+        1,
+        1,
+        2);
+  }
+
   private void test(
       String filename,
       String functionName,
@@ -1496,7 +1508,24 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
       int expectedNumberOfTensorVariables,
       int... expectedTensorParameterValueNumbers)
       throws ClassHierarchyException, CancelException, IOException {
-    PythonAnalysisEngine<TensorTypeAnalysis> E = makeEngine(filename);
+    test(
+        new String[] {filename},
+        filename,
+        functionName,
+        expectedNumberOfTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  private void test(
+      String[] projectFilenames,
+      String filename,
+      String functionName,
+      int expectedNumberOfTensorParameters,
+      int expectedNumberOfTensorVariables,
+      int... expectedTensorParameterValueNumbers)
+      throws ClassHierarchyException, CancelException, IOException {
+    PythonAnalysisEngine<TensorTypeAnalysis> E = makeEngine(projectFilenames);
     PythonSSAPropagationCallGraphBuilder builder = E.defaultCallGraphBuilder();
 
     addPytestEntrypoints(builder);
