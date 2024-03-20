@@ -60,9 +60,9 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
     return new CAstVisitor(context, parser) {
 
       @Override
-      public CAstNode visitImportFrom(ImportFrom arg0) throws Exception {
+      public CAstNode visitImportFrom(ImportFrom importFrom) throws Exception {
         Optional<String> s =
-            arg0.getInternalModuleNames().stream()
+            importFrom.getInternalModuleNames().stream()
                 .map(
                     n -> {
                       return n.getInternalId();
@@ -80,7 +80,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
             String yuck = moduleName;
             return Ast.makeNode(
                 CAstNode.BLOCK_STMT,
-                arg0.getInternalNames().stream()
+                importFrom.getInternalNames().stream()
                     .map(a -> a.getInternalName())
                     .map(
                         n ->
@@ -97,7 +97,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
           }
         }
 
-        return super.visitImportFrom(arg0);
+        return super.visitImportFrom(importFrom);
       }
     };
   }
