@@ -72,7 +72,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                       return a + "/" + b;
                     });
         if (s.isPresent()) {
-          LOGGER.fine(
+          LOGGER.finer(
               () ->
                   "Local modules:\n"
                       + localModules.stream()
@@ -81,17 +81,17 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                           .replaceAll("\n$", ""));
 
           String moduleName = s.get();
-          LOGGER.fine("Module name from " + importFrom + " is: " + moduleName + ".");
+          LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
 
           if (!localModules.contains(moduleName + ".py")) {
-            LOGGER.fine("Module: " + moduleName + ".py" + " isn't local.");
+            LOGGER.finer("Module: " + moduleName + ".py" + " isn't local.");
             moduleName = s.get() + "/__init__";
-          } else LOGGER.fine("Module: " + moduleName + ".py" + " is local.");
+          } else LOGGER.finer("Module: " + moduleName + ".py" + " is local.");
 
-          LOGGER.fine("Module name from " + importFrom + " is: " + moduleName + ".");
+          LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
 
           if (localModules.contains(moduleName + ".py")) {
-            LOGGER.fine("Module: " + moduleName + ".py" + " is local.");
+            LOGGER.finer("Module: " + moduleName + ".py" + " is local.");
 
             String yuck = moduleName;
             return Ast.makeNode(
@@ -110,7 +110,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                                     Ast.makeConstant(yuck),
                                     Ast.makeConstant(n))))
                     .collect(Collectors.toList()));
-          } else LOGGER.fine("Module: " + moduleName + ".py" + " isn't local.");
+          } else LOGGER.finer("Module: " + moduleName + ".py" + " isn't local.");
         }
 
         return super.visitImportFrom(importFrom);
