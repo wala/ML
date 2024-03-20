@@ -121,8 +121,9 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                                   accept(sm);
                                 });
                       } else {
-                        logger.fine(() -> "**CLS: " + scriptName((SourceModule) f));
-                        localModules.add(scriptName((SourceModule) f));
+                        String scriptName = scriptName((SourceModule) f);
+                        logger.fine(() -> "**CLS: " + scriptName);
+                        localModules.add(scriptName);
                       }
                     }
                   });
