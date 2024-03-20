@@ -83,14 +83,14 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
           String moduleName = s.get();
           LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
 
-          if (!localModules.contains(moduleName + ".py")) {
+          if (!isLocalModule(moduleName)) {
             LOGGER.finer("Module: " + moduleName + ".py" + " isn't local.");
             moduleName = s.get() + "/__init__";
           } else LOGGER.finer("Module: " + moduleName + ".py" + " is local.");
 
           LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
 
-          if (localModules.contains(moduleName + ".py")) {
+          if (isLocalModule(moduleName)) {
             LOGGER.finer("Module: " + moduleName + ".py" + " is local.");
 
             String yuck = moduleName;
@@ -173,5 +173,9 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
   @Override
   protected Reader getReader() throws IOException {
     return new InputStreamReader(fileName.getInputStream());
+  }
+
+  private boolean isLocalModule(String moduleName) {
+    return localModules.stream().anyMatch(lm -> lm.endsWith(moduleName + ".py"));
   }
 }
