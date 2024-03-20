@@ -39,7 +39,7 @@ import org.python.antlr.ast.ImportFrom;
 
 public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
-  private static final Logger logger = Logger.getLogger(PythonModuleParser.class.getName());
+  private static final Logger LOGGER = Logger.getLogger(PythonModuleParser.class.getName());
 
   private final Set<String> localModules = HashSetFactory.make();
 
@@ -122,7 +122,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                                 });
                       } else {
                         String scriptName = scriptName((SourceModule) f);
-                        logger.fine(() -> "**CLS: " + scriptName);
+                        LOGGER.fine(() -> "**CLS: " + scriptName);
                         localModules.add(scriptName);
                       }
                     }
