@@ -29,7 +29,7 @@
     <maven.compiler.version>3.10.1</maven.compiler.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build-alias>b000</build-alias>
-    <wala.version>1.6.0</wala.version>
+    <wala.version>1.6.4-SNAPSHOT</wala.version>
     <spotless.version>2.43.0</spotless.version>
     <maven.surefire.version>3.0.0-M7</maven.surefire.version>
     <logging.config.file>${maven.multiModuleProjectDirectory}/logging.properties</logging.config.file>
@@ -114,6 +114,18 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+  <repositories>
+    <repository>
+      <id>oss.sonatype.org-snapshot</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
   <build>
     <pluginManagement>
       <plugins>
