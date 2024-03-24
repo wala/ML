@@ -39,7 +39,7 @@ import org.python.antlr.ast.ImportFrom;
 
 public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
-  private static final Logger logger = Logger.getLogger(PythonModuleParser.class.getName());
+  private static final Logger LOGGER = Logger.getLogger(PythonModuleParser.class.getName());
 
   private final Set<String> localModules = HashSetFactory.make();
 
@@ -60,9 +60,9 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
     return new CAstVisitor(context, parser) {
 
       @Override
-      public CAstNode visitImportFrom(ImportFrom arg0) throws Exception {
+      public CAstNode visitImportFrom(ImportFrom importFrom) throws Exception {
         Optional<String> s =
-            arg0.getInternalModuleNames().stream()
+            importFrom.getInternalModuleNames().stream()
                 .map(
                     n -> {
                       return n.getInternalId();
@@ -73,14 +73,22 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                     });
         if (s.isPresent()) {
           String moduleName = s.get();
-          if (!localModules.contains(moduleName + ".py")) {
+          LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
+
+          if (!isLocalModule(moduleName)) {
+            LOGGER.finer("Module: " + moduleName + ".py" + " isn't local.");
             moduleName = s.get() + "/__init__";
-          }
-          if (localModules.contains(moduleName + ".py")) {
+          } else LOGGER.finer("Module: " + moduleName + ".py" + " is local.");
+
+          LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
+
+          if (isLocalModule(moduleName)) {
+            LOGGER.finer("Module: " + moduleName + ".py" + " is local.");
+
             String yuck = moduleName;
             return Ast.makeNode(
                 CAstNode.BLOCK_STMT,
-                arg0.getInternalNames().stream()
+                importFrom.getInternalNames().stream()
                     .map(a -> a.getInternalName())
                     .map(
                         n ->
@@ -94,10 +102,10 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                                     Ast.makeConstant(yuck),
                                     Ast.makeConstant(n))))
                     .collect(Collectors.toList()));
-          }
+          } else LOGGER.finer("Module: " + moduleName + ".py" + " isn't local.");
         }
 
-        return super.visitImportFrom(arg0);
+        return super.visitImportFrom(importFrom);
       }
     };
   }
@@ -121,7 +129,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                                   accept(sm);
                                 });
                       } else {
-                        logger.fine(() -> "**CLS: " + scriptName((SourceModule) f));
+                        LOGGER.fine(() -> "**CLS: " + scriptName((SourceModule) f));
                         localModules.add(scriptName((SourceModule) f));
                       }
                     }
@@ -157,5 +165,9 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
   @Override
   protected Reader getReader() throws IOException {
     return new InputStreamReader(fileName.getInputStream());
+  }
+
+  private boolean isLocalModule(String moduleName) {
+    return localModules.stream().anyMatch(lm -> lm.endsWith(moduleName + ".py"));
   }
 }
