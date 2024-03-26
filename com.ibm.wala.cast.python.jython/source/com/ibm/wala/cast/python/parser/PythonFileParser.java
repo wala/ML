@@ -10,6 +10,7 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.parser;
 
+import com.ibm.wala.cast.python.util.Util;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
 import com.ibm.wala.cast.util.CAstPrinter;
@@ -18,13 +19,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
+import java.util.List;
 
 public class PythonFileParser extends PythonParser<File> {
 
   private final File fileName;
 
-  public PythonFileParser(File fileName, CAstTypeDictionaryImpl<String> types) {
-    super(types);
+  public PythonFileParser(
+      File fileName, CAstTypeDictionaryImpl<String> types, List<File> pythonPath) {
+    super(types, pythonPath);
     this.fileName = fileName;
   }
 
@@ -43,8 +46,10 @@ public class PythonFileParser extends PythonParser<File> {
   }
 
   public static void main(String[] args) throws Exception {
+    List<File> pythonPath = Util.getPathFiles(args[1]);
+
     PythonParser<File> p =
-        new PythonFileParser(new File(args[0]), new CAstTypeDictionaryImpl<String>());
+        new PythonFileParser(new File(args[0]), new CAstTypeDictionaryImpl<String>(), pythonPath);
     CAstEntity script = p.translateToCAst();
     System.err.println(script);
     System.err.println(CAstPrinter.print(script));
