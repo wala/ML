@@ -1,5 +1,7 @@
 package com.ibm.wala.cast.python.test;
 
+import static java.util.Collections.emptyList;
+
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.client.PythonTurtleAnalysisEngine;
 import com.ibm.wala.cast.python.client.PythonTurtleAnalysisEngine.EdgeType;
@@ -17,6 +19,7 @@ import com.ibm.wala.util.NullProgressMonitor;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.ReverseIterator;
 import com.ibm.wala.util.graph.labeled.LabeledGraph;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +34,8 @@ public class TestPythonTurtleCallGraphShape extends TestPythonCallGraphShape {
   }
 
   @Override
-  protected PythonAnalysisEngine<LabeledGraph<TurtlePath, EdgeType>> makeEngine(String... name)
+  protected PythonAnalysisEngine<LabeledGraph<TurtlePath, EdgeType>> makeEngine(
+      List<File> pythonPath, String... name)
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     PythonAnalysisEngine<LabeledGraph<TurtlePath, EdgeType>> engine =
         isLibrary ? new PythonTurtleLibraryAnalysisEngine() : new PythonTurtleAnalysisEngine();
@@ -41,6 +45,12 @@ public class TestPythonTurtleCallGraphShape extends TestPythonCallGraphShape {
     }
     engine.setModuleFiles(modules);
     return engine;
+  }
+
+  @Override
+  protected PythonAnalysisEngine<LabeledGraph<TurtlePath, EdgeType>> makeEngine(String... name)
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    return makeEngine(emptyList(), name);
   }
 
   public static void main(String[] args)

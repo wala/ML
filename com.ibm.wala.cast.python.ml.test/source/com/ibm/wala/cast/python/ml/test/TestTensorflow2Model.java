@@ -1,8 +1,10 @@
 package com.ibm.wala.cast.python.ml.test;
 
 import static com.ibm.wala.cast.python.util.Util.addPytestEntrypoints;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -14,6 +16,7 @@ import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuild
 import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
 import com.ibm.wala.cast.python.ml.analysis.TensorVariable;
 import com.ibm.wala.classLoader.IMethod;
+import com.ibm.wala.core.util.io.FileProvider;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.Context;
@@ -22,10 +25,14 @@ import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -35,6 +42,11 @@ import org.junit.Test;
 
 /** Test TF2 APIs. */
 public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
+
+  private static final String JAVA_CLASSPATH_SYSTEM_PROPERTY_KEY = "java.class.path";
+
+  /** Name of the Maven submodule uses for Jython3 testing. */
+  private static final String JYTHON3_TEST_PROJECT = "com.ibm.wala.cast.python.jython3.test";
 
   private static final Logger LOGGER = Logger.getLogger(TestTensorflow2Model.class.getName());
 
@@ -1489,6 +1501,129 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_import9.py", "g", 1, 1, 2);
   }
 
+  @Test
+  public void testModule()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"tf2_test_module2.py", "tf2_test_module.py"},
+        "tf2_test_module2.py",
+        "f",
+        "",
+        1,
+        1,
+        2);
+  }
+
+  /** This test needs a PYTHONPATH that points to `proj`. */
+  @Test
+  public void testModule2()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (getUsesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj/src/tf2_test_module2a.py", "proj/src/tf2_test_module3.py"},
+        "src/tf2_test_module2a.py",
+        "f",
+        "proj",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /** This test should not need a PYTHONPATH. */
+  @Test
+  public void testModule3()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (getUsesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj2/src/tf2_test_module3a.py", "proj2/tf2_test_module4.py"},
+        "src/tf2_test_module3a.py",
+        "f",
+        "proj2",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * This test should not need a PYTHONPATH, meaning that I don't need to set one in the console
+   * when I run the files.
+   */
+  @Test
+  public void testModule4()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (getUsesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj3/src/tf2_test_module4a.py",
+          "proj3/src/tf2_test_module6.py",
+          "proj3/tf2_test_module5.py"
+        },
+        "src/tf2_test_module4a.py",
+        "f",
+        "proj3",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+
+    test(
+        new String[] {
+          "proj3/src/tf2_test_module4a.py",
+          "proj3/src/tf2_test_module6.py",
+          "proj3/tf2_test_module5.py"
+        },
+        "src/tf2_test_module4a.py",
+        "g",
+        "proj3",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
   private void test(
       String filename,
       String functionName,
@@ -1496,7 +1631,27 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
       int expectedNumberOfTensorVariables,
       int... expectedTensorParameterValueNumbers)
       throws ClassHierarchyException, CancelException, IOException {
-    PythonAnalysisEngine<TensorTypeAnalysis> E = makeEngine(filename);
+    test(
+        new String[] {filename},
+        filename,
+        functionName,
+        "",
+        expectedNumberOfTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  private void test(
+      String[] projectFilenames,
+      String filename,
+      String functionName,
+      String pythonPath,
+      int expectedNumberOfTensorParameters,
+      int expectedNumberOfTensorVariables,
+      int... expectedTensorParameterValueNumbers)
+      throws ClassHierarchyException, CancelException, IOException {
+    List<File> pathFiles = this.getPathFiles(pythonPath);
+    PythonAnalysisEngine<TensorTypeAnalysis> E = makeEngine(pathFiles, projectFilenames);
     PythonSSAPropagationCallGraphBuilder builder = E.defaultCallGraphBuilder();
 
     addPytestEntrypoints(builder);
@@ -1560,7 +1715,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
           } else LOGGER.warning(() -> "Encountered: " + pointerKey.getClass());
         });
 
-    final String functionSignature = "script " + filename + "." + functionName + ".do()LRoot;";
+    final String functionSignature =
+        "script " + filename.replace('/', '.') + "." + functionName + ".do()LRoot;";
 
     // get the tensor variables for the function.
     Set<TensorVariable> functionTensorVariables =
@@ -1608,5 +1764,49 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
                       "Expecting " + actualParameterValueNumberSet + " to contain " + ev + ".",
                       actualParameterValueNumberSet.contains(ev)));
     }
+  }
+
+  /**
+   * Extracts a {@link List} of {@link File}s from the given {@link String} representing a list of
+   * paths. Each path is separated by a colon.
+   *
+   * @param string A colon-separated list of paths.
+   * @return {@link List} of {@link File}s constructed by parsing the given {@link String}.
+   */
+  private List<File> getPathFiles(String string) {
+    if (string == null || string.isEmpty() || string.isBlank()) return emptyList();
+
+    return Arrays.asList(string.split(":")).stream()
+        .map(
+            s -> {
+              File f = new File(s);
+
+              if (f.exists()) return f;
+
+              try {
+                URL url = new URL(s);
+                return new File(new FileProvider().filePathFromURL(url));
+              } catch (MalformedURLException e) {
+                try {
+                  URL resource = this.getClass().getResource("/" + string);
+                  String path = resource.getPath();
+                  return new File(path);
+                } catch (Exception e1) {
+                  throw new RuntimeException(e1);
+                }
+              }
+            })
+        .collect(toList());
+  }
+
+  /**
+   * Returns true iff Jython3 is used for testing.
+   *
+   * @return True iff Jython3 is used for testing.
+   */
+  protected static boolean getUsesJython3Testing() {
+    String classpath = System.getProperty(JAVA_CLASSPATH_SYSTEM_PROPERTY_KEY);
+    String[] classpathEntries = classpath.split(File.pathSeparator);
+    return Arrays.stream(classpathEntries).anyMatch(cpe -> cpe.contains(JYTHON3_TEST_PROJECT));
   }
 }

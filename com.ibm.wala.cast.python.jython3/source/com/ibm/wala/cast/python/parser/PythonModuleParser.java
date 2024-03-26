@@ -1,4 +1,4 @@
-/******************************************************************************
+/, "500", "1000", "5000", "10000"******************************************************************************
  * Copyright (c) 2018 IBM Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,6 +11,7 @@
 package com.ibm.wala.cast.python.parser;
 
 import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
+import com.ibm.wala.cast.python.util.Util;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
@@ -22,10 +23,12 @@ import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.SourceModule;
 import com.ibm.wala.classLoader.SourceURLModule;
 import com.ibm.wala.util.collections.HashSetFactory;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +44,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
   private static final Logger LOGGER = Logger.getLogger(PythonModuleParser.class.getName());
 
-  private final Set<String> localModules = HashSetFactory.make();
+  private final Set<SourceModule> localModules = HashSetFactory.make();
 
   private final SourceModule fileName;
 
@@ -85,6 +88,35 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
           if (isLocalModule(moduleName)) {
             LOGGER.finer("Module: " + moduleName + ".py" + " is local.");
 
+            List<File> pythonPath = PythonModuleParser.this.getPythonPath();
+
+            // If there is a PYTHONPATH specified.
+            if (!pythonPath.isEmpty()) {
+              // Adjust the module name per the PYTHONPATH.
+              Optional<SourceModule> localModule = getLocalModule(moduleName);
+
+              for (File pathEntry : pythonPath) {
+                Path modulePath =
+                    localModule
+                        .map(SourceModule::getURL)
+                        .map(URL::getFile)
+                        .map(Path::of)
+                        .orElseThrow(IllegalStateException::new);
+                LOGGER.finer("Found module path: " + modulePath + ".");
+
+                if (modulePath.startsWith(pathEntry.toPath())) {
+                  // Found it.
+                  Path scriptRelativePath = pathEntry.toPath().relativize(modulePath);
+                  LOGGER.finer("Relativized path is: " + scriptRelativePath + ".");
+
+                  // Remove the file extension.
+                  moduleName = scriptRelativePath.toString().replaceFirst("\\.py$", "");
+                  LOGGER.fine("Using module name: " + moduleName + ".");
+                  break;
+                }
+              }
+            }
+
             String yuck = moduleName;
             return Ast.makeNode(
                 CAstNode.BLOCK_STMT,
@@ -111,8 +143,11 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
   }
 
   public PythonModuleParser(
-      SourceModule fileName, CAstTypeDictionaryImpl<String> types, List<Module> allModules) {
-    super(types);
+      SourceModule fileName,
+      CAstTypeDictionaryImpl<String> types,
+      List<Module> allModules,
+      List<File> pythonPath) {
+    super(types, pythonPath);
     this.fileName = fileName;
     allModules.forEach(
         m -> {
@@ -129,8 +164,10 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                                   accept(sm);
                                 });
                       } else {
-                        LOGGER.fine(() -> "**CLS: " + scriptName((SourceModule) f));
-                        localModules.add(scriptName((SourceModule) f));
+                        SourceModule sourceModule = (SourceModule) f;
+                        String scriptName = scriptName(sourceModule);
+                        LOGGER.fine(() -> "**CLS: " + scriptName);
+                        localModules.add(sourceModule);
                       }
                     }
                   });
@@ -152,11 +189,14 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
   public static void main(String[] args) throws Exception {
     URL url = new URL(args[0]);
+    List<File> pythonPath = Util.getPathFiles(args[1]);
+
     PythonParser<ModuleEntry> p =
         new PythonModuleParser(
             new SourceURLModule(url),
             new CAstTypeDictionaryImpl<String>(),
-            Collections.singletonList(new SourceURLModule(url)));
+            Collections.singletonList(new SourceURLModule(url)),
+            pythonPath);
     CAstEntity script = p.translateToCAst();
     System.err.println(script);
     System.err.println(CAstPrinter.print(script));
@@ -168,6 +208,24 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
   }
 
   private boolean isLocalModule(String moduleName) {
-    return localModules.stream().anyMatch(lm -> lm.endsWith(moduleName + ".py"));
+    return localModules.stream()
+        .map(lm -> scriptName((SourceModule) lm))
+        .anyMatch(sn -> sn.endsWith(moduleName + ".py"));
+  }
+
+  /**
+   * Gets the local Python {@link SourceModule} represented by the given {@link String}.
+   *
+   * @param moduleName The name of the local Python module as a {@link String}.
+   * @return The corresponding {@link SourceModule}.
+   */
+  private Optional<SourceModule> getLocalModule(String moduleName) {
+    return localModules.stream()
+        .filter(
+            lm -> {
+              String scriptName = scriptName((SourceModule) lm);
+              return scriptName.endsWith(moduleName + ".py");
+            })
+        .findFirst();
   }
 }

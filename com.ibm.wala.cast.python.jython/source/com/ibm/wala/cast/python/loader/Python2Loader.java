@@ -29,11 +29,22 @@ import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.SourceModule;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.python.core.PyObject;
 
 public class Python2Loader extends PythonLoader {
+
+  /**
+   * The <a href="https://docs.python.org/3/using/cmdline.html#envvar-PYTHONPATH">PYTHONPATH</a> to
+   * use in the analysis.
+   *
+   * @apiNote PYTHONPATH is currently only supported for Python 3.
+   * @see https://docs.python.org/3/tutorial/modules.html#the-module-search-path.
+   */
+  protected List<File> pythonPath;
+
   public Python2Loader(IClassHierarchy cha, IClassLoader parent) {
     super(cha, parent);
   }
@@ -48,7 +59,8 @@ public class Python2Loader extends PythonLoader {
     RewritingTranslatorToCAst x =
         new RewritingTranslatorToCAst(
             M,
-            new PythonModuleParser((SourceModule) M, typeDictionary, allModules) {
+            new PythonModuleParser(
+                (SourceModule) M, typeDictionary, allModules, this.getPythonPath()) {
               @Override
               public CAstEntity translateToCAst() throws Error, IOException {
                 CAstEntity ce = super.translateToCAst();
@@ -108,5 +120,17 @@ public class Python2Loader extends PythonLoader {
         },
         false);
     return x;
+  }
+
+  /**
+   * Gets the <a
+   * href="https://docs.python.org/3/using/cmdline.html#envvar-PYTHONPATH">PYTHONPATH</a> to use in
+   * the analysis.
+   *
+   * @apiNote PYTHONPATH is currently only supported for Python 3.
+   * @see https://docs.python.org/3/tutorial/modules.html#the-module-search-path.
+   */
+  public List<File> getPythonPath() {
+    return pythonPath;
   }
 }

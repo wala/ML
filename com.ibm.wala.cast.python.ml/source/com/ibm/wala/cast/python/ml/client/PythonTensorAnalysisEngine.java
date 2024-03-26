@@ -42,12 +42,20 @@ import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
 import com.ibm.wala.util.intset.OrdinalSet;
+import java.io.File;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
 public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeAnalysis> {
+
+  public PythonTensorAnalysisEngine() {}
+
+  public PythonTensorAnalysisEngine(List<File> pythonPath) {
+    super(pythonPath);
+  }
 
   /** A "fake" function name in the summaries that indicates that an API produces a new tensor. */
   private static final String TENSOR_GENERATOR_SYNTHETIC_FUNCTION_NAME = "read_data";
