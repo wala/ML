@@ -32,6 +32,7 @@
     <wala.version>1.6.4-SNAPSHOT</wala.version>
     <spotless.version>2.43.0</spotless.version>
     <maven.surefire.version>3.0.0-M7</maven.surefire.version>
+    <parallel>both</parallel>
     <logging.config.file>${maven.multiModuleProjectDirectory}/logging.properties</logging.config.file>
     <black.version>24.1.1</black.version>
   </properties>
@@ -145,7 +146,6 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven.surefire.version}</version>
           <configuration>
-            <parallel>both</parallel>
             <threadCount>1</threadCount>
             <systemPropertyVariables>
               <!-- Set JUL Formatting -->
