@@ -86,8 +86,6 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
           LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
 
           if (isLocalModule(moduleName)) {
-            LOGGER.finer("Module: " + moduleName + ".py" + " is local.");
-
             List<File> pythonPath = PythonModuleParser.this.getPythonPath();
 
             // If there is a PYTHONPATH specified.
@@ -134,7 +132,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                                     Ast.makeConstant(yuck),
                                     Ast.makeConstant(n))))
                     .collect(Collectors.toList()));
-          } else LOGGER.finer("Module: " + moduleName + ".py" + " isn't local.");
+          }
         }
 
         return super.visitImportFrom(importFrom);
