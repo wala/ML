@@ -1,10 +1,13 @@
 package com.ibm.wala.cast.python.test;
 
+import static java.util.Collections.emptyList;
+
 import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.python.util.PythonInterpreter;
+import com.ibm.wala.cast.python.util.Util;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cast.util.test.TestCallGraphShape;
 import com.ibm.wala.classLoader.Module;
@@ -28,6 +31,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
@@ -84,9 +88,9 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
     }
   }
 
-  protected PythonAnalysisEngine<?> createEngine()
+  protected PythonAnalysisEngine<?> createEngine(List<File> pythonPath)
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    return new PythonAnalysisEngine<Void>() {
+    return new PythonAnalysisEngine<Void>(pythonPath) {
       @Override
       public Void performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
         assert false;
@@ -105,14 +109,24 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
     return engine;
   }
 
+  protected PythonAnalysisEngine<?> makeEngine(List<File> pythonPath, String... name)
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    return makeEngine(createEngine(pythonPath), name);
+  }
+
   protected PythonAnalysisEngine<?> makeEngine(String... name)
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    return makeEngine(createEngine(), name);
+    return makeEngine(createEngine(emptyList()), name);
+  }
+
+  protected CallGraph process(List<File> pythonPath, String... name)
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    return makeEngine(pythonPath, name).buildDefaultCallGraph();
   }
 
   protected CallGraph process(String... name)
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    return makeEngine(name).buildDefaultCallGraph();
+    return process(emptyList(), name);
   }
 
   StringBuffer dump(CallGraph CG) {
@@ -127,7 +141,7 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     TestPythonCallGraphShape driver = new TestPythonCallGraphShape() {};
 
-    PythonAnalysisEngine<?> E = driver.makeEngine(args[0]);
+    PythonAnalysisEngine<?> E = driver.makeEngine(Util.getPathFiles(args[1]), args[0]);
 
     CallGraphBuilder<? super InstanceKey> builder = E.defaultCallGraphBuilder();
     CallGraph CG = builder.makeCallGraph(E.getOptions(), new NullProgressMonitor());

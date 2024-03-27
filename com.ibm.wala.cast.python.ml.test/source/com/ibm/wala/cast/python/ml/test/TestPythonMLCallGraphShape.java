@@ -1,5 +1,7 @@
 package com.ibm.wala.cast.python.ml.test;
 
+import static java.util.Collections.emptyList;
+
 import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
@@ -7,6 +9,7 @@ import com.ibm.wala.cast.python.ml.analysis.TensorVariable;
 import com.ibm.wala.cast.python.ml.client.PythonTensorAnalysisEngine;
 import com.ibm.wala.cast.python.test.TestPythonCallGraphShape;
 import com.ibm.wala.cast.python.types.PythonTypes;
+import com.ibm.wala.cast.python.util.Util;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.Module;
@@ -24,10 +27,12 @@ import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.NullProgressMonitor;
 import com.ibm.wala.util.collections.HashSetFactory;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 public abstract class TestPythonMLCallGraphShape extends TestPythonCallGraphShape {
@@ -38,15 +43,22 @@ public abstract class TestPythonMLCallGraphShape extends TestPythonCallGraphShap
   }
 
   @Override
-  protected PythonAnalysisEngine<TensorTypeAnalysis> makeEngine(String... name)
+  protected PythonAnalysisEngine<TensorTypeAnalysis> makeEngine(
+      List<File> pythonPath, String... name)
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    PythonAnalysisEngine<TensorTypeAnalysis> engine = new PythonTensorAnalysisEngine();
+    PythonAnalysisEngine<TensorTypeAnalysis> engine = new PythonTensorAnalysisEngine(pythonPath);
     Set<Module> modules = HashSetFactory.make();
     for (String n : name) {
       modules.add(getScript(n));
     }
     engine.setModuleFiles(modules);
     return engine;
+  }
+
+  @Override
+  protected PythonAnalysisEngine<TensorTypeAnalysis> makeEngine(String... name)
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    return makeEngine(emptyList(), name);
   }
 
   protected void checkTensorOp(
@@ -112,7 +124,7 @@ public abstract class TestPythonMLCallGraphShape extends TestPythonCallGraphShap
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     TestPythonMLCallGraphShape driver = new TestPythonMLCallGraphShape() {};
 
-    PythonAnalysisEngine<?> E = driver.makeEngine(args[0]);
+    PythonAnalysisEngine<?> E = driver.makeEngine(Util.getPathFiles(args[1]), args[0]);
 
     CallGraphBuilder<? super InstanceKey> builder = E.defaultCallGraphBuilder();
     CallGraph CG = builder.makeCallGraph(E.getOptions(), new NullProgressMonitor());

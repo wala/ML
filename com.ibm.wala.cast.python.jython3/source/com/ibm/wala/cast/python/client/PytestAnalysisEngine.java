@@ -1,5 +1,7 @@
 package com.ibm.wala.cast.python.client;
 
+import static java.util.Collections.emptyList;
+
 import com.ibm.wala.cast.python.loader.PytestLoader;
 import com.ibm.wala.cast.python.loader.PytestLoaderFactory;
 import com.ibm.wala.classLoader.CallSiteReference;
@@ -18,6 +20,8 @@ import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.intset.OrdinalSet;
+import java.io.File;
+import java.util.List;
 
 public class PytestAnalysisEngine<T> extends PythonAnalysisEngine<T> {
 
@@ -72,8 +76,11 @@ public class PytestAnalysisEngine<T> extends PythonAnalysisEngine<T> {
   }
 
   public PytestAnalysisEngine() {
-    super();
-    loader = new PytestLoaderFactory();
+    loader = new PytestLoaderFactory(emptyList());
+  }
+
+  public PytestAnalysisEngine(List<File> pythonPath) {
+    loader = new PytestLoaderFactory(pythonPath);
   }
 
   protected void addBypassLogic(IClassHierarchy cha, AnalysisOptions options) {
