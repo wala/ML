@@ -77,11 +77,11 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
     checkTensorOps(
         Ex2URL,
         (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
-          CAstCallGraphUtil.AVOID_DUMP = false;
+          CAstCallGraphUtil.AVOID_DUMP.set(false);
           CAstCallGraphUtil.dumpCG(
-              (SSAContextInterpreter) cgBuilder.getContextInterpreter(),
-              cgBuilder.getPointerAnalysis(),
-              CG);
+            (SSAContextInterpreter) cgBuilder.getContextInterpreter(),
+            cgBuilder.getPointerAnalysis(),
+            CG);
 
           String in = "[{[D:Symbolic,?, D:Constant,784] of pixel}]";
           String out = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
