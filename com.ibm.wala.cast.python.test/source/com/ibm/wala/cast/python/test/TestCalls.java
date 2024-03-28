@@ -155,7 +155,7 @@ public class TestCalls extends TestPythonCallGraphShape {
     PropagationCallGraphBuilder cgBuilder =
         (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
     CallGraph CG = cgBuilder.makeCallGraph(cgBuilder.getOptions());
-    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
     CAstCallGraphUtil.dumpCG(
         (SSAContextInterpreter) cgBuilder.getContextInterpreter(),
         cgBuilder.getPointerAnalysis(),
@@ -190,7 +190,7 @@ public class TestCalls extends TestPythonCallGraphShape {
     PropagationCallGraphBuilder cgBuilder =
         (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
     CallGraph CG = cgBuilder.makeCallGraph(cgBuilder.getOptions());
-    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
     CAstCallGraphUtil.dumpCG(
         (SSAContextInterpreter) cgBuilder.getContextInterpreter(),
         cgBuilder.getPointerAnalysis(),
@@ -228,7 +228,7 @@ public class TestCalls extends TestPythonCallGraphShape {
     PropagationCallGraphBuilder cgBuilder =
         (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
     CallGraph CG = cgBuilder.makeCallGraph(cgBuilder.getOptions());
-    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
     CAstCallGraphUtil.dumpCG(
         (SSAContextInterpreter) cgBuilder.getContextInterpreter(),
         cgBuilder.getPointerAnalysis(),
@@ -268,7 +268,7 @@ public class TestCalls extends TestPythonCallGraphShape {
 
     CallGraph callGraph = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
 
-    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
     CAstCallGraphUtil.dumpCG(
         (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
         callGraphBuilder.getPointerAnalysis(),
@@ -300,7 +300,7 @@ public class TestCalls extends TestPythonCallGraphShape {
 
     CallGraph callGraph = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
 
-    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
     CAstCallGraphUtil.dumpCG(
         (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
         callGraphBuilder.getPointerAnalysis(),
@@ -321,7 +321,7 @@ public class TestCalls extends TestPythonCallGraphShape {
     PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
     addPytestEntrypoints(callGraphBuilder);
     CallGraph callGraph = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
-    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
     CAstCallGraphUtil.dumpCG(
         (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
         callGraphBuilder.getPointerAnalysis(),

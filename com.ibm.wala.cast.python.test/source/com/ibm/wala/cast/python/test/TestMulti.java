@@ -37,7 +37,7 @@ public class TestMulti extends TestPythonCallGraphShape {
     PropagationCallGraphBuilder builder =
         (PropagationCallGraphBuilder) engine.defaultCallGraphBuilder();
     CallGraph CG = builder.makeCallGraph(engine.getOptions(), new NullProgressMonitor());
-    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
     CAstCallGraphUtil.dumpCG(
         (SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), CG);
     verifyGraphAssertions(CG, assertionsMulti1);
@@ -59,7 +59,7 @@ public class TestMulti extends TestPythonCallGraphShape {
     PropagationCallGraphBuilder builder =
         (PropagationCallGraphBuilder) engine.defaultCallGraphBuilder();
     CallGraph CG = builder.makeCallGraph(engine.getOptions(), new NullProgressMonitor());
-    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
     CAstCallGraphUtil.dumpCG(
         (SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), CG);
     verifyGraphAssertions(CG, assertionsMulti2);
@@ -79,7 +79,7 @@ public class TestMulti extends TestPythonCallGraphShape {
     PropagationCallGraphBuilder builder =
         (PropagationCallGraphBuilder) engine.defaultCallGraphBuilder();
     CallGraph CG = builder.makeCallGraph(engine.getOptions(), new NullProgressMonitor());
-    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
     CAstCallGraphUtil.dumpCG(
         (SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), CG);
     verifyGraphAssertions(CG, assertionsMulti3);
@@ -99,7 +99,7 @@ public class TestMulti extends TestPythonCallGraphShape {
     PropagationCallGraphBuilder builder =
         (PropagationCallGraphBuilder) engine.defaultCallGraphBuilder();
     CallGraph CG = builder.makeCallGraph(engine.getOptions(), new NullProgressMonitor());
-    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
     CAstCallGraphUtil.dumpCG(
         (SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), CG);
     verifyGraphAssertions(CG, assertionsMulti4);
@@ -119,7 +119,7 @@ public class TestMulti extends TestPythonCallGraphShape {
     PropagationCallGraphBuilder builder =
         (PropagationCallGraphBuilder) engine.defaultCallGraphBuilder();
     CallGraph CG = builder.makeCallGraph(engine.getOptions(), new NullProgressMonitor());
-    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
     CAstCallGraphUtil.dumpCG(
         (SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), CG);
     verifyGraphAssertions(CG, assertionsMulti5);

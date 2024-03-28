@@ -19,7 +19,7 @@ public class TestPrimitives extends TestPythonCallGraphShape {
     SSAPropagationCallGraphBuilder builder =
         (SSAPropagationCallGraphBuilder) engine.defaultCallGraphBuilder();
     CallGraph CG = builder.makeCallGraph(builder.getOptions());
-    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
     CAstCallGraphUtil.dumpCG(
         (SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), CG);
     // verifyGraphAssertions(CG, assertionsCalls1);

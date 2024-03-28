@@ -48,7 +48,7 @@ public class TestAssign extends TestPythonCallGraphShape {
     CallGraph CG = B.makeCallGraph(B.getOptions());
     verifyGraphAssertions(CG, assertionsAssign2);
 
-    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
     CAstCallGraphUtil.dumpCG(
         (SSAContextInterpreter) B.getContextInterpreter(), B.getPointerAnalysis(), CG);
   }
