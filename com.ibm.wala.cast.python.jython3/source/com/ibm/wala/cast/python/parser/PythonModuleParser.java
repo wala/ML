@@ -20,7 +20,6 @@ import com.ibm.wala.cast.util.CAstPrinter;
 import com.ibm.wala.classLoader.FileModule;
 import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.classLoader.ModuleEntry;
-import com.ibm.wala.classLoader.SourceFileModule;
 import com.ibm.wala.classLoader.SourceModule;
 import com.ibm.wala.classLoader.SourceURLModule;
 import com.ibm.wala.util.collections.HashSetFactory;
@@ -179,8 +178,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
   }
 
   private static String scriptName(SourceModule fileName) {
-    if (fileName instanceof SourceFileModule) return fileName.getName();
-    else if (fileName instanceof FileModule) {
+    if (fileName instanceof FileModule) {
       return fileName.getClassName();
     } else {
       return fileName.getName();
