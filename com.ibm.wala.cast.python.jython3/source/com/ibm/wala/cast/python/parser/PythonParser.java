@@ -2366,12 +2366,7 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
             // Remove protocol.
             pathEntryAbsolutePath = pathEntryAbsolutePath.replaceFirst("file:.*!/", "");
 
-            File absoluteFile = file.getAbsoluteFile();
-
-            if (!absoluteFile.exists())
-              throw new IllegalStateException("Can't find: " + absoluteFile + ".");
-
-            String fileAbsolutePath = absoluteFile.getPath();
+            String fileAbsolutePath = file.getAbsolutePath();
 
             if (fileAbsolutePath.startsWith(pathEntryAbsolutePath)) {
               // Found it.
