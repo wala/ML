@@ -43,11 +43,6 @@ import org.junit.Test;
 /** Test TF2 APIs. */
 public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
-  private static final String JAVA_CLASSPATH_SYSTEM_PROPERTY_KEY = "java.class.path";
-
-  /** Name of the Maven submodule uses for Jython3 testing. */
-  private static final String JYTHON3_TEST_PROJECT = "com.ibm.wala.cast.python.jython3.test";
-
   private static final Logger LOGGER = Logger.getLogger(TestTensorflow2Model.class.getName());
 
   @Test
@@ -1000,10 +995,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   @Test
   public void testDataset25()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
-    test("tf2_test_dataset25.py", "f", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
-    test("tf2_test_dataset25.py", "g", 0, 0);
+    test("tf2_test_dataset25.py", "f", 1, 1, 2);
+    test("tf2_test_dataset25.py", "g", 1, 1, 2);
     // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/165 is fixed.
     test("tf2_test_dataset25.py", "h", 1, 1, 2);
   }
@@ -1011,14 +1004,10 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   @Test
   public void testDataset26()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
-    test("tf2_test_dataset26.py", "f", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
-    test("tf2_test_dataset26.py", "g1", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
-    test("tf2_test_dataset26.py", "g2", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
-    test("tf2_test_dataset26.py", "g3", 0, 0);
+    test("tf2_test_dataset26.py", "f", 1, 1, 2);
+    test("tf2_test_dataset26.py", "g1", 1, 1, 2);
+    test("tf2_test_dataset26.py", "g2", 1, 1, 2);
+    test("tf2_test_dataset26.py", "g3", 1, 1, 2);
     // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/165 is fixed.
     test("tf2_test_dataset26.py", "h", 1, 1, 2);
   }
@@ -1027,21 +1016,16 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   public void testDataset27()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test("tf2_test_dataset27.py", "f", 1, 1, 2);
-    // TODO: Change to 1, 1, 2 when https://github.com/wala/ML/issues/164 is fixed:
-    test("tf2_test_dataset27.py", "g", 0, 0);
-    // TODO: Change to 1, 1, 2 when https://github.com/wala/ML/issues/164 is fixed:
-    test("tf2_test_dataset27.py", "h", 0, 0);
-    // TODO: Change to 1, 1, 2 when https://github.com/wala/ML/issues/164 is fixed:
-    test("tf2_test_dataset27.py", "i", 0, 0);
+    test("tf2_test_dataset27.py", "g", 1, 1, 2);
+    test("tf2_test_dataset27.py", "h", 1, 1, 2);
+    test("tf2_test_dataset27.py", "i", 1, 1, 2);
   }
 
   @Test
   public void testDataset28()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    // TODO: Change to 1, 1, 2 when https://github.com/wala/ML/issues/164 is fixed:
-    test("tf2_test_dataset28.py", "f", 0, 0);
-    // TODO: Change to 1, 1, 2 when https://github.com/wala/ML/issues/164 is fixed:
-    test("tf2_test_dataset28.py", "g", 0, 0);
+    test("tf2_test_dataset28.py", "f", 1, 1, 2);
+    test("tf2_test_dataset28.py", "g", 1, 1, 2);
     // TODO: Change to 0, 0 when https://github.com/wala/ML/issues/164 is fixed:
     test("tf2_test_dataset28.py", "h", 1, 1, 2);
   }
@@ -1063,30 +1047,21 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/166 is fixed.
     test("tf2_test_dataset31.py", "f", 1, 1, 2);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "g1", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "g2", 0, 0);
+    test("tf2_test_dataset31.py", "g1", 1, 1, 2);
+    test("tf2_test_dataset31.py", "g2", 1, 1, 2);
     // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/166 is fixed.
     test("tf2_test_dataset31.py", "h", 1, 1, 2);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "i1", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "i2", 0, 0);
+    test("tf2_test_dataset31.py", "i1", 1, 1, 2);
+    test("tf2_test_dataset31.py", "i2", 1, 1, 2);
     // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/166 is fixed.
     test("tf2_test_dataset31.py", "j", 1, 1, 2);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "k1", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "k2", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "k2", 0, 0);
+    test("tf2_test_dataset31.py", "k1", 1, 1, 2);
+    test("tf2_test_dataset31.py", "k2", 1, 1, 2);
+    test("tf2_test_dataset31.py", "k2", 1, 1, 2);
     // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/166 is fixed.
     test("tf2_test_dataset31.py", "l", 1, 1, 2);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "m1", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "m2", 0, 0);
+    test("tf2_test_dataset31.py", "m1", 1, 1, 2);
+    test("tf2_test_dataset31.py", "m2", 1, 1, 2);
   }
 
   @Test
@@ -1108,7 +1083,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   @Test
   public void testTensorboardExample()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tensorboard_example.py", "summarize_weights", 0, 12);
+    test("tensorboard_example.py", "summarize_weights", 0, 4);
   }
 
   @Test
@@ -1518,60 +1493,28 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   @Test
   public void testModule2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj/src/tf2_test_module2a.py", "proj/src/tf2_test_module3.py"},
         "src/tf2_test_module2a.py",
         "f",
         "proj",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /** This test should not need a PYTHONPATH. */
   @Test
   public void testModule3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj2/src/tf2_test_module3a.py", "proj2/tf2_test_module4.py"},
         "src/tf2_test_module3a.py",
         "f",
         "proj2",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
@@ -1581,22 +1524,6 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   @Test
   public void testModule4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj3/src/tf2_test_module4a.py",
@@ -1606,9 +1533,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "src/tf2_test_module4a.py",
         "f",
         "proj3",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
 
     test(
         new String[] {
@@ -1619,9 +1546,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "src/tf2_test_module4a.py",
         "g",
         "proj3",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   private void test(
@@ -1797,16 +1724,5 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
               }
             })
         .collect(toList());
-  }
-
-  /**
-   * Returns true iff Jython3 is used for testing.
-   *
-   * @return True iff Jython3 is used for testing.
-   */
-  protected static boolean getUsesJython3Testing() {
-    String classpath = System.getProperty(JAVA_CLASSPATH_SYSTEM_PROPERTY_KEY);
-    String[] classpathEntries = classpath.split(File.pathSeparator);
-    return Arrays.stream(classpathEntries).anyMatch(cpe -> cpe.contains(JYTHON3_TEST_PROJECT));
   }
 }
