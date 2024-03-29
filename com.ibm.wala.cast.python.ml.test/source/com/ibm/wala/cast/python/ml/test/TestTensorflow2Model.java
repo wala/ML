@@ -1660,7 +1660,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     assertNotNull(CG);
 
     if (LOGGER.isLoggable(Level.FINE)) {
-      CAstCallGraphUtil.AVOID_DUMP = false;
+      CAstCallGraphUtil.AVOID_DUMP.set(false);
       CAstCallGraphUtil.dumpCG(
           ((SSAPropagationCallGraphBuilder) builder).getCFAContextInterpreter(),
           builder.getPointerAnalysis(),
