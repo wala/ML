@@ -1624,6 +1624,161 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         expectedTensorParameterValueNumbers);
   }
 
+  @Test
+  public void testModule5()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"tf2_test_module4.py", "tf2_test_module3.py"},
+        "tf2_test_module4.py",
+        "C.f",
+        "",
+        1,
+        1,
+        3);
+  }
+
+  /** This test needs a PYTHONPATH that points to `proj4`. */
+  @Test
+  public void testModule6()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj4/src/tf2_test_module4a.py", "proj4/src/tf2_test_module5.py"},
+        "src/tf2_test_module4a.py",
+        "C.f",
+        "proj4",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /** This test should not need a PYTHONPATH. */
+  @Test
+  public void testModule7()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj5/src/tf2_test_module5a.py", "proj5/tf2_test_module6.py"},
+        "src/tf2_test_module5a.py",
+        "C.f",
+        "proj5",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * This test should not need a PYTHONPATH, meaning that I don't need to set one in the console
+   * when I run the files.
+   */
+  @Test
+  public void testModule8()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj6/src/tf2_test_module8a.py",
+          "proj6/src/tf2_test_module6.py",
+          "proj6/tf2_test_module7.py"
+        },
+        "src/tf2_test_module8a.py",
+        "C.f",
+        "proj6",
+        1,
+        1,
+        new int[] {3});
+
+    test(
+        new String[] {
+          "proj6/src/tf2_test_module8a.py",
+          "proj6/src/tf2_test_module6.py",
+          "proj6/tf2_test_module7.py"
+        },
+        "src/tf2_test_module8a.py",
+        "D.g",
+        "proj6",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  @Test
+  public void testModule9()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"tf2_test_module6.py", "tf2_test_module5.py"},
+        "tf2_test_module6.py",
+        "D.f",
+        "",
+        1,
+        1,
+        3);
+  }
+
+  @Test
+  public void testModule10()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"tf2_test_module8.py", "tf2_test_module9.py", "tf2_test_module7.py"},
+        "tf2_test_module9.py",
+        "D.f",
+        "",
+        1,
+        1,
+        3);
+  }
+
+  /** This test needs a PYTHONPATH that points to `proj7`. */
+  @Test
+  public void testModule11()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj7/src/tf2_test_module9a.py",
+          "proj7/src/tf2_test_module9b.py",
+          "proj7/src/tf2_test_module10.py"
+        },
+        "src/tf2_test_module9b.py",
+        "D.f",
+        "proj7",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /** This test should not need a PYTHONPATH. */
+  @Test
+  public void testModule12()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj8/src/tf2_test_module10a.py",
+          "proj8/src/tf2_test_module10b.py",
+          "proj8/tf2_test_module11.py"
+        },
+        "src/tf2_test_module10b.py",
+        "D.f",
+        "proj8",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /** This test should not need a PYTHONPATH. */
+  @Test
+  public void testModule13()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj9/src/tf2_test_module11a.py",
+          "proj9/src/tf2_test_module11b.py",
+          "proj9/tf2_test_module12.py"
+        },
+        "src/tf2_test_module11b.py",
+        "D.g",
+        "proj9",
+        1,
+        1,
+        new int[] {3});
+  }
+
   private void test(
       String filename,
       String functionName,
