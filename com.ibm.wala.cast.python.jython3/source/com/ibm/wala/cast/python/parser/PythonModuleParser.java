@@ -166,6 +166,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
           if (isLocalModule(moduleName)) {
             List<File> pythonPath = PythonModuleParser.this.getPythonPath();
+            LOGGER.info("PYTHONPATH is: " + pythonPath + ".");
 
             // If there is a PYTHONPATH specified.
             if (pythonPath != null && !pythonPath.isEmpty()) {
