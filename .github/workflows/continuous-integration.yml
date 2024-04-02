@@ -19,6 +19,15 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: maven
+    - name: Install Python.
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+    - name: Install Python dependencies.
+      run: pip install -r requirements.txt
+    - name: Check formatting with spotless.
+      run: mvn spotless:check -B
     - name: Checkout wala/IDE sources.
       run: git clone --depth=50 https://github.com/wala/IDE ${{ runner.temp }}/IDE
     - name: Checkout ponder-lab/jython3 sources.
@@ -37,14 +46,5 @@ jobs:
         pushd ${{ runner.temp }}/IDE/com.ibm.wala.cast.lsp
         mvn install -B -q -DskipTests
         popd
-    - name: Install Python.
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-        cache: 'pip'
-    - name: Install Python dependencies.
-      run: pip install -r requirements.txt
-    - name: Check formatting with spotless.
-      run: mvn spotless:check -B
     - name: Build with Maven
       run: mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties verify -B

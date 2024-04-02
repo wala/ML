@@ -3,6 +3,8 @@ dist: jammy
 language: java
 jdk: openjdk11
 before_install:
+ - pip install -r requirements.txt
+ - mvn spotless:check -B
  - git clone --depth=50 https://github.com/wala/IDE /tmp/IDE
  - git clone --depth=50 https://github.com/ponder-lab/jython3.git /tmp/jython3
 install:
@@ -15,9 +17,6 @@ install:
  - pushd /tmp/IDE/com.ibm.wala.cast.lsp
  - mvn install -B -q -DskipTests
  - popd
- - pip install -r requirements.txt
-before_script:
- - mvn spotless:check -B
 script:
  - mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties verify -B
 deploy:
