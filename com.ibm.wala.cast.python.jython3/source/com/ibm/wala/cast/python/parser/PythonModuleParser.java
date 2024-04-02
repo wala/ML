@@ -78,26 +78,24 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
           String moduleName = s.get();
           LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
 
-          boolean localModule = isLocalModule(moduleName);
-
-          if (!localModule) {
+          if (!isLocalModule(moduleName)) {
             LOGGER.finer("Module: " + moduleName + " isn't local.");
             moduleName = s.get() + "/__init__";
           } else LOGGER.finer("Module: " + moduleName + " is local.");
 
           LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
 
-          if (localModule) {
+          if (isLocalModule(moduleName)) {
             List<File> pythonPath = PythonModuleParser.this.getPythonPath();
 
             // If there is a PYTHONPATH specified.
             if (!pythonPath.isEmpty()) {
               // Adjust the module name per the PYTHONPATH.
-              Optional<SourceModule> module = getLocalModule(moduleName);
+              Optional<SourceModule> localModule = getLocalModule(moduleName);
 
               for (File pathEntry : pythonPath) {
                 Path modulePath =
-                    module
+                    localModule
                         .map(SourceModule::getURL)
                         .map(URL::getFile)
                         .map(Path::of)
