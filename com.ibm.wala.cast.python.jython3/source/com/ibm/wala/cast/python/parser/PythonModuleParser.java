@@ -39,6 +39,8 @@ import java.util.stream.Collectors;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CharStream;
 import org.python.antlr.ast.ImportFrom;
+import org.python.antlr.ast.Name;
+import org.python.antlr.ast.alias;
 
 public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
@@ -66,10 +68,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
       public CAstNode visitImportFrom(ImportFrom importFrom) throws Exception {
         Optional<String> s =
             importFrom.getInternalModuleNames().stream()
-                .map(
-                    n -> {
-                      return n.getInternalId();
-                    })
+                .map(Name::getInternalId)
                 .reduce(
                     (a, b) -> {
                       return a + "/" + b;
@@ -117,7 +116,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
             return Ast.makeNode(
                 CAstNode.BLOCK_STMT,
                 importFrom.getInternalNames().stream()
-                    .map(a -> a.getInternalName())
+                    .map(alias::getInternalName)
                     .map(
                         n ->
                             Ast.makeNode(
