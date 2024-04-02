@@ -164,17 +164,17 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
           LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
 
-          if (isLocalModule(moduleName)) {
+          if (localModule) {
             List<File> pythonPath = PythonModuleParser.this.getPythonPath();
 
             // If there is a PYTHONPATH specified.
             if (pythonPath != null && !pythonPath.isEmpty()) {
               // Adjust the module name per the PYTHONPATH.
-              Optional<SourceModule> localModule = getLocalModule(moduleName);
+              Optional<SourceModule> module = getLocalModule(moduleName);
 
               for (File pathEntry : pythonPath) {
                 Path modulePath =
-                    localModule
+                    module
                         .map(SourceModule::getURL)
                         .map(URL::getFile)
                         .map(Path::of)
