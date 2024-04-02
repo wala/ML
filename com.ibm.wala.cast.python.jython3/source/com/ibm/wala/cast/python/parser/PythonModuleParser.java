@@ -43,6 +43,8 @@ import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CharStream;
 import org.python.antlr.ast.Import;
 import org.python.antlr.ast.ImportFrom;
+import org.python.antlr.ast.Name;
+import org.python.antlr.ast.alias;
 
 public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
@@ -199,7 +201,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
             return Ast.makeNode(
                 CAstNode.BLOCK_STMT,
                 importFrom.getInternalNames().stream()
-                    .map(a -> a.getInternalName())
+                    .map(alias::getInternalName)
                     .map(
                         n ->
                             Ast.makeNode(
