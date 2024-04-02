@@ -78,10 +78,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
           String moduleName = s.get();
           LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
 
-          if (!isLocalModule(moduleName)) {
-            LOGGER.finer("Module: " + moduleName + " isn't local.");
-            moduleName = s.get() + "/__init__";
-          } else LOGGER.finer("Module: " + moduleName + " is local.");
+          if (!isLocalModule(moduleName)) moduleName = s.get() + "/__init__";
 
           LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
 
@@ -207,9 +204,13 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
   }
 
   private boolean isLocalModule(String moduleName) {
-    return localModules.stream()
-        .map(lm -> scriptName((SourceModule) lm))
-        .anyMatch(sn -> sn.endsWith(moduleName + ".py"));
+    boolean ret =
+        localModules.stream()
+            .map(lm -> scriptName((SourceModule) lm))
+            .anyMatch(sn -> sn.endsWith(moduleName + ".py"));
+
+    LOGGER.finer("Module: " + moduleName + (ret ? " is" : " isn't") + " local.");
+    return ret;
   }
 
   /**
