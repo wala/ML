@@ -69,10 +69,8 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
         Optional<String> s =
             importFrom.getInternalModuleNames().stream()
                 .map(Name::getInternalId)
-                .reduce(
-                    (a, b) -> {
-                      return a + "/" + b;
-                    });
+                .reduce((a, b) -> a + "/" + b);
+
         if (s.isPresent()) {
           String moduleName = s.get();
           LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
