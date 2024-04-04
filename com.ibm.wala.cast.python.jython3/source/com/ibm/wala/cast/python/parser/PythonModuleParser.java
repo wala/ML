@@ -173,7 +173,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
             List<File> pythonPath = PythonModuleParser.this.getPythonPath();
 
             // If there is a PYTHONPATH specified.
-            if (!pythonPath.isEmpty()) {
+            if (pythonPath != null && !pythonPath.isEmpty()) {
               // Adjust the module name per the PYTHONPATH.
               Optional<SourceModule> localModule = getLocalModule(moduleName);
 
