@@ -75,7 +75,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
           String moduleName = s.get();
           LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
 
-          if (!isLocalModule(moduleName)) moduleName = moduleName + "/__init__";
+          if (!isLocalModule(moduleName)) moduleName += "/__init__";
 
           LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
 
