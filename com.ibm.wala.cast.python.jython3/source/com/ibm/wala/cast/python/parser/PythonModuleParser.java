@@ -86,7 +86,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
             LOGGER.info("PYTHONPATH is: " + pythonPath + ".");
 
             // If there is a PYTHONPATH specified.
-            if (!pythonPath.isEmpty()) {
+            if (pythonPath != null && !pythonPath.isEmpty()) {
               // Adjust the module name per the PYTHONPATH.
               Optional<SourceModule> localModule = getLocalModule(moduleName);
 
