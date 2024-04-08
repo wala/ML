@@ -10,6 +10,9 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.parser;
 
+import static com.google.common.io.Files.getNameWithoutExtension;
+import static com.ibm.wala.cast.python.ir.PythonLanguage.MODULE_INITIALIZATION_FILENAME;
+
 import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
 import com.ibm.wala.cast.python.util.Util;
 import com.ibm.wala.cast.tree.CAstEntity;
@@ -38,6 +41,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CharStream;
+import org.python.antlr.ast.Import;
 import org.python.antlr.ast.ImportFrom;
 import org.python.antlr.ast.Name;
 import org.python.antlr.ast.alias;
@@ -45,6 +49,10 @@ import org.python.antlr.ast.alias;
 public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
   private static final Logger LOGGER = Logger.getLogger(PythonModuleParser.class.getName());
+
+  /** Name of the Python initialization file without the extension. */
+  private static final String MODULE_INITIALIZATION_ENTITY_NAME =
+      getNameWithoutExtension(MODULE_INITIALIZATION_FILENAME);
 
   private final Set<SourceModule> localModules = HashSetFactory.make();
 
@@ -65,6 +73,85 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
     return new CAstVisitor(context, parser) {
 
       @Override
+      public CAstNode visitImport(Import imp) throws Exception {
+        Optional<String> s =
+            imp.getInternalNames().stream()
+                .map(alias::getInternalName)
+                .reduce((a, b) -> a + "/" + b);
+
+        if (s.isPresent()) {
+          String moduleName = s.get().replace('.', '/');
+          LOGGER.finer("Module name from " + imp + " is: " + moduleName + ".");
+
+          // if it's a package.
+          if (moduleName.indexOf('/') != -1) {
+            if (!isLocalModule(moduleName)) moduleName += "/" + MODULE_INITIALIZATION_ENTITY_NAME;
+
+            LOGGER.finer("Module name from " + imp + " is: " + moduleName + ".");
+
+            if (isLocalModule(moduleName)) {
+              List<File> pythonPath = PythonModuleParser.this.getPythonPath();
+              LOGGER.info("PYTHONPATH is: " + pythonPath + ".");
+
+              // If there is a PYTHONPATH specified.
+              if (pythonPath != null && !pythonPath.isEmpty()) {
+                // Adjust the module name per the PYTHONPATH.
+                Optional<SourceModule> localModule = getLocalModule(moduleName);
+
+                for (File pathEntry : pythonPath) {
+                  Path modulePath =
+                      localModule
+                          .map(SourceModule::getURL)
+                          .map(URL::getFile)
+                          .map(Path::of)
+                          .orElseThrow(IllegalStateException::new);
+                  LOGGER.finer("Found module path: " + modulePath + ".");
+
+                  if (modulePath.startsWith(pathEntry.toPath())) {
+                    // Found it.
+                    Path scriptRelativePath = pathEntry.toPath().relativize(modulePath);
+                    LOGGER.finer("Relativized path is: " + scriptRelativePath + ".");
+
+                    // Remove the file extension if it exists.
+                    moduleName = scriptRelativePath.toString().replaceFirst("\\.py$", "");
+
+                    // Use the beginning segment initialization file.
+                    moduleName = moduleName.split("/")[0] + "/" + MODULE_INITIALIZATION_ENTITY_NAME;
+
+                    LOGGER.fine("Using module name: " + moduleName + ".");
+                    break;
+                  }
+                }
+              }
+
+              String yuck = moduleName;
+              return Ast.makeNode(
+                  CAstNode.BLOCK_STMT,
+                  imp.getInternalNames().stream()
+                      .map(alias::getInternalName)
+                      .map(
+                          n -> {
+                            n = n.split("\\.")[0];
+
+                            return Ast.makeNode(
+                                CAstNode.DECL_STMT,
+                                Ast.makeConstant(
+                                    new CAstSymbolImpl(n, PythonCAstToIRTranslator.Any)),
+                                Ast.makeNode(
+                                    CAstNode.PRIMITIVE,
+                                    Ast.makeConstant("import"),
+                                    Ast.makeConstant(yuck),
+                                    Ast.makeConstant(n)));
+                          })
+                      .collect(Collectors.toList()));
+            }
+          }
+        }
+
+        return super.visitImport(imp);
+      }
+
+      @Override
       public CAstNode visitImportFrom(ImportFrom importFrom) throws Exception {
         Optional<String> s =
             importFrom.getInternalModuleNames().stream()
@@ -75,7 +162,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
           String moduleName = s.get();
           LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
 
-          if (!isLocalModule(moduleName)) moduleName += "/__init__";
+          if (!isLocalModule(moduleName)) moduleName += "/" + MODULE_INITIALIZATION_ENTITY_NAME;
 
           LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
 
@@ -102,7 +189,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                   Path scriptRelativePath = pathEntry.toPath().relativize(modulePath);
                   LOGGER.finer("Relativized path is: " + scriptRelativePath + ".");
 
-                  // Remove the file extension.
+                  // Remove the file extension if it exists.
                   moduleName = scriptRelativePath.toString().replaceFirst("\\.py$", "");
                   LOGGER.fine("Using module name: " + moduleName + ".");
                   break;
