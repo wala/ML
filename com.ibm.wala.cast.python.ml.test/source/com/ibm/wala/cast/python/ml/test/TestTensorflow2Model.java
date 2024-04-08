@@ -1535,7 +1535,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     }
 
     test(
-        new String[] {"proj/src/tf2_test_module2a.py", "proj/src/tf2_test_module3.py"},
+        new String[] {
+          "proj/src/__init__.py", "proj/src/tf2_test_module2a.py", "proj/src/tf2_test_module3.py"
+        },
         "src/tf2_test_module2a.py",
         "f",
         "proj",
@@ -1565,7 +1567,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     }
 
     test(
-        new String[] {"proj2/src/tf2_test_module3a.py", "proj2/tf2_test_module4.py"},
+        new String[] {
+          "proj2/src/__init__.py", "proj2/src/tf2_test_module3a.py", "proj2/tf2_test_module4.py"
+        },
         "src/tf2_test_module3a.py",
         "f",
         "proj2",
@@ -1599,6 +1603,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
     test(
         new String[] {
+          "proj3/src/__init__.py",
           "proj3/src/tf2_test_module4a.py",
           "proj3/src/tf2_test_module6.py",
           "proj3/tf2_test_module5.py"
@@ -1612,6 +1617,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
     test(
         new String[] {
+          "proj3/src/__init__.py",
           "proj3/src/tf2_test_module4a.py",
           "proj3/src/tf2_test_module6.py",
           "proj3/tf2_test_module5.py"
@@ -1658,7 +1664,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     }
 
     test(
-        new String[] {"proj4/src/tf2_test_module4a.py", "proj4/src/tf2_test_module5.py"},
+        new String[] {
+          "proj4/src/__init__.py", "proj4/src/tf2_test_module4a.py", "proj4/src/tf2_test_module5.py"
+        },
         "src/tf2_test_module4a.py",
         "C.f",
         "proj4",
@@ -1688,7 +1696,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     }
 
     test(
-        new String[] {"proj5/src/tf2_test_module5a.py", "proj5/tf2_test_module6.py"},
+        new String[] {
+          "proj5/src/__init__.py", "proj5/src/tf2_test_module5a.py", "proj5/tf2_test_module6.py"
+        },
         "src/tf2_test_module5a.py",
         "C.f",
         "proj5",
@@ -1722,6 +1732,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
     test(
         new String[] {
+          "proj6/src/__init__.py",
           "proj6/src/tf2_test_module8a.py",
           "proj6/src/tf2_test_module6.py",
           "proj6/tf2_test_module7.py"
@@ -1735,6 +1746,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
     test(
         new String[] {
+          "proj6/src/__init__.py",
           "proj6/src/tf2_test_module8a.py",
           "proj6/src/tf2_test_module6.py",
           "proj6/tf2_test_module7.py"
@@ -1796,6 +1808,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
     test(
         new String[] {
+          "proj7/src/__init__.py",
           "proj7/src/tf2_test_module9a.py",
           "proj7/src/tf2_test_module9b.py",
           "proj7/src/tf2_test_module10.py"
@@ -1830,6 +1843,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
     test(
         new String[] {
+          "proj8/src/__init__.py",
           "proj8/src/tf2_test_module10a.py",
           "proj8/src/tf2_test_module10b.py",
           "proj8/tf2_test_module11.py"
@@ -1864,6 +1878,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
     test(
         new String[] {
+          "proj9/src/__init__.py",
           "proj9/src/tf2_test_module11a.py",
           "proj9/src/tf2_test_module11b.py",
           "proj9/tf2_test_module12.py"
@@ -1874,6 +1889,465 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         expectNumberofTensorParameters,
         expectedNumberOfTensorVariables,
         expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/177.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule14()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj10/C/__init__.py", "proj10/C/B.py", "proj10/A.py"},
+        "C/B.py",
+        "f",
+        "proj10",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule15()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj11/C/__init__.py", "proj11/C/B.py", "proj11/A.py"},
+        "C/B.py",
+        "f",
+        "proj11",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /** This test should not need a PYTHONPATH. */
+  @Test
+  public void testModule16()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj12/C/__init__.py", "proj12/C/B.py", "proj12/A.py"},
+        "C/B.py",
+        "f",
+        "proj12",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178. Multi-submodule case. See
+   * https://docs.python.org/3/tutorial/modules.html#packages.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule17()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj13/C/__init__.py", "proj13/C/D/__init__.py", "proj13/C/D/B.py", "proj13/A.py"
+        },
+        "C/D/B.py",
+        "f",
+        "proj13",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178. Multi-submodule case. See
+   * https://docs.python.org/3/tutorial/modules.html#packages. This test has multiple modules in
+   * different packages.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule18()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj14/C/__init__.py",
+          "proj14/C/E.py",
+          "proj14/C/D/__init__.py",
+          "proj14/C/D/B.py",
+          "proj14/A.py"
+        },
+        "C/D/B.py",
+        "f",
+        "proj14",
+        1,
+        1,
+        new int[] {2});
+
+    test(
+        new String[] {
+          "proj14/C/__init__.py",
+          "proj14/C/E.py",
+          "proj14/C/D/__init__.py",
+          "proj14/C/D/B.py",
+          "proj14/A.py"
+        },
+        "C/E.py",
+        "g",
+        "proj14",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/177.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule19()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj15/C/__init__.py", "proj15/C/D/__init__.py", "proj15/C/D/B.py", "proj15/A.py"
+        },
+        "C/D/B.py",
+        "f",
+        "proj15",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule20()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj16/C/__init__.py", "proj16/C/B.py", "proj16/A.py"},
+        "C/B.py",
+        "D.f",
+        "proj16",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule21()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj17/C/__init__.py", "proj17/C/E/__init__.py", "proj17/C/E/B.py", "proj17/A.py"
+        },
+        "C/E/B.py",
+        "D.f",
+        "proj17",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/177.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule22()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(new String[] {"proj18/B.py", "proj18/A.py"}, "B.py", "f", "proj18", 1, 1, new int[] {2});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/177.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule23()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj19/C/__init__.py",
+          "proj19/C/D/__init__.py",
+          "proj19/C/D/E/__init__.py",
+          "proj19/C/D/E/B.py",
+          "proj19/A.py"
+        },
+        "C/D/E/B.py",
+        "f",
+        "proj19",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/177.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule24()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"tf2_test_module11.py", "tf2_test_module10.py"},
+        "tf2_test_module11.py",
+        "f",
+        "",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/177.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule25()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(new String[] {"proj20/B.py", "proj20/A.py"}, "B.py", "C.f", "proj20", 1, 1, new int[] {3});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/177.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule26()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"tf2_test_module13.py", "tf2_test_module12.py"},
+        "tf2_test_module13.py",
+        "C.f",
+        "",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule27()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj21/C/__init__.py",
+          "proj21/C/D/__init__.py",
+          "proj21/C/E.py",
+          "proj21/C/D/B.py",
+          "proj21/A.py"
+        },
+        "C/D/B.py",
+        "F.f",
+        "proj21",
+        1,
+        1,
+        new int[] {3});
+
+    test(
+        new String[] {
+          "proj21/C/__init__.py",
+          "proj21/C/D/__init__.py",
+          "proj21/C/E.py",
+          "proj21/C/D/B.py",
+          "proj21/A.py"
+        },
+        "C/E.py",
+        "G.g",
+        "proj21",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/177.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule28()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj22/C/__init__.py", "proj22/C/B.py", "proj22/A.py"},
+        "C/B.py",
+        "D.f",
+        "proj22",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule29()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj23/C/__init__.py", "proj23/C/B.py", "proj23/A.py"},
+        "C/B.py",
+        "f",
+        "proj23",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule30()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj24/C/__init__.py", "proj24/C/B.py", "proj24/A.py"},
+        "C/B.py",
+        "D.f",
+        "proj24",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule31()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj25/C/__init__.py", "proj25/C/E/__init__.py", "proj25/C/E/B.py", "proj25/A.py"
+        },
+        "C/E/B.py",
+        "D.f",
+        "proj25",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule32()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj26/C/__init__.py", "proj26/C/B.py", "proj26/A.py"},
+        "C/B.py",
+        "D.f",
+        "proj26",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule33()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj27/C/__init__.py", "proj27/C/D/__init__.py", "proj27/C/D/B.py", "proj27/A.py"
+        },
+        "C/D/B.py",
+        "f",
+        "proj27",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule34()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj28/C/__init__.py", "proj28/C/D/__init__.py", "proj28/C/D/B.py", "proj28/A.py"
+        },
+        "C/D/B.py",
+        "E.f",
+        "proj28",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule35()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj29/C/__init__.py", "proj29/C/B.py", "proj29/A.py"},
+        "C/B.py",
+        "f",
+        "proj29",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule36()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj30/C/__init__.py", "proj30/C/B.py", "proj30/A.py"},
+        "C/B.py",
+        "f",
+        "proj30",
+        1,
+        1,
+        new int[] {2});
   }
 
   private void test(

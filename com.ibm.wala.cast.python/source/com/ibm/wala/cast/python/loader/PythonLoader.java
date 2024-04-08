@@ -433,6 +433,15 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
   }
 
   /**
+   * Return this {@link PythonLoader}'s {@link IClassHierarchy}.
+   *
+   * @return this {@link PythonLoader}'s {@link IClassHierarchy}.
+   */
+  public IClassHierarchy getClassHierarchy() {
+    return this.cha;
+  }
+
+  /**
    * Gets the <a
    * href="https://docs.python.org/3/using/cmdline.html#envvar-PYTHONPATH">PYTHONPATH</a> to use in
    * the analysis.
