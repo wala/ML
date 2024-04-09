@@ -34,7 +34,6 @@ import java.util.List;
 import org.python.core.PyObject;
 
 public class Python2Loader extends PythonLoader {
-
   public Python2Loader(IClassHierarchy cha, IClassLoader parent) {
     super(cha, parent);
   }
