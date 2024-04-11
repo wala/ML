@@ -50,8 +50,8 @@ public class Util {
     return Arrays.asList(pathSequence.split(":")).stream().map(s -> new File(s)).collect(toList());
   }
 
-  public static String removeFileProtocolFromPath(String pathEntryAbsolutePath) {
-    return pathEntryAbsolutePath.replaceFirst("file:.*!/", "");
+  public static String removeFileProtocolFromPath(String path) {
+    return path.replaceFirst("file:.*!/", "");
   }
 
   private Util() {}
