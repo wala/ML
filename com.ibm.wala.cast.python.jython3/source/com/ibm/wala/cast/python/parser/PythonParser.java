@@ -10,6 +10,8 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.parser;
 
+import static com.ibm.wala.cast.python.util.Util.removeFileProtocolFromPath;
+
 import com.ibm.wala.cast.ir.translator.AbstractClassEntity;
 import com.ibm.wala.cast.ir.translator.AbstractCodeEntity;
 import com.ibm.wala.cast.ir.translator.AbstractFieldEntity;
@@ -2364,7 +2366,7 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
           for (File pathEntry : pythonPath) {
             String pathEntryAbsolutePath = pathEntry.getAbsoluteFile().getPath();
             // Remove protocol.
-            pathEntryAbsolutePath = pathEntryAbsolutePath.replaceFirst("file:.*!/", "");
+            pathEntryAbsolutePath = removeFileProtocolFromPath(pathEntryAbsolutePath);
 
             String fileAbsolutePath = file.getAbsolutePath();
 
