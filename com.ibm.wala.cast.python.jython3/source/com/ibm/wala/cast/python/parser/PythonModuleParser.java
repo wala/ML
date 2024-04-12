@@ -58,7 +58,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
   private final SourceModule fileName;
 
-  protected URL getParsedURL() throws IOException {
+  protected URL getParsedURL() {
     return fileName.getURL();
   }
 
@@ -81,17 +81,17 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
         if (s.isPresent()) {
           String moduleName = s.get().replace('.', '/');
-          LOGGER.finer("Module name from " + imp + " is: " + moduleName + ".");
+          LOGGER.finer("Module name from " + imp + " is: " + moduleName);
 
           // if it's a package.
           if (moduleName.indexOf('/') != -1) {
             if (!isLocalModule(moduleName)) moduleName += "/" + MODULE_INITIALIZATION_ENTITY_NAME;
 
-            LOGGER.finer("Module name from " + imp + " is: " + moduleName + ".");
+            LOGGER.finer("Module name from " + imp + " is: " + moduleName);
 
             if (isLocalModule(moduleName)) {
               List<File> pythonPath = PythonModuleParser.this.getPythonPath();
-              LOGGER.info("PYTHONPATH is: " + pythonPath + ".");
+              LOGGER.info("PYTHONPATH is: " + pythonPath);
 
               // If there is a PYTHONPATH specified.
               if (pythonPath != null && !pythonPath.isEmpty()) {
@@ -105,12 +105,12 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                           .map(URL::getFile)
                           .map(Path::of)
                           .orElseThrow(IllegalStateException::new);
-                  LOGGER.finer("Found module path: " + modulePath + ".");
+                  LOGGER.finer("Found module path: " + modulePath);
 
                   if (modulePath.startsWith(pathEntry.toPath())) {
                     // Found it.
                     Path scriptRelativePath = pathEntry.toPath().relativize(modulePath);
-                    LOGGER.finer("Relativized path is: " + scriptRelativePath + ".");
+                    LOGGER.finer("Relativized path is: " + scriptRelativePath);
 
                     // Remove the file extension if it exists.
                     moduleName = scriptRelativePath.toString().replaceFirst("\\.py$", "");
@@ -118,7 +118,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                     // Use the beginning segment initialization file.
                     moduleName = moduleName.split("/")[0] + "/" + MODULE_INITIALIZATION_ENTITY_NAME;
 
-                    LOGGER.fine("Using module name: " + moduleName + ".");
+                    LOGGER.fine("Using module name: " + moduleName);
                     break;
                   }
                 }
@@ -160,15 +160,20 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
         if (s.isPresent()) {
           String moduleName = s.get();
-          LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
+          LOGGER.finer("Module name from " + importFrom + " is: " + moduleName);
+
+          if (moduleName.startsWith(".")) {
+            LOGGER.info("Found relative import: " + moduleName);
+            moduleName = this.resolveRelativeImport(moduleName);
+          }
 
           if (!isLocalModule(moduleName)) moduleName += "/" + MODULE_INITIALIZATION_ENTITY_NAME;
 
-          LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
+          LOGGER.finer("Module name from " + importFrom + " is: " + moduleName);
 
           if (isLocalModule(moduleName)) {
             List<File> pythonPath = PythonModuleParser.this.getPythonPath();
-            LOGGER.info("PYTHONPATH is: " + pythonPath + ".");
+            LOGGER.info("PYTHONPATH is: " + pythonPath);
 
             // If there is a PYTHONPATH specified.
             if (pythonPath != null && !pythonPath.isEmpty()) {
@@ -182,16 +187,16 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                         .map(URL::getFile)
                         .map(Path::of)
                         .orElseThrow(IllegalStateException::new);
-                LOGGER.finer("Found module path: " + modulePath + ".");
+                LOGGER.finer("Found module path: " + modulePath);
 
                 if (modulePath.startsWith(pathEntry.toPath())) {
                   // Found it.
                   Path scriptRelativePath = pathEntry.toPath().relativize(modulePath);
-                  LOGGER.finer("Relativized path is: " + scriptRelativePath + ".");
+                  LOGGER.finer("Relativized path is: " + scriptRelativePath);
 
                   // Remove the file extension if it exists.
                   moduleName = scriptRelativePath.toString().replaceFirst("\\.py$", "");
-                  LOGGER.fine("Using module name: " + moduleName + ".");
+                  LOGGER.fine("Using module name: " + moduleName);
                   break;
                 }
               }
@@ -218,6 +223,49 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
         }
 
         return super.visitImportFrom(importFrom);
+      }
+
+      /**
+       * Given a relative import, e.g., ".", "..", ".P", "..P", where "P" represents a package,
+       * subpackage, or module, returns the corresponding actual package, subpackage, or module name
+       *
+       * @param importName The relative package, subpackage, or module to resolve.
+       * @return The actual corresponding package, subpackage, or module name.
+       */
+      private String resolveRelativeImport(String importName) {
+        assert importName.startsWith(".") : "Relative import must start with a period.";
+
+        // Replace path separators for dots except for the last one. We'll use this to resolve the
+        // import.
+        importName = importName.replaceAll("\\./\\B", ".");
+
+        URL url = PythonModuleParser.this.getParsedURL();
+        String file = url.getFile();
+        Path path = Path.of(file);
+        Path resolvedSibling = path.resolveSibling(importName);
+        Path normalizedPath = resolvedSibling.normalize();
+
+        // Replace the dots with the actual (sub)packages.
+        int numBeginningDots = getNumberOfBeginningDots(importName);
+
+        Path subpath =
+            normalizedPath.subpath(
+                normalizedPath.getNameCount() - numBeginningDots, normalizedPath.getNameCount());
+
+        return subpath.toString();
+      }
+
+      private int getNumberOfBeginningDots(String string) {
+        int numBeginningDots = 0;
+
+        for (int i = 0; i < string.length(); i++) {
+          char character = string.charAt(i);
+
+          if (character == '.') ++numBeginningDots;
+          else break;
+        }
+
+        return numBeginningDots;
       }
     };
   }

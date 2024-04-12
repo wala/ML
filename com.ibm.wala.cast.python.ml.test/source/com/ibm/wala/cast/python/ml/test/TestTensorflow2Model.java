@@ -2654,6 +2654,395 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         expectedTensorParameterValueNumbers);
   }
 
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule37()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj31/C/__init__.py", "proj31/C/B.py", "proj31/C/A.py", "proj31/main.py"},
+        "C/B.py",
+        "f",
+        "proj31",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule38()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj32/C/__init__.py", "proj32/C/B.py", "proj32/C/A.py", "proj32/main.py"},
+        "C/B.py",
+        "f",
+        "proj32",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule39()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj33/C/__init__.py", "proj33/C/B.py", "proj33/C/A.py", "proj33/main.py"},
+        "C/B.py",
+        "D.f",
+        "proj33",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule40()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj34/C/__init__.py", "proj34/C/B.py", "proj34/C/A.py", "proj34/main.py"},
+        "C/B.py",
+        "D.f",
+        "proj34",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule41()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj35/E/__init__.py",
+          "proj35/E/C/__init__.py",
+          "proj35/E/D/__init__.py",
+          "proj35/E/D/B.py",
+          "proj35/E/C/A.py",
+          "proj35/main.py"
+        },
+        "E/D/B.py",
+        "f",
+        "proj35",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule42()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj36/E/__init__.py",
+          "proj36/E/C/__init__.py",
+          "proj36/E/D/__init__.py",
+          "proj36/E/D/B.py",
+          "proj36/E/C/A.py",
+          "proj36/main.py"
+        },
+        "E/D/B.py",
+        "F.f",
+        "proj36",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule43()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj37/E/__init__.py",
+          "proj37/E/C/__init__.py",
+          "proj37/E/D/__init__.py",
+          "proj37/E/D/B.py",
+          "proj37/E/C/A.py",
+          "proj37/main.py"
+        },
+        "E/D/B.py",
+        "F.f",
+        "proj37",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule44()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj38/E/__init__.py",
+          "proj38/E/C/__init__.py",
+          "proj38/E/D/__init__.py",
+          "proj38/E/D/B.py",
+          "proj38/E/C/A.py",
+          "proj38/main.py"
+        },
+        "E/D/B.py",
+        "f",
+        "proj38",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test relative imports using wildcards.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule45()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj39/C/__init__.py", "proj39/C/B.py", "proj39/C/A.py", "proj39/main.py"},
+        "C/B.py",
+        "f",
+        "proj39",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test relative imports using wildcards.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule46()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj40/C/__init__.py", "proj40/C/B.py", "proj40/C/A.py", "proj40/main.py"},
+        "C/B.py",
+        "f",
+        "proj40",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test relative imports using wildcards.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule47()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj41/C/__init__.py", "proj41/C/B.py", "proj41/C/A.py", "proj41/main.py"},
+        "C/B.py",
+        "D.f",
+        "proj41",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test relative imports using wildcards.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule48()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj42/C/__init__.py", "proj42/C/B.py", "proj42/C/A.py", "proj42/main.py"},
+        "C/B.py",
+        "D.f",
+        "proj42",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test relative imports using wildcards.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule49()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj43/E/__init__.py",
+          "proj43/E/C/__init__.py",
+          "proj43/E/D/__init__.py",
+          "proj43/E/D/B.py",
+          "proj43/E/C/A.py",
+          "proj43/main.py"
+        },
+        "E/D/B.py",
+        "f",
+        "proj43",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test relative imports using wildcards.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule50()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj44/E/__init__.py",
+          "proj44/E/C/__init__.py",
+          "proj44/E/D/__init__.py",
+          "proj44/E/D/B.py",
+          "proj44/E/C/A.py",
+          "proj44/main.py"
+        },
+        "E/D/B.py",
+        "F.f",
+        "proj44",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test relative imports using wildcards.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule51()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj45/E/__init__.py",
+          "proj45/E/C/__init__.py",
+          "proj45/E/D/__init__.py",
+          "proj45/E/D/B.py",
+          "proj45/E/C/A.py",
+          "proj45/main.py"
+        },
+        "E/D/B.py",
+        "F.f",
+        "proj45",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test relative imports using wildcards.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule52()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj46/E/__init__.py",
+          "proj46/E/C/__init__.py",
+          "proj46/E/D/__init__.py",
+          "proj46/E/D/B.py",
+          "proj46/E/C/A.py",
+          "proj46/main.py"
+        },
+        "E/D/B.py",
+        "f",
+        "proj46",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule53()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj47/E/__init__.py",
+          "proj47/D/__init__.py",
+          "proj47/E/C/__init__.py",
+          "proj47/E/D/__init__.py",
+          "proj47/E/D/B.py",
+          "proj47/E/C/A.py",
+          "proj47/D/B.py",
+          "proj47/main.py"
+        },
+        "E/D/B.py",
+        "f",
+        "proj47",
+        1,
+        1,
+        new int[] {2});
+
+    test(
+        new String[] {
+          "proj47/E/__init__.py",
+          "proj47/D/__init__.py",
+          "proj47/E/C/__init__.py",
+          "proj47/E/D/__init__.py",
+          "proj47/E/D/B.py",
+          "proj47/E/C/A.py",
+          "proj47/D/B.py",
+          "proj47/main.py"
+        },
+        "D/B.py",
+        "g",
+        "proj47",
+        1,
+        1,
+        new int[] {2});
+  }
+
   private void test(
       String filename,
       String functionName,
