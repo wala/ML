@@ -1303,7 +1303,8 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
         public java.util.Set<String> downwardGlobals() {
           return downwardGlobals;
         }
-      };
+      }
+      ;
 
       java.util.Set<String> downwardGlobals = HashSetFactory.make();
 
