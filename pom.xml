@@ -201,13 +201,8 @@
             </pom>
             <python>
               <includes>
-                <include>**/*.py</include>
+                <include>.</include>
               </includes>
-              <excludes>
-                <!-- Don't format generated files. -->
-                <exclude>**/bin/</exclude>
-                <exclude>**/target/</exclude>
-              </excludes>
               <black>
                 <version>${black.version}</version>
               </black>
