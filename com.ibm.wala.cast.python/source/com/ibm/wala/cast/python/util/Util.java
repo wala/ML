@@ -47,7 +47,7 @@ public class Util {
   public static List<File> getPathFiles(String pathSequence) {
     if (pathSequence == null || pathSequence.isEmpty() || pathSequence.isBlank())
       return emptyList();
-    return Arrays.asList(pathSequence.split(":")).stream().map(s -> new File(s)).collect(toList());
+    return Arrays.asList(pathSequence.split(":")).stream().map(File::new).collect(toList());
   }
 
   private Util() {}
