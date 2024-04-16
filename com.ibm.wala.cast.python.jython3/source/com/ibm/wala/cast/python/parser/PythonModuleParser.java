@@ -66,18 +66,16 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
         Optional<String> s =
             importFrom.getInternalModuleNames().stream()
                 .map(Name::getInternalId)
-                .reduce(
-                    (a, b) -> {
-                      return a + "/" + b;
-                    });
+                .reduce((a, b) -> a + "/" + b);
+
         if (s.isPresent()) {
           String moduleName = s.get();
           LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
 
           if (!isLocalModule(moduleName)) {
-            LOGGER.finer("Module: " + moduleName + ".py" + " isn't local.");
+            LOGGER.finer("Module: " + moduleName + " isn't local.");
             moduleName = s.get() + "/__init__";
-          } else LOGGER.finer("Module: " + moduleName + ".py" + " is local.");
+          } else LOGGER.finer("Module: " + moduleName + " is local.");
 
           LOGGER.finer("Module name from " + importFrom + " is: " + moduleName + ".");
 
