@@ -280,7 +280,7 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
    * AllocationSiteInNode} cannot be extracted from the given {@link ConstantKey}. A value of <code>
    * null</code> most likely indicates that a receiver can potentially be <code>null</code>.
    *
-   * @param constantKey The {@link ConstantKey} from which to extract the correspondoing {@link
+   * @param constantKey The {@link ConstantKey} from which to extract the corresponding {@link
    *     AllocationSiteInNode}.
    * @return <code>null</code> if the given {@link ConstantKey}'s value is <code>null</code>.
    * @throws IllegalArgumentException If the constant's value is another else other than <code>null
