@@ -1,5 +1,9 @@
 package com.ibm.wala.cast.python.loader;
 
+import static com.ibm.wala.cast.python.types.PythonTypes.pythonLoader;
+import static com.ibm.wala.cast.python.util.Util.getNameStream;
+import static java.util.stream.Collectors.toList;
+
 import com.ibm.wala.cast.ir.translator.AstTranslator.AstLexicalInformation;
 import com.ibm.wala.cast.ir.translator.AstTranslator.WalkContext;
 import com.ibm.wala.cast.ir.translator.TranslatorToIR;
@@ -59,6 +63,8 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
   public class DynamicMethodBody extends DynamicCodeBody {
     private final IClass container;
 
+    private final Collection<Annotation> annotations;
+
     public DynamicMethodBody(
         TypeReference codeName,
         TypeReference parent,
@@ -69,10 +75,25 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
         IClass container) {
       super(codeName, parent, loader, sourcePosition, entity, context);
       this.container = container;
+
+      // fill in the decorators.
+      // FIXME: Process annotations with parameters.
+      this.annotations =
+          getNameStream(entity.getAnnotations())
+              .map(s -> "L" + s)
+              .map(TypeName::findOrCreate)
+              .map(tn -> TypeReference.findOrCreate(pythonLoader, tn))
+              .map(Annotation::make)
+              .collect(toList());
     }
 
     public IClass getContainer() {
       return container;
+    }
+
+    @Override
+    public Collection<Annotation> getAnnotations() {
+      return this.annotations;
     }
   }
 
@@ -270,14 +291,13 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
 
     assert types.containsKey(typeName);
 
-    if (entity.getArgumentCount() > 0 && "self".equals(entity.getArgumentNames()[1])) {
-      MethodReference me =
-          MethodReference.findOrCreate(
-              fun.getReference(),
-              Atom.findOrCreateUnicodeAtom(entity.getType().getName()),
-              AstMethodReference.fnDesc);
-      self.methodTypes.add(me);
-    }
+    // Includes static methods.
+    MethodReference me =
+        MethodReference.findOrCreate(
+            fun.getReference(),
+            Atom.findOrCreateUnicodeAtom(entity.getType().getName()),
+            AstMethodReference.fnDesc);
+    self.methodTypes.add(me);
 
     return fun;
   }

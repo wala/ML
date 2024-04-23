@@ -10,6 +10,10 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.parser;
 
+import static com.ibm.wala.cast.python.util.Util.DYNAMIC_ANNOTATION_KEY;
+import static com.ibm.wala.cast.python.util.Util.STATIC_METHOD_ANNOTATION_NAME;
+import static com.ibm.wala.cast.python.util.Util.getNameStream;
+
 import com.ibm.wala.cast.ir.translator.AbstractClassEntity;
 import com.ibm.wala.cast.ir.translator.AbstractCodeEntity;
 import com.ibm.wala.cast.ir.translator.AbstractFieldEntity;
@@ -19,6 +23,7 @@ import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
 import com.ibm.wala.cast.python.loader.DynamicAnnotatableEntity;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.tree.CAst;
+import com.ibm.wala.cast.tree.CAstAnnotation;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.CAstQualifier;
@@ -46,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -1152,6 +1158,35 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
       }
       ;
 
+      Collection<CAstAnnotation> annotations = new ArrayList<>();
+
+      for (CAstNode node : dynamicAnnotations) {
+        CAstAnnotation cAstAnnotation =
+            new CAstAnnotation() {
+              @Override
+              public CAstType getType() {
+                return PythonTypes.CAST_DYNAMIC_ANNOTATION;
+              }
+
+              @Override
+              public Map<String, Object> getArguments() {
+                Map<String, Object> map = new HashMap<>();
+                map.put(DYNAMIC_ANNOTATION_KEY, node);
+                return map;
+              }
+
+              @Override
+              public String toString() {
+                return this.getArguments().getOrDefault(DYNAMIC_ANNOTATION_KEY, this).toString();
+              }
+            };
+
+        annotations.add(cAstAnnotation);
+      }
+
+      boolean staticMethod =
+          getNameStream(annotations).anyMatch(s -> s.equals(STATIC_METHOD_ANNOTATION_NAME));
+
       CAstType functionType;
       boolean isMethod =
           context.entity().getKind() == CAstEntity.TYPE_ENTITY
@@ -1167,7 +1202,7 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
 
           @Override
           public boolean isStatic() {
-            return false;
+            return staticMethod;
           }
         }
         ;
@@ -1196,14 +1231,25 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
           implements PythonGlobalsEntity, DynamicAnnotatableEntity {
         private final java.util.Set<String> downwardGlobals;
 
+        private final Collection<CAstAnnotation> annotations;
+
         @Override
         public Iterable<CAstNode> dynamicAnnotations() {
           return dynamicAnnotations;
         }
 
-        protected PythonCodeEntity(CAstType type, java.util.Set<String> downwardGlobals) {
+        protected PythonCodeEntity(
+            CAstType type,
+            java.util.Set<String> downwardGlobals,
+            Collection<CAstAnnotation> annotations) {
           super(type);
           this.downwardGlobals = downwardGlobals;
+          this.annotations = annotations;
+        }
+
+        @Override
+        public Collection<CAstAnnotation> getAnnotations() {
+          return this.annotations;
         }
 
         @Override
@@ -1214,8 +1260,10 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
         @Override
         public CAstNode getAST() {
           if (function instanceof FunctionDef) {
-            if (isMethod) {
+            // Only add object metadata for non-static methods.
+            if (isMethod && !staticMethod) {
               CAst Ast = PythonParser.this.Ast;
+
               CAstNode[] newNodes = new CAstNode[nodes.length + 2];
               System.arraycopy(nodes, 0, newNodes, 2, nodes.length);
 
@@ -1303,7 +1351,7 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
 
       java.util.Set<String> downwardGlobals = HashSetFactory.make();
 
-      PythonCodeEntity fun = new PythonCodeEntity(functionType, downwardGlobals);
+      PythonCodeEntity fun = new PythonCodeEntity(functionType, downwardGlobals, annotations);
 
       PythonParser.FunctionContext child =
           new PythonParser.FunctionContext(context, fun, downwardGlobals, function);
