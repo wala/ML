@@ -2569,6 +2569,66 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {2});
   }
 
+  @Test
+  public void testStaticMethod() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_static_method.py", "MyClass.the_static_method", 1, 1, 2);
+  }
+
+  @Test
+  public void testStaticMethod2() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_static_method2.py", "MyClass.the_static_method", 1, 1, 2);
+  }
+
+  @Test
+  public void testStaticMethod3() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_static_method3.py", "MyClass.the_static_method", 1, 1, 2);
+  }
+
+  @Test
+  public void testStaticMethod4() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_static_method4.py", "MyClass.the_static_method", 1, 1, 2);
+  }
+
+  @Test
+  public void testStaticMethod5() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_static_method5.py", "MyClass.the_static_method", 1, 1, 2);
+  }
+
+  @Test
+  public void testStaticMethod6() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_static_method6.py", "MyClass.the_static_method", 1, 1, 2);
+  }
+
+  @Test
+  public void testStaticMethod7() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_static_method7.py", "MyClass.the_static_method", 1, 1, 3);
+  }
+
+  @Test
+  public void testStaticMethod8() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_static_method8.py", "MyClass.the_static_method", 1, 1, 3);
+  }
+
+  @Test
+  public void testStaticMethod9() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_static_method9.py", "MyClass.the_static_method", 2, 2, 2, 3);
+  }
+
+  @Test
+  public void testStaticMethod10() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_static_method10.py", "MyClass.the_static_method", 2, 2, 2, 3);
+  }
+
+  @Test
+  public void testStaticMethod11() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_static_method11.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testStaticMethod12() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_static_method12.py", "f", 1, 1, 2);
+  }
+
   private void test(
       String filename,
       String functionName,
