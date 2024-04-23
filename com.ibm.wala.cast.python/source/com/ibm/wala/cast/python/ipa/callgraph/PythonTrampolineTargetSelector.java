@@ -117,13 +117,6 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
           PythonSummary x = new PythonSummary(tr, call.getNumberOfTotalParameters());
           IClass filter = ((PythonInstanceMethodTrampoline) receiver).getRealClass();
 
-          // Are we calling a static method?
-          boolean staticMethodReceiver = filter.getAnnotations().contains(make(STATIC_METHOD));
-          logger.fine(
-              staticMethodReceiver
-                  ? "Found static method receiver: " + filter
-                  : "Method is not static: " + filter);
-
           int v = call.getNumberOfTotalParameters() + 1;
 
           x.addStatement(
@@ -144,6 +137,13 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
                   .CheckCastInstruction(1, v0, v, filter.getReference(), true));
 
           int v1;
+
+          // Are we calling a static method?
+          boolean staticMethodReceiver = filter.getAnnotations().contains(make(STATIC_METHOD));
+          logger.fine(
+              staticMethodReceiver
+                  ? "Found static method receiver: " + filter
+                  : "Method is not static: " + filter);
 
           // only add self if the receiver isn't static.
           if (!staticMethodReceiver) {
