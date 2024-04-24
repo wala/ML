@@ -35,8 +35,13 @@ import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
 import java.util.Collections;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class PythonConstructorTargetSelector implements MethodTargetSelector {
+
+  private static final Logger LOGGER =
+      Logger.getLogger(PythonConstructorTargetSelector.class.getName());
+
   private final Map<IClass, IMethod> ctors = HashMapFactory.make();
 
   private final MethodTargetSelector base;
@@ -48,6 +53,9 @@ public class PythonConstructorTargetSelector implements MethodTargetSelector {
   @Override
   public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
     if (receiver != null) {
+      LOGGER.fine("Getting callee target for receiver: " + receiver);
+      LOGGER.fine("Calling method name is: " + caller.getMethod().getName());
+
       IClassHierarchy cha = receiver.getClassHierarchy();
       if (cha.isSubclassOf(receiver, cha.lookupClass(PythonTypes.object))
           && receiver instanceof PythonClass) {
