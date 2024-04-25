@@ -167,17 +167,11 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
           LOGGER.finer("Module name from " + importFrom + " is: " + moduleName);
 
-          if (isLocalModule(moduleName)) {
-            moduleName = adjustModuleName(moduleName);
+          if (isLocalModule(moduleName))
             return createImportNode(importFrom.getInternalNames(), moduleName);
-          }
         }
 
         return super.visitImportFrom(importFrom);
-      }
-
-      private String adjustModuleName(String moduleName) {
-        return adjustModuleName(moduleName, false);
       }
 
       private String adjustModuleName(String moduleName, boolean useInitializationFile) {
