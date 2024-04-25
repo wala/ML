@@ -99,13 +99,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                 Optional<SourceModule> localModule = getLocalModule(moduleName);
 
                 for (File pathEntry : pythonPath) {
-                  Path modulePath =
-                      localModule
-                          .map(SourceModule::getURL)
-                          .map(URL::getFile)
-                          .map(Path::of)
-                          .orElseThrow(IllegalStateException::new);
-                  LOGGER.finer("Found module path: " + modulePath);
+                  Path modulePath = getPath(localModule);
 
                   if (modulePath.startsWith(pathEntry.toPath())) {
                     // Found it.
@@ -151,6 +145,27 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
         return super.visitImport(imp);
       }
 
+      /**
+       * Returns the {@link Path} corresponding to the given {@link SourceModule}. If a {@link
+       * SourceModule} is not supplied, an {@link IllegalStateException} is thrown.
+       *
+       * @param module The {@link SourceModule} for which to extract a {@link Path}.
+       * @return The {@link Path} corresponding to the given {@link SourceModule}.
+       * @throws IllegalStateException If the given {@link SourceModule} is not present.
+       * @implNote The discovered {@link Path} will be logged.
+       */
+      private Path getPath(Optional<SourceModule> module) {
+        Path path =
+            module
+                .map(SourceModule::getURL)
+                .map(URL::getFile)
+                .map(Path::of)
+                .orElseThrow(IllegalStateException::new);
+
+        LOGGER.finer("Found path: " + path);
+        return path;
+      }
+
       @Override
       public CAstNode visitImportFrom(ImportFrom importFrom) throws Exception {
         Optional<String> s =
@@ -181,13 +196,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
               Optional<SourceModule> localModule = getLocalModule(moduleName);
 
               for (File pathEntry : pythonPath) {
-                Path modulePath =
-                    localModule
-                        .map(SourceModule::getURL)
-                        .map(URL::getFile)
-                        .map(Path::of)
-                        .orElseThrow(IllegalStateException::new);
-                LOGGER.finer("Found module path: " + modulePath);
+                Path modulePath = getPath(localModule);
 
                 if (modulePath.startsWith(pathEntry.toPath())) {
                   // Found it.
