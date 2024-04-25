@@ -22,6 +22,7 @@ import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -35,6 +36,11 @@ import org.junit.Test;
 
 /** Test TF2 APIs. */
 public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
+
+  private static final String JAVA_CLASSPATH_SYSTEM_PROPERTY_KEY = "java.class.path";
+
+  /** Name of the Maven submodule uses for Jython3 testing. */
+  private static final String JYTHON3_TEST_PROJECT = "com.ibm.wala.cast.python.jython3.test";
 
   private static final Logger LOGGER = Logger.getLogger(TestTensorflow2Model.class.getName());
 
@@ -1511,12 +1517,54 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
   @Test
   public void testStaticMethod5() throws ClassHierarchyException, CancelException, IOException {
-    test("tf2_test_static_method5.py", "MyClass.the_static_method", 1, 1, 2);
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // Static methods are only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        "tf2_test_static_method5.py",
+        "MyClass.the_static_method",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
   }
 
   @Test
   public void testStaticMethod6() throws ClassHierarchyException, CancelException, IOException {
-    test("tf2_test_static_method6.py", "MyClass.the_static_method", 1, 1, 2);
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // Static methods are only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        "tf2_test_static_method6.py",
+        "MyClass.the_static_method",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
   }
 
   @Test
@@ -1531,22 +1579,106 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
   @Test
   public void testStaticMethod9() throws ClassHierarchyException, CancelException, IOException {
-    test("tf2_test_static_method9.py", "MyClass.the_static_method", 2, 2, 2, 3);
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // Static methods are only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 2;
+      expectedNumberOfTensorVariables = 2;
+      expectedTensorParameterValueNumbers = new int[] {2, 3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    }
+
+    test(
+        "tf2_test_static_method9.py",
+        "MyClass.the_static_method",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
   }
 
   @Test
   public void testStaticMethod10() throws ClassHierarchyException, CancelException, IOException {
-    test("tf2_test_static_method10.py", "MyClass.the_static_method", 2, 2, 2, 3);
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // Static methods are only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 2;
+      expectedNumberOfTensorVariables = 2;
+      expectedTensorParameterValueNumbers = new int[] {2, 3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    }
+
+    test(
+        "tf2_test_static_method10.py",
+        "MyClass.the_static_method",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
   }
 
   @Test
   public void testStaticMethod11() throws ClassHierarchyException, CancelException, IOException {
-    test("tf2_test_static_method11.py", "f", 1, 1, 2);
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // Static methods are only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        "tf2_test_static_method11.py",
+        "f",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
   }
 
   @Test
   public void testStaticMethod12() throws ClassHierarchyException, CancelException, IOException {
-    test("tf2_test_static_method12.py", "f", 1, 1, 2);
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // Static methods are only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        "tf2_test_static_method12.py",
+        "f",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
   }
 
   private void test(
@@ -1668,5 +1800,16 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
                       "Expecting " + actualParameterValueNumberSet + " to contain " + ev + ".",
                       actualParameterValueNumberSet.contains(ev)));
     }
+  }
+
+  /**
+   * Returns true iff Jython3 is used for testing.
+   *
+   * @return True iff Jython3 is used for testing.
+   */
+  protected static boolean usesJython3Testing() {
+    String classpath = System.getProperty(JAVA_CLASSPATH_SYSTEM_PROPERTY_KEY);
+    String[] classpathEntries = classpath.split(File.pathSeparator);
+    return Arrays.stream(classpathEntries).anyMatch(cpe -> cpe.contains(JYTHON3_TEST_PROJECT));
   }
 }
