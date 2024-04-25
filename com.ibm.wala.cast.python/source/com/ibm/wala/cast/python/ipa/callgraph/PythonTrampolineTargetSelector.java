@@ -50,7 +50,7 @@ import java.util.logging.Logger;
 public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
 
   private static final Logger logger =
-      Logger.getLogger(PythonSSAPropagationCallGraphBuilder.class.getName());
+      Logger.getLogger(PythonTrampolineTargetSelector.class.getName());
 
   /**
    * The method name that is used for Python callables.
@@ -106,6 +106,7 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
         }
 
         Pair<IClass, Integer> key = Pair.make(receiver, call.getNumberOfTotalParameters());
+
         if (!codeBodies.containsKey(key)) {
           Map<Integer, Atom> names = HashMapFactory.make();
           MethodReference tr =
@@ -124,6 +125,7 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
                   : "Method is not static: " + filter);
 
           int v = call.getNumberOfTotalParameters() + 1;
+
           x.addStatement(
               PythonLanguage.Python.instructionFactory()
                   .GetInstruction(
@@ -134,7 +136,9 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
                           PythonTypes.Root,
                           Atom.findOrCreateUnicodeAtom("$function"),
                           PythonTypes.Root)));
+
           int v0 = v + 1;
+
           x.addStatement(
               PythonLanguage.Python.instructionFactory()
                   .CheckCastInstruction(1, v0, v, filter.getReference(), true));
@@ -171,8 +175,10 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
 
           int ki = 0, ji = call.getNumberOfPositionalParameters() + 1;
           Pair<String, Integer>[] keys = new Pair[0];
+
           if (call.getKeywords() != null) {
             keys = new Pair[call.getKeywords().size()];
+
             for (String k : call.getKeywords()) {
               names.put(ji, Atom.findOrCreateUnicodeAtom(k));
               keys[ki++] = Pair.make(k, ji++);
@@ -181,12 +187,12 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
 
           int result = v1 + 1;
           int except = v1 + 2;
+
           CallSiteReference ref =
               new DynamicCallSiteReference(call.getCallSite().getDeclaredTarget(), 2);
+
           x.addStatement(new PythonInvokeInstruction(2, result, except, ref, params, keys));
-
           x.addStatement(new SSAReturnInstruction(3, result, false));
-
           x.setValueNames(names);
 
           codeBodies.put(key, new PythonSummarizedFunction(tr, x, receiver));
@@ -298,7 +304,7 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
    * AllocationSiteInNode} cannot be extracted from the given {@link ConstantKey}. A value of <code>
    * null</code> most likely indicates that a receiver can potentially be <code>null</code>.
    *
-   * @param constantKey The {@link ConstantKey} from which to extract the correspondoing {@link
+   * @param constantKey The {@link ConstantKey} from which to extract the corresponding {@link
    *     AllocationSiteInNode}.
    * @return <code>null</code> if the given {@link ConstantKey}'s value is <code>null</code>.
    * @throws IllegalArgumentException If the constant's value is another else other than <code>null
