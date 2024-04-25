@@ -146,54 +146,6 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
       }
 
       /**
-       * Returns an import {@link CAstNode} with the given {@link List} of {@link alias}s as import
-       * names within the given module.
-       *
-       * @param importNames The names to import.
-       * @param moduleName The name of the containing module.
-       * @return Sn import {@link CAstNode} with the given {@link List} of {@link alias}s as import
-       *     names within the given module.
-       */
-      private CAstNode createImportNode(List<alias> importNames, String moduleName) {
-        return createImportNode(importNames, moduleName, false);
-      }
-
-      /**
-       * Returns an import {@link CAstNode} with the given {@link List} of {@link alias}s as import
-       * names within the given module.
-       *
-       * @param importNames The names to import.
-       * @param moduleName The name of the containing module.
-       * @param useInitializationFile Whether to use the `__init__.py` file.
-       * @return Sn import {@link CAstNode} with the given {@link List} of {@link alias}s as import
-       *     names within the given module.
-       */
-      private CAstNode createImportNode(
-          List<alias> importNames, String moduleName, boolean useInitializationFile) {
-        moduleName = adjustModuleName(moduleName, useInitializationFile);
-
-        String yuck = moduleName;
-        return Ast.makeNode(
-            CAstNode.BLOCK_STMT,
-            importNames.stream()
-                .map(alias::getInternalName)
-                .map(
-                    n -> {
-                      n = n.split("\\.")[0];
-
-                      return Ast.makeNode(
-                          CAstNode.DECL_STMT,
-                          Ast.makeConstant(new CAstSymbolImpl(n, PythonCAstToIRTranslator.Any)),
-                          Ast.makeNode(
-                              CAstNode.PRIMITIVE,
-                              Ast.makeConstant("import"),
-                              Ast.makeConstant(yuck),
-                              Ast.makeConstant(n)));
-                    })
-                .collect(Collectors.toList()));
-      }
-
-      /**
        * Returns the {@link Path} corresponding to the given {@link SourceModule}. If a {@link
        * SourceModule} is not supplied, an {@link IllegalStateException} is thrown.
        *
@@ -241,6 +193,13 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
         return super.visitImportFrom(importFrom);
       }
 
+      /**
+       * Adjust the given module name relative to the PYTHONPATH.
+       *
+       * @param moduleName The module name to adjust.
+       * @param useInitializationFile Whether to use the `__init__.py` file.
+       * @return The given module's name potentially adjusted per the PYTHONPATH.
+       */
       private String adjustModuleName(String moduleName, boolean useInitializationFile) {
         List<File> pythonPath = PythonModuleParser.this.getPythonPath();
         LOGGER.info("PYTHONPATH is: " + pythonPath);
