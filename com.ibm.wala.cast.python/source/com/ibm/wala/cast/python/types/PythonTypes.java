@@ -10,6 +10,7 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.types;
 
+import static com.ibm.wala.cast.python.util.Util.CLASS_METHOD_ANNOTATION_NAME;
 import static com.ibm.wala.cast.python.util.Util.STATIC_METHOD_ANNOTATION_NAME;
 
 import com.ibm.wala.cast.tree.CAstType;
@@ -89,6 +90,11 @@ public class PythonTypes extends AstTypeReference {
   public static final TypeReference STATIC_METHOD =
       TypeReference.findOrCreate(
           pythonLoader, TypeName.findOrCreate("L" + STATIC_METHOD_ANNOTATION_NAME));
+
+  /** https://docs.python.org/3/library/functions.html#classmethod. */
+  public static final TypeReference CLASS_METHOD =
+      TypeReference.findOrCreate(
+          pythonLoader, TypeName.findOrCreate("L" + CLASS_METHOD_ANNOTATION_NAME));
 
   /** A {@link CAstType} representing a dynamic annotation (decorator). */
   public static final CAstType CAST_DYNAMIC_ANNOTATION =
