@@ -222,10 +222,6 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
         return super.visitImportFrom(importFrom);
       }
 
-      private String adjustModuleName(String moduleName) {
-        return adjustModuleName(moduleName, false);
-      }
-
       private String adjustModuleName(String moduleName, boolean useInitializationFile) {
         List<File> pythonPath = PythonModuleParser.this.getPythonPath();
         LOGGER.info("PYTHONPATH is: " + pythonPath);
