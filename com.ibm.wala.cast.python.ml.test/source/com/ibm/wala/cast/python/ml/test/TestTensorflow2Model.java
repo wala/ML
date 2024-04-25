@@ -3336,12 +3336,54 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
   @Test
   public void testStaticMethod5() throws ClassHierarchyException, CancelException, IOException {
-    test("tf2_test_static_method5.py", "MyClass.the_static_method", 1, 1, 2);
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // Static methods are only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        "tf2_test_static_method5.py",
+        "MyClass.the_static_method",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
   }
 
   @Test
   public void testStaticMethod6() throws ClassHierarchyException, CancelException, IOException {
-    test("tf2_test_static_method6.py", "MyClass.the_static_method", 1, 1, 2);
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // Static methods are only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        "tf2_test_static_method6.py",
+        "MyClass.the_static_method",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
   }
 
   @Test
@@ -3356,22 +3398,106 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
   @Test
   public void testStaticMethod9() throws ClassHierarchyException, CancelException, IOException {
-    test("tf2_test_static_method9.py", "MyClass.the_static_method", 2, 2, 2, 3);
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // Static methods are only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 2;
+      expectedNumberOfTensorVariables = 2;
+      expectedTensorParameterValueNumbers = new int[] {2, 3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    }
+
+    test(
+        "tf2_test_static_method9.py",
+        "MyClass.the_static_method",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
   }
 
   @Test
   public void testStaticMethod10() throws ClassHierarchyException, CancelException, IOException {
-    test("tf2_test_static_method10.py", "MyClass.the_static_method", 2, 2, 2, 3);
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // Static methods are only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 2;
+      expectedNumberOfTensorVariables = 2;
+      expectedTensorParameterValueNumbers = new int[] {2, 3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    }
+
+    test(
+        "tf2_test_static_method10.py",
+        "MyClass.the_static_method",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
   }
 
   @Test
   public void testStaticMethod11() throws ClassHierarchyException, CancelException, IOException {
-    test("tf2_test_static_method11.py", "f", 1, 1, 2);
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // Static methods are only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        "tf2_test_static_method11.py",
+        "f",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
   }
 
   @Test
   public void testStaticMethod12() throws ClassHierarchyException, CancelException, IOException {
-    test("tf2_test_static_method12.py", "f", 1, 1, 2);
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // Static methods are only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        "tf2_test_static_method12.py",
+        "f",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
   }
 
   private void test(
