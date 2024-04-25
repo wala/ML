@@ -97,6 +97,35 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
         return super.visitImport(imp);
       }
 
+      private CAstNode createImportNode(List<alias> importNames, String moduleName) {
+        return createImportNode(importNames, moduleName, false);
+      }
+
+      private CAstNode createImportNode(
+          List<alias> importNames, String moduleName, boolean useInitializationFile) {
+        moduleName = adjustModuleName(moduleName, useInitializationFile);
+
+        String yuck = moduleName;
+        return Ast.makeNode(
+            CAstNode.BLOCK_STMT,
+            importNames.stream()
+                .map(alias::getInternalName)
+                .map(
+                    n -> {
+                      n = n.split("\\.")[0];
+
+                      return Ast.makeNode(
+                          CAstNode.DECL_STMT,
+                          Ast.makeConstant(new CAstSymbolImpl(n, PythonCAstToIRTranslator.Any)),
+                          Ast.makeNode(
+                              CAstNode.PRIMITIVE,
+                              Ast.makeConstant("import"),
+                              Ast.makeConstant(yuck),
+                              Ast.makeConstant(n)));
+                    })
+                .collect(Collectors.toList()));
+      }
+
       /**
        * Returns an import {@link CAstNode} with the given {@link List} of {@link alias}s as import
        * names within the given module.
@@ -191,6 +220,43 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
         }
 
         return super.visitImportFrom(importFrom);
+      }
+
+      private String adjustModuleName(String moduleName) {
+        return adjustModuleName(moduleName, false);
+      }
+
+      private String adjustModuleName(String moduleName, boolean useInitializationFile) {
+        List<File> pythonPath = PythonModuleParser.this.getPythonPath();
+        LOGGER.info("PYTHONPATH is: " + pythonPath);
+
+        // If there is a PYTHONPATH specified.
+        if (pythonPath != null && !pythonPath.isEmpty()) {
+          // Adjust the module name per the PYTHONPATH.
+          Optional<SourceModule> localModule = getLocalModule(moduleName);
+
+          for (File pathEntry : pythonPath) {
+            Path modulePath = getPath(localModule);
+
+            if (modulePath.startsWith(pathEntry.toPath())) {
+              // Found it.
+              Path scriptRelativePath = pathEntry.toPath().relativize(modulePath);
+              LOGGER.finer("Relativized path is: " + scriptRelativePath);
+
+              // Remove the file extension if it exists.
+              moduleName = scriptRelativePath.toString().replaceFirst("\\.py$", "");
+
+              if (useInitializationFile)
+                // Use the beginning segment initialization file.
+                moduleName = moduleName.split("/")[0] + "/" + MODULE_INITIALIZATION_ENTITY_NAME;
+
+              LOGGER.fine("Using module name: " + moduleName);
+              break;
+            }
+          }
+        }
+
+        return moduleName;
       }
 
       /**
