@@ -54,6 +54,8 @@ public class Util {
    *     (decorators).
    */
   public static Stream<String> getNameStream(Collection<CAstAnnotation> annotations) {
+    if (annotations == null) return Stream.empty();
+
     return annotations.stream()
         .filter(a -> a.getType().equals(CAST_DYNAMIC_ANNOTATION))
         .map(a -> a.getArguments().get(DYNAMIC_ANNOTATION_KEY))
