@@ -241,53 +241,6 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
         return super.visitImportFrom(importFrom);
       }
 
-      /**
-       * Adjust the given module name relative to the PYTHONPATH.
-       *
-       * @param moduleName The module name to adjust.
-       * @param useInitializationFile Whether to use the `__init__.py` file.
-       * @return The given module's name potentially adjusted per the PYTHONPATH.
-       */
-      private String adjustModuleName(String moduleName, boolean useInitializationFile) {
-        List<File> pythonPath = PythonModuleParser.this.getPythonPath();
-        LOGGER.info("PYTHONPATH is: " + pythonPath);
-
-        // If there is a PYTHONPATH specified.
-        if (pythonPath != null && !pythonPath.isEmpty()) {
-          // Adjust the module name per the PYTHONPATH.
-          Optional<SourceModule> localModule = getLocalModule(moduleName);
-
-          for (File pathEntry : pythonPath) {
-            Path modulePath = getPath(localModule);
-
-            if (modulePath.startsWith(pathEntry.toPath())) {
-              // Found it.
-              Path scriptRelativePath = pathEntry.toPath().relativize(modulePath);
-              LOGGER.finer("Relativized path is: " + scriptRelativePath);
-
-              // Remove the file extension if it exists.
-              moduleName = scriptRelativePath.toString().replaceFirst("\\.py$", "");
-
-              if (useInitializationFile)
-                // Use the beginning segment initialization file.
-                moduleName = moduleName.split("/")[0] + "/" + MODULE_INITIALIZATION_ENTITY_NAME;
-
-              LOGGER.fine("Using module name: " + moduleName);
-              break;
-            }
-          }
-        }
-
-        return moduleName;
-      }
-
-      /**
-       * Adjust the given module name relative to the PYTHONPATH.
-       *
-       * @param moduleName The module name to adjust.
-       * @param useInitializationFile Whether to use the `__init__.py` file.
-       * @return The given module's name potentially adjusted per the PYTHONPATH.
-       */
       private String adjustModuleName(String moduleName, boolean useInitializationFile) {
         List<File> pythonPath = PythonModuleParser.this.getPythonPath();
         LOGGER.info("PYTHONPATH is: " + pythonPath);
