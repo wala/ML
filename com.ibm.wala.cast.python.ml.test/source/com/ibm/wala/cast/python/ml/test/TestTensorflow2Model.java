@@ -3500,6 +3500,31 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         expectedTensorParameterValueNumbers);
   }
 
+  @Test
+  public void testClassMethod() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_class_method.py", "MyClass.the_class_method", 1, 1, 3);
+  }
+
+  @Test
+  public void testClassMethod2() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_class_method2.py", "MyClass.the_class_method", 1, 1, 3);
+  }
+
+  @Test
+  public void testClassMethod3() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_class_method3.py", "MyClass.f", 1, 1, 2);
+  }
+
+  @Test
+  public void testClassMethod4() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_class_method4.py", "MyClass.f", 1, 1, 2);
+  }
+
+  @Test
+  public void testClassMethod5() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_class_method5.py", "MyClass.f", 1, 1, 2);
+  }
+
   private void test(
       String filename,
       String functionName,
