@@ -10,6 +10,9 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.ipa.callgraph;
 
+import static com.ibm.wala.cast.python.types.PythonTypes.STATIC_METHOD;
+import static com.ibm.wala.types.annotations.Annotation.make;
+
 import com.ibm.wala.cast.ipa.callgraph.ScopeMappingInstanceKeys.ScopeMappingInstanceKey;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
@@ -83,6 +86,9 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
   @Override
   public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
     if (receiver != null) {
+      logger.fine("Getting callee target for receiver: " + receiver);
+      logger.fine("Calling method name is: " + caller.getMethod().getName());
+
       IClassHierarchy cha = receiver.getClassHierarchy();
       final boolean callable = receiver.getReference().equals(PythonTypes.object);
 
@@ -110,6 +116,14 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
                   AstMethodReference.fnDesc);
           PythonSummary x = new PythonSummary(tr, call.getNumberOfTotalParameters());
           IClass filter = ((PythonInstanceMethodTrampoline) receiver).getRealClass();
+
+          // Are we calling a static method?
+          boolean staticMethodReceiver = filter.getAnnotations().contains(make(STATIC_METHOD));
+          logger.fine(
+              staticMethodReceiver
+                  ? "Found static method receiver: " + filter
+                  : "Method is not static: " + filter);
+
           int v = call.getNumberOfTotalParameters() + 1;
 
           x.addStatement(
@@ -129,23 +143,33 @@ public class PythonTrampolineTargetSelector<T> implements MethodTargetSelector {
               PythonLanguage.Python.instructionFactory()
                   .CheckCastInstruction(1, v0, v, filter.getReference(), true));
 
-          int v1 = v + 2;
+          int v1;
 
-          x.addStatement(
-              PythonLanguage.Python.instructionFactory()
-                  .GetInstruction(
-                      1,
-                      v1,
-                      1,
-                      FieldReference.findOrCreate(
-                          PythonTypes.Root,
-                          Atom.findOrCreateUnicodeAtom("$self"),
-                          PythonTypes.Root)));
+          // only add self if the receiver isn't static.
+          if (!staticMethodReceiver) {
+            v1 = v + 2;
+
+            x.addStatement(
+                PythonLanguage.Python.instructionFactory()
+                    .GetInstruction(
+                        1,
+                        v1,
+                        1,
+                        FieldReference.findOrCreate(
+                            PythonTypes.Root,
+                            Atom.findOrCreateUnicodeAtom("$self"),
+                            PythonTypes.Root)));
+          } else v1 = v + 1;
 
           int i = 0;
-          int[] params = new int[Math.max(2, call.getNumberOfPositionalParameters() + 1)];
+          int paramSize =
+              Math.max(
+                  staticMethodReceiver ? 1 : 2,
+                  call.getNumberOfPositionalParameters() + (staticMethodReceiver ? 0 : 1));
+          int[] params = new int[paramSize];
           params[i++] = v0;
-          params[i++] = v1;
+
+          if (!staticMethodReceiver) params[i++] = v1;
 
           for (int j = 1; j < call.getNumberOfPositionalParameters(); j++) params[i++] = j + 1;
 
