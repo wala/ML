@@ -89,60 +89,41 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
             LOGGER.finer("Module name from " + imp + " is: " + moduleName);
 
-            if (isLocalModule(moduleName)) {
-              List<File> pythonPath = PythonModuleParser.this.getPythonPath();
-              LOGGER.info("PYTHONPATH is: " + pythonPath);
-
-              // If there is a PYTHONPATH specified.
-              if (pythonPath != null && !pythonPath.isEmpty()) {
-                // Adjust the module name per the PYTHONPATH.
-                Optional<SourceModule> localModule = getLocalModule(moduleName);
-
-                for (File pathEntry : pythonPath) {
-                  Path modulePath = getPath(localModule);
-
-                  if (modulePath.startsWith(pathEntry.toPath())) {
-                    // Found it.
-                    Path scriptRelativePath = pathEntry.toPath().relativize(modulePath);
-                    LOGGER.finer("Relativized path is: " + scriptRelativePath);
-
-                    // Remove the file extension if it exists.
-                    moduleName = scriptRelativePath.toString().replaceFirst("\\.py$", "");
-
-                    // Use the beginning segment initialization file.
-                    moduleName = moduleName.split("/")[0] + "/" + MODULE_INITIALIZATION_ENTITY_NAME;
-
-                    LOGGER.fine("Using module name: " + moduleName);
-                    break;
-                  }
-                }
-              }
-
-              String yuck = moduleName;
-              return Ast.makeNode(
-                  CAstNode.BLOCK_STMT,
-                  imp.getInternalNames().stream()
-                      .map(alias::getInternalName)
-                      .map(
-                          n -> {
-                            n = n.split("\\.")[0];
-
-                            return Ast.makeNode(
-                                CAstNode.DECL_STMT,
-                                Ast.makeConstant(
-                                    new CAstSymbolImpl(n, PythonCAstToIRTranslator.Any)),
-                                Ast.makeNode(
-                                    CAstNode.PRIMITIVE,
-                                    Ast.makeConstant("import"),
-                                    Ast.makeConstant(yuck),
-                                    Ast.makeConstant(n)));
-                          })
-                      .collect(Collectors.toList()));
-            }
+            if (isLocalModule(moduleName))
+              return createImportNode(imp.getInternalNames(), moduleName, true);
           }
         }
 
         return super.visitImport(imp);
+      }
+
+      private CAstNode createImportNode(List<alias> importNames, String moduleName) {
+        return createImportNode(importNames, moduleName, false);
+      }
+
+      private CAstNode createImportNode(
+          List<alias> importNames, String moduleName, boolean useInitializationFile) {
+        moduleName = adjustModuleName(moduleName, useInitializationFile);
+
+        String yuck = moduleName;
+        return Ast.makeNode(
+            CAstNode.BLOCK_STMT,
+            importNames.stream()
+                .map(alias::getInternalName)
+                .map(
+                    n -> {
+                      n = n.split("\\.")[0];
+
+                      return Ast.makeNode(
+                          CAstNode.DECL_STMT,
+                          Ast.makeConstant(new CAstSymbolImpl(n, PythonCAstToIRTranslator.Any)),
+                          Ast.makeNode(
+                              CAstNode.PRIMITIVE,
+                              Ast.makeConstant("import"),
+                              Ast.makeConstant(yuck),
+                              Ast.makeConstant(n)));
+                    })
+                .collect(Collectors.toList()));
       }
 
       /**
@@ -187,51 +168,49 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
           LOGGER.finer("Module name from " + importFrom + " is: " + moduleName);
 
           if (isLocalModule(moduleName)) {
-            List<File> pythonPath = PythonModuleParser.this.getPythonPath();
-            LOGGER.info("PYTHONPATH is: " + pythonPath);
-
-            // If there is a PYTHONPATH specified.
-            if (pythonPath != null && !pythonPath.isEmpty()) {
-              // Adjust the module name per the PYTHONPATH.
-              Optional<SourceModule> localModule = getLocalModule(moduleName);
-
-              for (File pathEntry : pythonPath) {
-                Path modulePath = getPath(localModule);
-
-                if (modulePath.startsWith(pathEntry.toPath())) {
-                  // Found it.
-                  Path scriptRelativePath = pathEntry.toPath().relativize(modulePath);
-                  LOGGER.finer("Relativized path is: " + scriptRelativePath);
-
-                  // Remove the file extension if it exists.
-                  moduleName = scriptRelativePath.toString().replaceFirst("\\.py$", "");
-                  LOGGER.fine("Using module name: " + moduleName);
-                  break;
-                }
-              }
-            }
-
-            String yuck = moduleName;
-            return Ast.makeNode(
-                CAstNode.BLOCK_STMT,
-                importFrom.getInternalNames().stream()
-                    .map(alias::getInternalName)
-                    .map(
-                        n ->
-                            Ast.makeNode(
-                                CAstNode.DECL_STMT,
-                                Ast.makeConstant(
-                                    new CAstSymbolImpl(n, PythonCAstToIRTranslator.Any)),
-                                Ast.makeNode(
-                                    CAstNode.PRIMITIVE,
-                                    Ast.makeConstant("import"),
-                                    Ast.makeConstant(yuck),
-                                    Ast.makeConstant(n))))
-                    .collect(Collectors.toList()));
+            moduleName = adjustModuleName(moduleName);
+            return createImportNode(importFrom.getInternalNames(), moduleName);
           }
         }
 
         return super.visitImportFrom(importFrom);
+      }
+
+      private String adjustModuleName(String moduleName) {
+        return adjustModuleName(moduleName, false);
+      }
+
+      private String adjustModuleName(String moduleName, boolean useInitializationFile) {
+        List<File> pythonPath = PythonModuleParser.this.getPythonPath();
+        LOGGER.info("PYTHONPATH is: " + pythonPath);
+
+        // If there is a PYTHONPATH specified.
+        if (pythonPath != null && !pythonPath.isEmpty()) {
+          // Adjust the module name per the PYTHONPATH.
+          Optional<SourceModule> localModule = getLocalModule(moduleName);
+
+          for (File pathEntry : pythonPath) {
+            Path modulePath = getPath(localModule);
+
+            if (modulePath.startsWith(pathEntry.toPath())) {
+              // Found it.
+              Path scriptRelativePath = pathEntry.toPath().relativize(modulePath);
+              LOGGER.finer("Relativized path is: " + scriptRelativePath);
+
+              // Remove the file extension if it exists.
+              moduleName = scriptRelativePath.toString().replaceFirst("\\.py$", "");
+
+              if (useInitializationFile)
+                // Use the beginning segment initialization file.
+                moduleName = moduleName.split("/")[0] + "/" + MODULE_INITIALIZATION_ENTITY_NAME;
+
+              LOGGER.fine("Using module name: " + moduleName);
+              break;
+            }
+          }
+        }
+
+        return moduleName;
       }
 
       /**
