@@ -10,6 +10,7 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.parser;
 
+import static com.ibm.wala.cast.python.util.Util.CLASS_METHOD_ANNOTATION_NAME;
 import static com.ibm.wala.cast.python.util.Util.DYNAMIC_ANNOTATION_KEY;
 import static com.ibm.wala.cast.python.util.Util.STATIC_METHOD_ANNOTATION_NAME;
 import static com.ibm.wala.cast.python.util.Util.getNameStream;
@@ -1263,8 +1264,12 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
         @Override
         public CAstNode getAST() {
           if (function instanceof FunctionDef) {
-            // Only add object metadata for non-static methods.
-            if (isMethod && !staticMethod) {
+
+            boolean classMethod =
+                getNameStream(annotations).anyMatch(s -> s.equals(CLASS_METHOD_ANNOTATION_NAME));
+
+            // Only add object metadata for non-static and non-class methods.
+            if (isMethod && !staticMethod && !classMethod) {
               CAst Ast = PythonParser.this.Ast;
 
               CAstNode[] newNodes = new CAstNode[nodes.length + 2];

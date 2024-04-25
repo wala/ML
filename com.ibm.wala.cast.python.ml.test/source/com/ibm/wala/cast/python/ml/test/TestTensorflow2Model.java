@@ -3500,6 +3500,115 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         expectedTensorParameterValueNumbers);
   }
 
+  @Test
+  public void testClassMethod() throws ClassHierarchyException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // Class methods are only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    }
+
+    test(
+        "tf2_test_class_method.py",
+        "MyClass.the_class_method",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  @Test
+  public void testClassMethod2() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_class_method2.py", "MyClass.the_class_method", 1, 1, 3);
+  }
+
+  @Test
+  public void testClassMethod3() throws ClassHierarchyException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // Class methods are only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        "tf2_test_class_method3.py",
+        "MyClass.f",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  @Test
+  public void testClassMethod4() throws ClassHierarchyException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // Class methods are only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        "tf2_test_class_method4.py",
+        "MyClass.f",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  @Test
+  public void testClassMethod5() throws ClassHierarchyException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // Class methods are only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        "tf2_test_class_method5.py",
+        "MyClass.f",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
   private void test(
       String filename,
       String functionName,

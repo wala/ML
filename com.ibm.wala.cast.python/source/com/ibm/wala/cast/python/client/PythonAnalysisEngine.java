@@ -6,10 +6,11 @@ import com.ibm.wala.cast.ipa.callgraph.AstCFAPointerKeys;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.loader.AstDynamicField;
+import com.ibm.wala.cast.python.ipa.callgraph.PythonClassMethodTrampolineTargetSelector;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonConstructorTargetSelector;
+import com.ibm.wala.cast.python.ipa.callgraph.PythonInstanceMethodTrampolineTargetSelector;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonScopeMappingInstanceKeys;
-import com.ibm.wala.cast.python.ipa.callgraph.PythonTrampolineTargetSelector;
 import com.ibm.wala.cast.python.ipa.summaries.BuiltinFunctions;
 import com.ibm.wala.cast.python.ipa.summaries.PythonComprehensionTrampolines;
 import com.ibm.wala.cast.python.ipa.summaries.PythonSuper;
@@ -299,9 +300,10 @@ public abstract class PythonAnalysisEngine<T>
 
   protected void addBypassLogic(IClassHierarchy cha, AnalysisOptions options) {
     options.setSelector(
-        new PythonTrampolineTargetSelector<T>(
-            new PythonConstructorTargetSelector(
-                new PythonComprehensionTrampolines(options.getMethodTargetSelector())),
+        new PythonInstanceMethodTrampolineTargetSelector<T>(
+            new PythonClassMethodTrampolineTargetSelector<T>(
+                new PythonConstructorTargetSelector(
+                    new PythonComprehensionTrampolines(options.getMethodTargetSelector()))),
             this));
 
     BuiltinFunctions builtins = new BuiltinFunctions(cha);

@@ -10,6 +10,10 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.ipa.callgraph;
 
+import static com.ibm.wala.cast.python.types.Util.getGlobalName;
+import static com.ibm.wala.cast.python.types.Util.makeGlobalRef;
+
+import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.ipa.summaries.PythonInstanceMethodTrampoline;
 import com.ibm.wala.cast.python.ipa.summaries.PythonSummarizedFunction;
@@ -136,6 +140,27 @@ public class PythonConstructorTargetSelector implements MethodTargetSelector {
                         Atom.findOrCreateUnicodeAtom("$function"),
                         PythonTypes.Root)));
             pc++;
+
+            // Add a metadata variable that refers to the declaring class.
+            // NOTE: Per https://docs.python.org/3/library/functions.html#classmethod, "[i]f a class
+            // method is called for a derived class, the derived class object is passed as the
+            // implied first argument." I'm unsure whether `receiver` can refer to the derived
+            // class especially in light of https://github.com/wala/ML/issues/107.
+            int classVar = v++;
+            String globalName = getGlobalName(r);
+            FieldReference globalRef = makeGlobalRef(receiver.getClassLoader(), globalName);
+
+            ctor.addStatement(new AstGlobalRead(pc++, classVar, globalRef));
+
+            ctor.addStatement(
+                insts.PutInstruction(
+                    pc++,
+                    f,
+                    classVar,
+                    FieldReference.findOrCreate(
+                        PythonTypes.Root,
+                        Atom.findOrCreateUnicodeAtom("$class"),
+                        PythonTypes.Root)));
 
             ctor.addStatement(
                 insts.PutInstruction(
