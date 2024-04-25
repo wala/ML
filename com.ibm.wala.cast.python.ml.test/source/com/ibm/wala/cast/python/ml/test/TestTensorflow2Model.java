@@ -1,8 +1,10 @@
 package com.ibm.wala.cast.python.ml.test;
 
 import static com.ibm.wala.cast.python.util.Util.addPytestEntrypoints;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -14,6 +16,7 @@ import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuild
 import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
 import com.ibm.wala.cast.python.ml.analysis.TensorVariable;
 import com.ibm.wala.classLoader.IMethod;
+import com.ibm.wala.core.util.io.FileProvider;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.Context;
@@ -22,10 +25,14 @@ import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -35,6 +42,11 @@ import org.junit.Test;
 
 /** Test TF2 APIs. */
 public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
+
+  private static final String JAVA_CLASSPATH_SYSTEM_PROPERTY_KEY = "java.class.path";
+
+  /** Name of the Maven submodule uses for Jython3 testing. */
+  private static final String JYTHON3_TEST_PROJECT = "com.ibm.wala.cast.python.jython3.test";
 
   private static final Logger LOGGER = Logger.getLogger(TestTensorflow2Model.class.getName());
 
@@ -1489,6 +1501,1819 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_import9.py", "g", 1, 1, 2);
   }
 
+  @Test
+  public void testModule()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"tf2_test_module2.py", "tf2_test_module.py"},
+        "tf2_test_module2.py",
+        "f",
+        "",
+        1,
+        1,
+        2);
+  }
+
+  /** This test needs a PYTHONPATH that points to `proj`. */
+  @Test
+  public void testModule2()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj/src/__init__.py", "proj/src/tf2_test_module2a.py", "proj/src/tf2_test_module3.py"
+        },
+        "src/tf2_test_module2a.py",
+        "f",
+        "proj",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /** This test should not need a PYTHONPATH. */
+  @Test
+  public void testModule3()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj2/src/__init__.py", "proj2/src/tf2_test_module3a.py", "proj2/tf2_test_module4.py"
+        },
+        "src/tf2_test_module3a.py",
+        "f",
+        "proj2",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * This test should not need a PYTHONPATH, meaning that I don't need to set one in the console
+   * when I run the files.
+   */
+  @Test
+  public void testModule4()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj3/src/__init__.py",
+          "proj3/src/tf2_test_module4a.py",
+          "proj3/src/tf2_test_module6.py",
+          "proj3/tf2_test_module5.py"
+        },
+        "src/tf2_test_module4a.py",
+        "f",
+        "proj3",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+
+    test(
+        new String[] {
+          "proj3/src/__init__.py",
+          "proj3/src/tf2_test_module4a.py",
+          "proj3/src/tf2_test_module6.py",
+          "proj3/tf2_test_module5.py"
+        },
+        "src/tf2_test_module4a.py",
+        "g",
+        "proj3",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  @Test
+  public void testModule5()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"tf2_test_module4.py", "tf2_test_module3.py"},
+        "tf2_test_module4.py",
+        "C.f",
+        "",
+        1,
+        1,
+        3);
+  }
+
+  /** This test needs a PYTHONPATH that points to `proj4`. */
+  @Test
+  public void testModule6()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj4/src/__init__.py", "proj4/src/tf2_test_module4a.py", "proj4/src/tf2_test_module5.py"
+        },
+        "src/tf2_test_module4a.py",
+        "C.f",
+        "proj4",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /** This test should not need a PYTHONPATH. */
+  @Test
+  public void testModule7()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj5/src/__init__.py", "proj5/src/tf2_test_module5a.py", "proj5/tf2_test_module6.py"
+        },
+        "src/tf2_test_module5a.py",
+        "C.f",
+        "proj5",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * This test should not need a PYTHONPATH, meaning that I don't need to set one in the console
+   * when I run the files.
+   */
+  @Test
+  public void testModule8()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj6/src/__init__.py",
+          "proj6/src/tf2_test_module8a.py",
+          "proj6/src/tf2_test_module6.py",
+          "proj6/tf2_test_module7.py"
+        },
+        "src/tf2_test_module8a.py",
+        "C.f",
+        "proj6",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+
+    test(
+        new String[] {
+          "proj6/src/__init__.py",
+          "proj6/src/tf2_test_module8a.py",
+          "proj6/src/tf2_test_module6.py",
+          "proj6/tf2_test_module7.py"
+        },
+        "src/tf2_test_module8a.py",
+        "D.g",
+        "proj6",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  @Test
+  public void testModule9()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"tf2_test_module6.py", "tf2_test_module5.py"},
+        "tf2_test_module6.py",
+        "D.f",
+        "",
+        1,
+        1,
+        3);
+  }
+
+  @Test
+  public void testModule10()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"tf2_test_module8.py", "tf2_test_module9.py", "tf2_test_module7.py"},
+        "tf2_test_module9.py",
+        "D.f",
+        "",
+        1,
+        1,
+        3);
+  }
+
+  /** This test needs a PYTHONPATH that points to `proj7`. */
+  @Test
+  public void testModule11()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj7/src/__init__.py",
+          "proj7/src/tf2_test_module9a.py",
+          "proj7/src/tf2_test_module9b.py",
+          "proj7/src/tf2_test_module10.py"
+        },
+        "src/tf2_test_module9b.py",
+        "D.f",
+        "proj7",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /** This test should not need a PYTHONPATH. */
+  @Test
+  public void testModule12()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj8/src/__init__.py",
+          "proj8/src/tf2_test_module10a.py",
+          "proj8/src/tf2_test_module10b.py",
+          "proj8/tf2_test_module11.py"
+        },
+        "src/tf2_test_module10b.py",
+        "D.f",
+        "proj8",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /** This test should not need a PYTHONPATH. */
+  @Test
+  public void testModule13()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj9/src/__init__.py",
+          "proj9/src/tf2_test_module11a.py",
+          "proj9/src/tf2_test_module11b.py",
+          "proj9/tf2_test_module12.py"
+        },
+        "src/tf2_test_module11b.py",
+        "D.g",
+        "proj9",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/177.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule14()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj10/C/__init__.py", "proj10/C/B.py", "proj10/A.py"},
+        "C/B.py",
+        "f",
+        "proj10",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule15()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj11/C/__init__.py", "proj11/C/B.py", "proj11/A.py"},
+        "C/B.py",
+        "f",
+        "proj11",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /** This test should not need a PYTHONPATH. */
+  @Test
+  public void testModule16()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj12/C/__init__.py", "proj12/C/B.py", "proj12/A.py"},
+        "C/B.py",
+        "f",
+        "proj12",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178. Multi-submodule case. See
+   * https://docs.python.org/3/tutorial/modules.html#packages.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule17()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj13/C/__init__.py", "proj13/C/D/__init__.py", "proj13/C/D/B.py", "proj13/A.py"
+        },
+        "C/D/B.py",
+        "f",
+        "proj13",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178. Multi-submodule case. See
+   * https://docs.python.org/3/tutorial/modules.html#packages. This test has multiple modules in
+   * different packages.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule18()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj14/C/__init__.py",
+          "proj14/C/E.py",
+          "proj14/C/D/__init__.py",
+          "proj14/C/D/B.py",
+          "proj14/A.py"
+        },
+        "C/D/B.py",
+        "f",
+        "proj14",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+
+    test(
+        new String[] {
+          "proj14/C/__init__.py",
+          "proj14/C/E.py",
+          "proj14/C/D/__init__.py",
+          "proj14/C/D/B.py",
+          "proj14/A.py"
+        },
+        "C/E.py",
+        "g",
+        "proj14",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/177.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule19()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj15/C/__init__.py", "proj15/C/D/__init__.py", "proj15/C/D/B.py", "proj15/A.py"
+        },
+        "C/D/B.py",
+        "f",
+        "proj15",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule20()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj16/C/__init__.py", "proj16/C/B.py", "proj16/A.py"},
+        "C/B.py",
+        "D.f",
+        "proj16",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule21()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj17/C/__init__.py", "proj17/C/E/__init__.py", "proj17/C/E/B.py", "proj17/A.py"
+        },
+        "C/E/B.py",
+        "D.f",
+        "proj17",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/177.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule22()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(new String[] {"proj18/B.py", "proj18/A.py"}, "B.py", "f", "proj18", 1, 1, new int[] {2});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/177.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule23()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj19/C/__init__.py",
+          "proj19/C/D/__init__.py",
+          "proj19/C/D/E/__init__.py",
+          "proj19/C/D/E/B.py",
+          "proj19/A.py"
+        },
+        "C/D/E/B.py",
+        "f",
+        "proj19",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/177.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule24()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"tf2_test_module11.py", "tf2_test_module10.py"},
+        "tf2_test_module11.py",
+        "f",
+        "",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/177.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule25()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(new String[] {"proj20/B.py", "proj20/A.py"}, "B.py", "C.f", "proj20", 1, 1, new int[] {3});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/177.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule26()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"tf2_test_module13.py", "tf2_test_module12.py"},
+        "tf2_test_module13.py",
+        "C.f",
+        "",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule27()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj21/C/__init__.py",
+          "proj21/C/D/__init__.py",
+          "proj21/C/E.py",
+          "proj21/C/D/B.py",
+          "proj21/A.py"
+        },
+        "C/D/B.py",
+        "F.f",
+        "proj21",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+
+    test(
+        new String[] {
+          "proj21/C/__init__.py",
+          "proj21/C/D/__init__.py",
+          "proj21/C/E.py",
+          "proj21/C/D/B.py",
+          "proj21/A.py"
+        },
+        "C/E.py",
+        "G.g",
+        "proj21",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/177.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule28()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj22/C/__init__.py", "proj22/C/B.py", "proj22/A.py"},
+        "C/B.py",
+        "D.f",
+        "proj22",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule29()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj23/C/__init__.py", "proj23/C/B.py", "proj23/A.py"},
+        "C/B.py",
+        "f",
+        "proj23",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule30()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj24/C/__init__.py", "proj24/C/B.py", "proj24/A.py"},
+        "C/B.py",
+        "D.f",
+        "proj24",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule31()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj25/C/__init__.py", "proj25/C/E/__init__.py", "proj25/C/E/B.py", "proj25/A.py"
+        },
+        "C/E/B.py",
+        "D.f",
+        "proj25",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule32()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj26/C/__init__.py", "proj26/C/B.py", "proj26/A.py"},
+        "C/B.py",
+        "D.f",
+        "proj26",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule33()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj27/C/__init__.py", "proj27/C/D/__init__.py", "proj27/C/D/B.py", "proj27/A.py"
+        },
+        "C/D/B.py",
+        "f",
+        "proj27",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule34()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj28/C/__init__.py", "proj28/C/D/__init__.py", "proj28/C/D/B.py", "proj28/A.py"
+        },
+        "C/D/B.py",
+        "E.f",
+        "proj28",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule35()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj29/C/__init__.py", "proj29/C/B.py", "proj29/A.py"},
+        "C/B.py",
+        "f",
+        "proj29",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test for https://github.com/wala/ML/issues/178.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule36()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj30/C/__init__.py", "proj30/C/B.py", "proj30/A.py"},
+        "C/B.py",
+        "f",
+        "proj30",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule37()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+    test(
+        new String[] {"proj31/C/__init__.py", "proj31/C/B.py", "proj31/C/A.py", "proj31/main.py"},
+        "C/B.py",
+        "f",
+        "proj31",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule38()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj32/C/__init__.py", "proj32/C/B.py", "proj32/C/A.py", "proj32/main.py"},
+        "C/B.py",
+        "f",
+        "proj32",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule39()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj33/C/__init__.py", "proj33/C/B.py", "proj33/C/A.py", "proj33/main.py"},
+        "C/B.py",
+        "D.f",
+        "proj33",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule40()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj34/C/__init__.py", "proj34/C/B.py", "proj34/C/A.py", "proj34/main.py"},
+        "C/B.py",
+        "D.f",
+        "proj34",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule41()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj35/E/__init__.py",
+          "proj35/E/C/__init__.py",
+          "proj35/E/D/__init__.py",
+          "proj35/E/D/B.py",
+          "proj35/E/C/A.py",
+          "proj35/main.py"
+        },
+        "E/D/B.py",
+        "f",
+        "proj35",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule42()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj36/E/__init__.py",
+          "proj36/E/C/__init__.py",
+          "proj36/E/D/__init__.py",
+          "proj36/E/D/B.py",
+          "proj36/E/C/A.py",
+          "proj36/main.py"
+        },
+        "E/D/B.py",
+        "F.f",
+        "proj36",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule43()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj37/E/__init__.py",
+          "proj37/E/C/__init__.py",
+          "proj37/E/D/__init__.py",
+          "proj37/E/D/B.py",
+          "proj37/E/C/A.py",
+          "proj37/main.py"
+        },
+        "E/D/B.py",
+        "F.f",
+        "proj37",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule44()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj38/E/__init__.py",
+          "proj38/E/C/__init__.py",
+          "proj38/E/D/__init__.py",
+          "proj38/E/D/B.py",
+          "proj38/E/C/A.py",
+          "proj38/main.py"
+        },
+        "E/D/B.py",
+        "f",
+        "proj38",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test relative imports using wildcards.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule45()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj39/C/__init__.py", "proj39/C/B.py", "proj39/C/A.py", "proj39/main.py"},
+        "C/B.py",
+        "f",
+        "proj39",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test relative imports using wildcards.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule46()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj40/C/__init__.py", "proj40/C/B.py", "proj40/C/A.py", "proj40/main.py"},
+        "C/B.py",
+        "f",
+        "proj40",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test relative imports using wildcards.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule47()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj41/C/__init__.py", "proj41/C/B.py", "proj41/C/A.py", "proj41/main.py"},
+        "C/B.py",
+        "D.f",
+        "proj41",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test relative imports using wildcards.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule48()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {"proj42/C/__init__.py", "proj42/C/B.py", "proj42/C/A.py", "proj42/main.py"},
+        "C/B.py",
+        "D.f",
+        "proj42",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test relative imports using wildcards.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule49()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj43/E/__init__.py",
+          "proj43/E/C/__init__.py",
+          "proj43/E/D/__init__.py",
+          "proj43/E/D/B.py",
+          "proj43/E/C/A.py",
+          "proj43/main.py"
+        },
+        "E/D/B.py",
+        "f",
+        "proj43",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test relative imports using wildcards.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule50()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj44/E/__init__.py",
+          "proj44/E/C/__init__.py",
+          "proj44/E/D/__init__.py",
+          "proj44/E/D/B.py",
+          "proj44/E/C/A.py",
+          "proj44/main.py"
+        },
+        "E/D/B.py",
+        "F.f",
+        "proj44",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test relative imports using wildcards.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule51()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {3};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj45/E/__init__.py",
+          "proj45/E/C/__init__.py",
+          "proj45/E/D/__init__.py",
+          "proj45/E/D/B.py",
+          "proj45/E/C/A.py",
+          "proj45/main.py"
+        },
+        "E/D/B.py",
+        "F.f",
+        "proj45",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test relative imports using wildcards.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule52()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj46/E/__init__.py",
+          "proj46/E/C/__init__.py",
+          "proj46/E/D/__init__.py",
+          "proj46/E/D/B.py",
+          "proj46/E/C/A.py",
+          "proj46/main.py"
+        },
+        "E/D/B.py",
+        "f",
+        "proj46",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test relative imports.
+   *
+   * <p>This test should not need a PYTHONPATH.
+   */
+  @Test
+  public void testModule53()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj47/E/__init__.py",
+          "proj47/D/__init__.py",
+          "proj47/E/C/__init__.py",
+          "proj47/E/D/__init__.py",
+          "proj47/E/D/B.py",
+          "proj47/E/C/A.py",
+          "proj47/D/B.py",
+          "proj47/main.py"
+        },
+        "E/D/B.py",
+        "f",
+        "proj47",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+
+    test(
+        new String[] {
+          "proj47/E/__init__.py",
+          "proj47/D/__init__.py",
+          "proj47/E/C/__init__.py",
+          "proj47/E/D/__init__.py",
+          "proj47/E/D/B.py",
+          "proj47/E/C/A.py",
+          "proj47/D/B.py",
+          "proj47/main.py"
+        },
+        "D/B.py",
+        "g",
+        "proj47",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
   private void test(
       String filename,
       String functionName,
@@ -1496,7 +3321,27 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
       int expectedNumberOfTensorVariables,
       int... expectedTensorParameterValueNumbers)
       throws ClassHierarchyException, CancelException, IOException {
-    PythonAnalysisEngine<TensorTypeAnalysis> E = makeEngine(filename);
+    test(
+        new String[] {filename},
+        filename,
+        functionName,
+        "",
+        expectedNumberOfTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  private void test(
+      String[] projectFilenames,
+      String filename,
+      String functionName,
+      String pythonPath,
+      int expectedNumberOfTensorParameters,
+      int expectedNumberOfTensorVariables,
+      int... expectedTensorParameterValueNumbers)
+      throws ClassHierarchyException, CancelException, IOException {
+    List<File> pathFiles = this.getPathFiles(pythonPath);
+    PythonAnalysisEngine<TensorTypeAnalysis> E = makeEngine(pathFiles, projectFilenames);
     PythonSSAPropagationCallGraphBuilder builder = E.defaultCallGraphBuilder();
 
     addPytestEntrypoints(builder);
@@ -1560,7 +3405,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
           } else LOGGER.warning(() -> "Encountered: " + pointerKey.getClass());
         });
 
-    final String functionSignature = "script " + filename + "." + functionName + ".do()LRoot;";
+    final String functionSignature =
+        "script " + filename.replace('/', '.') + "." + functionName + ".do()LRoot;";
 
     // get the tensor variables for the function.
     Set<TensorVariable> functionTensorVariables =
@@ -1608,5 +3454,49 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
                       "Expecting " + actualParameterValueNumberSet + " to contain " + ev + ".",
                       actualParameterValueNumberSet.contains(ev)));
     }
+  }
+
+  /**
+   * Extracts a {@link List} of {@link File}s from the given {@link String} representing a list of
+   * paths. Each path is separated by a colon.
+   *
+   * @param string A colon-separated list of paths.
+   * @return {@link List} of {@link File}s constructed by parsing the given {@link String}.
+   */
+  private List<File> getPathFiles(String string) {
+    if (string == null || string.isEmpty() || string.isBlank()) return emptyList();
+
+    return Arrays.asList(string.split(":")).stream()
+        .map(
+            s -> {
+              File f = new File(s);
+
+              if (f.exists()) return f;
+
+              try {
+                URL url = new URL(s);
+                return new File(new FileProvider().filePathFromURL(url));
+              } catch (MalformedURLException e) {
+                try {
+                  URL resource = this.getClass().getResource("/" + string);
+                  String path = resource.getPath();
+                  return new File(path);
+                } catch (Exception e1) {
+                  throw new RuntimeException(e1);
+                }
+              }
+            })
+        .collect(toList());
+  }
+
+  /**
+   * Returns true iff Jython3 is used for testing.
+   *
+   * @return True iff Jython3 is used for testing.
+   */
+  protected static boolean usesJython3Testing() {
+    String classpath = System.getProperty(JAVA_CLASSPATH_SYSTEM_PROPERTY_KEY);
+    String[] classpathEntries = classpath.split(File.pathSeparator);
+    return Arrays.stream(classpathEntries).anyMatch(cpe -> cpe.contains(JYTHON3_TEST_PROJECT));
   }
 }

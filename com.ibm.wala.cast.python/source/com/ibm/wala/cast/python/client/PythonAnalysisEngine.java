@@ -1,5 +1,7 @@
 package com.ibm.wala.cast.python.client;
 
+import static java.util.Collections.emptyList;
+
 import com.ibm.wala.cast.ipa.callgraph.AstCFAPointerKeys;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
@@ -60,9 +62,12 @@ import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.WalaException;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -103,16 +108,22 @@ public abstract class PythonAnalysisEngine<T>
 
   private final IRFactory<IMethod> irs = AstIRFactory.makeDefaultFactory();
 
-  public PythonAnalysisEngine() {
-    super();
+  public PythonAnalysisEngine(List<File> pythonPath) {
     PythonLoaderFactory f;
     try {
-      f = loaders.newInstance();
-    } catch (InstantiationException | IllegalAccessException e) {
+      f = loaders.getConstructor(java.util.List.class).newInstance(pythonPath);
+    } catch (InstantiationException
+        | IllegalAccessException
+        | InvocationTargetException
+        | NoSuchMethodException e) {
       f = null;
       assert false : e.getMessage();
     }
     loader = f;
+  }
+
+  public PythonAnalysisEngine() {
+    this(emptyList());
   }
 
   @Override

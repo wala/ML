@@ -41,6 +41,7 @@ import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.types.annotations.Annotation;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -207,12 +208,31 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
   final CoreClass iterator =
       new CoreClass(PythonTypes.iterator.getName(), PythonTypes.object.getName(), this, null);
 
+  /**
+   * The <a href="https://docs.python.org/3/using/cmdline.html#envvar-PYTHONPATH">PYTHONPATH</a> to
+   * use in the analysis.
+   *
+   * @apiNote PYTHONPATH is currently only supported for Python 3.
+   * @see https://docs.python.org/3/tutorial/modules.html#the-module-search-path.
+   */
+  protected List<File> pythonPath;
+
   public PythonLoader(IClassHierarchy cha, IClassLoader parent) {
     super(cha, parent);
   }
 
+  public PythonLoader(IClassHierarchy cha, IClassLoader parent, List<File> pythonPath) {
+    super(cha, parent);
+    this.pythonPath = pythonPath;
+  }
+
   public PythonLoader(IClassHierarchy cha) {
     super(cha);
+  }
+
+  public PythonLoader(IClassHierarchy cha, List<File> pythonPath) {
+    super(cha);
+    this.pythonPath = pythonPath;
   }
 
   public IClass makeMethodBodyType(
@@ -410,5 +430,26 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
                 return false;
               }
             });
+  }
+
+  /**
+   * Return this {@link PythonLoader}'s {@link IClassHierarchy}.
+   *
+   * @return this {@link PythonLoader}'s {@link IClassHierarchy}.
+   */
+  public IClassHierarchy getClassHierarchy() {
+    return this.cha;
+  }
+
+  /**
+   * Gets the <a
+   * href="https://docs.python.org/3/using/cmdline.html#envvar-PYTHONPATH">PYTHONPATH</a> to use in
+   * the analysis.
+   *
+   * @apiNote PYTHONPATH is currently only supported for Python 3.
+   * @see https://docs.python.org/3/tutorial/modules.html#the-module-search-path.
+   */
+  public List<File> getPythonPath() {
+    return pythonPath;
   }
 }
