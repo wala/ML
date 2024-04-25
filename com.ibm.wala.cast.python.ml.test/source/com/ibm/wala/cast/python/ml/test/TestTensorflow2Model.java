@@ -1523,7 +1523,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -1555,7 +1555,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -1590,7 +1590,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -1652,7 +1652,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -1684,7 +1684,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -1719,7 +1719,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -1795,7 +1795,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -1830,7 +1830,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -1865,7 +1865,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -1904,7 +1904,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -1938,7 +1938,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -1968,7 +1968,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -2003,7 +2003,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -2041,7 +2041,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -2096,7 +2096,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -2132,7 +2132,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -2166,7 +2166,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -2213,7 +2213,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -2300,7 +2300,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -2355,7 +2355,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -2389,7 +2389,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -2423,7 +2423,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -2457,7 +2457,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -2493,7 +2493,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -2527,7 +2527,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -2563,7 +2563,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -2599,7 +2599,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -2633,7 +2633,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -2667,7 +2667,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -2700,7 +2700,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -2734,7 +2734,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -2768,7 +2768,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -2802,7 +2802,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -2843,7 +2843,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -2884,7 +2884,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -2925,7 +2925,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -2966,7 +2966,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -3000,7 +3000,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -3034,7 +3034,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -3068,7 +3068,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -3102,7 +3102,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -3143,7 +3143,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -3184,7 +3184,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {3};
@@ -3225,7 +3225,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -3266,7 +3266,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     int[] expectedTensorParameterValueNumbers;
 
     // PYTHONPATH is only supported for Jython3.
-    if (getUsesJython3Testing()) {
+    if (usesJython3Testing()) {
       expectNumberofTensorParameters = 1;
       expectedNumberOfTensorVariables = 1;
       expectedTensorParameterValueNumbers = new int[] {2};
@@ -3494,7 +3494,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    *
    * @return True iff Jython3 is used for testing.
    */
-  protected static boolean getUsesJython3Testing() {
+  protected static boolean usesJython3Testing() {
     String classpath = System.getProperty(JAVA_CLASSPATH_SYSTEM_PROPERTY_KEY);
     String[] classpathEntries = classpath.split(File.pathSeparator);
     return Arrays.stream(classpathEntries).anyMatch(cpe -> cpe.contains(JYTHON3_TEST_PROJECT));
