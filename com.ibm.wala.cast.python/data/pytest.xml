@@ -10,6 +10,8 @@
         <putfield class="LRoot" field="mark" fieldType="LRoot" ref="x" value="mark" />
         <new def="parametrize" class="Lpytest/class/parametrize" />
         <putfield class="LRoot" field="parametrize" fieldType="LRoot" ref="mark" value="parametrize" />
+        <new def="skip" class="Lpytest/class/skip" />
+        <putfield class="LRoot" field="skip" fieldType="LRoot" ref="mark" value="skip" />
         <return value="x" />
       </method>
     </class>
@@ -26,6 +28,21 @@
           <putfield class="LRoot" field="test" fieldType="LRoot" ref="closure" value="self" />
           <putfield class="LRoot" field="params" fieldType="LRoot" ref="closure" value="params" />
           <putfield class="LRoot" field="values" fieldType="LRoot" ref="closure" value="values" />
+          <return value="closure" />
+        </method>
+      </class>
+      <class name="Skip" allocatable="true">
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self test">
+          <putfield class="LRoot" field="params" fieldType="LRoot" ref="test" value="self" />
+          <return value="test" />
+        </method>
+      </class>
+      <class name="skip" allocatable="true">
+        <!-- https://docs.pytest.org/en/8.2.x/reference/reference.html#pytest.mark.skip -->
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self reason">
+          <new def="closure" class="Lpytest/class/Skip" />
+          <putfield class="LRoot" field="test" fieldType="LRoot" ref="closure" value="self" />
+          <putfield class="LRoot" field="params" fieldType="LRoot" ref="closure" value="reason" />
           <return value="closure" />
         </method>
       </class>

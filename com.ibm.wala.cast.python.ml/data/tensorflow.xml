@@ -276,7 +276,7 @@
       </class>
       <class name="function" allocatable="true">
         <!-- These parameters are from TensorFlow v.2.9 https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/function -->
-        <method name="do" descriptor="()LRoot;" numArgs="10" paramNames="func input_signature autograph jit_compile reduce_retracing experimental_implements experimental_autograph_options experimental_relax_shapes experimental_compile experimental_follow_type_hints">
+        <method name="do" descriptor="()LRoot;" numArgs="11" paramNames="self func input_signature autograph jit_compile reduce_retracing experimental_implements experimental_autograph_options experimental_relax_shapes experimental_compile experimental_follow_type_hints">
           <new def="params" class="Ltensorflow/class/Function" />
           <putfield class="LRoot" field="func" fieldType="LRoot" ref="params" value="func" />
           <putfield class="LRoot" field="input_signature" fieldType="LRoot" ref="params" value="input_signature" />
