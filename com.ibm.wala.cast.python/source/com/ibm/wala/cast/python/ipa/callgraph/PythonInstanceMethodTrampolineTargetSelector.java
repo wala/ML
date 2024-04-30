@@ -73,9 +73,9 @@ public class PythonInstanceMethodTrampolineTargetSelector<T>
   private PythonAnalysisEngine<T> engine;
 
   public PythonInstanceMethodTrampolineTargetSelector(
-      MethodTargetSelector base, PythonAnalysisEngine<T> pythonAnalysisEngine) {
+      MethodTargetSelector base, PythonAnalysisEngine<T> engine) {
     super(base);
-    this.engine = pythonAnalysisEngine;
+    this.engine = engine;
   }
 
   @Override
