@@ -1,7 +1,7 @@
 package com.ibm.wala.cast.python.loader;
 
 import static com.ibm.wala.cast.python.types.PythonTypes.pythonLoader;
-import static com.ibm.wala.cast.python.util.Util.getNames;
+import static com.ibm.wala.cast.python.util.Util.getNameStream;
 import static java.util.stream.Collectors.toList;
 
 import com.ibm.wala.cast.ir.translator.AstTranslator.AstLexicalInformation;
@@ -80,7 +80,7 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
       // fill in the decorators.
       // FIXME: Process annotations with parameters.
       this.annotations =
-          getNames(entity.getAnnotations()).stream()
+          getNameStream(entity.getAnnotations())
               .map(s -> "L" + s)
               .map(TypeName::findOrCreate)
               .map(tn -> TypeReference.findOrCreate(pythonLoader, tn))
