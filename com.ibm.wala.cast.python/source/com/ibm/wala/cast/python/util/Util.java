@@ -15,12 +15,13 @@ import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.ipa.callgraph.Entrypoint;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 public class Util {
 
@@ -70,27 +71,48 @@ public class Util {
   }
 
   /**
-   * Returns a {@link Stream} of annotation (decorator) names as {@link String}s from the given
-   * {@link Collection} of {@link CAstAnnotation}s.
+   * Returns a {@link Collection} of annotation (decorator) names as {@link String}s from the given
+   * {@link Collection} of {@link CAstAnnotation}s. The decorator names may be dot (.)-separated.
    *
    * @param annotations A {@link Collection} of {@link CAstAnnotation} for which to stream
    *     annotation (decorator) names.
-   * @return A {@link Stream} of names as {@link String}s corresponding to the given annotations
+   * @return A {@link Collection} of names as {@link String}s corresponding to the given annotations
    *     (decorators).
+   * @implNote The decorator names may not be fully-qualified. They are returned here as they are
+   *     presented in the CAst.
    */
-  public static Stream<String> getNameStream(Collection<CAstAnnotation> annotations) {
-    if (annotations == null) return Stream.empty();
+  public static Collection<String> getNames(Collection<CAstAnnotation> annotations) {
+    return annotations.stream().map(Util::getName).flatMap(Optional::stream).toList();
+  }
 
-    return annotations.stream()
-        .filter(a -> a.getType().equals(CAST_DYNAMIC_ANNOTATION))
-        .map(a -> a.getArguments().get(DYNAMIC_ANNOTATION_KEY))
-        .filter(Objects::nonNull)
-        .map(CAstNode.class::cast)
-        .map(n -> n.getChild(0))
-        .map(n -> n.getChild(0))
-        .map(CAstNode::getValue)
-        .filter(v -> v instanceof String)
-        .map(String.class::cast);
+  public static Optional<String> getName(CAstAnnotation annotation) {
+    if (annotation.getType().equals(CAST_DYNAMIC_ANNOTATION)) {
+      CAstNode node = (CAstNode) annotation.getArguments().get(DYNAMIC_ANNOTATION_KEY);
+      List<String> decoratorSegments = getDecoratorSegments(node.getChild(0));
+      String decoratorName = decoratorSegments.stream().collect(Collectors.joining("."));
+      return Optional.of(decoratorName);
+    }
+
+    return Optional.empty();
+  }
+
+  private static List<String> getDecoratorSegments(CAstNode node) {
+    List<String> ret = new ArrayList<>();
+
+    if (node != null) {
+      List<CAstNode> children = node.getChildren();
+
+      for (CAstNode child : children) {
+        List<String> childDecoratorSegments = getDecoratorSegments(child);
+        ret.addAll(childDecoratorSegments);
+      }
+
+      Object value = node.getValue();
+
+      if (value != null && value instanceof String) ret.add((String) value);
+    }
+
+    return ret;
   }
 
   /**
