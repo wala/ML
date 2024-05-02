@@ -3627,14 +3627,14 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
   @Test
   public void testDecoratedMethod2() throws ClassHierarchyException, CancelException, IOException {
-    // NOTE: Change to 1, 1, 2 once https://github.com/wala/ML/issues/188 is fixed.
-    test("tf2_test_decorated_method2.py", "f", 0, 0);
+    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
+    test("tf2_test_decorated_method2.py", "f", 1, 1, 2);
   }
 
   @Test
   public void testDecoratedMethod3() throws ClassHierarchyException, CancelException, IOException {
-    // NOTE: Change to 1, 1, 2 once https://github.com/wala/ML/issues/190 is fixed.
-    test("tf2_test_decorated_method3.py", "raffi", 0, 0);
+    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
+    test("tf2_test_decorated_method3.py", "raffi", 1, 1, 2);
   }
 
   @Test
@@ -3665,13 +3665,14 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   /** This decorator isn't defined. Thus, we shouldn't have a CG node for it. */
   @Test
   public void testDecoratedMethod9() throws ClassHierarchyException, CancelException, IOException {
-    test("tf2_test_decorated_method9.py", "f", 0, 0);
+    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
+    test("tf2_test_decorated_method9.py", "f", 1, 1, 2);
   }
 
   @Test
   public void testDecoratedMethod10() throws ClassHierarchyException, CancelException, IOException {
-    // NOTE: Change to 1, 1, 2 once https://github.com/wala/ML/issues/190 is fixed.
-    test("tf2_test_decorated_method10.py", "f", 0, 0);
+    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
+    test("tf2_test_decorated_method10.py", "f", 1, 1, 2);
   }
 
   @Test
@@ -3681,14 +3682,14 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
   @Test
   public void testDecoratedMethod12() throws ClassHierarchyException, CancelException, IOException {
-    // NOTE: Change to 1, 1, 2 once https://github.com/wala/ML/issues/188 is fixed.
-    test("tf2_test_decorated_method12.py", "f", 0, 0);
+    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
+    test("tf2_test_decorated_method12.py", "f", 1, 1, 2);
   }
 
   @Test
   public void testDecoratedMethod13() throws ClassHierarchyException, CancelException, IOException {
-    // NOTE: Change to 1, 1, 2 once https://github.com/wala/ML/issues/190 is fixed.
-    test("tf2_test_decorated_method13.py", "f", 0, 0);
+    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
+    test("tf2_test_decorated_method13.py", "f", 1, 1, 2);
   }
 
   @Test
