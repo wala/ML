@@ -522,6 +522,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
                 LOGGER.finer("Mapping: " + m + " to instructions.");
 
                 List<File> pythonPath = loader.getPythonPath();
+                LOGGER.finer("PYTHONPATH is: " + pythonPath);
 
                 for (File pathEntry : pythonPath) {
                   Path path = Path.of(m.getURL().getFile());
