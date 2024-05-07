@@ -522,13 +522,13 @@ public class PythonCAstToIRTranslator extends AstTranslator {
                 LOGGER.finer("Mapping: " + m + " to instructions.");
 
                 List<File> pythonPath = loader.getPythonPath();
-                LOGGER.finer("PYTHONPATH is: " + pythonPath);
+                LOGGER.finest("PYTHONPATH is: " + pythonPath);
 
                 Path path = Path.of(m.getURL().getFile());
                 LOGGER.finer("Found module path: " + path + ".");
 
                 for (File pathEntry : pythonPath) {
-                  LOGGER.finer("Path entry is:" + pathEntry);
+                  LOGGER.finest("Path entry is:" + pathEntry);
 
                   if (path.startsWith(pathEntry.toPath())) {
                     // Found it.
