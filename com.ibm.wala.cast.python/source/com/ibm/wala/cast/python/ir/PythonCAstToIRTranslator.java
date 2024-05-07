@@ -537,16 +537,18 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
                     // Get the package name.
                     Path packagePath = scriptRelativePath.getParent();
+                    List<SSAInstruction> instructions = new ArrayList<SSAInstruction>(2);
+
+                    if (packagePath == null) {
+                      // it must be a top-level module. I don't think we need the extra instructions
+                      // in this case.
+                      LOGGER.finer("Found top-level module; no extra instructions needed.");
+                      return instructions;
+                    }
+
                     LOGGER.fine("Package path is: " + packagePath + ".");
-
-                    if (packagePath == null)
-                      throw new IllegalStateException(
-                          "Can't get package path for relativized script path: "
-                              + scriptRelativePath);
-
                     LOGGER.finer("Mapping fields for package: " + packagePath + ".");
 
-                    List<SSAInstruction> instructions = new ArrayList<SSAInstruction>(2);
                     int res = 0;
 
                     // Don't add a redundant global read for `__init__.py` for `moduleName`.
