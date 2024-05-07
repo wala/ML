@@ -528,6 +528,8 @@ public class PythonCAstToIRTranslator extends AstTranslator {
                 LOGGER.finer("Found module path: " + path + ".");
 
                 for (File pathEntry : pythonPath) {
+                  LOGGER.finer("Path entry is:" + pathEntry);
+
                   if (path.startsWith(pathEntry.toPath())) {
                     // Found it.
                     Path scriptRelativePath = pathEntry.toPath().relativize(path);
