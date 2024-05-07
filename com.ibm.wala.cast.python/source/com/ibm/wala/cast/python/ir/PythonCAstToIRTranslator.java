@@ -539,6 +539,11 @@ public class PythonCAstToIRTranslator extends AstTranslator {
                     Path packagePath = scriptRelativePath.getParent();
                     LOGGER.fine("Package path is: " + packagePath + ".");
 
+                    if (packagePath == null)
+                      throw new IllegalStateException(
+                          "Can't get package path for relativized script path: "
+                              + scriptRelativePath);
+
                     LOGGER.finer("Mapping fields for package: " + packagePath + ".");
 
                     List<SSAInstruction> instructions = new ArrayList<SSAInstruction>(2);
