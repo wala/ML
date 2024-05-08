@@ -85,6 +85,7 @@
         <putfield class="LRoot" field="random" fieldType="LRoot" ref="Dataset" value="dsrandom" />
         <new def="from_tensors" class="Ltensorflow/data/Dataset/from_tensors" />
         <putfield class="LRoot" field="from_tensors" fieldType="LRoot" ref="Dataset" value="from_tensors" />
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/reshape -->
         <new def="reshape" class="Ltensorflow/functions/reshape" />
         <putfield class="LRoot" field="reshape" fieldType="LRoot" ref="x" value="reshape" />
         <new def="conv2d" class="Ltensorflow/functions/conv2d" />
@@ -399,11 +400,12 @@
         </method>
       </class>
       <class name="reshape" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/reshape -->
         <method name="copy_data" descriptor="()LRoot;">
           <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset" />
           <return value="x" />
         </method>
-        <method name="do" descriptor="()LRoot;" numArgs="3">
+        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="tensor shape name">
           <call class="LRoot" name="copy_data" descriptor="()LRoot;" type="virtual" arg0="arg0" def="x" />
           <return value="x" />
         </method>
