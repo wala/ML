@@ -401,12 +401,9 @@
       </class>
       <class name="reshape" allocatable="true">
         <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/reshape -->
-        <method name="copy_data" descriptor="()LRoot;">
-          <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset" />
-          <return value="x" />
-        </method>
-        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="tensor shape name">
-          <call class="LRoot" name="copy_data" descriptor="()LRoot;" type="virtual" arg0="arg0" def="x" />
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="input name">
+          <new def="z" class="Ltensorflow/functions/convert_to_tensor" />
+          <call class="Ltensorflow/functions/convert_to_tensor" name="do" descriptor="()LRoot;" type="virtual" arg0="z" arg1="input" def="x" />
           <return value="x" />
         </method>
       </class>

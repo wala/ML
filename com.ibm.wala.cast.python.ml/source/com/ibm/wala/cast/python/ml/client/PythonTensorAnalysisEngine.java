@@ -632,7 +632,9 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
     }
 
     Map<PointsToSetVariable, TensorType> shapeOps = HashMapFactory.make();
-    shapeOps.putAll(handleShapeSourceOp(builder, dataflow, reshape, 2));
+
+    // Don't handle shape source operations for now to workaround
+    // https://github.com/wala/ML/issues/195.
 
     Set<PointsToSetVariable> conv2ds = getKeysDefinedByCall(conv2d, builder);
 
