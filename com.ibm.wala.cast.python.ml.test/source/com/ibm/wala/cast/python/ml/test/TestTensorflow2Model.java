@@ -3619,6 +3619,11 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_reshape2.py", "f", 1, 1, 2);
   }
 
+  @Test
+  public void testReshape3() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_reshape3.py", "f", 1, 1, 2);
+  }
+
   private void test(
       String filename,
       String functionName,
