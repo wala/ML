@@ -54,6 +54,12 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
     checkTensorOps(
         Ex1URL,
         (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
+          CAstCallGraphUtil.AVOID_DUMP = false;
+          CAstCallGraphUtil.dumpCG(
+              (SSAContextInterpreter) cgBuilder.getContextInterpreter(),
+              cgBuilder.getPointerAnalysis(),
+              CG);
+
           String in = "[{[D:Symbolic,n, D:Compound,[D:Constant,28, D:Constant,28]] of pixel}]";
           String out = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
           checkTensorOp(cgBuilder, CG, result, "reshape", in, out);
