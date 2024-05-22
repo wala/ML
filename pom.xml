@@ -34,7 +34,6 @@
     <maven.surefire.version>3.0.0-M7</maven.surefire.version>
     <parallel>both</parallel>
     <logging.config.file>${maven.multiModuleProjectDirectory}/logging.properties</logging.config.file>
-    <black.version>24.3.0</black.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -199,18 +198,6 @@
                 <expandEmptyElements>false</expandEmptyElements>
               </sortPom>
             </pom>
-            <python>
-              <includes>
-                <include>**/*.py</include>
-              </includes>
-              <excludes>
-                <exclude>**/target/</exclude>
-                <exclude>**/bin/</exclude>
-              </excludes>
-              <black>
-                <version>${black.version}</version>
-              </black>
-            </python>
           </configuration>
         </plugin>
       </plugins>
