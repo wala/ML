@@ -23,7 +23,6 @@ public abstract class PythonMethodTrampolineTargetSelector<T> implements MethodT
   protected final Map<Pair<IClass, Integer>, IMethod> codeBodies = HashMapFactory.make();
 
   public PythonMethodTrampolineTargetSelector(MethodTargetSelector base) {
-    super();
     this.base = base;
   }
 
