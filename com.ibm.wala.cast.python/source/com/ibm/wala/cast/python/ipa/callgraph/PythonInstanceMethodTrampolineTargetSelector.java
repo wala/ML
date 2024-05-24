@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 public class PythonInstanceMethodTrampolineTargetSelector<T>
     extends PythonMethodTrampolineTargetSelector<T> {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       Logger.getLogger(PythonInstanceMethodTrampolineTargetSelector.class.getName());
 
   /**
@@ -73,9 +73,9 @@ public class PythonInstanceMethodTrampolineTargetSelector<T>
   private PythonAnalysisEngine<T> engine;
 
   public PythonInstanceMethodTrampolineTargetSelector(
-      MethodTargetSelector base, PythonAnalysisEngine<T> pythonAnalysisEngine) {
+      MethodTargetSelector base, PythonAnalysisEngine<T> engine) {
     super(base);
-    this.engine = pythonAnalysisEngine;
+    this.engine = engine;
   }
 
   @Override
@@ -88,7 +88,7 @@ public class PythonInstanceMethodTrampolineTargetSelector<T>
   @Override
   public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
     if (isCallable(receiver)) {
-      logger.fine("Encountered callable.");
+      LOGGER.fine("Encountered callable.");
 
       PythonInvokeInstruction call = this.getCall(caller, site);
 
@@ -96,7 +96,7 @@ public class PythonInstanceMethodTrampolineTargetSelector<T>
       receiver = getCallable(caller, receiver.getClassHierarchy(), call);
 
       if (receiver == null) return null; // not found.
-      else logger.fine("Substituting the receiver with one derived from a callable.");
+      else LOGGER.fine("Substituting the receiver with one derived from a callable.");
     }
 
     return super.getCalleeTarget(caller, site, receiver);
@@ -243,7 +243,7 @@ public class PythonInstanceMethodTrampolineTargetSelector<T>
         if (callable == null) {
           // try the workaround for https://github.com/wala/ML/issues/106. NOTE: We cannot verify
           // that the super class is tf.keras.Model due to https://github.com/wala/ML/issues/118.
-          logger.fine("Attempting callable workaround for https://github.com/wala/ML/issues/118.");
+          LOGGER.fine("Attempting callable workaround for https://github.com/wala/ML/issues/118.");
 
           callable =
               cha.lookupClass(
@@ -251,7 +251,7 @@ public class PythonInstanceMethodTrampolineTargetSelector<T>
                       classLoaderReference, packageName, CALLABLE_METHOD_NAME_FOR_KERAS_MODELS));
 
           if (callable != null)
-            logger.info("Applying callable workaround for https://github.com/wala/ML/issues/118.");
+            LOGGER.info("Applying callable workaround for https://github.com/wala/ML/issues/118.");
         }
 
         if (callable != null) return callable;
@@ -315,7 +315,7 @@ public class PythonInstanceMethodTrampolineTargetSelector<T>
     Object value = constantKey.getValue();
 
     if (value == null) {
-      logger.warning("Can't extract AllocationSiteInNode from: " + constantKey + ".");
+      LOGGER.warning("Can't extract AllocationSiteInNode from: " + constantKey + ".");
       return null;
     } else
       throw new IllegalArgumentException(
@@ -332,7 +332,7 @@ public class PythonInstanceMethodTrampolineTargetSelector<T>
 
   @Override
   protected Logger getLogger() {
-    return logger;
+    return LOGGER;
   }
 
   /**
