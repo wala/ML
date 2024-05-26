@@ -815,6 +815,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   }
 
   @Test
+  public void testDecorator11()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_testing_decorator11.py", "C.returned", 1, 1, 3);
+  }
+
+  @Test
   public void testDataset()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     // FIXME: Test tf2_test_dataset.py really has three tensors in its dataset. We are currently
@@ -3619,6 +3625,94 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   public void testAbstractMethod2() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_abstract_method2.py", "D.f", 1, 1, 3);
     test("tf2_test_abstract_method2.py", "C.f", 1, 1, 3);
+  }
+
+  @Test
+  public void testAbstractMethod3() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_abstract_method3.py", "C.f", 1, 1, 3);
+  }
+
+  @Test
+  public void testDecoratedMethod() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_decorated_method.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testDecoratedMethod2() throws ClassHierarchyException, CancelException, IOException {
+    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
+    test("tf2_test_decorated_method2.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testDecoratedMethod3() throws ClassHierarchyException, CancelException, IOException {
+    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
+    test("tf2_test_decorated_method3.py", "raffi", 1, 1, 2);
+  }
+
+  @Test
+  public void testDecoratedMethod4() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_decorated_method4.py", "raffi", 1, 1, 2);
+  }
+
+  @Test
+  public void testDecoratedMethod5() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_decorated_method5.py", "raffi", 1, 1, 2);
+  }
+
+  @Test
+  public void testDecoratedMethod6() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_decorated_method6.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testDecoratedMethod7() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_decorated_method7.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testDecoratedMethod8() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_decorated_method8.py", "f", 1, 1, 2);
+  }
+
+  /** This decorator isn't defined. Thus, we shouldn't have a CG node for it. */
+  @Test
+  public void testDecoratedMethod9() throws ClassHierarchyException, CancelException, IOException {
+    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
+    test("tf2_test_decorated_method9.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testDecoratedMethod10() throws ClassHierarchyException, CancelException, IOException {
+    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
+    test("tf2_test_decorated_method10.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testDecoratedMethod11() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_decorated_method11.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testDecoratedMethod12() throws ClassHierarchyException, CancelException, IOException {
+    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
+    test("tf2_test_decorated_method12.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testDecoratedMethod13() throws ClassHierarchyException, CancelException, IOException {
+    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
+    test("tf2_test_decorated_method13.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testDecoratedFunctions()
+      throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_decorated_functions.py", "dummy_fun", 1, 1, 2);
+    test("tf2_test_decorated_functions.py", "dummy_test", 1, 1, 2);
+    test("tf2_test_decorated_functions.py", "test_function", 1, 1, 2);
+    test("tf2_test_decorated_functions.py", "test_function2", 1, 1, 2);
+    test("tf2_test_decorated_functions.py", "test_function3", 1, 1, 2);
+    test("tf2_test_decorated_functions.py", "test_function4", 1, 1, 2);
   }
 
   private void test(
