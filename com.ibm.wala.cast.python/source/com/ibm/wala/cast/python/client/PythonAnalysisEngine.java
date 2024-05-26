@@ -312,6 +312,7 @@ public abstract class PythonAnalysisEngine<T>
     addSummaryBypassLogic(options, "flask.xml");
     addSummaryBypassLogic(options, "pandas.xml");
     addSummaryBypassLogic(options, "functools.xml");
+    addSummaryBypassLogic(options, "pytest.xml");
   }
 
   @Override
