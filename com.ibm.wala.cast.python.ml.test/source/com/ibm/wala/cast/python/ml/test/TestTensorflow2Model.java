@@ -3809,6 +3809,14 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     final String functionSignature =
         "script " + filename.replace('/', '.') + "." + functionName + ".do()LRoot;";
 
+    // check that the function exists in the call graph.
+    assertTrue(
+        "Function must exist in call graph.",
+        CG.stream()
+            .map(CGNode::getMethod)
+            .map(IMethod::getSignature)
+            .anyMatch(s -> s.equals(functionSignature)));
+
     // get the tensor variables for the function.
     Set<TensorVariable> functionTensorVariables =
         functionSignatureToTensorVariables.getOrDefault(functionSignature, emptySet());
