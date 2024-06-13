@@ -38,6 +38,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /** Test TF2 APIs. */
@@ -2682,16 +2683,16 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_decorated_method.py", "f", 1, 1, 2);
   }
 
+  @Ignore("Enable once once https://github.com/wala/ML/issues/188 is fixed.")
   @Test
   public void testDecoratedMethod2() throws ClassHierarchyException, CancelException, IOException {
-    // NOTE: Change to 1, 1, 2 once https://github.com/wala/ML/issues/188 is fixed.
-    test("tf2_test_decorated_method2.py", "f", 0, 0);
+    test("tf2_test_decorated_method2.py", "f", 1, 1, 2);
   }
 
+  @Ignore("Enable once once https://github.com/wala/ML/issues/190 is fixed.")
   @Test
   public void testDecoratedMethod3() throws ClassHierarchyException, CancelException, IOException {
-    // NOTE: Change to 1, 1, 2 once https://github.com/wala/ML/issues/190 is fixed.
-    test("tf2_test_decorated_method3.py", "raffi", 0, 0);
+    test("tf2_test_decorated_method3.py", "raffi", 1, 1, 2);
   }
 
   @Test
@@ -2720,15 +2721,18 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   }
 
   /** This decorator isn't defined. Thus, we shouldn't have a CG node for it. */
+  @Ignore(
+      "We now require nodes for functions under test. Otherwise, a test could pass even though the"
+          + " function doesn't exist.")
   @Test
   public void testDecoratedMethod9() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_decorated_method9.py", "f", 0, 0);
   }
 
+  @Ignore("Enable once once https://github.com/wala/ML/issues/190 is fixed.")
   @Test
   public void testDecoratedMethod10() throws ClassHierarchyException, CancelException, IOException {
-    // NOTE: Change to 1, 1, 2 once https://github.com/wala/ML/issues/190 is fixed.
-    test("tf2_test_decorated_method10.py", "f", 0, 0);
+    test("tf2_test_decorated_method10.py", "f", 1, 1, 2);
   }
 
   @Test
@@ -2742,10 +2746,10 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_decorated_method12.py", "f", 0, 0);
   }
 
+  @Ignore("Enable once once https://github.com/wala/ML/issues/190 is fixed.")
   @Test
   public void testDecoratedMethod13() throws ClassHierarchyException, CancelException, IOException {
-    // NOTE: Change to 1, 1, 2 once https://github.com/wala/ML/issues/190 is fixed.
-    test("tf2_test_decorated_method13.py", "f", 0, 0);
+    test("tf2_test_decorated_method13.py", "f", 1, 1, 2);
   }
 
   @Test
@@ -2867,6 +2871,14 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
     final String functionSignature =
         "script " + filename.replace('/', '.') + "." + functionName + ".do()LRoot;";
+
+    // check that the function exists in the call graph.
+    assertTrue(
+        "Function must exist in call graph.",
+        CG.stream()
+            .map(CGNode::getMethod)
+            .map(IMethod::getSignature)
+            .anyMatch(s -> s.equals(functionSignature)));
 
     // get the tensor variables for the function.
     Set<TensorVariable> functionTensorVariables =
