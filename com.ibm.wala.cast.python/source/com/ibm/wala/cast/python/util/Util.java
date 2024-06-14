@@ -40,6 +40,9 @@ public class Util {
   /** Name of the annotation (decorator) that marks methods as a class method. */
   public static final String CLASS_METHOD_ANNOTATION_NAME = "classmethod";
 
+  /** All Python files must have this extension. */
+  public static final String PYTHON_FILE_EXTENSION = "py";
+
   /**
    * Add Pytest entrypoints to the given {@link PropagationCallGraphBuilder}.
    *

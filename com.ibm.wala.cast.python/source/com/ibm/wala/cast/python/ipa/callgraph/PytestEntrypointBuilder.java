@@ -1,6 +1,7 @@
 package com.ibm.wala.cast.python.ipa.callgraph;
 
-import static com.ibm.wala.cast.python.types.Util.getFilename;
+import static com.ibm.wala.cast.python.types.Util.getRelativeFilename;
+import static com.ibm.wala.cast.python.util.Util.PYTHON_FILE_EXTENSION;
 import static java.util.Objects.requireNonNull;
 
 import com.ibm.wala.cast.python.loader.PythonLoader.DynamicMethodBody;
@@ -47,7 +48,11 @@ public class PytestEntrypointBuilder implements EntrypointBuilder {
 
         result.add(new PytesttEntrypoint(methodReference, cha));
 
-        logger.fine(() -> "Adding test method as entry point: " + methodReference.getName() + ".");
+        logger.fine(
+            () ->
+                "Adding test method as entry point: "
+                    + methodReference.getDeclaringClass().getName()
+                    + ".");
       }
     }
 
@@ -66,11 +71,11 @@ public class PytestEntrypointBuilder implements EntrypointBuilder {
     final TypeName typeName = klass.getReference().getName();
 
     if (typeName.toString().startsWith("Lscript ")) {
-      final String fileName = getFilename(typeName);
+      final String fileName = getRelativeFilename(typeName);
       final Atom className = typeName.getClassName();
 
       // In Ariadne, a script is an invokable entity like a function.
-      final boolean script = className.toString().endsWith(".py");
+      final boolean script = className.toString().endsWith(PYTHON_FILE_EXTENSION);
 
       if (!script // it's not an invokable script.
           && (fileName.startsWith("test_")
