@@ -2833,6 +2833,37 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {3});
   }
 
+  /** Test a Pytest with a decorator without parameters. */
+  @Test
+  public void testDecoratedFunctions7()
+      throws ClassHierarchyException, CancelException, IOException {
+    test("test_decorated_functions4.py", "f", 1, 1, 2);
+  }
+
+  /**
+   * Test a Pytest with a decorator without parameters that needs a PYTHONPATH.
+   *
+   * @see TestTensorflow2Model#testModule11().
+   */
+  @Test
+  @Ignore("Blocked on https://github.com/wala/ML/issues/198.")
+  public void testDecoratedFunctions8()
+      throws ClassHierarchyException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj50/src/__init__.py",
+          "proj50/src/tf2_test_module10a.py",
+          "proj50/src/tf2_test_module10b.py",
+          "proj50/src/test_module11.py"
+        },
+        "src/tf2_test_module10b.py",
+        "D.f",
+        "proj50",
+        1,
+        1,
+        new int[] {3});
+  }
+
   @Test
   public void testReshape() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_reshape.py", "f", 1, 1, 2);
