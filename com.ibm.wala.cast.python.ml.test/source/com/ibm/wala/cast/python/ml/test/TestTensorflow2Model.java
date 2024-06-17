@@ -38,6 +38,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -2941,13 +2942,16 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     final String functionSignature =
         "script " + filename.replace('/', '.') + "." + functionName + ".do()LRoot;";
 
+    // List the CG nodes as a "flat" list.
+    LOGGER.fine(
+        () ->
+            "Call graph nodes:\n"
+                + getFunctionSignatures(CG).collect(Collectors.joining("\n\t", "\t", "")));
+
     // check that the function exists in the call graph.
     assertTrue(
         "Function must exist in call graph.",
-        CG.stream()
-            .map(CGNode::getMethod)
-            .map(IMethod::getSignature)
-            .anyMatch(s -> s.equals(functionSignature)));
+        getFunctionSignatures(CG).anyMatch(s -> s.equals(functionSignature)));
 
     // get the tensor variables for the function.
     Set<TensorVariable> functionTensorVariables =
@@ -2995,6 +2999,18 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
                       "Expecting " + actualParameterValueNumberSet + " to contain " + ev + ".",
                       actualParameterValueNumberSet.contains(ev)));
     }
+  }
+
+  /**
+   * Returns a {@link Stream} of {@link String}s representing the signatures of functions
+   * represented by the nodes in the given {@link CallGraph}.
+   *
+   * @param CG The {@link CallGraph} containing the nodes in question.
+   * @return A {@link Stream} of {@link String}s representing the signatures of functions
+   *     represented by the nodes in the given {@link CallGraph}.
+   */
+  private static Stream<String> getFunctionSignatures(CallGraph CG) {
+    return CG.stream().map(CGNode::getMethod).map(IMethod::getSignature);
   }
 
   /**
