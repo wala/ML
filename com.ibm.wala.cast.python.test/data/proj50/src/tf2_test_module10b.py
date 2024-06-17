@@ -1,7 +1,7 @@
 # Test https://github.com/wala/ML/issues/163.
 
 from tensorflow import Tensor
-from src.tf2_test_module9a import C
+from src.tf2_test_module10a import C
 
 
 class D(C):
