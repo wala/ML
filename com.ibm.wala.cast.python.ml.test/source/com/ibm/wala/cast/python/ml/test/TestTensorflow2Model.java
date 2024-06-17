@@ -2815,7 +2815,6 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * @see TestTensorflow2Model#testModule11().
    */
   @Test
-  @Ignore("Blocked on https://github.com/wala/ML/issues/198.")
   public void testDecoratedFunctions6()
       throws ClassHierarchyException, CancelException, IOException {
     test(
@@ -2846,7 +2845,6 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * @see TestTensorflow2Model#testModule11().
    */
   @Test
-  @Ignore("Blocked on https://github.com/wala/ML/issues/198.")
   public void testDecoratedFunctions8()
       throws ClassHierarchyException, CancelException, IOException {
     test(
