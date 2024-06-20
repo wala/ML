@@ -1,6 +1,7 @@
 package com.ibm.wala.cast.python.client;
 
 import static java.util.Collections.emptyList;
+import static java.util.logging.Level.SEVERE;
 
 import com.ibm.wala.cast.ipa.callgraph.AstCFAPointerKeys;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
@@ -61,6 +62,7 @@ import com.ibm.wala.types.Selector;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.WalaException;
+import com.ibm.wala.util.WalaRuntimeException;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import java.io.File;
@@ -148,12 +150,12 @@ public abstract class PythonAnalysisEngine<T>
   @Override
   public IClassHierarchy buildClassHierarchy() {
     IClassHierarchy cha = null;
-
     try {
       cha = SeqClassHierarchyFactory.make(scope, loader);
     } catch (ClassHierarchyException e) {
-      assert false : e;
-      return null;
+      final String msg = "Failed to build class hierarchy.";
+      logger.log(SEVERE, msg, e);
+      throw new WalaRuntimeException(msg, e);
     }
 
     try {
