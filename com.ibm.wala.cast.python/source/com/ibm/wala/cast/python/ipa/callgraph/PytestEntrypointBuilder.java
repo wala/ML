@@ -71,15 +71,18 @@ public class PytestEntrypointBuilder implements EntrypointBuilder {
     final TypeName typeName = klass.getReference().getName();
 
     if (typeName.toString().startsWith("Lscript ")) {
-      final String fileName = getRelativeFilename(typeName);
+      final String fileNameWithoutExtension =
+          getRelativeFilename(typeName).replace("." + PYTHON_FILE_EXTENSION, "");
+      assert !fileNameWithoutExtension.endsWith("." + PYTHON_FILE_EXTENSION);
+
       final Atom className = typeName.getClassName();
 
       // In Ariadne, a script is an invokable entity like a function.
       final boolean script = className.toString().endsWith(PYTHON_FILE_EXTENSION);
 
       if (!script // it's not an invokable script.
-          && (fileName.startsWith("test_")
-              || fileName.endsWith("_test")) // we're inside of a "test" file,
+          && (fileNameWithoutExtension.startsWith("test_")
+              || fileNameWithoutExtension.endsWith("_test")) // we're inside of a "test" file,
           && !(klass instanceof PythonClass)) { // classes aren't entrypoints.
         if (klass instanceof DynamicMethodBody) {
           // It's a method. In Ariadne, functions are also classes.

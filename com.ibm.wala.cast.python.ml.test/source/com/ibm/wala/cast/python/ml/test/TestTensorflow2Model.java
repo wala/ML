@@ -2862,6 +2862,15 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {3});
   }
 
+  /**
+   * Test a Pytest with a decorator without parameters. The "test" is at the end of the filename.
+   */
+  @Test
+  public void testDecoratedFunctions9()
+      throws ClassHierarchyException, CancelException, IOException {
+    test("decorated_function_test.py", "f", 1, 1, 2);
+  }
+
   @Test
   public void testReshape() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_reshape.py", "f", 1, 1, 2);
