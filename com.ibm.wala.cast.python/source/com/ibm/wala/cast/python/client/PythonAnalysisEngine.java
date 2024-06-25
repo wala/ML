@@ -84,7 +84,7 @@ public abstract class PythonAnalysisEngine<T>
 
   /** Library summaries to load. */
   private static final String[] LIBRARIES =
-      new String[] {"flask.xml", "pandas.xml", "functools.xml", "pytest.xml"};
+      new String[] {"flask.xml", "pandas.xml", "functools.xml", "pytest.xml", "click.xml"};
 
   protected PythonSSAPropagationCallGraphBuilder builder;
 
