@@ -359,4 +359,33 @@ public class TestCalls extends TestPythonCallGraphShape {
 
     verifyGraphAssertions(callGraph, CLICK_ASSERTIONS);
   }
+
+  protected static final Object[][] ABSEIL_ASSERTIONS =
+      new Object[][] {
+        new Object[] {ROOT, new String[] {"script abseil_calls.py"}},
+        new Object[] {"script abseil_calls.py", new String[] {"absl/run"}},
+        new Object[] {
+          "absl/run",
+          new String[] {
+            "script abseil_calls.py/main",
+          }
+        }
+      };
+
+  @Test
+  public void testAbseilCalls()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    PythonAnalysisEngine<?> engine = this.makeEngine("abseil_calls.py");
+    PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
+    CallGraph callGraph = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
+
+    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.dumpCG(
+        (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
+        callGraphBuilder.getPointerAnalysis(),
+        callGraph);
+    LOGGER.info("Call graph: " + callGraph);
+
+    verifyGraphAssertions(callGraph, ABSEIL_ASSERTIONS);
+  }
 }
