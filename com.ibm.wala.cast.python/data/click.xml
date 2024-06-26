@@ -24,7 +24,7 @@
       </class>
       <class name="command" allocatable="true">
         <!-- https://click.palletsprojects.com/en/8.1.x/api/#click.command -->
-        <method name="do" descriptor="()LRoot;" numArgs="1" paramNames="self ">
+        <method name="do" descriptor="()LRoot;" numArgs="1" paramNames="self">
           <new def="closure" class="Lclick/class/Command" />
           <putfield class="LRoot" field="func" fieldType="LRoot" ref="closure" value="self" />
           <return value="closure" />
