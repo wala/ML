@@ -155,19 +155,11 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
                 if (reference.equals(NEXT.getDeclaringClass())) {
                   // it's a call to `next()`. Look up the call to `iter()`.
                   int iterator = ni.getUse(1);
-                  SSAInstruction iteratorDef = du.getDef(iterator);
 
-                  // Let's see if the iterator is over a tensor dataset.
-                  if (iteratorDef != null && iteratorDef.getNumberOfUses() > 1) {
-                    // Get the argument.
-                    int iterArg = iteratorDef.getUse(1);
-                    processInstructionInterprocedurally(
-                        iteratorDef, iterArg, localPointerKeyNode, src, sources, pointerAnalysis);
-                  } else
-                    // Use the original instruction. NOTE: We can only do this because `iter()` is
-                    // currently just passing-through its argument.
-                    processInstructionInterprocedurally(
-                        ni, iterator, localPointerKeyNode, src, sources, pointerAnalysis);
+                  // Use the original instruction. NOTE: We can only do this because `iter()` is
+                  // currently just passing-through its argument.
+                  processInstructionInterprocedurally(
+                      ni, iterator, localPointerKeyNode, src, sources, pointerAnalysis);
                 }
               }
             }
