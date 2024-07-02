@@ -132,6 +132,9 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
           // We potentially have a function call that generates a tensor.
           SSAAbstractInvokeInstruction ni = (SSAAbstractInvokeInstruction) inst;
 
+          // don't consider exceptions as a data source.
+          if (ni.getException() == vn) continue;
+
           if (ni.getCallSite()
                   .getDeclaredTarget()
                   .getName()
