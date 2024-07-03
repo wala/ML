@@ -347,7 +347,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
     boolean ret =
         localModules.stream()
             .map(lm -> scriptName((SourceModule) lm))
-            .anyMatch(sn -> sn.endsWith(moduleName + ".py"));
+            .anyMatch(sn -> sn.endsWith("/" + moduleName + ".py"));
 
     LOGGER.finer("Module: " + moduleName + (ret ? " is" : " isn't") + " local.");
     return ret;
@@ -364,7 +364,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
         .filter(
             lm -> {
               String scriptName = scriptName((SourceModule) lm);
-              return scriptName.endsWith(moduleName + ".py");
+              return scriptName.endsWith("/" + moduleName + ".py");
             })
         .findFirst();
   }

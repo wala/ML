@@ -33,7 +33,7 @@ public class Util {
 
     String filename =
         Arrays.stream(segments)
-            .filter(s -> s.endsWith(PYTHON_FILE_EXTENSION))
+            .filter(s -> s.endsWith("." + PYTHON_FILE_EXTENSION))
             .findFirst()
             .orElseThrow();
 
