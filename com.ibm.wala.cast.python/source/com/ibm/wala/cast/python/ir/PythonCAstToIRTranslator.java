@@ -473,7 +473,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
     String scriptName = module.getName();
 
     // if the module is the special initialization module.
-    if (scriptName.endsWith(MODULE_INITIALIZATION_FILENAME)) {
+    if (scriptName.endsWith("/" + MODULE_INITIALIZATION_FILENAME)) {
       // we've hit a module. Get the other scripts in the module.
       PythonLoader loader = (PythonLoader) this.loader;
       IClassHierarchy classHierarchy = loader.getClassHierarchy();
