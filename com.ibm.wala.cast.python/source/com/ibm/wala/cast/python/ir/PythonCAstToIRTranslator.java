@@ -581,7 +581,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
                     LOGGER.finer("Creating module field reference: " + moduleField + ".");
 
-                    // If we are looking at the package for `moduleName`..
+                    // If we are looking at the package for `moduleName`.
                     if (moduleInitializationFile && packagePath.toString().equals(moduleName))
                       // use the existing global read for the script.
                       res = 1;
