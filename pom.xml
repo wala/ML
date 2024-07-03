@@ -169,6 +169,7 @@
               <format>
                 <includes>
                   <include>**/*.xml</include>
+                  <include>**/.pydevproject</include>
                 </includes>
                 <excludes>
                   <exclude>**/plugin.xml</exclude>
