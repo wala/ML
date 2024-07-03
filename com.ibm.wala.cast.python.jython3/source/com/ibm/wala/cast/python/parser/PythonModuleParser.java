@@ -180,6 +180,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
           if (moduleName.startsWith(".")) {
             LOGGER.info("Found relative import: " + moduleName);
             moduleName = this.resolveRelativeImport(moduleName);
+            LOGGER.fine("Resolved relative import: " + moduleName);
           }
 
           if (!isLocalModule(moduleName)) moduleName += "/" + MODULE_INITIALIZATION_ENTITY_NAME;
