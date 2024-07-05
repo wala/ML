@@ -399,7 +399,6 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
                                     + " gets: "
                                     + putValPK
                                     + ".");
-                          return;
                         }
                       }
                     });
@@ -413,10 +412,8 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
       assert declaredFieldName.startsWith(GLOBAL_IDENTIFIER + " ");
 
       // Remove the global identifier.
-      String strippedDeclaredFieldName =
-          declaredFieldName.substring(
-              (GLOBAL_IDENTIFIER + " ").length(), declaredFieldName.length());
-      return strippedDeclaredFieldName;
+      return declaredFieldName.substring(
+          (GLOBAL_IDENTIFIER + " ").length(), declaredFieldName.length());
     }
   }
 
