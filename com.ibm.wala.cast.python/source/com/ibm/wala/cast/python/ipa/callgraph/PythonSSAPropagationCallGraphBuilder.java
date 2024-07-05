@@ -280,12 +280,11 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
           } else if (def instanceof SSAGetInstruction) {
             // We are importing from a script.
             SSAGetInstruction getInstruction = (SSAGetInstruction) def;
-            FieldReference declaredField = getInstruction.getDeclaredField();
-            Atom fieldName = declaredField.getName();
-            String strippedFieldName =
-                fieldName.toString().substring(GLOBAL_IDENTIFIER.length() + 1);
+            String strippedFieldName = getStrippedDeclaredFieldName(getInstruction);
+
             TypeReference typeReference =
                 TypeReference.findOrCreate(PythonTypes.pythonLoader, "L" + strippedFieldName);
+
             MethodReference methodReference =
                 MethodReference.findOrCreate(
                     typeReference,
