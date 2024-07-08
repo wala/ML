@@ -961,7 +961,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test("tf2_test_dataset18.py", "add", 2, 2, 2, 3);
     test("tf2_test_dataset18.py", "f", 1, 1, 2);
-    test("tf2_test_dataset18.py", "g", 0, 2);
+    test("tf2_test_dataset18.py", "g", 0, 1);
   }
 
   /** Test a dataset that uses an iterator. */
@@ -1105,6 +1105,35 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   public void testDataset33()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test("tf2_test_dataset33.py", "f", 1, 1, 2);
+  }
+
+  /** Test a dataset that uses an iterator. */
+  @Test
+  public void testDataset34()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset34.py", "add", 2, 2, 2, 3);
+  }
+
+  /** Test a dataset that uses an iterator. */
+  @Test
+  public void testDataset35()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset35.py", "add", 2, 2, 2, 3);
+  }
+
+  /** Test a dataset that uses an iterator. */
+  @Test
+  public void testDataset36()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset36.py", "id1", 1, 1, 2);
+    //    test("tf2_test_dataset36.py", "id2", 1, 1, 2);
+  }
+
+  /** Test a dataset that uses an iterator. */
+  @Test
+  public void testDataset37()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset37.py", "add", 2, 2, 2, 3);
   }
 
   /**
