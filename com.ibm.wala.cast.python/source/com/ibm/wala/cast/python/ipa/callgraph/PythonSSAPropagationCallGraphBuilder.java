@@ -218,14 +218,14 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
     public void visitPropertyRead(AstPropertyRead instruction) {
       super.visitPropertyRead(instruction);
 
-      int memberRef = instruction.getMemberRef();
-
-      if (this.ir.getSymbolTable().isConstant(memberRef)) {
-        Object constantValue = this.ir.getSymbolTable().getConstantValue(memberRef);
+      if (this.ir.getSymbolTable().isConstant(instruction.getMemberRef())) {
+        Object constantValue =
+            this.ir.getSymbolTable().getConstantValue(instruction.getMemberRef());
 
         if (Objects.equals(constantValue, IMPORT_WILDCARD_CHARACTER)) {
           // We have a wildcard.
-          logger.fine("Detected wildcard for " + memberRef + " in " + instruction + ".");
+          logger.fine(
+              "Detected wildcard for " + instruction.getMemberRef() + " in " + instruction + ".");
 
           int objRef = instruction.getObjectRef();
           logger.fine("Seeing if " + objRef + " refers to an import.");
