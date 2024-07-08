@@ -1001,6 +1001,23 @@ public class PythonCAstToIRTranslator extends AstTranslator {
               ((AstInstructionFactory) insts)
                   .PropertyRead(
                       idx, resultVal, resultVal, context.currentScope().getConstantValue(eltName)));
+
+      // if the module is the special initialization module.
+      if (context.getName().endsWith("/" + MODULE_INITIALIZATION_FILENAME)) {
+        // add the imported name to the module so that other files can use it.
+        FieldReference eltField =
+            FieldReference.findOrCreate(
+                PythonTypes.Root, Atom.findOrCreateUnicodeAtom(eltName), PythonTypes.Root);
+
+        LOGGER.info("Adding write of field: " + eltField + " to initialization script.");
+
+        // The script should be in v1.
+        idx = context.cfg().getCurrentInstruction();
+        context
+            .cfg()
+            .addInstruction(
+                ((AstInstructionFactory) insts).PutInstruction(idx, 1, resultVal, eltField));
+      }
     }
   }
 

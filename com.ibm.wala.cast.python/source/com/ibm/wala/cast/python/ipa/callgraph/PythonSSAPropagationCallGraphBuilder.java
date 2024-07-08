@@ -10,15 +10,19 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.ipa.callgraph;
 
+import static com.ibm.wala.cast.python.ir.PythonLanguage.MODULE_INITIALIZATION_FILENAME;
+
 import com.google.common.collect.Maps;
 import com.ibm.wala.cast.ipa.callgraph.AstSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.ipa.callgraph.GlobalObjectKey;
+import com.ibm.wala.cast.ipa.callgraph.ScopeMappingInstanceKeys.ScopeMappingInstanceKey;
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.ir.ssa.AstPropertyRead;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.ssa.PythonInstructionVisitor;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.types.PythonTypes;
+import com.ibm.wala.cast.python.util.Util;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.NewSiteReference;
@@ -29,6 +33,7 @@ import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.IAnalysisCacheView;
 import com.ibm.wala.ipa.callgraph.propagation.AbstractFieldPointerKey;
+import com.ibm.wala.ipa.callgraph.propagation.AllocationSiteInNode;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
@@ -313,6 +318,36 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
                 });
           }
         }
+
+        // check if we are reading from an module initialization script.
+        PointerKey objRefPK = getPointerKeyForLocal(instruction.getObjectRef());
+        OrdinalSet<InstanceKey> objRefPointsToSet =
+            getBuilder().getPointerAnalysis().getPointsToSet(objRefPK);
+
+        for (InstanceKey objIK : objRefPointsToSet) {
+          if (objIK instanceof AllocationSiteInNode || objIK instanceof ScopeMappingInstanceKey) {
+            AllocationSiteInNode asin = Util.getAllocationSiteInNode(objIK);
+            NewSiteReference site = asin.getSite();
+            TypeReference declaredType = site.getDeclaredType();
+            TypeName scriptTypeName = declaredType.getName();
+
+            if (scriptTypeName.toString().endsWith("/" + MODULE_INITIALIZATION_FILENAME)) {
+              // the "receiver" is a module initialization script.
+              Atom scriptPackage = scriptTypeName.getPackage();
+
+              String scriptName =
+                  (scriptPackage == null
+                          ? scriptTypeName.getClassName()
+                          : scriptPackage.toString() + "/" + scriptTypeName.getClassName())
+                      .toString();
+              logger.finer("Script name is: " + scriptName + ".");
+
+              // check if the constant refers to a field that is being imported by a wildcard in the
+              // corresponding module's initialization script.
+              processWildcardImports(instruction, scriptName, constantValue.toString());
+            }
+          }
+        }
       }
     }
 
@@ -329,9 +364,25 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
               .toString();
       logger.finer("Script name is: " + scriptName + ".");
 
+      String fieldName = getStrippedDeclaredFieldName(globalRead);
+
+      processWildcardImports(globalRead, scriptName, fieldName);
+    }
+
+    /**
+     * Processes the given {@link SSAInstruction} for any potential wildcard imports being utilized
+     * by the instruction.
+     *
+     * @param instruction The {@link SSAInstruction} whose definition may depend on a wildcard
+     *     import.
+     * @param scriptName The name of the script to check for wildcard imports.
+     * @param fieldName The name of the field that may be imported using a wildcard.
+     */
+    private void processWildcardImports(
+        SSAInstruction instruction, String scriptName, String fieldName) {
       // Are there any wildcard imports for this script?
       if (scriptToWildcardImports.containsKey(scriptName)) {
-        logger.info("Found wildcard imports in " + scriptName + " for " + globalRead + ".");
+        logger.info("Found wildcard imports in " + scriptName + " for " + instruction + ".");
 
         Deque<MethodReference> deque = scriptToWildcardImports.get(scriptName);
 
@@ -341,14 +392,13 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
                   + importMethodReference.getDeclaringClass().getName().getClassName()
                   + ".");
 
-          String globalFieldName = getStrippedDeclaredFieldName(globalRead);
-          logger.fine("Examining global: " + globalFieldName + " for wildcard import.");
+          logger.fine("Examining global: " + fieldName + " for wildcard import.");
 
           CallGraph callGraph = this.getBuilder().getCallGraph();
           Set<CGNode> nodes = callGraph.getNodes(importMethodReference);
 
-          PointerKey globalDefPK = this.getPointerKeyForLocal(globalRead.getDef());
-          assert globalDefPK != null;
+          PointerKey defPK = this.getPointerKeyForLocal(instruction.getDef());
+          assert defPK != null;
 
           for (CGNode n : nodes) {
             for (Iterator<NewSiteReference> nit = n.iterateNewSites(); nit.hasNext(); ) {
@@ -357,15 +407,14 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
               String name = newSiteReference.getDeclaredType().getName().getClassName().toString();
               logger.finest("Examining: " + name + ".");
 
-              if (name.equals(globalFieldName)) {
+              if (name.equals(fieldName)) {
                 logger.info("Found wildcard import for: " + name + ".");
 
                 InstanceKey instanceKey =
                     this.getBuilder().getInstanceKeyForAllocation(n, newSiteReference);
 
-                if (this.system.newConstraint(globalDefPK, instanceKey)) {
-                  logger.fine(
-                      "Added constraint that: " + globalDefPK + " gets: " + instanceKey + ".");
+                if (this.system.newConstraint(defPK, instanceKey)) {
+                  logger.fine("Added constraint that: " + defPK + " gets: " + instanceKey + ".");
                   return;
                 }
               }
@@ -381,24 +430,20 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
                       public void visitPut(SSAPutInstruction putInstruction) {
                         FieldReference putField = putInstruction.getDeclaredField();
 
-                        if (globalFieldName.equals(putField.getName().toString())) {
+                        if (fieldName.equals(putField.getName().toString())) {
                           // Found it.
                           int putVal = putInstruction.getVal();
 
-                          // Make the global def point to the put instruction value.
+                          // Make the def point to the put instruction value.
                           PointerKey putValPK =
                               PythonSSAPropagationCallGraphBuilder.PythonConstraintVisitor.this
                                   .getBuilder()
                                   .getPointerKeyForLocal(n, putVal);
 
                           if (PythonSSAPropagationCallGraphBuilder.PythonConstraintVisitor.this
-                              .system.newConstraint(globalDefPK, assignOperator, putValPK))
+                              .system.newConstraint(defPK, assignOperator, putValPK))
                             logger.fine(
-                                "Added constraint that: "
-                                    + globalDefPK
-                                    + " gets: "
-                                    + putValPK
-                                    + ".");
+                                "Added constraint that: " + defPK + " gets: " + putValPK + ".");
                         }
                       }
                     });
