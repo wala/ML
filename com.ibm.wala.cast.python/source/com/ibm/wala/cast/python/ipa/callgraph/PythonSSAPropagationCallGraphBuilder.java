@@ -117,6 +117,13 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
   private static final Collection<TypeReference> types =
       Arrays.asList(PythonTypes.string, TypeReference.Int);
 
+  /**
+   * A mapping of script names to wildcard imports. We use a {@link Deque} here because we want to
+   * always examine the last (front of the queue) encountered wildcard import library for known
+   * names assuming that import instructions are traversed from first to last.
+   */
+  private Map<String, Deque<MethodReference>> scriptToWildcardImports = Maps.newHashMap();
+
   public static class PythonConstraintVisitor extends AstConstraintVisitor
       implements PythonInstructionVisitor {
 
@@ -125,13 +132,6 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
     private static final String IMPORT_WILDCARD_CHARACTER = "*";
 
     private static final Atom IMPORT_FUNCTION_NAME = Atom.findOrCreateAsciiAtom("import");
-
-    /**
-     * A mapping of script names to wildcard imports. We use a {@link Deque} here because we want to
-     * always examine the last (front of the queue) encountered wildcard import library for known
-     * names assuming that import instructions are traversed from first to last.
-     */
-    private static Map<String, Deque<MethodReference>> scriptToWildcardImports = Maps.newHashMap();
 
     @Override
     protected PythonSSAPropagationCallGraphBuilder getBuilder() {
@@ -269,18 +269,20 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
                       + ".");
 
               // Add the library to the script's queue of wildcard imports.
-              scriptToWildcardImports.compute(
-                  scriptName,
-                  (k, v) -> {
-                    if (v == null) {
-                      Deque<MethodReference> deque = new ArrayDeque<>();
-                      deque.push(declaredTarget);
-                      return deque;
-                    } else {
-                      v.push(declaredTarget);
-                      return v;
-                    }
-                  });
+              getBuilder()
+                  .getScriptToWildcardImports()
+                  .compute(
+                      scriptName,
+                      (k, v) -> {
+                        if (v == null) {
+                          Deque<MethodReference> deque = new ArrayDeque<>();
+                          deque.push(declaredTarget);
+                          return deque;
+                        } else {
+                          v.push(declaredTarget);
+                          return v;
+                        }
+                      });
             }
           } else if (def instanceof SSAGetInstruction) {
             // We are importing from a script.
@@ -304,18 +306,20 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
                     + ".");
 
             // Add the script to the queue of this script's wildcard imports.
-            scriptToWildcardImports.compute(
-                scriptName,
-                (k, v) -> {
-                  if (v == null) {
-                    Deque<MethodReference> deque = new ArrayDeque<>();
-                    deque.push(methodReference);
-                    return deque;
-                  } else {
-                    v.push(methodReference);
-                    return v;
-                  }
-                });
+            getBuilder()
+                .getScriptToWildcardImports()
+                .compute(
+                    scriptName,
+                    (k, v) -> {
+                      if (v == null) {
+                        Deque<MethodReference> deque = new ArrayDeque<>();
+                        deque.push(methodReference);
+                        return deque;
+                      } else {
+                        v.push(methodReference);
+                        return v;
+                      }
+                    });
           }
         }
 
@@ -381,10 +385,10 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
     private void processWildcardImports(
         SSAInstruction instruction, String scriptName, String fieldName) {
       // Are there any wildcard imports for this script?
-      if (scriptToWildcardImports.containsKey(scriptName)) {
+      if (getBuilder().getScriptToWildcardImports().containsKey(scriptName)) {
         logger.info("Found wildcard imports in " + scriptName + " for " + instruction + ".");
 
-        Deque<MethodReference> deque = scriptToWildcardImports.get(scriptName);
+        Deque<MethodReference> deque = getBuilder().getScriptToWildcardImports().get(scriptName);
 
         for (MethodReference importMethodReference : deque) {
           logger.fine(
@@ -609,5 +613,14 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
   @Override
   protected InterestingVisitor makeInterestingVisitor(CGNode node, int vn) {
     return new PythonInterestingVisitor(vn);
+  }
+
+  /**
+   * A mapping of script names to wildcard imports included in the script.
+   *
+   * @return A mapping of script names to wildcard imports included in the corresponding script.
+   */
+  protected Map<String, Deque<MethodReference>> getScriptToWildcardImports() {
+    return scriptToWildcardImports;
   }
 }
