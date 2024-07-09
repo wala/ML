@@ -156,6 +156,44 @@
             <formats>
               <format>
                 <includes>
+                  <include>**/*</include>
+                </includes>
+                <excludes>
+                  <exclude>**/target/</exclude>
+                  <exclude>**/__pycache__/</exclude>
+                  <exclude>**/*.swp</exclude>
+                  <exclude>**/*.swp</exclude>
+                  <exclude>**/*.swo</exclude>
+                  <exclude>**/*.swn</exclude>
+                  <exclude>**/.idea/</exclude>
+                  <exclude>**/.vscode/</exclude>
+                  <exclude>**/node_modules/</exclude>
+                  <exclude>**/cachedir/</exclude>
+                  <exclude>**/*~</exclude>
+                  <exclude>**/*.min.*</exclude>
+                  <exclude>**/tmp.*</exclude>
+                  <exclude>**/*.jar</exclude>
+                  <exclude>**/*.exe</exclude>
+                  <exclude>**/*.dll</exclude>
+                  <exclude>**/*.class</exclude>
+                  <exclude>**/*.png</exclude>
+                  <exclude>**/*.jpg</exclude>
+                  <exclude>**/*.gif</exclude>
+                  <exclude>**/*.xml</exclude>
+                  <exclude>**/.pydevproject</exclude>
+                  <exclude>**/*pom.xml</exclude>
+                  <exclude>**/*.md</exclude>
+                  <exclude>**/.gitignore</exclude>
+                  <exclude>**/*.java</exclude>
+                  <exclude>**/*.gradle/</exclude>
+                  <exclude>**/*.pytest_cache/</exclude>
+                  <exclude>**/*.log</exclude>
+                </excludes>
+                <trimTrailingWhitespace/>
+                <endWithNewline/>
+              </format>
+              <format>
+                <includes>
                   <include>**/*.md</include>
                   <include>**/.gitignore</include>
                 </includes>
@@ -193,6 +231,8 @@
                 <version>1.19.2</version>
                 <reflowLongStrings>true</reflowLongStrings>
               </googleJavaFormat>
+              <trimTrailingWhitespace/>
+              <endWithNewline/>
             </java>
             <pom>
               <sortPom>
