@@ -958,7 +958,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test("tf2_test_dataset18.py", "add", 2, 2, 2, 3);
     test("tf2_test_dataset18.py", "f", 1, 1, 2);
-    test("tf2_test_dataset18.py", "g", 0, 2);
+    test("tf2_test_dataset18.py", "g", 0, 1);
   }
 
   /** Test a dataset that uses an iterator. */
@@ -1096,6 +1096,21 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   public void testDataset35()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test("tf2_test_dataset35.py", "add", 2, 2, 2, 3);
+  }
+
+  /** Test a dataset that uses an iterator. */
+  @Test
+  public void testDataset36()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset36.py", "id1", 1, 1, 2);
+    //    test("tf2_test_dataset36.py", "id2", 1, 1, 2);
+  }
+
+  /** Test a dataset that uses an iterator. */
+  @Test
+  public void testDataset37()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset37.py", "add", 2, 2, 2, 3);
   }
 
   /**
@@ -2589,6 +2604,76 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         1,
         1,
         new int[] {2});
+  }
+
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
+  public void testModule54()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj51/src/__init__.py", "proj51/src/module.py", "proj51/client.py"},
+        "src/module.py",
+        "f",
+        "proj51",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
+  public void testModule55()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj52/src/__init__.py", "proj52/src/module.py", "proj52/client.py"},
+        "src/module.py",
+        "f",
+        "proj52",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
+  public void testModule56()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj53/src/__init__.py", "proj53/src/module.py", "proj53/client.py"},
+        "src/module.py",
+        "C.f",
+        "proj53",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
+  public void testModule57()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj54/src/__init__.py", "proj54/src/module.py", "proj54/client.py"},
+        "src/module.py",
+        "C.f",
+        "proj54",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
+  public void testModule58()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj55/src/__init__.py", "proj55/src/B.py", "proj55/A.py"},
+        "src/B.py",
+        "C.f",
+        "proj55",
+        1,
+        1,
+        new int[] {3});
   }
 
   @Test

@@ -103,7 +103,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
        *
        * @param importNames The names to import.
        * @param moduleName The name of the containing module.
-       * @return Sn import {@link CAstNode} with the given {@link List} of {@link alias}s as import
+       * @return An import {@link CAstNode} with the given {@link List} of {@link alias}s as import
        *     names within the given module.
        */
       private CAstNode createImportNode(List<alias> importNames, String moduleName) {
@@ -117,7 +117,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
        * @param importNames The names to import.
        * @param moduleName The name of the containing module.
        * @param useInitializationFile Whether to use the `__init__.py` file.
-       * @return Sn import {@link CAstNode} with the given {@link List} of {@link alias}s as import
+       * @return An import {@link CAstNode} with the given {@link List} of {@link alias}s as import
        *     names within the given module.
        */
       private CAstNode createImportNode(
@@ -180,6 +180,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
           if (moduleName.startsWith(".")) {
             LOGGER.info("Found relative import: " + moduleName);
             moduleName = this.resolveRelativeImport(moduleName);
+            LOGGER.fine("Resolved relative import: " + moduleName);
           }
 
           if (!isLocalModule(moduleName)) moduleName += "/" + MODULE_INITIALIZATION_ENTITY_NAME;
@@ -235,7 +236,8 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
       /**
        * Given a relative import, e.g., ".", "..", ".P", "..P", where "P" represents a package,
-       * subpackage, or module, returns the corresponding actual package, subpackage, or module name
+       * subpackage, or module, returns the corresponding actual package, subpackage, or module
+       * name.
        *
        * @param importName The relative package, subpackage, or module to resolve.
        * @return The actual corresponding package, subpackage, or module name.
@@ -347,7 +349,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
     boolean ret =
         localModules.stream()
             .map(lm -> scriptName((SourceModule) lm))
-            .anyMatch(sn -> sn.endsWith(moduleName + ".py"));
+            .anyMatch(sn -> sn.endsWith("/" + moduleName + ".py"));
 
     LOGGER.finer("Module: " + moduleName + (ret ? " is" : " isn't") + " local.");
     return ret;
@@ -364,7 +366,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
         .filter(
             lm -> {
               String scriptName = scriptName((SourceModule) lm);
-              return scriptName.endsWith(moduleName + ".py");
+              return scriptName.endsWith("/" + moduleName + ".py");
             })
         .findFirst();
   }

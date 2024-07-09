@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.ibm.wala</groupId>
   <artifactId>ml</artifactId>
-  <version>0.35.0-SNAPSHOT</version>
+  <version>0.37.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
     <module>com.ibm.wala.cast.python</module>
@@ -26,12 +26,12 @@
     <project-version>0.0.1-SNAPSHOT</project-version>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
-    <maven.compiler.version>3.10.1</maven.compiler.version>
+    <maven.compiler.version>3.13.0</maven.compiler.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build-alias>b000</build-alias>
     <wala.version>1.6.0</wala.version>
     <spotless.version>2.43.0</spotless.version>
-    <maven.surefire.version>3.0.0-M7</maven.surefire.version>
+    <maven.surefire.version>3.3.0</maven.surefire.version>
     <parallel>both</parallel>
     <logging.config.file>${maven.multiModuleProjectDirectory}/logging.properties</logging.config.file>
   </properties>
@@ -156,9 +156,50 @@
             <formats>
               <format>
                 <includes>
+                  <include>**/*</include>
+                </includes>
+                <excludes>
+                  <exclude>**/target/</exclude>
+                  <exclude>**/__pycache__/</exclude>
+                  <exclude>**/*.swp</exclude>
+                  <exclude>**/*.swp</exclude>
+                  <exclude>**/*.swo</exclude>
+                  <exclude>**/*.swn</exclude>
+                  <exclude>**/.idea/</exclude>
+                  <exclude>**/.vscode/</exclude>
+                  <exclude>**/node_modules/</exclude>
+                  <exclude>**/cachedir/</exclude>
+                  <exclude>**/*~</exclude>
+                  <exclude>**/*.min.*</exclude>
+                  <exclude>**/tmp.*</exclude>
+                  <exclude>**/*.jar</exclude>
+                  <exclude>**/*.exe</exclude>
+                  <exclude>**/*.dll</exclude>
+                  <exclude>**/*.class</exclude>
+                  <exclude>**/*.png</exclude>
+                  <exclude>**/*.jpg</exclude>
+                  <exclude>**/*.gif</exclude>
+                  <exclude>**/*.xml</exclude>
+                  <exclude>**/.pydevproject</exclude>
+                  <exclude>**/*pom.xml</exclude>
+                  <exclude>**/*.md</exclude>
+                  <exclude>**/.gitignore</exclude>
+                  <exclude>**/*.java</exclude>
+                  <exclude>**/*.gradle/</exclude>
+                  <exclude>**/.pytest_cache/</exclude>
+                  <exclude>**/*.log</exclude>
+                </excludes>
+                <trimTrailingWhitespace/>
+                <endWithNewline/>
+              </format>
+              <format>
+                <includes>
                   <include>**/*.md</include>
                   <include>**/.gitignore</include>
                 </includes>
+                <excludes>
+                  <exclude>**/target/</exclude>
+                </excludes>
                 <trimTrailingWhitespace/>
                 <endWithNewline/>
                 <indent>
@@ -169,6 +210,7 @@
               <format>
                 <includes>
                   <include>**/*.xml</include>
+                  <include>**/.pydevproject</include>
                 </includes>
                 <excludes>
                   <exclude>**/plugin.xml</exclude>
@@ -192,6 +234,8 @@
                 <version>1.19.2</version>
                 <reflowLongStrings>true</reflowLongStrings>
               </googleJavaFormat>
+              <trimTrailingWhitespace/>
+              <endWithNewline/>
             </java>
             <pom>
               <sortPom>

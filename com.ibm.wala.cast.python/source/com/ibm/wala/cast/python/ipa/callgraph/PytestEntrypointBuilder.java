@@ -78,7 +78,7 @@ public class PytestEntrypointBuilder implements EntrypointBuilder {
       final Atom className = typeName.getClassName();
 
       // In Ariadne, a script is an invokable entity like a function.
-      final boolean script = className.toString().endsWith(PYTHON_FILE_EXTENSION);
+      final boolean script = className.toString().endsWith("." + PYTHON_FILE_EXTENSION);
 
       if (!script // it's not an invokable script.
           && (fileNameWithoutExtension.startsWith("test_")

@@ -473,7 +473,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
     String scriptName = module.getName();
 
     // if the module is the special initialization module.
-    if (scriptName.endsWith(MODULE_INITIALIZATION_FILENAME)) {
+    if (scriptName.endsWith("/" + MODULE_INITIALIZATION_FILENAME)) {
       // we've hit a module. Get the other scripts in the module.
       PythonLoader loader = (PythonLoader) this.loader;
       IClassHierarchy classHierarchy = loader.getClassHierarchy();
@@ -581,7 +581,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
                     LOGGER.finer("Creating module field reference: " + moduleField + ".");
 
-                    // If we are looking at the package for `moduleName`..
+                    // If we are looking at the package for `moduleName`.
                     if (moduleInitializationFile && packagePath.toString().equals(moduleName))
                       // use the existing global read for the script.
                       res = 1;
@@ -1001,6 +1001,23 @@ public class PythonCAstToIRTranslator extends AstTranslator {
               ((AstInstructionFactory) insts)
                   .PropertyRead(
                       idx, resultVal, resultVal, context.currentScope().getConstantValue(eltName)));
+
+      // if the module is the special initialization module.
+      if (context.getName().endsWith("/" + MODULE_INITIALIZATION_FILENAME)) {
+        // add the imported name to the module so that other files can use it.
+        FieldReference eltField =
+            FieldReference.findOrCreate(
+                PythonTypes.Root, Atom.findOrCreateUnicodeAtom(eltName), PythonTypes.Root);
+
+        LOGGER.info("Adding write of field: " + eltField + " to initialization script.");
+
+        // The script should be in v1.
+        idx = context.cfg().getCurrentInstruction();
+        context
+            .cfg()
+            .addInstruction(
+                ((AstInstructionFactory) insts).PutInstruction(idx, 1, resultVal, eltField));
+      }
     }
   }
 

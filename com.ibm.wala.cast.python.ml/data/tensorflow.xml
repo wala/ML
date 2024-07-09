@@ -889,6 +889,8 @@
           <putfield class="LRoot" field="repeat" fieldType="LRoot" ref="arg0" value="repeat" />
           <new def="prefetch" class="Ltensorflow/data/prefetch" />
           <putfield class="LRoot" field="prefetch" fieldType="LRoot" ref="arg0" value="prefetch" />
+          <new def="with_options" class="Ltensorflow/data/with_options" />
+          <putfield class="LRoot" field="with_options" fieldType="LRoot" ref="arg0" value="with_options" />
           <new def="take" class="Ltensorflow/data/take" />
           <putfield class="LRoot" field="take" fieldType="LRoot" ref="arg0" value="take" />
           <return value="arg0" />
@@ -940,6 +942,15 @@
       <class name="prefetch" allocatable="true">
         <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#prefetch -->
         <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self buffer_size name">
+          <!-- FIXME: Workaround for https://github.com/wala/ML/issues/127. -->
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+      <class name="with_options" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#with_options -->
+        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self options name">
           <!-- FIXME: Workaround for https://github.com/wala/ML/issues/127. -->
           <new def="x" class="Ltensorflow/data/Dataset" />
           <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
