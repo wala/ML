@@ -186,7 +186,7 @@
                   <exclude>**/.gitignore</exclude>
                   <exclude>**/*.java</exclude>
                   <exclude>**/*.gradle/</exclude>
-                  <exclude>**/*.pytest_cache/</exclude>
+                  <exclude>**/.pytest_cache/</exclude>
                   <exclude>**/*.log</exclude>
                 </excludes>
                 <trimTrailingWhitespace/>
