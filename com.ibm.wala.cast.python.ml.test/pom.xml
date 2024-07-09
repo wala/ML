@@ -4,14 +4,14 @@
   <parent>
     <groupId>com.ibm.wala</groupId>
     <artifactId>ml</artifactId>
-    <version>0.36.0-SNAPSHOT</version>
+    <version>0.36.0</version>
   </parent>
   <artifactId>com.ibm.wala.cast.python.ml.test</artifactId>
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>com.ibm.wala.cast.python.jython3.test</artifactId>
-      <version>0.36.0-SNAPSHOT</version>
+      <version>0.36.0</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
