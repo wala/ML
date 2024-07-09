@@ -435,13 +435,9 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
                           int putVal = putInstruction.getVal();
 
                           // Make the def point to the put instruction value.
-                          PointerKey putValPK =
-                              PythonSSAPropagationCallGraphBuilder.PythonConstraintVisitor.this
-                                  .getBuilder()
-                                  .getPointerKeyForLocal(n, putVal);
+                          PointerKey putValPK = getBuilder().getPointerKeyForLocal(n, putVal);
 
-                          if (PythonSSAPropagationCallGraphBuilder.PythonConstraintVisitor.this
-                              .system.newConstraint(defPK, assignOperator, putValPK))
+                          if (system.newConstraint(defPK, assignOperator, putValPK))
                             logger.fine(
                                 "Added constraint that: " + defPK + " gets: " + putValPK + ".");
                         }
