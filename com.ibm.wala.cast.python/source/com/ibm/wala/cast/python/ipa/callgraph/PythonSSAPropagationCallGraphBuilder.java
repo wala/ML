@@ -243,9 +243,10 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
           logger.finer("Found script package: " + scriptPackage + ".");
 
           String scriptName =
-              scriptPackage == null
-                  ? scriptTypeName.getClassName().toString()
-                  : scriptPackage.toString() + "/" + scriptTypeName.getClassName().toString();
+              (scriptPackage == null
+                      ? scriptTypeName.getClassName()
+                      : scriptPackage.toString() + "/" + scriptTypeName.getClassName())
+                  .toString();
           logger.fine("Script name is: " + scriptName);
 
           if (def instanceof SSAInvokeInstruction) {
