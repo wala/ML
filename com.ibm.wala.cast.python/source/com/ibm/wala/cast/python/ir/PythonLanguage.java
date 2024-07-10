@@ -57,6 +57,9 @@ import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.Pair;
+
+import static com.ibm.wala.cast.python.util.Util.PYTHON_FILE_EXTENSION;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -70,7 +73,7 @@ public class PythonLanguage implements Language {
    * are required to make Python treat directories containing the file as packages (unless using a
    * namespace package, a relatively advanced feature)</a>.
    */
-  public static final String MODULE_INITIALIZATION_FILENAME = "__init__.py";
+  public static final String MODULE_INITIALIZATION_FILENAME = "__init__." + PYTHON_FILE_EXTENSION;
 
   private PythonLanguage() {}
 
