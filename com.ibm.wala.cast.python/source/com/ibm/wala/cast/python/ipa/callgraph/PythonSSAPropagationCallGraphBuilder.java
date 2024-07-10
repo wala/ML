@@ -11,6 +11,7 @@
 package com.ibm.wala.cast.python.ipa.callgraph;
 
 import static com.ibm.wala.cast.python.util.Util.MODULE_INITIALIZATION_FILENAME;
+import static com.ibm.wala.cast.python.util.Util.PYTHON_FILE_EXTENSION;
 
 import com.google.common.collect.Maps;
 import com.ibm.wala.cast.ipa.callgraph.AstSSAPropagationCallGraphBuilder;
@@ -24,6 +25,7 @@ import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.NewSiteReference;
+import com.ibm.wala.core.util.CancelRuntimeException;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.fixpoint.AbstractOperator;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
@@ -52,6 +54,7 @@ import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
+import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.intset.IntIterator;
 import com.ibm.wala.util.intset.IntSet;
@@ -239,15 +242,9 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
               this.ir.getMethod().getReference().getDeclaringClass().getName();
           logger.finer("Found script: " + scriptTypeName + ".");
 
-          Atom scriptPackage = scriptTypeName.getPackage();
-          logger.finer("Found script package: " + scriptPackage + ".");
-
-          String scriptName =
-              (scriptPackage == null
-                      ? scriptTypeName.getClassName()
-                      : scriptPackage.toString() + "/" + scriptTypeName.getClassName())
-                  .toString();
+          String scriptName = getScriptName(scriptTypeName);
           logger.fine("Script name is: " + scriptName);
+          assert scriptName.endsWith("." + PYTHON_FILE_EXTENSION);
 
           if (def instanceof SSAInvokeInstruction) {
             // Library case.
@@ -334,9 +331,11 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 
           // if the "receiver" is a module initialization script.
           if (fieldName.toString().endsWith("/" + MODULE_INITIALIZATION_FILENAME))
-            // check if the constant refers to a field that is being imported by a wildcard in the
-            // corresponding module's initialization script.
-            processWildcardImports(instruction, fieldName, constantValue.toString());
+            try {
+              processWildcardImports(instruction, fieldName, constantValue.toString());
+            } catch (CancelException e) {
+              throw new CancelRuntimeException(e);
+            }
         }
       }
     }
@@ -361,18 +360,43 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
     public void visitAstGlobalRead(AstGlobalRead globalRead) {
       super.visitAstGlobalRead(globalRead);
 
-      TypeName scriptTypeName = this.ir.getMethod().getReference().getDeclaringClass().getName();
+      TypeName enclosingMethodTypeName =
+          this.ir.getMethod().getReference().getDeclaringClass().getName();
 
-      String scriptName =
-          (scriptTypeName.getPackage() == null
-                  ? scriptTypeName.getClassName()
-                  : scriptTypeName.getPackage())
-              .toString();
-      logger.finer("Script name is: " + scriptName + ".");
+      String scriptName = getScriptName(enclosingMethodTypeName);
 
-      String fieldName = getStrippedDeclaredFieldName(globalRead);
+      if (scriptName.endsWith("." + PYTHON_FILE_EXTENSION)) {
+        // We have a valid script name.
+        logger.fine("Script name is: " + scriptName);
+        String fieldName = getStrippedDeclaredFieldName(globalRead);
+        try {
+          processWildcardImports(globalRead, scriptName, fieldName);
+        } catch (CancelException e) {
+          throw new CancelRuntimeException(e);
+        }
+      }
+    }
 
-      processWildcardImports(globalRead, scriptName, fieldName);
+    /**
+     * Returns the name of the script for the given {@link TypeName} representing a the name of a
+     * method.
+     *
+     * @param methodName The name of the method.
+     * @return The name of the corresponding script.
+     * @implNote In Ariadne, scripts are also "methods" with the name "do."
+     */
+    private static String getScriptName(TypeName methodName) {
+      boolean script = methodName.toString().endsWith(PYTHON_FILE_EXTENSION);
+
+      if (script)
+        return methodName.getPackage() == null
+            ? methodName.getClassName().toString()
+            : methodName.getPackage().toString() + "/" + methodName.getClassName().toString();
+      else
+        return (methodName.getPackage() == null
+                ? methodName.getClassName()
+                : methodName.getPackage())
+            .toString();
     }
 
     /**
@@ -385,7 +409,25 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
      * @param fieldName The name of the field that may be imported using a wildcard.
      */
     private void processWildcardImports(
-        SSAInstruction instruction, String scriptName, String fieldName) {
+        SSAInstruction instruction, String scriptName, String fieldName) throws CancelException {
+      // Get the method reference for the given script.
+      MethodReference reference = getMethodReferenceRepresentingScript(scriptName);
+
+      // Get the nodes for the script.
+      Set<CGNode> scriptNodes = this.getBuilder().getCallGraph().getNodes(reference);
+
+      // For each node representing the script.
+      for (CGNode node : scriptNodes) {
+        // if we haven't visited the node yet.
+        if (!this.getBuilder().haveAlreadyVisited(node)) {
+          // visit the node first. Otherwise, we won't know if there are any wildcard imports in
+          // it.
+          this.getBuilder().addConstraintsFromNode(node, null);
+
+          assert this.getBuilder().haveAlreadyVisited(node);
+        }
+      }
+
       // Are there any wildcard imports for this script?
       if (getBuilder().getScriptToWildcardImports().containsKey(scriptName)) {
         logger.info("Found wildcard imports in " + scriptName + " for " + instruction + ".");
