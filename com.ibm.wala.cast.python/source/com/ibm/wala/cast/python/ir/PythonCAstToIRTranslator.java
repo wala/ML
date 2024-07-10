@@ -11,9 +11,9 @@
 package com.ibm.wala.cast.python.ir;
 
 import static com.google.common.io.Files.getNameWithoutExtension;
-import static com.ibm.wala.cast.python.ir.PythonLanguage.MODULE_INITIALIZATION_FILENAME;
 import static com.ibm.wala.cast.python.ir.PythonLanguage.Python;
 import static com.ibm.wala.cast.python.types.PythonTypes.pythonLoader;
+import static com.ibm.wala.cast.python.util.Util.MODULE_INITIALIZATION_FILENAME;
 
 import com.ibm.wala.cast.ir.ssa.AssignInstruction;
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;

@@ -1,6 +1,7 @@
 package com.ibm.wala.cast.python.util;
 
 import static com.google.common.collect.Iterables.concat;
+import static com.google.common.io.Files.getNameWithoutExtension;
 import static com.ibm.wala.cast.python.types.PythonTypes.CAST_DYNAMIC_ANNOTATION;
 import static com.ibm.wala.cast.python.types.PythonTypes.CLASS_METHOD;
 import static com.ibm.wala.types.annotations.Annotation.make;
@@ -42,6 +43,17 @@ public class Util {
 
   /** All Python files must have this extension. */
   public static final String PYTHON_FILE_EXTENSION = "py";
+
+  /**
+   * The Python standard module initialization file. These <a href="https://bit.ly/4as7ELJ">files
+   * are required to make Python treat directories containing the file as packages (unless using a
+   * namespace package, a relatively advanced feature)</a>.
+   */
+  public static final String MODULE_INITIALIZATION_FILENAME = "__init__." + PYTHON_FILE_EXTENSION;
+
+  /** Name of the Python initialization file without the extension. */
+  public static final String MODULE_INITIALIZATION_ENTITY_NAME =
+      getNameWithoutExtension(MODULE_INITIALIZATION_FILENAME);
 
   /**
    * Add Pytest entrypoints to the given {@link PropagationCallGraphBuilder}.

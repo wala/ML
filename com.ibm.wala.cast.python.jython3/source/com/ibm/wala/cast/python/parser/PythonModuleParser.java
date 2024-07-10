@@ -10,8 +10,7 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.parser;
 
-import static com.google.common.io.Files.getNameWithoutExtension;
-import static com.ibm.wala.cast.python.ir.PythonLanguage.MODULE_INITIALIZATION_FILENAME;
+import static com.ibm.wala.cast.python.util.Util.MODULE_INITIALIZATION_ENTITY_NAME;
 
 import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
 import com.ibm.wala.cast.python.util.Util;
@@ -49,10 +48,6 @@ import org.python.antlr.ast.alias;
 public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
   private static final Logger LOGGER = Logger.getLogger(PythonModuleParser.class.getName());
-
-  /** Name of the Python initialization file without the extension. */
-  private static final String MODULE_INITIALIZATION_ENTITY_NAME =
-      getNameWithoutExtension(MODULE_INITIALIZATION_FILENAME);
 
   private final Set<SourceModule> localModules = HashSetFactory.make();
 
