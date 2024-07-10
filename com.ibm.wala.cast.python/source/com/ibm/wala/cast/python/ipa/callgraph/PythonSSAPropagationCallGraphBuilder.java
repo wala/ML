@@ -445,6 +445,12 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
           CallGraph callGraph = this.getBuilder().getCallGraph();
           Set<CGNode> nodes = callGraph.getNodes(importMethodReference);
 
+          if (nodes.isEmpty())
+            throw new IllegalStateException(
+                "Can't find CG node for import method: "
+                    + importMethodReference.getSignature()
+                    + ".");
+
           PointerKey defPK = this.getPointerKeyForLocal(instruction.getDef());
           assert defPK != null;
 
