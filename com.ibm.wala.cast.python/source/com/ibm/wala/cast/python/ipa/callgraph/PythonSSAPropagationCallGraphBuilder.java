@@ -287,14 +287,8 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
             SSAGetInstruction getInstruction = (SSAGetInstruction) def;
             String strippedFieldName = getStrippedDeclaredFieldName(getInstruction);
 
-            TypeReference typeReference =
-                TypeReference.findOrCreate(PythonTypes.pythonLoader, "L" + strippedFieldName);
-
             MethodReference methodReference =
-                MethodReference.findOrCreate(
-                    typeReference,
-                    Atom.findOrCreateAsciiAtom("do"),
-                    Descriptor.findOrCreate(null, PythonTypes.rootTypeName));
+                getMethodReferenceRepresentingScript(strippedFieldName);
 
             logger.info(
                 "Adding: "
@@ -345,6 +339,22 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
             processWildcardImports(instruction, fieldName, constantValue.toString());
         }
       }
+    }
+
+    /**
+     * Given a script's name, returns the {@link MethodReference} representing the script.
+     *
+     * @param scriptName The name of the script.
+     * @return The corresponding {@link MethodReference} representing the script.
+     */
+    private static MethodReference getMethodReferenceRepresentingScript(String scriptName) {
+      TypeReference typeReference =
+          TypeReference.findOrCreate(PythonTypes.pythonLoader, "L" + scriptName);
+
+      return MethodReference.findOrCreate(
+          typeReference,
+          Atom.findOrCreateAsciiAtom("do"),
+          Descriptor.findOrCreate(null, PythonTypes.rootTypeName));
     }
 
     @Override
