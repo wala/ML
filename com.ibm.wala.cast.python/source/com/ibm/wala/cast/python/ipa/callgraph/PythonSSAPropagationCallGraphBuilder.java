@@ -15,14 +15,12 @@ import static com.ibm.wala.cast.python.ir.PythonLanguage.MODULE_INITIALIZATION_F
 import com.google.common.collect.Maps;
 import com.ibm.wala.cast.ipa.callgraph.AstSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.ipa.callgraph.GlobalObjectKey;
-import com.ibm.wala.cast.ipa.callgraph.ScopeMappingInstanceKeys.ScopeMappingInstanceKey;
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.ir.ssa.AstPropertyRead;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.ssa.PythonInstructionVisitor;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.types.PythonTypes;
-import com.ibm.wala.cast.python.util.Util;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.NewSiteReference;
@@ -33,7 +31,6 @@ import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.IAnalysisCacheView;
 import com.ibm.wala.ipa.callgraph.propagation.AbstractFieldPointerKey;
-import com.ibm.wala.ipa.callgraph.propagation.AllocationSiteInNode;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
@@ -324,33 +321,27 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
         }
 
         // check if we are reading from an module initialization script.
-        PointerKey objRefPK = getPointerKeyForLocal(instruction.getObjectRef());
-        OrdinalSet<InstanceKey> objRefPointsToSet =
-            getBuilder().getPointerAnalysis().getPointsToSet(objRefPK);
+        SSAInstruction objRefDef = du.getDef(instruction.getObjectRef());
+        logger.finest(
+            () ->
+                "Found def: "
+                    + objRefDef
+                    + " for object reference: "
+                    + instruction.getObjectRef()
+                    + " in instruction: "
+                    + instruction
+                    + ".");
 
-        for (InstanceKey objIK : objRefPointsToSet) {
-          if (objIK instanceof AllocationSiteInNode || objIK instanceof ScopeMappingInstanceKey) {
-            AllocationSiteInNode asin = Util.getAllocationSiteInNode(objIK);
-            NewSiteReference site = asin.getSite();
-            TypeReference declaredType = site.getDeclaredType();
-            TypeName scriptTypeName = declaredType.getName();
+        if (objRefDef instanceof AstGlobalRead) {
+          AstGlobalRead agr = (AstGlobalRead) objRefDef;
+          String fieldName = getStrippedDeclaredFieldName(agr);
+          logger.finer("Found field name: " + fieldName);
 
-            if (scriptTypeName.toString().endsWith("/" + MODULE_INITIALIZATION_FILENAME)) {
-              // the "receiver" is a module initialization script.
-              Atom scriptPackage = scriptTypeName.getPackage();
-
-              String scriptName =
-                  (scriptPackage == null
-                          ? scriptTypeName.getClassName()
-                          : scriptPackage.toString() + "/" + scriptTypeName.getClassName())
-                      .toString();
-              logger.finer("Script name is: " + scriptName + ".");
-
-              // check if the constant refers to a field that is being imported by a wildcard in the
-              // corresponding module's initialization script.
-              processWildcardImports(instruction, scriptName, constantValue.toString());
-            }
-          }
+          // if the "receiver" is a module initialization script.
+          if (fieldName.toString().endsWith("/" + MODULE_INITIALIZATION_FILENAME))
+            // check if the constant refers to a field that is being imported by a wildcard in the
+            // corresponding module's initialization script.
+            processWildcardImports(instruction, fieldName, constantValue.toString());
         }
       }
     }
