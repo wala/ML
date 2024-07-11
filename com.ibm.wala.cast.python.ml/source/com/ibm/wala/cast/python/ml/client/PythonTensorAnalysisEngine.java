@@ -79,6 +79,8 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
               PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/conv3d")),
           AstMethodReference.fnSelector);
 
+  /** Not used due to https://github.com/wala/ML/issues/195 workaround. */
+  @SuppressWarnings("unused")
   private static final MethodReference reshape =
       MethodReference.findOrCreate(
           TypeReference.findOrCreate(
