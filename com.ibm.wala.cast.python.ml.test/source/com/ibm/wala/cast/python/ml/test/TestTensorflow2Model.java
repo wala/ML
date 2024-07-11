@@ -2803,7 +2803,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   }
 
   /** Test https://github.com/wala/ML/issues/205. */
-  @Test(expected = java.lang.AssertionError.class)
+  @Test
   public void testModule68()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -2817,7 +2817,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   }
 
   /** Test https://github.com/wala/ML/issues/205. */
-  @Test(expected = java.lang.IllegalStateException.class)
+  @Test
   public void testModule69()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(

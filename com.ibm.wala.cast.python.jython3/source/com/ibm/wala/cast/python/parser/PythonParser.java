@@ -2387,7 +2387,9 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
                       }
                     });
               });
-      throw new TranslatorToCAst.Error(warnings);
+
+      // Log the parsing errors (best-effort).
+      warnings.forEach(w -> LOGGER.warning(() -> "Encountered parsing problem: " + w));
     }
 
     try {
