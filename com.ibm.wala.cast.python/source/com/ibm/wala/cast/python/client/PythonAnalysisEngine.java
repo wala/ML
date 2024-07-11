@@ -168,7 +168,7 @@ public abstract class PythonAnalysisEngine<T>
     try {
       Util.checkForFrontEndErrors(cha);
     } catch (WalaException e) {
-      logger.log(Level.WARNING, e, () -> "Encountered WALA exception: " + e);
+      logger.log(Level.WARNING, e, () -> "Encountered WALA exception: " + e.getLocalizedMessage());
     }
 
     setClassHierarchy(cha);
