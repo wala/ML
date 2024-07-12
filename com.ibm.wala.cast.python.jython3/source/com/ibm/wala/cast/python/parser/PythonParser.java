@@ -60,6 +60,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 import org.python.antlr.PythonTree;
 import org.python.antlr.ast.Assert;
 import org.python.antlr.ast.Assign;
@@ -141,6 +142,8 @@ import org.python.core.PyObject;
 
 public abstract class PythonParser<T> extends AbstractParser<T> implements TranslatorToCAst {
 
+  private static final Logger LOGGER = getLogger(PythonParser.class.getName());
+  
   private static boolean COMPREHENSION_IR = true;
 
   private CAstType codeBody =
