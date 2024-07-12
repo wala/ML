@@ -143,7 +143,7 @@ import org.python.core.PyObject;
 public abstract class PythonParser<T> extends AbstractParser<T> implements TranslatorToCAst {
 
   private static final Logger LOGGER = getLogger(PythonParser.class.getName());
-  
+
   private static boolean COMPREHENSION_IR = true;
 
   private CAstType codeBody =
