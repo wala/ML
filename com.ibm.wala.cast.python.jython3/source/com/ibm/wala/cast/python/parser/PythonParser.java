@@ -14,6 +14,7 @@ import static com.ibm.wala.cast.python.util.Util.CLASS_METHOD_ANNOTATION_NAME;
 import static com.ibm.wala.cast.python.util.Util.DYNAMIC_ANNOTATION_KEY;
 import static com.ibm.wala.cast.python.util.Util.STATIC_METHOD_ANNOTATION_NAME;
 import static com.ibm.wala.cast.python.util.Util.getNameStream;
+import static java.util.logging.Logger.getLogger;
 
 import com.ibm.wala.cast.ir.translator.AbstractClassEntity;
 import com.ibm.wala.cast.ir.translator.AbstractCodeEntity;
