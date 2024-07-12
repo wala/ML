@@ -14,6 +14,7 @@ import static com.ibm.wala.cast.python.util.Util.CLASS_METHOD_ANNOTATION_NAME;
 import static com.ibm.wala.cast.python.util.Util.DYNAMIC_ANNOTATION_KEY;
 import static com.ibm.wala.cast.python.util.Util.STATIC_METHOD_ANNOTATION_NAME;
 import static com.ibm.wala.cast.python.util.Util.getNameStream;
+import static java.util.logging.Logger.getLogger;
 
 import com.ibm.wala.cast.ir.translator.AbstractClassEntity;
 import com.ibm.wala.cast.ir.translator.AbstractCodeEntity;
@@ -60,6 +61,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 import org.python.antlr.PythonTree;
 import org.python.antlr.ast.Assert;
 import org.python.antlr.ast.Assign;
@@ -140,6 +142,8 @@ import org.python.antlr.base.stmt;
 import org.python.core.PyObject;
 
 public abstract class PythonParser<T> extends AbstractParser<T> implements TranslatorToCAst {
+
+  private static final Logger LOGGER = getLogger(PythonParser.class.getName());
 
   private static boolean COMPREHENSION_IR = true;
 
@@ -2376,7 +2380,9 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
                       }
                     });
               });
-      throw new TranslatorToCAst.Error(warnings);
+
+      // Log the parsing errors (best-effort).
+      warnings.forEach(w -> LOGGER.warning(() -> "Encountered parsing problem: " + w));
     }
 
     try {
