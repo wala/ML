@@ -188,6 +188,7 @@
                   <exclude>**/*.gradle/</exclude>
                   <exclude>**/.pytest_cache/</exclude>
                   <exclude>**/*.log</exclude>
+                  <exclude>**/*.pdf</exclude>
                 </excludes>
                 <trimTrailingWhitespace/>
                 <endWithNewline/>
