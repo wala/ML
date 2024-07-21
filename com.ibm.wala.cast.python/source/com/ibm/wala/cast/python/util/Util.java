@@ -55,6 +55,8 @@ public class Util {
   public static final String MODULE_INITIALIZATION_ENTITY_NAME =
       getNameWithoutExtension(MODULE_INITIALIZATION_FILENAME);
 
+  public static final String IMPORT_WILDCARD_CHARACTER = "*";
+
   /**
    * Add Pytest entrypoints to the given {@link PropagationCallGraphBuilder}.
    *

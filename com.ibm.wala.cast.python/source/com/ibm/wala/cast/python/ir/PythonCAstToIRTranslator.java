@@ -13,6 +13,7 @@ package com.ibm.wala.cast.python.ir;
 import static com.google.common.io.Files.getNameWithoutExtension;
 import static com.ibm.wala.cast.python.ir.PythonLanguage.Python;
 import static com.ibm.wala.cast.python.types.PythonTypes.pythonLoader;
+import static com.ibm.wala.cast.python.util.Util.IMPORT_WILDCARD_CHARACTER;
 import static com.ibm.wala.cast.python.util.Util.MODULE_INITIALIZATION_FILENAME;
 
 import com.ibm.wala.cast.ir.ssa.AssignInstruction;
@@ -70,6 +71,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Consumer;
@@ -1002,8 +1004,9 @@ public class PythonCAstToIRTranslator extends AstTranslator {
                   .PropertyRead(
                       idx, resultVal, resultVal, context.currentScope().getConstantValue(eltName)));
 
-      // if the module is the special initialization module.
-      if (context.getName().endsWith("/" + MODULE_INITIALIZATION_FILENAME)) {
+      // if the module is the special initialization module and it's not a wildcard import.
+      if (context.getName().endsWith("/" + MODULE_INITIALIZATION_FILENAME)
+          && !Objects.equals(eltName, IMPORT_WILDCARD_CHARACTER)) {
         // add the imported name to the module so that other files can use it.
         FieldReference eltField =
             FieldReference.findOrCreate(

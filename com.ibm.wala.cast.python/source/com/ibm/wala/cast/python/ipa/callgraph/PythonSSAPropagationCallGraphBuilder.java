@@ -10,6 +10,7 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.ipa.callgraph;
 
+import static com.ibm.wala.cast.python.util.Util.IMPORT_WILDCARD_CHARACTER;
 import static com.ibm.wala.cast.python.util.Util.MODULE_INITIALIZATION_FILENAME;
 import static com.ibm.wala.cast.python.util.Util.PYTHON_FILE_EXTENSION;
 
@@ -128,8 +129,6 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
       implements PythonInstructionVisitor {
 
     private static final String GLOBAL_IDENTIFIER = "global";
-
-    private static final String IMPORT_WILDCARD_CHARACTER = "*";
 
     private static final Atom IMPORT_FUNCTION_NAME = Atom.findOrCreateAsciiAtom("import");
 
