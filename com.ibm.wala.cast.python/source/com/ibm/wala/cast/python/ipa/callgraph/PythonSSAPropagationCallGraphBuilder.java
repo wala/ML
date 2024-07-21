@@ -308,7 +308,14 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
                         return v;
                       }
                     });
-          }
+          } else
+            throw new IllegalArgumentException(
+                "Not expecting the definition: "
+                    + def
+                    + " of the object reference of: "
+                    + instruction
+                    + " to be: "
+                    + def.getClass());
         }
 
         // check if we are reading from an module initialization script.
