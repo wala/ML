@@ -43,8 +43,9 @@ import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.intset.OrdinalSet;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class PythonInstanceMethodTrampolineTargetSelector<T>
@@ -224,7 +225,8 @@ public class PythonInstanceMethodTrampolineTargetSelector<T>
     PointerKey receiver = pkf.getPointerKeyForLocal(caller, call.getUse(0));
     OrdinalSet<InstanceKey> objs = builder.getPointerAnalysis().getPointsToSet(receiver);
 
-    Map<InstanceKey, IClass> instanceToCallable = new HashMap<>();
+    // The set of potential callables to be returned.
+    Set<IClass> callableSet = new HashSet<>();
 
     for (InstanceKey o : objs) {
       AllocationSiteInNode instanceKey = getAllocationSiteInNode(o);
@@ -257,28 +259,21 @@ public class PythonInstanceMethodTrampolineTargetSelector<T>
             LOGGER.info("Applying callable workaround for https://github.com/wala/ML/issues/118.");
         }
 
-        if (callable != null) {
-          if (instanceToCallable.containsKey(instanceKey))
-            throw new IllegalStateException("Exisitng mapping found for: " + instanceKey);
-
-          IClass previousValue = instanceToCallable.put(instanceKey, callable);
-          assert previousValue == null : "Not expecting a previous mapping.";
-        }
+        callableSet.add(callable);
       }
     }
 
     // if there's only one possible option.
-    if (instanceToCallable.values().size() == 1) {
-      IClass callable = instanceToCallable.values().iterator().next();
+    if (callableSet.size() == 1) {
+      IClass callable = callableSet.iterator().next();
       assert callable != null : "Callable should be non-null.";
       return callable;
     }
 
     // if we have multiple candidates.
-    if (instanceToCallable.values().size() > 1)
+    if (callableSet.size() > 1)
       // we cannot accurately select one.
-      LOGGER.warning(
-          "Multiple (" + instanceToCallable.values().size() + ") callable targets found.");
+      LOGGER.warning("Multiple (" + callableSet.size() + ") callable targets found.");
 
     return null;
   }
