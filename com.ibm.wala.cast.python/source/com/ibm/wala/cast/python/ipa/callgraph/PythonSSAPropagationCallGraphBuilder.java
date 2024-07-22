@@ -257,7 +257,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 
               logger.info(
                   "Adding: "
-                      + declaredTarget.getDeclaringClass().getName().getClassName()
+                      + declaredTarget.getDeclaringClass().getName().toString().substring(1)
                       + " to wildcard imports for: "
                       + scriptName
                       + ".");
@@ -288,7 +288,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 
             logger.info(
                 "Adding: "
-                    + methodReference.getDeclaringClass().getName().getClassName()
+                    + methodReference.getDeclaringClass().getName().toString().substring(1)
                     + " to wildcard imports for: "
                     + scriptName
                     + ".");
@@ -443,7 +443,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
         for (MethodReference importMethodReference : deque) {
           logger.fine(
               "Library with wildcard import is: "
-                  + importMethodReference.getDeclaringClass().getName().getClassName()
+                  + importMethodReference.getDeclaringClass().getName().toString().substring(1)
                   + ".");
 
           logger.fine("Examining global: " + fieldName + " for wildcard import.");
