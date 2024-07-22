@@ -261,16 +261,16 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
       }
 
       private int getNumberOfBeginningDots(String string) {
-        int numBeginningDots = 0;
+        int ret = 0;
 
         for (int i = 0; i < string.length(); i++) {
           char character = string.charAt(i);
 
-          if (character == '.') ++numBeginningDots;
+          if (character == '.') ++ret;
           else break;
         }
 
-        return numBeginningDots;
+        return ret;
       }
     };
   }
