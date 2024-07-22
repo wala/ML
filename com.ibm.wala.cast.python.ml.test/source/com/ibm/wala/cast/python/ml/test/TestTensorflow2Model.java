@@ -2865,6 +2865,76 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {2});
   }
 
+  /** Test https://github.com/wala/ML/issues/210. */
+  @Test(expected = AssertionError.class)
+  public void testModule70()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj65/src/__init__.py", "proj65/src/module.py", "proj65/client.py"},
+        "src/module.py",
+        "f",
+        "proj65",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /** Test https://github.com/wala/ML/issues/210. */
+  @Test(expected = AssertionError.class)
+  public void testModule71()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj67/src/__init__.py", "proj67/src/module.py", "proj67/client.py"},
+        "src/module.py",
+        "f",
+        "proj67",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /** Test https://github.com/wala/ML/issues/210. */
+  @Test
+  public void testModule72()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj68/src/__init__.py", "proj68/src/module.py", "proj68/client.py"},
+        "src/module.py",
+        "f",
+        "proj68",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /** Test https://github.com/wala/ML/issues/210. */
+  @Test
+  public void testModule73()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj69/src/__init__.py", "proj69/src/module.py", "proj69/client.py"},
+        "src/module.py",
+        "f",
+        "proj69",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /** Test https://github.com/wala/ML/issues/210. */
+  @Test
+  public void testModule74()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj70/src/__init__.py", "proj70/src/module.py", "proj70/client.py"},
+        "src/module.py",
+        "f",
+        "proj70",
+        1,
+        1,
+        new int[] {2});
+  }
+
   @Test
   public void testStaticMethod() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_static_method.py", "MyClass.the_static_method", 1, 1, 2);
