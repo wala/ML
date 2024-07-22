@@ -39,7 +39,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /** Test TF2 APIs. */
@@ -3042,14 +3041,14 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_decorated_method.py", "f", 1, 1, 2);
   }
 
-  @Ignore("Enable once once https://github.com/wala/ML/issues/188 is fixed.")
-  @Test
+  /** Test https://github.com/wala/ML/issues/188. */
+  @Test(expected = AssertionError.class)
   public void testDecoratedMethod2() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_decorated_method2.py", "f", 1, 1, 2);
   }
 
-  @Ignore("Enable once once https://github.com/wala/ML/issues/190 is fixed.")
-  @Test
+  /** Test https://github.com/wala/ML/issues/190. */
+  @Test(expected = AssertionError.class)
   public void testDecoratedMethod3() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_decorated_method3.py", "raffi", 1, 1, 2);
   }
@@ -3079,17 +3078,19 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_decorated_method8.py", "f", 1, 1, 2);
   }
 
-  /** This decorator isn't defined. Thus, we shouldn't have a CG node for it. */
-  @Ignore(
-      "We now require nodes for functions under test. Otherwise, a test could pass even though the"
-          + " function doesn't exist.")
-  @Test
+  /**
+   * This decorator isn't defined. Thus, we shouldn't have a CG node for it.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist.
+   */
+  @Test(expected = AssertionError.class)
   public void testDecoratedMethod9() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_decorated_method9.py", "f", 0, 0);
   }
 
-  @Ignore("Enable once once https://github.com/wala/ML/issues/190 is fixed.")
-  @Test
+  /** Test https://github.com/wala/ML/issues/190. */
+  @Test(expected = AssertionError.class)
   public void testDecoratedMethod10() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_decorated_method10.py", "f", 1, 1, 2);
   }
@@ -3105,8 +3106,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_decorated_method12.py", "f", 0, 0);
   }
 
-  @Ignore("Enable once once https://github.com/wala/ML/issues/190 is fixed.")
-  @Test
+  /** Test https://github.com/wala/ML/issues/190. */
+  @Test(expected = AssertionError.class)
   public void testDecoratedMethod13() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_decorated_method13.py", "f", 1, 1, 2);
   }
