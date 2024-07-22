@@ -2969,6 +2969,13 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {2});
   }
 
+  /** Test https://github.com/wala/ML/issues/211. */
+  @Test
+  public void testModule78()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(new String[] {"module.py", "client2.py"}, "module.py", "f", "", 1, 1, new int[] {2});
+  }
+
   @Test
   public void testStaticMethod() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_static_method.py", "MyClass.the_static_method", 1, 1, 2);
