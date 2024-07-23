@@ -147,7 +147,6 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
        * @param module The {@link SourceModule} for which to extract a {@link Path}.
        * @return The {@link Path} corresponding to the given {@link SourceModule}.
        * @throws IllegalStateException If the given {@link SourceModule} is not present.
-       * @implNote The discovered {@link Path} will be logged.
        */
       private static Path getPath(Optional<SourceModule> module) {
         return module
