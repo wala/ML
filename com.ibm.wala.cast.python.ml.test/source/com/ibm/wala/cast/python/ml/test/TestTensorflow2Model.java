@@ -3349,6 +3349,76 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         expectedTensorParameterValueNumbers);
   }
 
+  /** Test https://github.com/wala/ML/issues/209. */
+  @Test
+  public void testModule79()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj73/models/__init__.py",
+          "proj73/models/albert.py",
+          "proj73/bert.py",
+          "proj73/models/bert.py",
+          "proj73/client.py"
+        },
+        "models/albert.py",
+        "f",
+        "proj73",
+        1,
+        1,
+        new int[] {2});
+
+    test(
+        new String[] {
+          "proj73/models/__init__.py",
+          "proj73/models/albert.py",
+          "proj73/bert.py",
+          "proj73/models/bert.py",
+          "proj73/client.py"
+        },
+        "models/bert.py",
+        "g",
+        "proj73",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /** Test https://github.com/wala/ML/issues/209. */
+  @Test
+  public void testModule80()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj74/models/__init__.py",
+          "proj74/models/albert.py",
+          "proj74/bert.py",
+          "proj74/models/bert.py",
+          "proj74/client.py"
+        },
+        "models/albert.py",
+        "f",
+        "proj74",
+        1,
+        1,
+        new int[] {2});
+
+    test(
+        new String[] {
+          "proj74/models/__init__.py",
+          "proj74/models/albert.py",
+          "proj74/bert.py",
+          "proj74/models/bert.py",
+          "proj74/client.py"
+        },
+        "models/bert.py",
+        "g",
+        "proj74",
+        1,
+        1,
+        new int[] {2});
+  }
+
   @Test
   public void testStaticMethod() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_static_method.py", "MyClass.the_static_method", 1, 1, 2);
