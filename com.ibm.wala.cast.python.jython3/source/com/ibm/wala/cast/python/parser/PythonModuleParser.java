@@ -149,7 +149,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
        * @throws IllegalStateException If the given {@link SourceModule} is not present.
        * @implNote The discovered {@link Path} will be logged.
        */
-      private Path getPath(Optional<SourceModule> module) {
+      private static Path getPath(Optional<SourceModule> module) {
         return module
             .map(SourceModule::getURL)
             .map(URL::getFile)
