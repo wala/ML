@@ -257,7 +257,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
         return subpath.toString();
       }
 
-      private int getNumberOfBeginningDots(String string) {
+      private static int getNumberOfBeginningDots(String string) {
         int ret = 0;
 
         for (int i = 0; i < string.length(); i++) {
