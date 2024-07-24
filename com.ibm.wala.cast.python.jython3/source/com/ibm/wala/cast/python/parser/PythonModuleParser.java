@@ -12,7 +12,6 @@ package com.ibm.wala.cast.python.parser;
 
 import static com.google.common.io.Files.getNameWithoutExtension;
 import static com.ibm.wala.cast.python.ir.PythonLanguage.MODULE_INITIALIZATION_FILENAME;
-import static com.ibm.wala.cast.python.util.Util.PYTHON_FILE_EXTENSION;
 
 import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
 import com.ibm.wala.cast.python.util.Util;
@@ -377,7 +376,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
     // executed. If the module is found here, the search stops.
     String scriptName = scriptName();
     String scriptDirectory = scriptName.substring(0, scriptName.lastIndexOf('/') + 1);
-    String moduleFileName = moduleName + "." + PYTHON_FILE_EXTENSION;
+    String moduleFileName = moduleName + ".py";
     String modulePath = scriptDirectory + moduleFileName;
     SourceModule module = pathToLocalModule.get(modulePath);
 
