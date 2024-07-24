@@ -82,7 +82,8 @@ public class PytestEntrypointBuilder implements EntrypointBuilder {
           IClass container = dmb.getContainer();
           String containerName = container.getReference().getName().getClassName().toString();
 
-          if (containerName.startsWith("Test") && container instanceof PythonClass) {
+          if ((containerName.startsWith("Test") || containerName.endsWith("Test"))
+              && container instanceof PythonClass) {
             // It's a test class.
             PythonClass containerClass = (PythonClass) container;
 
