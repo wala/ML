@@ -33,7 +33,9 @@ import java.io.Reader;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -143,27 +145,6 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                               Ast.makeConstant(n)));
                     })
                 .collect(Collectors.toList()));
-      }
-
-      /**
-       * Returns the {@link Path} corresponding to the given {@link SourceModule}. If a {@link
-       * SourceModule} is not supplied, an {@link IllegalStateException} is thrown.
-       *
-       * @param module The {@link SourceModule} for which to extract a {@link Path}.
-       * @return The {@link Path} corresponding to the given {@link SourceModule}.
-       * @throws IllegalStateException If the given {@link SourceModule} is not present.
-       * @implNote The discovered {@link Path} will be logged.
-       */
-      private Path getPath(Optional<SourceModule> module) {
-        Path path =
-            module
-                .map(SourceModule::getURL)
-                .map(URL::getFile)
-                .map(Path::of)
-                .orElseThrow(IllegalStateException::new);
-
-        LOGGER.finer("Found path: " + path);
-        return path;
       }
 
       @Override
@@ -343,12 +324,35 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
     return new InputStreamReader(fileName.getInputStream());
   }
 
-  private boolean isLocalModule(String moduleName) {
-    boolean ret =
-        localModules.stream()
-            .map(lm -> scriptName((SourceModule) lm))
-            .anyMatch(sn -> sn.endsWith(moduleName + ".py"));
+  /**
+   * Returns the {@link Path} corresponding to the given {@link SourceModule}. If a {@link
+   * SourceModule} is not supplied, an {@link IllegalStateException} is thrown.
+   *
+   * @param module The {@link SourceModule} for which to extract a {@link Path}.
+   * @return The {@link Path} corresponding to the given {@link SourceModule}.
+   * @throws IllegalStateException If the given {@link SourceModule} is not present.
+   */
+  private static Path getPath(Optional<SourceModule> module) {
+    return module
+        .map(SourceModule::getURL)
+        .map(URL::getFile)
+        .map(Path::of)
+        .orElseThrow(IllegalStateException::new);
+  }
 
+  /**
+   * Get the {@link Path} of the parsed {@link SourceModule}.
+   *
+   * @see getPath(Optional<SourceModule>)
+   * @return The {@link Path} corresponding to the parsed {@link SourceModule}.
+   */
+  @SuppressWarnings("unused")
+  private Path getPath() {
+    return getPath(Optional.of(this.fileName));
+  }
+
+  private boolean isLocalModule(String moduleName) {
+    boolean ret = this.getLocalModule(moduleName).isPresent();
     LOGGER.finer("Module: " + moduleName + (ret ? " is" : " isn't") + " local.");
     return ret;
   }
@@ -360,12 +364,30 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
    * @return The corresponding {@link SourceModule}.
    */
   private Optional<SourceModule> getLocalModule(String moduleName) {
-    return localModules.stream()
-        .filter(
-            lm -> {
-              String scriptName = scriptName((SourceModule) lm);
-              return scriptName.endsWith(moduleName + ".py");
-            })
+    // A map of paths to known local modules.
+    Map<String, SourceModule> pathToLocalModule = new HashMap<>();
+
+    for (SourceModule module : this.localModules) {
+      String scriptName = scriptName(module);
+      pathToLocalModule.put(scriptName, module);
+    }
+
+    // first, check the current directory, i.e., the directory where the import statement is
+    // executed. If the module is found here, the search stops.
+    String scriptName = scriptName();
+    String scriptDirectory = scriptName.substring(0, scriptName.lastIndexOf('/') + 1);
+    String moduleFileName = moduleName + ".py";
+    String modulePath = scriptDirectory + moduleFileName;
+    SourceModule module = pathToLocalModule.get(modulePath);
+
+    if (module != null) return Optional.of(module);
+
+    // otherwise, go through the local modules. NOTE: Should instead traverse PYTHONPATH here per
+    // https://g.co/gemini/share/310ca39fbd43. However, the problem is that the local modules may
+    // not be on disk. As such, this is our best approximation.
+    return pathToLocalModule.keySet().stream()
+        .filter(p -> p.endsWith(moduleFileName))
+        .map(p -> pathToLocalModule.get(p))
         .findFirst();
   }
 }

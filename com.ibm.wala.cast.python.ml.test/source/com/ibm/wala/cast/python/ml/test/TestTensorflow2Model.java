@@ -3349,6 +3349,108 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         expectedTensorParameterValueNumbers);
   }
 
+  /** Test https://github.com/wala/ML/issues/209. */
+  @Test
+  public void testModule79()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj73/models/__init__.py",
+          "proj73/models/albert.py",
+          "proj73/bert.py",
+          "proj73/models/bert.py",
+          "proj73/client.py"
+        },
+        "models/albert.py",
+        "f",
+        "proj73",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+
+    test(
+        new String[] {
+          "proj73/models/__init__.py",
+          "proj73/models/albert.py",
+          "proj73/bert.py",
+          "proj73/models/bert.py",
+          "proj73/client.py"
+        },
+        "models/bert.py",
+        "g",
+        "proj73",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /** Test https://github.com/wala/ML/issues/209. */
+  @Test
+  public void testModule80()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj74/models/__init__.py",
+          "proj74/models/albert.py",
+          "proj74/bert.py",
+          "proj74/models/bert.py",
+          "proj74/client.py"
+        },
+        "models/albert.py",
+        "f",
+        "proj74",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+
+    test(
+        new String[] {
+          "proj74/models/__init__.py",
+          "proj74/models/albert.py",
+          "proj74/bert.py",
+          "proj74/models/bert.py",
+          "proj74/client.py"
+        },
+        "models/bert.py",
+        "g",
+        "proj74",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
   @Test
   public void testStaticMethod() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_static_method.py", "MyClass.the_static_method", 1, 1, 2);
