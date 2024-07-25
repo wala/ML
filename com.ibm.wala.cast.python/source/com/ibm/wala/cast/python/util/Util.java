@@ -168,29 +168,28 @@ public class Util {
 
   /**
    * If the given {@link ConstantKey}'s value is <code>null</code>, then issue a warning and return
-   * <code>null</code>. Otherwise, throw an {@link IllegalArgumentException} stating that an {@link
-   * AllocationSiteInNode} cannot be extracted from the given {@link ConstantKey}. A value of <code>
+   * <code>null</code>. Otherwise, issue a warning stating that an {@link AllocationSiteInNode}
+   * cannot be extracted from the given {@link ConstantKey}. A value of <code>
    * null</code> most likely indicates that a receiver can potentially be <code>null</code>.
    *
    * @param constantKey The {@link ConstantKey} from which to extract the corresponding {@link
    *     AllocationSiteInNode}.
-   * @return <code>null</code> if the given {@link ConstantKey}'s value is <code>null</code>.
-   * @throws IllegalArgumentException If the constant's value is another else other than <code>null
-   *     </code>.
+   * @return <code>null</code>.
    */
   private static AllocationSiteInNode getAllocationSiteInNode(ConstantKey<?> constantKey) {
     Object value = constantKey.getValue();
 
-    if (value == null) {
+    if (value == null)
       LOGGER.warning("Can't extract AllocationSiteInNode from: " + constantKey + ".");
-      return null;
-    } else
-      throw new IllegalArgumentException(
+    else
+      LOGGER.warning(
           "Can't extract AllocationSiteInNode from: "
               + constantKey
               + ". Not expecting value of: "
               + value
               + " from ConstantKey.");
+
+    return null;
   }
 
   /**
