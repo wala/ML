@@ -231,91 +231,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
           logger.fine(
               "Detected wildcard for " + instruction.getMemberRef() + " in " + instruction + ".");
 
-          int objRef = instruction.getObjectRef();
-          logger.fine("Seeing if " + objRef + " refers to an import.");
-
-          SSAInstruction def = this.du.getDef(objRef);
-          logger.finer("Found definition: " + def + ".");
-
-          TypeName scriptTypeName =
-              this.ir.getMethod().getReference().getDeclaringClass().getName();
-          logger.finer("Found script: " + scriptTypeName + ".");
-
-          String scriptName = getScriptName(scriptTypeName);
-          logger.fine("Script name is: " + scriptName);
-          assert scriptName.endsWith("." + PYTHON_FILE_EXTENSION);
-
-          if (def instanceof SSAInvokeInstruction) {
-            // Library case.
-            SSAInvokeInstruction invokeInstruction = (SSAInvokeInstruction) def;
-            MethodReference declaredTarget = invokeInstruction.getDeclaredTarget();
-            Atom declaredTargetName = declaredTarget.getName();
-
-            if (declaredTargetName.equals(IMPORT_FUNCTION_NAME)) {
-              // It's an import "statement" importing a library.
-              logger.fine("Found library import statement in: " + scriptTypeName + ".");
-
-              logger.info(
-                  "Adding: "
-                      + declaredTarget.getDeclaringClass().getName().toString().substring(1)
-                      + " to wildcard imports for: "
-                      + scriptName
-                      + ".");
-
-              // Add the library to the script's queue of wildcard imports.
-              getBuilder()
-                  .getScriptToWildcardImports()
-                  .compute(
-                      scriptName,
-                      (k, v) -> {
-                        if (v == null) {
-                          Deque<MethodReference> deque = new ArrayDeque<>();
-                          deque.push(declaredTarget);
-                          return deque;
-                        } else {
-                          v.push(declaredTarget);
-                          return v;
-                        }
-                      });
-            }
-          } else if (def instanceof SSAGetInstruction) {
-            // We are importing from a script.
-            SSAGetInstruction getInstruction = (SSAGetInstruction) def;
-            String strippedFieldName = getStrippedDeclaredFieldName(getInstruction);
-
-            MethodReference methodReference =
-                getMethodReferenceRepresentingScript(strippedFieldName);
-
-            logger.info(
-                "Adding: "
-                    + methodReference.getDeclaringClass().getName().toString().substring(1)
-                    + " to wildcard imports for: "
-                    + scriptName
-                    + ".");
-
-            // Add the script to the queue of this script's wildcard imports.
-            getBuilder()
-                .getScriptToWildcardImports()
-                .compute(
-                    scriptName,
-                    (k, v) -> {
-                      if (v == null) {
-                        Deque<MethodReference> deque = new ArrayDeque<>();
-                        deque.push(methodReference);
-                        return deque;
-                      } else {
-                        v.push(methodReference);
-                        return v;
-                      }
-                    });
-          } else
-            throw new IllegalArgumentException(
-                "Not expecting the definition: "
-                    + def
-                    + " of the object reference of: "
-                    + instruction
-                    + " to be: "
-                    + def.getClass());
+          processWildcardImports(instruction);
         }
 
         // check if we are reading from an module initialization script.
@@ -344,6 +260,100 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
             }
         }
       }
+    }
+
+    /**
+     * Processes the given {@link AstPropertyRead} for any potential wildcard imports being utilized
+     * by the instruction.
+     *
+     * @param instruction The {@link AstPropertyRead} whose definition may depend on a wildcard
+     *     import.
+     */
+    private void processWildcardImports(AstPropertyRead instruction) {
+      int objRef = instruction.getObjectRef();
+      logger.fine("Seeing if " + objRef + " refers to an import.");
+
+      SSAInstruction def = this.du.getDef(objRef);
+      logger.finer("Found definition: " + def + ".");
+
+      TypeName scriptTypeName = this.ir.getMethod().getReference().getDeclaringClass().getName();
+      logger.finer("Found script: " + scriptTypeName + ".");
+
+      String scriptName = getScriptName(scriptTypeName);
+      logger.fine("Script name is: " + scriptName);
+      assert scriptName.endsWith("." + PYTHON_FILE_EXTENSION);
+
+      if (def instanceof SSAInvokeInstruction) {
+        // Library case.
+        SSAInvokeInstruction invokeInstruction = (SSAInvokeInstruction) def;
+        MethodReference declaredTarget = invokeInstruction.getDeclaredTarget();
+        Atom declaredTargetName = declaredTarget.getName();
+
+        if (declaredTargetName.equals(IMPORT_FUNCTION_NAME)) {
+          // It's an import "statement" importing a library.
+          logger.fine("Found library import statement in: " + scriptTypeName + ".");
+
+          logger.info(
+              "Adding: "
+                  + declaredTarget.getDeclaringClass().getName().toString().substring(1)
+                  + " to wildcard imports for: "
+                  + scriptName
+                  + ".");
+
+          // Add the library to the script's queue of wildcard imports.
+          getBuilder()
+              .getScriptToWildcardImports()
+              .compute(
+                  scriptName,
+                  (k, v) -> {
+                    if (v == null) {
+                      Deque<MethodReference> deque = new ArrayDeque<>();
+                      deque.push(declaredTarget);
+                      return deque;
+                    } else {
+                      v.push(declaredTarget);
+                      return v;
+                    }
+                  });
+        }
+      } else if (def instanceof SSAGetInstruction) {
+        // We are importing from a script.
+        SSAGetInstruction getInstruction = (SSAGetInstruction) def;
+        String strippedFieldName = getStrippedDeclaredFieldName(getInstruction);
+
+        MethodReference methodReference = getMethodReferenceRepresentingScript(strippedFieldName);
+
+        logger.info(
+            "Adding: "
+                + methodReference.getDeclaringClass().getName().toString().substring(1)
+                + " to wildcard imports for: "
+                + scriptName
+                + ".");
+
+        // Add the script to the queue of this script's wildcard imports.
+        getBuilder()
+            .getScriptToWildcardImports()
+            .compute(
+                scriptName,
+                (k, v) -> {
+                  if (v == null) {
+                    Deque<MethodReference> deque = new ArrayDeque<>();
+                    deque.push(methodReference);
+                    return deque;
+                  } else {
+                    v.push(methodReference);
+                    return v;
+                  }
+                });
+      } else if (def instanceof AstPropertyRead) processWildcardImports((AstPropertyRead) def);
+      else
+        throw new IllegalArgumentException(
+            "Not expecting the definition: "
+                + def
+                + " of the object reference of: "
+                + instruction
+                + " to be: "
+                + def.getClass());
     }
 
     /**
