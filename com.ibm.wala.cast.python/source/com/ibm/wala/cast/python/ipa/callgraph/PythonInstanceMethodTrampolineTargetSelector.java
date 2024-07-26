@@ -88,6 +88,8 @@ public class PythonInstanceMethodTrampolineTargetSelector<T>
 
   @Override
   public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
+    // TODO: Callable detection may need to be moved. See https://github.com/wala/ML/issues/207. If
+    // it stays here, we should further document the receiver swapping process.
     if (isCallable(receiver)) {
       LOGGER.fine("Encountered callable.");
 
