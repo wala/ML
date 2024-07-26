@@ -43,7 +43,9 @@ import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.intset.OrdinalSet;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class PythonInstanceMethodTrampolineTargetSelector<T>
@@ -87,6 +89,8 @@ public class PythonInstanceMethodTrampolineTargetSelector<T>
 
   @Override
   public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
+    // TODO: Callable detection may need to be moved. See https://github.com/wala/ML/issues/207. If
+    // it stays here, we should further document the receiver swapping process.
     if (isCallable(receiver)) {
       LOGGER.fine("Encountered callable.");
 
@@ -223,6 +227,9 @@ public class PythonInstanceMethodTrampolineTargetSelector<T>
     PointerKey receiver = pkf.getPointerKeyForLocal(caller, call.getUse(0));
     OrdinalSet<InstanceKey> objs = builder.getPointerAnalysis().getPointsToSet(receiver);
 
+    // The set of potential callables to be returned.
+    Set<IClass> callableSet = new HashSet<>();
+
     for (InstanceKey o : objs) {
       AllocationSiteInNode instanceKey = getAllocationSiteInNode(o);
       if (instanceKey != null) {
@@ -254,9 +261,21 @@ public class PythonInstanceMethodTrampolineTargetSelector<T>
             LOGGER.info("Applying callable workaround for https://github.com/wala/ML/issues/118.");
         }
 
-        if (callable != null) return callable;
+        callableSet.add(callable);
       }
     }
+
+    // if there's only one possible option.
+    if (callableSet.size() == 1) {
+      IClass callable = callableSet.iterator().next();
+      assert callable != null : "Callable should be non-null.";
+      return callable;
+    }
+
+    // if we have multiple candidates.
+    if (callableSet.size() > 1)
+      // we cannot accurately select one.
+      LOGGER.warning("Multiple (" + callableSet.size() + ") callable targets found.");
 
     return null;
   }
