@@ -462,7 +462,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
           Set<CGNode> nodes = callGraph.getNodes(importMethodReference);
 
           if (nodes.isEmpty())
-            throw new IllegalStateException(
+            logger.warning(
                 "Can't find CG node for import method: "
                     + importMethodReference.getSignature()
                     + ".");
