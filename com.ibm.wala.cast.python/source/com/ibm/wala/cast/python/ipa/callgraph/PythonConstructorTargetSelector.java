@@ -184,10 +184,11 @@ public class PythonConstructorTargetSelector implements MethodTargetSelector {
                         PythonTypes.Root)));
             pc++;
 
-            int[] cps = new int[init.getNumberOfParameters()];
+            int numberOfParameters = init.getNumberOfParameters();
+            int[] cps = new int[numberOfParameters > 1 ? numberOfParameters : 2];
             cps[0] = fv;
             cps[1] = inst;
-            for (int j = 2; j < init.getNumberOfParameters(); j++) {
+            for (int j = 2; j < numberOfParameters; j++) {
               cps[j] = j;
             }
 
