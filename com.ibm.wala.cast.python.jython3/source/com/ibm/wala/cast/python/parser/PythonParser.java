@@ -13,7 +13,8 @@ package com.ibm.wala.cast.python.parser;
 import static com.ibm.wala.cast.python.util.Util.CLASS_METHOD_ANNOTATION_NAME;
 import static com.ibm.wala.cast.python.util.Util.DYNAMIC_ANNOTATION_KEY;
 import static com.ibm.wala.cast.python.util.Util.STATIC_METHOD_ANNOTATION_NAME;
-import static com.ibm.wala.cast.python.util.Util.getNameStream;
+import static com.ibm.wala.cast.python.util.Util.getNames;
+import static com.ibm.wala.cast.python.util.Util.removeFileProtocolFromPath;
 import static java.util.logging.Logger.getLogger;
 
 import com.ibm.wala.cast.ir.translator.AbstractClassEntity;
@@ -24,6 +25,7 @@ import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
 import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
 import com.ibm.wala.cast.python.loader.DynamicAnnotatableEntity;
 import com.ibm.wala.cast.python.types.PythonTypes;
+import com.ibm.wala.cast.python.util.Util;
 import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstAnnotation;
 import com.ibm.wala.cast.tree.CAstEntity;
@@ -61,6 +63,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.python.antlr.PythonTree;
 import org.python.antlr.ast.Assert;
@@ -1190,10 +1193,13 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
             };
 
         annotations.add(cAstAnnotation);
+
+        if (LOGGER.isLoggable(Level.INFO))
+          Util.getName(cAstAnnotation).ifPresent(n -> LOGGER.info("Found decorator: " + n));
       }
 
       boolean staticMethod =
-          getNameStream(annotations).anyMatch(s -> s.equals(STATIC_METHOD_ANNOTATION_NAME));
+          getNames(annotations).stream().anyMatch(s -> s.equals(STATIC_METHOD_ANNOTATION_NAME));
 
       CAstType functionType;
       boolean isMethod =
@@ -1270,7 +1276,8 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
           if (function instanceof FunctionDef) {
 
             boolean classMethod =
-                getNameStream(annotations).anyMatch(s -> s.equals(CLASS_METHOD_ANNOTATION_NAME));
+                getNames(annotations).stream()
+                    .anyMatch(s -> s.equals(CLASS_METHOD_ANNOTATION_NAME));
 
             // Only add object metadata for non-static and non-class methods.
             if (isMethod && !staticMethod && !classMethod) {
@@ -2423,7 +2430,7 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
           for (File pathEntry : pythonPath) {
             String pathEntryAbsolutePath = pathEntry.getAbsoluteFile().getPath();
             // Remove protocol.
-            pathEntryAbsolutePath = pathEntryAbsolutePath.replaceFirst("file:.*!/", "");
+            pathEntryAbsolutePath = removeFileProtocolFromPath(pathEntryAbsolutePath);
 
             String fileAbsolutePath = file.getAbsolutePath();
 

@@ -1,5 +1,7 @@
 package com.ibm.wala.cast.python.types;
 
+import static com.ibm.wala.cast.python.util.Util.PYTHON_FILE_EXTENSION;
+
 import com.ibm.wala.cast.types.AstTypeReference;
 import com.ibm.wala.classLoader.IClassLoader;
 import com.ibm.wala.core.util.strings.Atom;
@@ -7,25 +9,38 @@ import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
+import java.util.Arrays;
 
 public class Util {
 
   private static final String GLOBAL_KEYWORD = "global";
 
   /**
-   * Returns the filename portion of the given {@link TypeName} representing a Python type.
+   * Returns the relative filename portion of the given {@link TypeName} representing a Python type.
    *
    * @param typeName A {@link TypeName} of a Python type.
-   * @return The filename portion of the given {@link TypeName}.
+   * @return The relative filename portion of the given {@link TypeName}.
    * @apiNote Python types include a file in their {@link TypeName}s in Ariadne.
    */
-  public static String getFilename(final TypeName typeName) {
-    String ret = typeName.toString();
-    ret = ret.substring("Lscript ".length());
+  public static String getRelativeFilename(final TypeName typeName) {
+    String typeNameString = typeName.toString();
 
-    if (ret.indexOf('/') != -1) ret = ret.substring(0, ret.indexOf('/'));
+    // Remove the script prefix.
+    typeNameString = typeNameString.substring("Lscript ".length());
 
-    return ret;
+    // Extract the filename.
+    String[] segments = typeNameString.split("/");
+
+    String filename =
+        Arrays.stream(segments)
+            .filter(s -> s.endsWith("." + PYTHON_FILE_EXTENSION))
+            .findFirst()
+            .orElseThrow();
+
+    assert filename.endsWith("." + PYTHON_FILE_EXTENSION)
+        : "Python files must have a \"" + PYTHON_FILE_EXTENSION + "\" extension.";
+
+    return filename;
   }
 
   /**

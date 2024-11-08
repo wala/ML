@@ -26,15 +26,14 @@
     <project-version>0.0.1-SNAPSHOT</project-version>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
-    <maven.compiler.version>3.10.1</maven.compiler.version>
+    <maven.compiler.version>3.13.0</maven.compiler.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build-alias>b000</build-alias>
     <wala.version>1.6.4</wala.version>
     <spotless.version>2.43.0</spotless.version>
-    <maven.surefire.version>3.0.0-M7</maven.surefire.version>
+    <maven.surefire.version>3.3.1</maven.surefire.version>
     <parallel>both</parallel>
     <logging.config.file>${maven.multiModuleProjectDirectory}/logging.properties</logging.config.file>
-    <black.version>24.3.0</black.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -71,7 +70,7 @@
       <dependency>
         <groupId>commons-cli</groupId>
         <artifactId>commons-cli</artifactId>
-        <version>1.3.1</version>
+        <version>1.8.0</version>
       </dependency>
       <dependency>
         <groupId>org.json</groupId>
@@ -106,7 +105,7 @@
       <dependency>
         <groupId>com.github.jnr</groupId>
         <artifactId>jnr-constants</artifactId>
-        <version>0.9.12</version>
+        <version>0.10.4</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.mojo</groupId>
@@ -117,6 +116,11 @@
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
         <version>${spotless.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>2.15.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -157,9 +161,51 @@
             <formats>
               <format>
                 <includes>
+                  <include>**/*</include>
+                </includes>
+                <excludes>
+                  <exclude>**/target/</exclude>
+                  <exclude>**/__pycache__/</exclude>
+                  <exclude>**/*.swp</exclude>
+                  <exclude>**/*.swp</exclude>
+                  <exclude>**/*.swo</exclude>
+                  <exclude>**/*.swn</exclude>
+                  <exclude>**/.idea/</exclude>
+                  <exclude>**/.vscode/</exclude>
+                  <exclude>**/node_modules/</exclude>
+                  <exclude>**/cachedir/</exclude>
+                  <exclude>**/*~</exclude>
+                  <exclude>**/*.min.*</exclude>
+                  <exclude>**/tmp.*</exclude>
+                  <exclude>**/*.jar</exclude>
+                  <exclude>**/*.exe</exclude>
+                  <exclude>**/*.dll</exclude>
+                  <exclude>**/*.class</exclude>
+                  <exclude>**/*.png</exclude>
+                  <exclude>**/*.jpg</exclude>
+                  <exclude>**/*.gif</exclude>
+                  <exclude>**/*.xml</exclude>
+                  <exclude>**/.pydevproject</exclude>
+                  <exclude>**/*pom.xml</exclude>
+                  <exclude>**/*.md</exclude>
+                  <exclude>**/.gitignore</exclude>
+                  <exclude>**/*.java</exclude>
+                  <exclude>**/*.gradle/</exclude>
+                  <exclude>**/.pytest_cache/</exclude>
+                  <exclude>**/*.log</exclude>
+                  <exclude>**/*.pdf</exclude>
+                </excludes>
+                <trimTrailingWhitespace/>
+                <endWithNewline/>
+              </format>
+              <format>
+                <includes>
                   <include>**/*.md</include>
                   <include>**/.gitignore</include>
                 </includes>
+                <excludes>
+                  <exclude>**/target/</exclude>
+                </excludes>
                 <trimTrailingWhitespace/>
                 <endWithNewline/>
                 <indent>
@@ -170,6 +216,7 @@
               <format>
                 <includes>
                   <include>**/*.xml</include>
+                  <include>**/.pydevproject</include>
                 </includes>
                 <excludes>
                   <exclude>**/plugin.xml</exclude>
@@ -193,20 +240,14 @@
                 <version>1.19.2</version>
                 <reflowLongStrings>true</reflowLongStrings>
               </googleJavaFormat>
+              <trimTrailingWhitespace/>
+              <endWithNewline/>
             </java>
             <pom>
               <sortPom>
                 <expandEmptyElements>false</expandEmptyElements>
               </sortPom>
             </pom>
-            <python>
-              <includes>
-                <include>.</include>
-              </includes>
-              <black>
-                <version>${black.version}</version>
-              </black>
-            </python>
           </configuration>
         </plugin>
       </plugins>

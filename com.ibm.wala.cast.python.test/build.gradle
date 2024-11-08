@@ -30,4 +30,3 @@ test {
 	maxHeapSize = '800M'
 	systemProperty 'python.import.site', 'false'
 }
-

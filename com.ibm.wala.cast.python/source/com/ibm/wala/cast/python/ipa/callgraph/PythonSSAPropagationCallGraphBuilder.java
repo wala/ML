@@ -10,6 +10,10 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.ipa.callgraph;
 
+import static com.ibm.wala.cast.python.util.Util.IMPORT_WILDCARD_CHARACTER;
+import static com.ibm.wala.cast.python.util.Util.MODULE_INITIALIZATION_FILENAME;
+import static com.ibm.wala.cast.python.util.Util.PYTHON_FILE_EXTENSION;
+
 import com.google.common.collect.Maps;
 import com.ibm.wala.cast.ipa.callgraph.AstSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.ipa.callgraph.GlobalObjectKey;
@@ -22,6 +26,7 @@ import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.NewSiteReference;
+import com.ibm.wala.core.util.CancelRuntimeException;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.fixpoint.AbstractOperator;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
@@ -50,6 +55,7 @@ import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
+import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.intset.IntIterator;
 import com.ibm.wala.util.intset.IntSet;
@@ -112,21 +118,19 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
   private static final Collection<TypeReference> types =
       Arrays.asList(PythonTypes.string, TypeReference.Int);
 
+  /**
+   * A mapping of script names to wildcard imports. We use a {@link Deque} here because we want to
+   * always examine the last (front of the queue) encountered wildcard import library for known
+   * names assuming that import instructions are traversed from first to last.
+   */
+  private Map<String, Deque<MethodReference>> scriptToWildcardImports = Maps.newHashMap();
+
   public static class PythonConstraintVisitor extends AstConstraintVisitor
       implements PythonInstructionVisitor {
 
     private static final String GLOBAL_IDENTIFIER = "global";
 
-    private static final String IMPORT_WILDCARD_CHARACTER = "*";
-
     private static final Atom IMPORT_FUNCTION_NAME = Atom.findOrCreateAsciiAtom("import");
-
-    /**
-     * A mapping of script names to wildcard imports. We use a {@link Deque} here because we want to
-     * always examine the last (front of the queue) encountered wildcard import library for known
-     * names assuming that import instructions are traversed from first to last.
-     */
-    private static Map<String, Deque<MethodReference>> scriptToWildcardImports = Maps.newHashMap();
 
     @Override
     protected PythonSSAPropagationCallGraphBuilder getBuilder() {
@@ -218,53 +222,88 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
     public void visitPropertyRead(AstPropertyRead instruction) {
       super.visitPropertyRead(instruction);
 
-      int memberRef = instruction.getMemberRef();
-
-      if (this.ir.getSymbolTable().isConstant(memberRef)) {
-        Object constantValue = this.ir.getSymbolTable().getConstantValue(memberRef);
+      if (this.ir.getSymbolTable().isConstant(instruction.getMemberRef())) {
+        Object constantValue =
+            this.ir.getSymbolTable().getConstantValue(instruction.getMemberRef());
 
         if (Objects.equals(constantValue, IMPORT_WILDCARD_CHARACTER)) {
           // We have a wildcard.
-          logger.fine("Detected wildcard for " + memberRef + " in " + instruction + ".");
+          logger.fine(
+              "Detected wildcard for " + instruction.getMemberRef() + " in " + instruction + ".");
 
-          int objRef = instruction.getObjectRef();
-          logger.fine("Seeing if " + objRef + " refers to an import.");
+          processWildcardImports(instruction);
+        }
 
-          SSAInstruction def = this.du.getDef(objRef);
-          logger.finer("Found definition: " + def + ".");
+        // check if we are reading from an module initialization script.
+        SSAInstruction objRefDef = du.getDef(instruction.getObjectRef());
+        logger.finest(
+            () ->
+                "Found def: "
+                    + objRefDef
+                    + " for object reference: "
+                    + instruction.getObjectRef()
+                    + " in instruction: "
+                    + instruction
+                    + ".");
 
-          TypeName scriptTypeName =
-              this.ir.getMethod().getReference().getDeclaringClass().getName();
-          logger.finer("Found script: " + scriptTypeName + ".");
+        if (objRefDef instanceof AstGlobalRead) {
+          AstGlobalRead agr = (AstGlobalRead) objRefDef;
+          String fieldName = getStrippedDeclaredFieldName(agr);
+          logger.finer("Found field name: " + fieldName);
 
-          Atom scriptPackage = scriptTypeName.getPackage();
-          logger.finer("Found script package: " + scriptPackage + ".");
+          // if the "receiver" is a module initialization script.
+          if (fieldName.toString().endsWith("/" + MODULE_INITIALIZATION_FILENAME))
+            try {
+              processWildcardImports(instruction, fieldName, constantValue.toString());
+            } catch (CancelException e) {
+              throw new CancelRuntimeException(e);
+            }
+        }
+      }
+    }
 
-          String scriptName =
-              scriptPackage == null
-                  ? scriptTypeName.getClassName().toString()
-                  : scriptPackage.toString() + "/" + scriptTypeName.getClassName().toString();
-          logger.fine("Script name is: " + scriptName);
+    /**
+     * Processes the given {@link AstPropertyRead} for any potential wildcard imports being utilized
+     * by the instruction.
+     *
+     * @param instruction The {@link AstPropertyRead} whose definition may depend on a wildcard
+     *     import.
+     */
+    private void processWildcardImports(AstPropertyRead instruction) {
+      int objRef = instruction.getObjectRef();
+      logger.fine("Seeing if " + objRef + " refers to an import.");
 
-          if (def instanceof SSAInvokeInstruction) {
-            // Library case.
-            SSAInvokeInstruction invokeInstruction = (SSAInvokeInstruction) def;
-            MethodReference declaredTarget = invokeInstruction.getDeclaredTarget();
-            Atom declaredTargetName = declaredTarget.getName();
+      SSAInstruction def = this.du.getDef(objRef);
+      logger.finer("Found definition: " + def + ".");
 
-            if (declaredTargetName.equals(IMPORT_FUNCTION_NAME)) {
-              // It's an import "statement" importing a library.
-              logger.fine("Found library import statement in: " + scriptTypeName + ".");
+      TypeName scriptTypeName = this.ir.getMethod().getReference().getDeclaringClass().getName();
+      logger.finer("Found script: " + scriptTypeName + ".");
 
-              logger.info(
-                  "Adding: "
-                      + declaredTarget.getDeclaringClass().getName().getClassName()
-                      + " to wildcard imports for: "
-                      + scriptName
-                      + ".");
+      String scriptName = getScriptName(scriptTypeName);
+      logger.fine("Script name is: " + scriptName);
+      assert scriptName.endsWith("." + PYTHON_FILE_EXTENSION);
 
-              // Add the library to the script's queue of wildcard imports.
-              scriptToWildcardImports.compute(
+      if (def instanceof SSAInvokeInstruction) {
+        // Library case.
+        SSAInvokeInstruction invokeInstruction = (SSAInvokeInstruction) def;
+        MethodReference declaredTarget = invokeInstruction.getDeclaredTarget();
+        Atom declaredTargetName = declaredTarget.getName();
+
+        if (declaredTargetName.equals(IMPORT_FUNCTION_NAME)) {
+          // It's an import "statement" importing a library.
+          logger.fine("Found library import statement in: " + scriptTypeName + ".");
+
+          logger.info(
+              "Adding: "
+                  + declaredTarget.getDeclaringClass().getName().toString().substring(1)
+                  + " to wildcard imports for: "
+                  + scriptName
+                  + ".");
+
+          // Add the library to the script's queue of wildcard imports.
+          getBuilder()
+              .getScriptToWildcardImports()
+              .compute(
                   scriptName,
                   (k, v) -> {
                     if (v == null) {
@@ -276,31 +315,25 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
                       return v;
                     }
                   });
-            }
-          } else if (def instanceof SSAGetInstruction) {
-            // We are importing from a script.
-            SSAGetInstruction getInstruction = (SSAGetInstruction) def;
-            FieldReference declaredField = getInstruction.getDeclaredField();
-            Atom fieldName = declaredField.getName();
-            String strippedFieldName =
-                fieldName.toString().substring(GLOBAL_IDENTIFIER.length() + 1);
-            TypeReference typeReference =
-                TypeReference.findOrCreate(PythonTypes.pythonLoader, "L" + strippedFieldName);
-            MethodReference methodReference =
-                MethodReference.findOrCreate(
-                    typeReference,
-                    Atom.findOrCreateAsciiAtom("do"),
-                    Descriptor.findOrCreate(null, PythonTypes.rootTypeName));
+        }
+      } else if (def instanceof SSAGetInstruction) {
+        // We are importing from a script.
+        SSAGetInstruction getInstruction = (SSAGetInstruction) def;
+        String strippedFieldName = getStrippedDeclaredFieldName(getInstruction);
 
-            logger.info(
-                "Adding: "
-                    + methodReference.getDeclaringClass().getName().getClassName()
-                    + " to wildcard imports for: "
-                    + scriptName
-                    + ".");
+        MethodReference methodReference = getMethodReferenceRepresentingScript(strippedFieldName);
 
-            // Add the script to the queue of this script's wildcard imports.
-            scriptToWildcardImports.compute(
+        logger.info(
+            "Adding: "
+                + methodReference.getDeclaringClass().getName().toString().substring(1)
+                + " to wildcard imports for: "
+                + scriptName
+                + ".");
+
+        // Add the script to the queue of this script's wildcard imports.
+        getBuilder()
+            .getScriptToWildcardImports()
+            .compute(
                 scriptName,
                 (k, v) -> {
                   if (v == null) {
@@ -312,44 +345,130 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
                     return v;
                   }
                 });
-          }
-        }
-      }
+      } else if (def instanceof AstPropertyRead) processWildcardImports((AstPropertyRead) def);
+      else
+        throw new IllegalArgumentException(
+            "Not expecting the definition: "
+                + def
+                + " of the object reference of: "
+                + instruction
+                + " to be: "
+                + def.getClass());
+    }
+
+    /**
+     * Given a script's name, returns the {@link MethodReference} representing the script.
+     *
+     * @param scriptName The name of the script.
+     * @return The corresponding {@link MethodReference} representing the script.
+     */
+    private static MethodReference getMethodReferenceRepresentingScript(String scriptName) {
+      TypeReference typeReference =
+          TypeReference.findOrCreate(PythonTypes.pythonLoader, "L" + scriptName);
+
+      return MethodReference.findOrCreate(
+          typeReference,
+          Atom.findOrCreateAsciiAtom("do"),
+          Descriptor.findOrCreate(null, PythonTypes.rootTypeName));
     }
 
     @Override
     public void visitAstGlobalRead(AstGlobalRead globalRead) {
       super.visitAstGlobalRead(globalRead);
 
-      TypeName scriptTypeName = this.ir.getMethod().getReference().getDeclaringClass().getName();
+      TypeName enclosingMethodTypeName =
+          this.ir.getMethod().getReference().getDeclaringClass().getName();
 
-      String scriptName =
-          (scriptTypeName.getPackage() == null
-                  ? scriptTypeName.getClassName()
-                  : scriptTypeName.getPackage())
-              .toString();
-      logger.finer("Script name is: " + scriptName + ".");
+      String scriptName = getScriptName(enclosingMethodTypeName);
 
-      PointerKey globalDefPK = this.getPointerKeyForLocal(globalRead.getDef());
-      assert globalDefPK != null;
+      if (scriptName.endsWith("." + PYTHON_FILE_EXTENSION)) {
+        // We have a valid script name.
+        logger.fine("Script name is: " + scriptName);
+        String fieldName = getStrippedDeclaredFieldName(globalRead);
+        try {
+          processWildcardImports(globalRead, scriptName, fieldName);
+        } catch (CancelException e) {
+          throw new CancelRuntimeException(e);
+        }
+      }
+    }
+
+    /**
+     * Returns the name of the script for the given {@link TypeName} representing a the name of a
+     * method.
+     *
+     * @param methodName The name of the method.
+     * @return The name of the corresponding script.
+     * @implNote In Ariadne, scripts are also "methods" with the name "do."
+     */
+    private static String getScriptName(TypeName methodName) {
+      boolean script = methodName.toString().endsWith(PYTHON_FILE_EXTENSION);
+
+      if (script)
+        return methodName.getPackage() == null
+            ? methodName.getClassName().toString()
+            : methodName.getPackage().toString() + "/" + methodName.getClassName().toString();
+      else
+        return (methodName.getPackage() == null
+                ? methodName.getClassName()
+                : methodName.getPackage())
+            .toString();
+    }
+
+    /**
+     * Processes the given {@link SSAInstruction} for any potential wildcard imports being utilized
+     * by the instruction.
+     *
+     * @param instruction The {@link SSAInstruction} whose definition may depend on a wildcard
+     *     import.
+     * @param scriptName The name of the script to check for wildcard imports.
+     * @param fieldName The name of the field that may be imported using a wildcard.
+     */
+    private void processWildcardImports(
+        SSAInstruction instruction, String scriptName, String fieldName) throws CancelException {
+      // Get the method reference for the given script.
+      MethodReference reference = getMethodReferenceRepresentingScript(scriptName);
+
+      // Get the nodes for the script.
+      Set<CGNode> scriptNodes = this.getBuilder().getCallGraph().getNodes(reference);
+
+      // For each node representing the script.
+      for (CGNode node : scriptNodes) {
+        // if we haven't visited the node yet.
+        if (!this.getBuilder().haveAlreadyVisited(node)) {
+          // visit the node first. Otherwise, we won't know if there are any wildcard imports in
+          // it.
+          this.getBuilder().addConstraintsFromNode(node, null);
+
+          assert this.getBuilder().haveAlreadyVisited(node);
+        }
+      }
 
       // Are there any wildcard imports for this script?
-      if (scriptToWildcardImports.containsKey(scriptName)) {
-        logger.info("Found wildcard imports in " + scriptName + " for " + globalRead + ".");
+      if (getBuilder().getScriptToWildcardImports().containsKey(scriptName)) {
+        logger.info("Found wildcard imports in " + scriptName + " for " + instruction + ".");
 
-        Deque<MethodReference> deque = scriptToWildcardImports.get(scriptName);
+        Deque<MethodReference> deque = getBuilder().getScriptToWildcardImports().get(scriptName);
 
         for (MethodReference importMethodReference : deque) {
           logger.fine(
               "Library with wildcard import is: "
-                  + importMethodReference.getDeclaringClass().getName().getClassName()
+                  + importMethodReference.getDeclaringClass().getName().toString().substring(1)
                   + ".");
 
-          String globalFieldName = getStrippedDeclaredFieldName(globalRead);
-          logger.fine("Examining global: " + globalFieldName + " for wildcard import.");
+          logger.fine("Examining global: " + fieldName + " for wildcard import.");
 
           CallGraph callGraph = this.getBuilder().getCallGraph();
           Set<CGNode> nodes = callGraph.getNodes(importMethodReference);
+
+          if (nodes.isEmpty())
+            logger.warning(
+                "Can't find CG node for import method: "
+                    + importMethodReference.getSignature()
+                    + ".");
+
+          PointerKey defPK = this.getPointerKeyForLocal(instruction.getDef());
+          assert defPK != null;
 
           for (CGNode n : nodes) {
             for (Iterator<NewSiteReference> nit = n.iterateNewSites(); nit.hasNext(); ) {
@@ -358,15 +477,14 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
               String name = newSiteReference.getDeclaredType().getName().getClassName().toString();
               logger.finest("Examining: " + name + ".");
 
-              if (name.equals(globalFieldName)) {
+              if (name.equals(fieldName)) {
                 logger.info("Found wildcard import for: " + name + ".");
 
                 InstanceKey instanceKey =
                     this.getBuilder().getInstanceKeyForAllocation(n, newSiteReference);
 
-                if (this.system.newConstraint(globalDefPK, instanceKey)) {
-                  logger.fine(
-                      "Added constraint that: " + globalDefPK + " gets: " + instanceKey + ".");
+                if (this.system.newConstraint(defPK, instanceKey)) {
+                  logger.fine("Added constraint that: " + defPK + " gets: " + instanceKey + ".");
                   return;
                 }
               }
@@ -382,25 +500,16 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
                       public void visitPut(SSAPutInstruction putInstruction) {
                         FieldReference putField = putInstruction.getDeclaredField();
 
-                        if (globalFieldName.equals(putField.getName().toString())) {
+                        if (fieldName.equals(putField.getName().toString())) {
                           // Found it.
                           int putVal = putInstruction.getVal();
 
-                          // Make the global def point to the put instruction value.
-                          PointerKey putValPK =
-                              PythonSSAPropagationCallGraphBuilder.PythonConstraintVisitor.this
-                                  .getBuilder()
-                                  .getPointerKeyForLocal(n, putVal);
+                          // Make the def point to the put instruction value.
+                          PointerKey putValPK = getBuilder().getPointerKeyForLocal(n, putVal);
 
-                          if (PythonSSAPropagationCallGraphBuilder.PythonConstraintVisitor.this
-                              .system.newConstraint(globalDefPK, assignOperator, putValPK))
+                          if (system.newConstraint(defPK, assignOperator, putValPK))
                             logger.fine(
-                                "Added constraint that: "
-                                    + globalDefPK
-                                    + " gets: "
-                                    + putValPK
-                                    + ".");
-                          return;
+                                "Added constraint that: " + defPK + " gets: " + putValPK + ".");
                         }
                       }
                     });
@@ -414,10 +523,8 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
       assert declaredFieldName.startsWith(GLOBAL_IDENTIFIER + " ");
 
       // Remove the global identifier.
-      String strippedDeclaredFieldName =
-          declaredFieldName.substring(
-              (GLOBAL_IDENTIFIER + " ").length(), declaredFieldName.length());
-      return strippedDeclaredFieldName;
+      return declaredFieldName.substring(
+          (GLOBAL_IDENTIFIER + " ").length(), declaredFieldName.length());
     }
   }
 
@@ -572,5 +679,14 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
   @Override
   protected InterestingVisitor makeInterestingVisitor(CGNode node, int vn) {
     return new PythonInterestingVisitor(vn);
+  }
+
+  /**
+   * A mapping of script names to wildcard imports included in the script.
+   *
+   * @return A mapping of script names to wildcard imports included in the corresponding script.
+   */
+  protected Map<String, Deque<MethodReference>> getScriptToWildcardImports() {
+    return scriptToWildcardImports;
   }
 }
