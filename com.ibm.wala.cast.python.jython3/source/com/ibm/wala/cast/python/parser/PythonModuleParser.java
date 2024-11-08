@@ -10,8 +10,8 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.parser;
 
-import static com.google.common.io.Files.getNameWithoutExtension;
-import static com.ibm.wala.cast.python.ir.PythonLanguage.MODULE_INITIALIZATION_FILENAME;
+import static com.ibm.wala.cast.python.util.Util.MODULE_INITIALIZATION_ENTITY_NAME;
+import static com.ibm.wala.cast.python.util.Util.PYTHON_FILE_EXTENSION;
 
 import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
 import com.ibm.wala.cast.python.util.Util;
@@ -51,10 +51,6 @@ import org.python.antlr.ast.alias;
 public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
   private static final Logger LOGGER = Logger.getLogger(PythonModuleParser.class.getName());
-
-  /** Name of the Python initialization file without the extension. */
-  private static final String MODULE_INITIALIZATION_ENTITY_NAME =
-      getNameWithoutExtension(MODULE_INITIALIZATION_FILENAME);
 
   private final Set<SourceModule> localModules = HashSetFactory.make();
 
@@ -105,7 +101,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
        *
        * @param importNames The names to import.
        * @param moduleName The name of the containing module.
-       * @return Sn import {@link CAstNode} with the given {@link List} of {@link alias}s as import
+       * @return An import {@link CAstNode} with the given {@link List} of {@link alias}s as import
        *     names within the given module.
        */
       private CAstNode createImportNode(List<alias> importNames, String moduleName) {
@@ -119,7 +115,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
        * @param importNames The names to import.
        * @param moduleName The name of the containing module.
        * @param useInitializationFile Whether to use the `__init__.py` file.
-       * @return Sn import {@link CAstNode} with the given {@link List} of {@link alias}s as import
+       * @return An import {@link CAstNode} with the given {@link List} of {@link alias}s as import
        *     names within the given module.
        */
       private CAstNode createImportNode(
@@ -161,6 +157,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
           if (moduleName.startsWith(".")) {
             LOGGER.info("Found relative import: " + moduleName);
             moduleName = this.resolveRelativeImport(moduleName);
+            LOGGER.fine("Resolved relative import: " + moduleName);
           }
 
           if (!isLocalModule(moduleName)) moduleName += "/" + MODULE_INITIALIZATION_ENTITY_NAME;
@@ -192,6 +189,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
           for (File pathEntry : pythonPath) {
             Path modulePath = getPath(localModule);
+            LOGGER.finer("Found path: " + modulePath);
 
             if (modulePath.startsWith(pathEntry.toPath())) {
               // Found it.
@@ -216,7 +214,8 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
       /**
        * Given a relative import, e.g., ".", "..", ".P", "..P", where "P" represents a package,
-       * subpackage, or module, returns the corresponding actual package, subpackage, or module name
+       * subpackage, or module, returns the corresponding actual package, subpackage, or module
+       * name.
        *
        * @param importName The relative package, subpackage, or module to resolve.
        * @return The actual corresponding package, subpackage, or module name.
@@ -244,17 +243,17 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
         return subpath.toString();
       }
 
-      private int getNumberOfBeginningDots(String string) {
-        int numBeginningDots = 0;
+      private static int getNumberOfBeginningDots(String string) {
+        int ret = 0;
 
         for (int i = 0; i < string.length(); i++) {
           char character = string.charAt(i);
 
-          if (character == '.') ++numBeginningDots;
+          if (character == '.') ++ret;
           else break;
         }
 
-        return numBeginningDots;
+        return ret;
       }
     };
   }
@@ -376,7 +375,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
     // executed. If the module is found here, the search stops.
     String scriptName = scriptName();
     String scriptDirectory = scriptName.substring(0, scriptName.lastIndexOf('/') + 1);
-    String moduleFileName = moduleName + ".py";
+    String moduleFileName = moduleName + "." + PYTHON_FILE_EXTENSION;
     String modulePath = scriptDirectory + moduleFileName;
     SourceModule module = pathToLocalModule.get(modulePath);
 

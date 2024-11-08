@@ -65,13 +65,6 @@ public class PythonLanguage implements Language {
 
   public static PythonLanguage Python = new PythonLanguage();
 
-  /**
-   * The Python standard module initialization file. These <a href="https://bit.ly/4as7ELJ">files
-   * are required to make Python treat directories containing the file as packages (unless using a
-   * namespace package, a relatively advanced feature)</a>.
-   */
-  public static final String MODULE_INITIALIZATION_FILENAME = "__init__.py";
-
   private PythonLanguage() {}
 
   @Override
