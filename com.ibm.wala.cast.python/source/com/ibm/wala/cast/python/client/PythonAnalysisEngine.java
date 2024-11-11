@@ -1,6 +1,7 @@
 package com.ibm.wala.cast.python.client;
 
 import static java.util.Collections.emptyList;
+import static java.util.logging.Level.SEVERE;
 
 import com.ibm.wala.cast.ipa.callgraph.AstCFAPointerKeys;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
@@ -61,11 +62,13 @@ import com.ibm.wala.types.Selector;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.WalaException;
+import com.ibm.wala.util.WalaRuntimeException;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -78,6 +81,12 @@ public abstract class PythonAnalysisEngine<T>
     extends AbstractAnalysisEngine<InstanceKey, PythonSSAPropagationCallGraphBuilder, T> {
 
   private static final Logger logger = Logger.getLogger(PythonAnalysisEngine.class.getName());
+
+  /** Library summaries to load. */
+  private static final String[] LIBRARIES =
+      new String[] {
+        "flask.xml", "pandas.xml", "functools.xml", "pytest.xml", "click.xml", "abseil.xml"
+      };
 
   protected PythonSSAPropagationCallGraphBuilder builder;
 
@@ -148,21 +157,18 @@ public abstract class PythonAnalysisEngine<T>
   @Override
   public IClassHierarchy buildClassHierarchy() {
     IClassHierarchy cha = null;
-
     try {
       cha = SeqClassHierarchyFactory.make(scope, loader);
     } catch (ClassHierarchyException e) {
-      assert false : e;
-      return null;
+      final String msg = "Failed to build class hierarchy.";
+      logger.log(SEVERE, msg, e);
+      throw new WalaRuntimeException(msg, e);
     }
 
     try {
       Util.checkForFrontEndErrors(cha);
     } catch (WalaException e) {
-      logger.log(
-          Level.WARNING,
-          e,
-          () -> "Encountered WALA exception, most likely from front-end parsing errors.");
+      logger.log(Level.WARNING, e, () -> "Encountered WALA exception: " + e.getLocalizedMessage());
     }
 
     setClassHierarchy(cha);
@@ -309,9 +315,8 @@ public abstract class PythonAnalysisEngine<T>
     BuiltinFunctions builtins = new BuiltinFunctions(cha);
     options.setSelector(builtins.builtinClassTargetSelector(options.getClassTargetSelector()));
 
-    addSummaryBypassLogic(options, "flask.xml");
-    addSummaryBypassLogic(options, "pandas.xml");
-    addSummaryBypassLogic(options, "functools.xml");
+    // load the library summaries.
+    Arrays.stream(LIBRARIES).forEach(l -> addSummaryBypassLogic(options, l));
   }
 
   @Override

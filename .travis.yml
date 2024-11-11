@@ -1,10 +1,11 @@
 os: linux
 dist: jammy
 language: java
-jdk: openjdk11
+jdk: openjdk17
 before_install:
  - pip install -r requirements.txt
  - mvn spotless:check -B
+ - black --fast --check .
  - git clone --depth=50 https://github.com/wala/IDE /tmp/IDE
  - git clone https://github.com/ponder-lab/jython3.git /tmp/jython3
 install:

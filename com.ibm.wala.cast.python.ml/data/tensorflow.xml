@@ -85,6 +85,7 @@
         <putfield class="LRoot" field="random" fieldType="LRoot" ref="Dataset" value="dsrandom" />
         <new def="from_tensors" class="Ltensorflow/data/Dataset/from_tensors" />
         <putfield class="LRoot" field="from_tensors" fieldType="LRoot" ref="Dataset" value="from_tensors" />
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/reshape -->
         <new def="reshape" class="Ltensorflow/functions/reshape" />
         <putfield class="LRoot" field="reshape" fieldType="LRoot" ref="x" value="reshape" />
         <new def="conv2d" class="Ltensorflow/functions/conv2d" />
@@ -252,6 +253,12 @@
         <putfield class="LRoot" field="from_row_starts" fieldType="LRoot" ref="RaggedTensor" value="from_row_starts" />
         <new def="from_value_rowids" class="Ltensorflow/functions/from_value_rowids" />
         <putfield class="LRoot" field="from_value_rowids" fieldType="LRoot" ref="RaggedTensor" value="from_value_rowids" />
+        <new def="autograph" class="Lobject" />
+        <putfield class="LRoot" field="autograph" fieldType="LRoot" ref="x" value="autograph" />
+        <putfield class="LRoot" field="experimental" fieldType="LRoot" ref="autograph" value="experimental" />
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/autograph/experimental/do_not_convert -->
+        <new def="do_not_convert" class="Ltensorflow/class/do_not_convert" />
+        <putfield class="LRoot" field="do_not_convert" fieldType="LRoot" ref="experimental" value="do_not_convert" />
         <return value="x" />
       </method>
     </class>
@@ -276,7 +283,7 @@
       </class>
       <class name="function" allocatable="true">
         <!-- These parameters are from TensorFlow v.2.9 https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/function -->
-        <method name="do" descriptor="()LRoot;" numArgs="10" paramNames="func input_signature autograph jit_compile reduce_retracing experimental_implements experimental_autograph_options experimental_relax_shapes experimental_compile experimental_follow_type_hints">
+        <method name="do" descriptor="()LRoot;" numArgs="11" paramNames="self func input_signature autograph jit_compile reduce_retracing experimental_implements experimental_autograph_options experimental_relax_shapes experimental_compile experimental_follow_type_hints">
           <new def="params" class="Ltensorflow/class/Function" />
           <putfield class="LRoot" field="func" fieldType="LRoot" ref="params" value="func" />
           <putfield class="LRoot" field="input_signature" fieldType="LRoot" ref="params" value="input_signature" />
@@ -289,6 +296,22 @@
           <putfield class="LRoot" field="experimental_compile" fieldType="LRoot" ref="params" value="experimental_compile" />
           <putfield class="LRoot" field="experimental_follow_type_hints" fieldType="LRoot" ref="params" value="experimental_follow_type_hints" />
           <return value="params" />
+        </method>
+      </class>
+      <class name="Do_not_convert" allocatable="true">
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self test">
+          <putfield class="LRoot" field="params" fieldType="LRoot" ref="test" value="self" />
+          <return value="test" />
+        </method>
+      </class>
+      <class name="do_not_convert" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/autograph/experimental/do_not_convert -->
+        <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self params values extra">
+          <new def="closure" class="Ltensorflow/class/Do_not_convert" />
+          <putfield class="LRoot" field="test" fieldType="LRoot" ref="closure" value="self" />
+          <putfield class="LRoot" field="params" fieldType="LRoot" ref="closure" value="params" />
+          <putfield class="LRoot" field="values" fieldType="LRoot" ref="closure" value="values" />
+          <return value="closure" />
         </method>
       </class>
     </package>
@@ -377,12 +400,10 @@
         </method>
       </class>
       <class name="reshape" allocatable="true">
-        <method name="copy_data" descriptor="()LRoot;">
-          <new def="x" class="Ltensorflow/examples/tutorials/mnist/dataset" />
-          <return value="x" />
-        </method>
-        <method name="do" descriptor="()LRoot;" numArgs="3">
-          <call class="LRoot" name="copy_data" descriptor="()LRoot;" type="virtual" arg0="arg0" def="x" />
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/reshape -->
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="input name">
+          <new def="z" class="Ltensorflow/functions/convert_to_tensor" />
+          <call class="Ltensorflow/functions/convert_to_tensor" name="do" descriptor="()LRoot;" type="virtual" arg0="z" arg1="input" def="x" />
           <return value="x" />
         </method>
       </class>
@@ -868,6 +889,8 @@
           <putfield class="LRoot" field="repeat" fieldType="LRoot" ref="arg0" value="repeat" />
           <new def="prefetch" class="Ltensorflow/data/prefetch" />
           <putfield class="LRoot" field="prefetch" fieldType="LRoot" ref="arg0" value="prefetch" />
+          <new def="with_options" class="Ltensorflow/data/with_options" />
+          <putfield class="LRoot" field="with_options" fieldType="LRoot" ref="arg0" value="with_options" />
           <new def="take" class="Ltensorflow/data/take" />
           <putfield class="LRoot" field="take" fieldType="LRoot" ref="arg0" value="take" />
           <return value="arg0" />
@@ -919,6 +942,15 @@
       <class name="prefetch" allocatable="true">
         <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#prefetch -->
         <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self buffer_size name">
+          <!-- FIXME: Workaround for https://github.com/wala/ML/issues/127. -->
+          <new def="x" class="Ltensorflow/data/Dataset" />
+          <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />
+          <return value="xx" />
+        </method>
+      </class>
+      <class name="with_options" allocatable="true">
+        <!-- https://www.tensorflow.org/versions/r2.9/api_docs/python/tf/data/Dataset#with_options -->
+        <method name="do" descriptor="()LRoot;" numArgs="3" paramNames="self options name">
           <!-- FIXME: Workaround for https://github.com/wala/ML/issues/127. -->
           <new def="x" class="Ltensorflow/data/Dataset" />
           <call class="Ltensorflow/data/Dataset" name="read_dataset" descriptor="()LRoot;" type="virtual" arg0="x" def="xx" />

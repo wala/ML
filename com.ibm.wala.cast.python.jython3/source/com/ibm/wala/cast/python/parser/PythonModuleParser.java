@@ -10,8 +10,8 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.parser;
 
-import static com.google.common.io.Files.getNameWithoutExtension;
-import static com.ibm.wala.cast.python.ir.PythonLanguage.MODULE_INITIALIZATION_FILENAME;
+import static com.ibm.wala.cast.python.util.Util.MODULE_INITIALIZATION_ENTITY_NAME;
+import static com.ibm.wala.cast.python.util.Util.PYTHON_FILE_EXTENSION;
 
 import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
 import com.ibm.wala.cast.python.util.Util;
@@ -33,7 +33,9 @@ import java.io.Reader;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -49,10 +51,6 @@ import org.python.antlr.ast.alias;
 public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
   private static final Logger LOGGER = Logger.getLogger(PythonModuleParser.class.getName());
-
-  /** Name of the Python initialization file without the extension. */
-  private static final String MODULE_INITIALIZATION_ENTITY_NAME =
-      getNameWithoutExtension(MODULE_INITIALIZATION_FILENAME);
 
   private final Set<SourceModule> localModules = HashSetFactory.make();
 
@@ -103,7 +101,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
        *
        * @param importNames The names to import.
        * @param moduleName The name of the containing module.
-       * @return Sn import {@link CAstNode} with the given {@link List} of {@link alias}s as import
+       * @return An import {@link CAstNode} with the given {@link List} of {@link alias}s as import
        *     names within the given module.
        */
       private CAstNode createImportNode(List<alias> importNames, String moduleName) {
@@ -117,7 +115,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
        * @param importNames The names to import.
        * @param moduleName The name of the containing module.
        * @param useInitializationFile Whether to use the `__init__.py` file.
-       * @return Sn import {@link CAstNode} with the given {@link List} of {@link alias}s as import
+       * @return An import {@link CAstNode} with the given {@link List} of {@link alias}s as import
        *     names within the given module.
        */
       private CAstNode createImportNode(
@@ -145,27 +143,6 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
                 .collect(Collectors.toList()));
       }
 
-      /**
-       * Returns the {@link Path} corresponding to the given {@link SourceModule}. If a {@link
-       * SourceModule} is not supplied, an {@link IllegalStateException} is thrown.
-       *
-       * @param module The {@link SourceModule} for which to extract a {@link Path}.
-       * @return The {@link Path} corresponding to the given {@link SourceModule}.
-       * @throws IllegalStateException If the given {@link SourceModule} is not present.
-       * @implNote The discovered {@link Path} will be logged.
-       */
-      private Path getPath(Optional<SourceModule> module) {
-        Path path =
-            module
-                .map(SourceModule::getURL)
-                .map(URL::getFile)
-                .map(Path::of)
-                .orElseThrow(IllegalStateException::new);
-
-        LOGGER.finer("Found path: " + path);
-        return path;
-      }
-
       @Override
       public CAstNode visitImportFrom(ImportFrom importFrom) throws Exception {
         Optional<String> s =
@@ -180,6 +157,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
           if (moduleName.startsWith(".")) {
             LOGGER.info("Found relative import: " + moduleName);
             moduleName = this.resolveRelativeImport(moduleName);
+            LOGGER.fine("Resolved relative import: " + moduleName);
           }
 
           if (!isLocalModule(moduleName)) moduleName += "/" + MODULE_INITIALIZATION_ENTITY_NAME;
@@ -211,6 +189,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
           for (File pathEntry : pythonPath) {
             Path modulePath = getPath(localModule);
+            LOGGER.finer("Found path: " + modulePath);
 
             if (modulePath.startsWith(pathEntry.toPath())) {
               // Found it.
@@ -235,7 +214,8 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
 
       /**
        * Given a relative import, e.g., ".", "..", ".P", "..P", where "P" represents a package,
-       * subpackage, or module, returns the corresponding actual package, subpackage, or module name
+       * subpackage, or module, returns the corresponding actual package, subpackage, or module
+       * name.
        *
        * @param importName The relative package, subpackage, or module to resolve.
        * @return The actual corresponding package, subpackage, or module name.
@@ -263,17 +243,17 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
         return subpath.toString();
       }
 
-      private int getNumberOfBeginningDots(String string) {
-        int numBeginningDots = 0;
+      private static int getNumberOfBeginningDots(String string) {
+        int ret = 0;
 
         for (int i = 0; i < string.length(); i++) {
           char character = string.charAt(i);
 
-          if (character == '.') ++numBeginningDots;
+          if (character == '.') ++ret;
           else break;
         }
 
-        return numBeginningDots;
+        return ret;
       }
     };
   }
@@ -343,12 +323,35 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
     return new InputStreamReader(fileName.getInputStream());
   }
 
-  private boolean isLocalModule(String moduleName) {
-    boolean ret =
-        localModules.stream()
-            .map(lm -> scriptName((SourceModule) lm))
-            .anyMatch(sn -> sn.endsWith(moduleName + ".py"));
+  /**
+   * Returns the {@link Path} corresponding to the given {@link SourceModule}. If a {@link
+   * SourceModule} is not supplied, an {@link IllegalStateException} is thrown.
+   *
+   * @param module The {@link SourceModule} for which to extract a {@link Path}.
+   * @return The {@link Path} corresponding to the given {@link SourceModule}.
+   * @throws IllegalStateException If the given {@link SourceModule} is not present.
+   */
+  private static Path getPath(Optional<SourceModule> module) {
+    return module
+        .map(SourceModule::getURL)
+        .map(URL::getFile)
+        .map(Path::of)
+        .orElseThrow(IllegalStateException::new);
+  }
 
+  /**
+   * Get the {@link Path} of the parsed {@link SourceModule}.
+   *
+   * @see getPath(Optional<SourceModule>)
+   * @return The {@link Path} corresponding to the parsed {@link SourceModule}.
+   */
+  @SuppressWarnings("unused")
+  private Path getPath() {
+    return getPath(Optional.of(this.fileName));
+  }
+
+  private boolean isLocalModule(String moduleName) {
+    boolean ret = this.getLocalModule(moduleName).isPresent();
     LOGGER.finer("Module: " + moduleName + (ret ? " is" : " isn't") + " local.");
     return ret;
   }
@@ -360,12 +363,30 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
    * @return The corresponding {@link SourceModule}.
    */
   private Optional<SourceModule> getLocalModule(String moduleName) {
-    return localModules.stream()
-        .filter(
-            lm -> {
-              String scriptName = scriptName((SourceModule) lm);
-              return scriptName.endsWith(moduleName + ".py");
-            })
+    // A map of paths to known local modules.
+    Map<String, SourceModule> pathToLocalModule = new HashMap<>();
+
+    for (SourceModule module : this.localModules) {
+      String scriptName = scriptName(module);
+      pathToLocalModule.put(scriptName, module);
+    }
+
+    // first, check the current directory, i.e., the directory where the import statement is
+    // executed. If the module is found here, the search stops.
+    String scriptName = scriptName();
+    String scriptDirectory = scriptName.substring(0, scriptName.lastIndexOf('/') + 1);
+    String moduleFileName = moduleName + "." + PYTHON_FILE_EXTENSION;
+    String modulePath = scriptDirectory + moduleFileName;
+    SourceModule module = pathToLocalModule.get(modulePath);
+
+    if (module != null) return Optional.of(module);
+
+    // otherwise, go through the local modules. NOTE: Should instead traverse PYTHONPATH here per
+    // https://g.co/gemini/share/310ca39fbd43. However, the problem is that the local modules may
+    // not be on disk. As such, this is our best approximation.
+    return pathToLocalModule.keySet().stream()
+        .filter(p -> p.endsWith(moduleFileName))
+        .map(p -> pathToLocalModule.get(p))
         .findFirst();
   }
 }
