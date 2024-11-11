@@ -107,6 +107,7 @@ public class Util {
    *     presented in the CAst.
    */
   public static Collection<String> getNames(Collection<CAstAnnotation> annotations) {
+    if (annotations == null) return emptyList();
     return annotations.stream().map(Util::getName).flatMap(Optional::stream).toList();
   }
 
