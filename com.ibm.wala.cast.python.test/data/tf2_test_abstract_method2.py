@@ -5,17 +5,16 @@ from abc import ABC, abstractmethod
 
 class C(ABC):
 
-  @abstractmethod
-  def f(self, x):
-    assert isinstance(x, tf.Tensor)
+    @abstractmethod
+    def f(self, x):
+        assert isinstance(x, tf.Tensor)
 
 
 class D(C):
 
-  def f(self, x):
-    super(D, self).f(x)
+    def f(self, x):
+        super(D, self).f(x)
 
 
 c = D()
 c.f(tf.constant(1))
-

@@ -3,10 +3,10 @@ import tensorflow as tf
 
 class MyClass:
 
-  @staticmethod
-  @tf.function
-  def the_static_method(x):
-    assert isinstance(x, tf.Tensor)
+    @staticmethod
+    @tf.function
+    def the_static_method(x):
+        assert isinstance(x, tf.Tensor)
 
 
 MyClass.the_static_method(tf.constant(1))

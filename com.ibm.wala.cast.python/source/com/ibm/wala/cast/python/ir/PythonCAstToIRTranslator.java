@@ -11,9 +11,10 @@
 package com.ibm.wala.cast.python.ir;
 
 import static com.google.common.io.Files.getNameWithoutExtension;
-import static com.ibm.wala.cast.python.ir.PythonLanguage.MODULE_INITIALIZATION_FILENAME;
 import static com.ibm.wala.cast.python.ir.PythonLanguage.Python;
 import static com.ibm.wala.cast.python.types.PythonTypes.pythonLoader;
+import static com.ibm.wala.cast.python.util.Util.IMPORT_WILDCARD_CHARACTER;
+import static com.ibm.wala.cast.python.util.Util.MODULE_INITIALIZATION_FILENAME;
 
 import com.ibm.wala.cast.ir.ssa.AssignInstruction;
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
@@ -70,6 +71,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Consumer;
@@ -473,7 +475,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
     String scriptName = module.getName();
 
     // if the module is the special initialization module.
-    if (scriptName.endsWith(MODULE_INITIALIZATION_FILENAME)) {
+    if (scriptName.endsWith("/" + MODULE_INITIALIZATION_FILENAME)) {
       // we've hit a module. Get the other scripts in the module.
       PythonLoader loader = (PythonLoader) this.loader;
       IClassHierarchy classHierarchy = loader.getClassHierarchy();
@@ -522,10 +524,13 @@ public class PythonCAstToIRTranslator extends AstTranslator {
                 LOGGER.finer("Mapping: " + m + " to instructions.");
 
                 List<File> pythonPath = loader.getPythonPath();
+                LOGGER.finest("PYTHONPATH is: " + pythonPath);
+
+                Path path = Path.of(m.getURL().getFile());
+                LOGGER.finer("Found module path: " + path + ".");
 
                 for (File pathEntry : pythonPath) {
-                  Path path = Path.of(m.getURL().getFile());
-                  LOGGER.finer("Found module path: " + path + ".");
+                  LOGGER.finest("Path entry is:" + pathEntry);
 
                   if (path.startsWith(pathEntry.toPath())) {
                     // Found it.
@@ -534,11 +539,18 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
                     // Get the package name.
                     Path packagePath = scriptRelativePath.getParent();
-                    LOGGER.fine("Package path is: " + packagePath + ".");
+                    List<SSAInstruction> instructions = new ArrayList<SSAInstruction>(2);
 
+                    if (packagePath == null) {
+                      // it must be a top-level module. I don't think we need the extra instructions
+                      // in this case.
+                      LOGGER.finer("Found top-level module; no extra instructions needed.");
+                      return instructions;
+                    }
+
+                    LOGGER.fine("Package path is: " + packagePath + ".");
                     LOGGER.finer("Mapping fields for package: " + packagePath + ".");
 
-                    List<SSAInstruction> instructions = new ArrayList<SSAInstruction>(2);
                     int res = 0;
 
                     // Don't add a redundant global read for `__init__.py` for `moduleName`.
@@ -571,7 +583,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
                     LOGGER.finer("Creating module field reference: " + moduleField + ".");
 
-                    // If we are looking at the package for `moduleName`..
+                    // If we are looking at the package for `moduleName`.
                     if (moduleInitializationFile && packagePath.toString().equals(moduleName))
                       // use the existing global read for the script.
                       res = 1;
@@ -991,6 +1003,24 @@ public class PythonCAstToIRTranslator extends AstTranslator {
               ((AstInstructionFactory) insts)
                   .PropertyRead(
                       idx, resultVal, resultVal, context.currentScope().getConstantValue(eltName)));
+
+      // if the module is the special initialization module and it's not a wildcard import.
+      if (context.getName().endsWith("/" + MODULE_INITIALIZATION_FILENAME)
+          && !Objects.equals(eltName, IMPORT_WILDCARD_CHARACTER)) {
+        // add the imported name to the module so that other files can use it.
+        FieldReference eltField =
+            FieldReference.findOrCreate(
+                PythonTypes.Root, Atom.findOrCreateUnicodeAtom(eltName), PythonTypes.Root);
+
+        LOGGER.info("Adding write of field: " + eltField + " to initialization script.");
+
+        // The script should be in v1.
+        idx = context.cfg().getCurrentInstruction();
+        context
+            .cfg()
+            .addInstruction(
+                ((AstInstructionFactory) insts).PutInstruction(idx, 1, resultVal, eltField));
+      }
     }
   }
 

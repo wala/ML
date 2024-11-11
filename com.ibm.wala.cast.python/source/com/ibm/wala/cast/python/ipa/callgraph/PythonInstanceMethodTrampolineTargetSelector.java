@@ -12,10 +12,10 @@ package com.ibm.wala.cast.python.ipa.callgraph;
 
 import static com.ibm.wala.cast.python.types.PythonTypes.STATIC_METHOD;
 import static com.ibm.wala.cast.python.types.Util.getDeclaringClassTypeReference;
+import static com.ibm.wala.cast.python.util.Util.getAllocationSiteInNode;
 import static com.ibm.wala.cast.python.util.Util.isClassMethod;
 import static com.ibm.wala.types.annotations.Annotation.make;
 
-import com.ibm.wala.cast.ipa.callgraph.ScopeMappingInstanceKeys.ScopeMappingInstanceKey;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.ipa.summaries.PythonInstanceMethodTrampoline;
@@ -30,7 +30,6 @@ import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.MethodTargetSelector;
 import com.ibm.wala.ipa.callgraph.propagation.AllocationSiteInNode;
-import com.ibm.wala.ipa.callgraph.propagation.ConstantKey;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKeyFactory;
@@ -43,7 +42,9 @@ import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.intset.OrdinalSet;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class PythonInstanceMethodTrampolineTargetSelector<T>
@@ -87,6 +88,8 @@ public class PythonInstanceMethodTrampolineTargetSelector<T>
 
   @Override
   public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
+    // TODO: Callable detection may need to be moved. See https://github.com/wala/ML/issues/207. If
+    // it stays here, we should further document the receiver swapping process.
     if (isCallable(receiver)) {
       LOGGER.fine("Encountered callable.");
 
@@ -223,6 +226,9 @@ public class PythonInstanceMethodTrampolineTargetSelector<T>
     PointerKey receiver = pkf.getPointerKeyForLocal(caller, call.getUse(0));
     OrdinalSet<InstanceKey> objs = builder.getPointerAnalysis().getPointsToSet(receiver);
 
+    // The set of potential callables to be returned.
+    Set<IClass> callableSet = new HashSet<>();
+
     for (InstanceKey o : objs) {
       AllocationSiteInNode instanceKey = getAllocationSiteInNode(o);
       if (instanceKey != null) {
@@ -254,76 +260,23 @@ public class PythonInstanceMethodTrampolineTargetSelector<T>
             LOGGER.info("Applying callable workaround for https://github.com/wala/ML/issues/118.");
         }
 
-        if (callable != null) return callable;
+        callableSet.add(callable);
       }
     }
 
+    // if there's only one possible option.
+    if (callableSet.size() == 1) {
+      IClass callable = callableSet.iterator().next();
+      assert callable != null : "Callable should be non-null.";
+      return callable;
+    }
+
+    // if we have multiple candidates.
+    if (callableSet.size() > 1)
+      // we cannot accurately select one.
+      LOGGER.warning("Multiple (" + callableSet.size() + ") callable targets found.");
+
     return null;
-  }
-
-  /**
-   * Extracts the {@link AllocationSiteInNode} from the given {@link InstanceKey}. If the given
-   * {@link InstanceKey} is an instance of {@link AllocationSiteInNode}, then it itself is returned.
-   * If the given {@link InstanceKey} is a {@link ScopeMappingInstanceKey}, then it's base {@link
-   * InstanceKey} is returned if it is an instance {@link AllocationSiteInNode}.
-   *
-   * @param instanceKey The {@link InstanceKey} in question.
-   * @return The {@link AllocationSiteInNode} corresponding to the given {@link InstanceKey}
-   *     according to the above scheme.
-   */
-  private static AllocationSiteInNode getAllocationSiteInNode(InstanceKey instanceKey) {
-    if (instanceKey instanceof AllocationSiteInNode) return (AllocationSiteInNode) instanceKey;
-    else if (instanceKey instanceof ScopeMappingInstanceKey) {
-      ScopeMappingInstanceKey smik = (ScopeMappingInstanceKey) instanceKey;
-      InstanceKey baseInstanceKey = smik.getBase();
-
-      if (baseInstanceKey instanceof AllocationSiteInNode)
-        return (AllocationSiteInNode) baseInstanceKey;
-      else if (baseInstanceKey instanceof ConstantKey) {
-        return getAllocationSiteInNode((ConstantKey<?>) baseInstanceKey);
-      } else
-        throw new IllegalArgumentException(
-            "Can't extract AllocationSiteInNode from: "
-                + baseInstanceKey
-                + ". Not expecting: "
-                + baseInstanceKey.getClass()
-                + ".");
-    } else if (instanceKey instanceof ConstantKey) {
-      return getAllocationSiteInNode((ConstantKey<?>) instanceKey);
-    } else
-      throw new IllegalArgumentException(
-          "Can't extract AllocationSiteInNode from: "
-              + instanceKey
-              + ". Not expecting: "
-              + instanceKey.getClass()
-              + ".");
-  }
-
-  /**
-   * If the given {@link ConstantKey}'s value is <code>null</code>, then issue a warning and return
-   * <code>null</code>. Otherwise, throw an {@link IllegalArgumentException} stating that an {@link
-   * AllocationSiteInNode} cannot be extracted from the given {@link ConstantKey}. A value of <code>
-   * null</code> most likely indicates that a receiver can potentially be <code>null</code>.
-   *
-   * @param constantKey The {@link ConstantKey} from which to extract the corresponding {@link
-   *     AllocationSiteInNode}.
-   * @return <code>null</code> if the given {@link ConstantKey}'s value is <code>null</code>.
-   * @throws IllegalArgumentException If the constant's value is another else other than <code>null
-   *     </code>.
-   */
-  private static AllocationSiteInNode getAllocationSiteInNode(ConstantKey<?> constantKey) {
-    Object value = constantKey.getValue();
-
-    if (value == null) {
-      LOGGER.warning("Can't extract AllocationSiteInNode from: " + constantKey + ".");
-      return null;
-    } else
-      throw new IllegalArgumentException(
-          "Can't extract AllocationSiteInNode from: "
-              + constantKey
-              + ". Not expecting value of: "
-              + value
-              + " from ConstantKey.");
   }
 
   public PythonAnalysisEngine<T> getEngine() {

@@ -38,6 +38,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.Test;
 
 /** Test TF2 APIs. */
@@ -961,7 +962,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test("tf2_test_dataset18.py", "add", 2, 2, 2, 3);
     test("tf2_test_dataset18.py", "f", 1, 1, 2);
-    test("tf2_test_dataset18.py", "g", 0, 2);
+    test("tf2_test_dataset18.py", "g", 0, 1);
   }
 
   /** Test a dataset that uses an iterator. */
@@ -1107,6 +1108,35 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_dataset33.py", "f", 1, 1, 2);
   }
 
+  /** Test a dataset that uses an iterator. */
+  @Test
+  public void testDataset34()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset34.py", "add", 2, 2, 2, 3);
+  }
+
+  /** Test a dataset that uses an iterator. */
+  @Test
+  public void testDataset35()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset35.py", "add", 2, 2, 2, 3);
+  }
+
+  /** Test a dataset that uses an iterator. */
+  @Test
+  public void testDataset36()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset36.py", "id1", 1, 1, 2);
+    //    test("tf2_test_dataset36.py", "id2", 1, 1, 2);
+  }
+
+  /** Test a dataset that uses an iterator. */
+  @Test
+  public void testDataset37()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test("tf2_test_dataset37.py", "add", 2, 2, 2, 3);
+  }
+
   /**
    * Test enumerating a dataset (https://github.com/wala/ML/issues/140). The first element of the
    * tuple returned isn't a tensor.
@@ -1114,6 +1144,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   @Test
   public void testTensorboardExample()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    // Change to 0, 4 once https://github.com/wala/ML/issues/147 is fixed.
     test("tensorboard_example.py", "summarize_weights", 0, 12);
   }
 
@@ -1173,6 +1204,41 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   public void testModelCall4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test("tf2_test_model_call4.py", "SequentialModel.__call__", 1, 1, 3);
+  }
+
+  /**
+   * Test call string imprecision as described in
+   * https://github.com/wala/WALA/discussions/1417#discussioncomment-10085680. This should fail due
+   * to https://github.com/wala/ML/issues/207.
+   */
+  @Test(expected = java.lang.AssertionError.class)
+  public void testModelCall5()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj66/src/tf2_test_model_call5b.py",
+          "proj66/tf2_test_model_call5.py",
+          "proj66/tf2_test_model_call5a.py"
+        },
+        "tf2_test_model_call5.py",
+        "SequentialModel.__call__",
+        "proj66",
+        1,
+        1,
+        3);
+
+    test(
+        new String[] {
+          "proj66/src/tf2_test_model_call5b.py",
+          "proj66/tf2_test_model_call5.py",
+          "proj66/tf2_test_model_call5a.py"
+        },
+        "tf2_test_model_call5a.py",
+        "SequentialModel.__call__",
+        "proj66",
+        1,
+        1,
+        3);
   }
 
   @Test
@@ -1520,8 +1586,14 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         2);
   }
 
-  /** This test needs a PYTHONPATH that points to `proj`. */
-  @Test
+  /**
+   * This test needs a PYTHONPATH that points to `proj`.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
   public void testModule2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -1552,8 +1624,14 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         expectedTensorParameterValueNumbers);
   }
 
-  /** This test should not need a PYTHONPATH. */
-  @Test
+  /**
+   * This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
   public void testModule3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -1587,8 +1665,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   /**
    * This test should not need a PYTHONPATH, meaning that I don't need to set one in the console
    * when I run the files.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -1649,8 +1731,14 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         3);
   }
 
-  /** This test needs a PYTHONPATH that points to `proj4`. */
-  @Test
+  /**
+   * This test needs a PYTHONPATH that points to `proj4`.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
   public void testModule6()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -1681,8 +1769,14 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         expectedTensorParameterValueNumbers);
   }
 
-  /** This test should not need a PYTHONPATH. */
-  @Test
+  /**
+   * This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
   public void testModule7()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -1716,8 +1810,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   /**
    * This test should not need a PYTHONPATH, meaning that I don't need to set one in the console
    * when I run the files.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule8()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -1791,8 +1889,14 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         3);
   }
 
-  /** This test needs a PYTHONPATH that points to `proj7`. */
-  @Test
+  /**
+   * This test needs a PYTHONPATH that points to `proj7`.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
   public void testModule11()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 
@@ -1827,8 +1931,14 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         expectedTensorParameterValueNumbers);
   }
 
-  /** This test should not need a PYTHONPATH. */
-  @Test
+  /**
+   * This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
   public void testModule12()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -1862,8 +1972,14 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         expectedTensorParameterValueNumbers);
   }
 
-  /** This test should not need a PYTHONPATH. */
-  @Test
+  /**
+   * This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
   public void testModule13()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -1901,8 +2017,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/177.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule14()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -1935,8 +2055,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule15()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -1965,8 +2089,14 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         expectedTensorParameterValueNumbers);
   }
 
-  /** This test should not need a PYTHONPATH. */
-  @Test
+  /**
+   * This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
   public void testModule16()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2000,8 +2130,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * https://docs.python.org/3/tutorial/modules.html#packages.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule17()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2038,8 +2172,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * different packages.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule18()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2093,8 +2231,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/177.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule19()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2129,8 +2271,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule20()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2163,8 +2309,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule21()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2210,8 +2360,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/177.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule23()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2297,8 +2451,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule27()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2352,8 +2510,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/177.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule28()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2386,8 +2548,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule29()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2420,8 +2586,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule30()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2454,8 +2624,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule31()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2490,8 +2664,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule32()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2524,8 +2702,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule33()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2560,8 +2742,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule34()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2596,8 +2782,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule35()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2630,8 +2820,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule36()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2664,8 +2858,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule37()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2697,8 +2895,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule38()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2731,8 +2933,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule39()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2765,8 +2971,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule40()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2799,8 +3009,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule41()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2840,8 +3054,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule42()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2881,8 +3099,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule43()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2922,8 +3144,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule44()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2963,8 +3189,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test relative imports using wildcards.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule45()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -2997,8 +3227,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test relative imports using wildcards.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule46()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -3031,8 +3265,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test relative imports using wildcards.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule47()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -3065,8 +3303,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test relative imports using wildcards.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule48()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -3099,8 +3341,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test relative imports using wildcards.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule49()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -3140,8 +3386,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test relative imports using wildcards.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule50()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -3181,8 +3431,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test relative imports using wildcards.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule51()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -3222,8 +3476,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test relative imports using wildcards.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule52()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -3263,8 +3521,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testModule53()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     int expectNumberofTensorParameters;
@@ -3315,6 +3577,576 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "D/B.py",
         "g",
         "proj47",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/202.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule54()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj51/src/__init__.py", "proj51/src/module.py", "proj51/client.py"},
+        "src/module.py",
+        "f",
+        "proj51",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/202.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule55()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj52/src/__init__.py", "proj52/src/module.py", "proj52/client.py"},
+        "src/module.py",
+        "f",
+        "proj52",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/202.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule56()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj53/src/__init__.py", "proj53/src/module.py", "proj53/client.py"},
+        "src/module.py",
+        "C.f",
+        "proj53",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/202.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule57()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj54/src/__init__.py", "proj54/src/module.py", "proj54/client.py"},
+        "src/module.py",
+        "C.f",
+        "proj54",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/202.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule58()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj55/src/__init__.py", "proj55/src/B.py", "proj55/A.py"},
+        "src/B.py",
+        "C.f",
+        "proj55",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/202.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule59()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj51/client.py", "proj51/src/__init__.py", "proj51/src/module.py"},
+        "src/module.py",
+        "f",
+        "proj51",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/202.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule60()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj52/client.py", "proj52/src/__init__.py", "proj52/src/module.py"},
+        "src/module.py",
+        "f",
+        "proj52",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/202.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule61()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj56/src/__init__.py", "proj56/src/B.py", "proj56/A.py"},
+        "src/B.py",
+        "C.f",
+        "proj56",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/202.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule62()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj57/src/__init__.py", "proj57/src/B.py", "proj57/A.py"},
+        "src/B.py",
+        "C.f",
+        "proj57",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/202.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule63()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj58/src/__init__.py", "proj58/src/B.py", "proj58/A.py"},
+        "src/B.py",
+        "C.__call__",
+        "proj58",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/202.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule64()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj59/src/__init__.py", "proj59/src/B.py", "proj59/A.py"},
+        "src/B.py",
+        "C.__call__",
+        "proj59",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/202.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule65()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj60/src/__init__.py", "proj60/src/module.py", "proj60/client.py"},
+        "src/module.py",
+        "f",
+        "proj60",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/202.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule66()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj61/src/__init__.py", "proj61/src/module.py", "proj61/client.py"},
+        "src/module.py",
+        "f",
+        "proj61",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/202.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule67()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj62/src/__init__.py", "proj62/src/B.py", "proj62/A.py"},
+        "src/B.py",
+        "C.__call__",
+        "proj62",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/205.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule68()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj63/src/__init__.py", "proj63/src/module.py", "proj63/client.py"},
+        "src/module.py",
+        "f",
+        "proj63",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/205.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule69()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj64/src/__init__.py", "proj64/src/module.py", "proj64/client.py"},
+        "src/module.py",
+        "f",
+        "proj64",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /** Test https://github.com/wala/ML/issues/210. */
+  @Test(expected = AssertionError.class)
+  public void testModule70()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj65/src/__init__.py", "proj65/src/module.py", "proj65/client.py"},
+        "src/module.py",
+        "f",
+        "proj65",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /** Test https://github.com/wala/ML/issues/210. */
+  @Test(expected = AssertionError.class)
+  public void testModule71()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj67/src/__init__.py", "proj67/src/module.py", "proj67/client.py"},
+        "src/module.py",
+        "f",
+        "proj67",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/210.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule72()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj68/src/__init__.py", "proj68/src/module.py", "proj68/client.py"},
+        "src/module.py",
+        "f",
+        "proj68",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/210.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule73()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj69/src/__init__.py", "proj69/src/module.py", "proj69/client.py"},
+        "src/module.py",
+        "f",
+        "proj69",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/210.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule74()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj70/src/__init__.py", "proj70/src/module.py", "proj70/client.py"},
+        "src/module.py",
+        "f",
+        "proj70",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /** Test https://github.com/wala/ML/issues/211. */
+  @Test(expected = AssertionError.class)
+  public void testModule75()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj71/src/__init__.py", "proj71/src/module.py", "proj71/src/client.py"},
+        "src/module.py",
+        "f",
+        "proj71",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /** Test https://github.com/wala/ML/issues/211. */
+  @Test
+  public void testModule76()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(new String[] {"module.py", "client.py"}, "module.py", "f", "", 1, 1, new int[] {2});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/211.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule77()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(
+        new String[] {"proj72/src/__init__.py", "proj72/src/module.py", "proj72/src/client.py"},
+        "src/module.py",
+        "f",
+        "proj72",
+        1,
+        1,
+        new int[] {2});
+  }
+
+  /** Test https://github.com/wala/ML/issues/211. */
+  @Test
+  public void testModule78()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    test(new String[] {"module.py", "client2.py"}, "module.py", "f", "", 1, 1, new int[] {2});
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/209.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule79()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj73/models/__init__.py",
+          "proj73/models/albert.py",
+          "proj73/bert.py",
+          "proj73/models/bert.py",
+          "proj73/client.py"
+        },
+        "models/albert.py",
+        "f",
+        "proj73",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+
+    test(
+        new String[] {
+          "proj73/models/__init__.py",
+          "proj73/models/albert.py",
+          "proj73/bert.py",
+          "proj73/models/bert.py",
+          "proj73/client.py"
+        },
+        "models/bert.py",
+        "g",
+        "proj73",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+  }
+
+  /**
+   * Test https://github.com/wala/ML/issues/209.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
+  public void testModule80()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    int expectNumberofTensorParameters;
+    int expectedNumberOfTensorVariables;
+    int[] expectedTensorParameterValueNumbers;
+
+    // PYTHONPATH is only supported for Jython3.
+    if (usesJython3Testing()) {
+      expectNumberofTensorParameters = 1;
+      expectedNumberOfTensorVariables = 1;
+      expectedTensorParameterValueNumbers = new int[] {2};
+    } else {
+      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
+      expectNumberofTensorParameters = 0;
+      expectedNumberOfTensorVariables = 0;
+      expectedTensorParameterValueNumbers = new int[] {};
+    }
+
+    test(
+        new String[] {
+          "proj74/models/__init__.py",
+          "proj74/models/albert.py",
+          "proj74/bert.py",
+          "proj74/models/bert.py",
+          "proj74/client.py"
+        },
+        "models/albert.py",
+        "f",
+        "proj74",
+        expectNumberofTensorParameters,
+        expectedNumberOfTensorVariables,
+        expectedTensorParameterValueNumbers);
+
+    test(
+        new String[] {
+          "proj74/models/__init__.py",
+          "proj74/models/albert.py",
+          "proj74/bert.py",
+          "proj74/models/bert.py",
+          "proj74/client.py"
+        },
+        "models/bert.py",
+        "g",
+        "proj74",
         expectNumberofTensorParameters,
         expectedNumberOfTensorVariables,
         expectedTensorParameterValueNumbers);
@@ -3563,7 +4395,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         expectedTensorParameterValueNumbers);
   }
 
-  @Test
+  /*
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
   public void testClassMethod4() throws ClassHierarchyException, CancelException, IOException {
     int expectNumberofTensorParameters;
     int expectedNumberOfTensorVariables;
@@ -3589,7 +4426,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         expectedTensorParameterValueNumbers);
   }
 
-  @Test
+  /*
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   */
+  @Test(expected = AssertionError.class)
   public void testClassMethod5() throws ClassHierarchyException, CancelException, IOException {
     int expectNumberofTensorParameters;
     int expectedNumberOfTensorVariables;
@@ -3637,12 +4479,14 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_decorated_method.py", "f", 1, 1, 2);
   }
 
+  /** Test https://github.com/wala/ML/issues/188. */
   @Test
   public void testDecoratedMethod2() throws ClassHierarchyException, CancelException, IOException {
     // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
     test("tf2_test_decorated_method2.py", "f", 1, 1, 2);
   }
 
+  /** Test https://github.com/wala/ML/issues/190. */
   @Test
   public void testDecoratedMethod3() throws ClassHierarchyException, CancelException, IOException {
     // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
@@ -3681,6 +4525,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_decorated_method9.py", "f", 1, 1, 2);
   }
 
+  /** Test https://github.com/wala/ML/issues/190. */
   @Test
   public void testDecoratedMethod10() throws ClassHierarchyException, CancelException, IOException {
     // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
@@ -3698,6 +4543,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_decorated_method12.py", "f", 1, 1, 2);
   }
 
+  /** Test https://github.com/wala/ML/issues/190. */
   @Test
   public void testDecoratedMethod13() throws ClassHierarchyException, CancelException, IOException {
     // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
@@ -3713,6 +4559,140 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_decorated_functions.py", "test_function2", 1, 1, 2);
     test("tf2_test_decorated_functions.py", "test_function3", 1, 1, 2);
     test("tf2_test_decorated_functions.py", "test_function4", 1, 1, 2);
+  }
+
+  /** Test a pytest with decorators. */
+  @Test
+  public void testDecoratedFunctions2()
+      throws ClassHierarchyException, CancelException, IOException {
+    test("test_decorated_functions.py", "test_dummy", 0, 0);
+  }
+
+  /**
+   * Test a pytest without decorators that needs a PYTHONPATH. This is a "control" case. We'll add a
+   * decorator in the next case.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   *
+   * @see TestTensorflow2Model#testModule11().
+   */
+  @Test(expected = AssertionError.class)
+  public void testDecoratedFunctions3()
+      throws ClassHierarchyException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj48/src/__init__.py",
+          "proj48/src/tf2_test_module9a.py",
+          "proj48/src/tf2_test_module9b.py",
+          "proj48/src/test_module10.py"
+        },
+        "src/tf2_test_module9b.py",
+        "D.f",
+        "proj48",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /** Test a pytest without decorators. This is a "control." */
+  @Test
+  public void testDecoratedFunctions4()
+      throws ClassHierarchyException, CancelException, IOException {
+    test("test_decorated_functions2.py", "f", 1, 1, 2);
+  }
+
+  /** Test a pytest with a decorator. */
+  @Test
+  public void testDecoratedFunctions5()
+      throws ClassHierarchyException, CancelException, IOException {
+    test("test_decorated_functions3.py", "f", 1, 1, 2);
+  }
+
+  /**
+   * Test a pytest with a decorator that needs a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   *
+   * @see TestTensorflow2Model#testModule11().
+   */
+  @Test(expected = AssertionError.class)
+  public void testDecoratedFunctions6()
+      throws ClassHierarchyException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj49/src/__init__.py",
+          "proj49/src/tf2_test_module9a.py",
+          "proj49/src/tf2_test_module9b.py",
+          "proj49/src/test_module10.py"
+        },
+        "src/tf2_test_module9b.py",
+        "D.f",
+        "proj49",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /** Test a Pytest with a decorator without parameters. */
+  @Test
+  public void testDecoratedFunctions7()
+      throws ClassHierarchyException, CancelException, IOException {
+    test("test_decorated_functions4.py", "f", 1, 1, 2);
+  }
+
+  /**
+   * Test a Pytest with a decorator without parameters that needs a PYTHONPATH.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist. Remove the below expected assertion failure once
+   * https://github.com/wala/ML/issues/147 is fixed.
+   *
+   * @see TestTensorflow2Model#testModule11().
+   */
+  @Test(expected = AssertionError.class)
+  public void testDecoratedFunctions8()
+      throws ClassHierarchyException, CancelException, IOException {
+    test(
+        new String[] {
+          "proj50/src/__init__.py",
+          "proj50/src/tf2_test_module10a.py",
+          "proj50/src/tf2_test_module10b.py",
+          "proj50/src/test_module11.py"
+        },
+        "src/tf2_test_module10b.py",
+        "D.f",
+        "proj50",
+        1,
+        1,
+        new int[] {3});
+  }
+
+  /**
+   * Test a Pytest with a decorator without parameters. The "test" is at the end of the filename.
+   */
+  @Test
+  public void testDecoratedFunctions9()
+      throws ClassHierarchyException, CancelException, IOException {
+    test("decorated_function_test.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testReshape() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_reshape.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testReshape2() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_reshape2.py", "f", 1, 1, 2);
+  }
+
+  @Test
+  public void testReshape3() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_reshape3.py", "f", 1, 1, 2);
   }
 
   private void test(
@@ -3809,13 +4789,16 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     final String functionSignature =
         "script " + filename.replace('/', '.') + "." + functionName + ".do()LRoot;";
 
+    // List the CG nodes as a "flat" list.
+    LOGGER.fine(
+        () ->
+            "Call graph nodes:\n"
+                + getFunctionSignatures(CG).collect(Collectors.joining("\n\t", "\t", "")));
+
     // check that the function exists in the call graph.
     assertTrue(
         "Function must exist in call graph.",
-        CG.stream()
-            .map(CGNode::getMethod)
-            .map(IMethod::getSignature)
-            .anyMatch(s -> s.equals(functionSignature)));
+        getFunctionSignatures(CG).anyMatch(s -> s.equals(functionSignature)));
 
     // get the tensor variables for the function.
     Set<TensorVariable> functionTensorVariables =
@@ -3863,6 +4846,18 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
                       "Expecting " + actualParameterValueNumberSet + " to contain " + ev + ".",
                       actualParameterValueNumberSet.contains(ev)));
     }
+  }
+
+  /**
+   * Returns a {@link Stream} of {@link String}s representing the signatures of functions
+   * represented by the nodes in the given {@link CallGraph}.
+   *
+   * @param CG The {@link CallGraph} containing the nodes in question.
+   * @return A {@link Stream} of {@link String}s representing the signatures of functions
+   *     represented by the nodes in the given {@link CallGraph}.
+   */
+  private static Stream<String> getFunctionSignatures(CallGraph CG) {
+    return CG.stream().map(CGNode::getMethod).map(IMethod::getSignature);
   }
 
   /**
