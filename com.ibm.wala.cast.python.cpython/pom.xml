@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.ibm.wala</groupId>
+    <artifactId>ml</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>com.ibm.wala.cast.python.cpython</artifactId>
+  <dependencies>
+    <dependency>
+      <groupId>com.ibm.wala</groupId>
+      <artifactId>com.ibm.wala.util</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ibm.wala</groupId>
+      <artifactId>com.ibm.wala.shrike</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ibm.wala</groupId>
+      <artifactId>com.ibm.wala.core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ibm.wala</groupId>
+      <artifactId>com.ibm.wala.cast</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ibm.wala</groupId>
+      <artifactId>com.ibm.wala.cast.java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>com.ibm.wala.cast.python</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr-runtime</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>black.ninia</groupId>
+      <artifactId>jep</artifactId>
+      <version>4.2.0</version>
+    </dependency>
+    <dependency>
+   	 <groupId>org.apache.parquet</groupId>
+  	 <artifactId>parquet-avro</artifactId>
+     <version>1.14.3</version>
+    </dependency>
+<dependency>
+    <groupId>org.apache.hadoop</groupId>
+    <artifactId>hadoop-common</artifactId>
+    <version>3.4.0</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.hadoop</groupId>
+    <artifactId>hadoop-mapreduce-client-core</artifactId>
+    <version>3.4.0</version>
+</dependency>
+  </dependencies>
+  <build>
+    <resources>
+      <resource>
+        <directory>data</directory>
+      </resource>
+    </resources>
+    <sourceDirectory>source</sourceDirectory>
+  </build>
+</project>
