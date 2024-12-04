@@ -45,8 +45,10 @@ import com.ibm.wala.cast.tree.impl.CAstSourcePositionRecorder;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriter.CopyKey;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriter.RewriteContext;
+import com.ibm.wala.cast.tree.visit.CAstVisitor.Context;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriterFactory;
 import com.ibm.wala.cast.util.CAstPattern;
+import com.ibm.wala.cast.util.CAstPattern.Matcher;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.SourceFileModule;
 import com.ibm.wala.classLoader.SourceModule;
@@ -322,7 +324,7 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 			@SuppressWarnings("unchecked")
 			List<PyObject> body = (List<PyObject>) o.getAttr("body");
 			CAstNode bodyAst = ast.makeNode(CAstNode.BLOCK_STMT, body.stream().map(f -> visit(f, context)).collect(Collectors.toList()));
-
+			
 			Set<String> exposedNames = exposedNames(bodyAst);
 			if (exposedNames.size() > 0)
 				return ast.makeNode(CAstNode.UNWIND,
@@ -525,7 +527,7 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		}
 
 		public CAstNode visitExpr(PyObject o, WalkContext context) {
-			return ast.makeNode(CAstNode.EXPR_STMT, visit(o.getAttr("value", PyObject.class), context));
+			return visit(o.getAttr("value", PyObject.class), context);
 		}
 
 		public CAstNode visitWhile(PyObject wl, WalkContext context) {
@@ -775,9 +777,25 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 			return ast.makeNode(CAstNode.EMPTY);
 		}
 	
+		public CAstNode visitReturn(PyObject ret, WalkContext context) {
+			return ast.makeNode(CAstNode.RETURN, visit(ret.getAttr("value", PyObject.class), context));
+		}
 		
 		private Set<String> exposedNames(CAstNode tree) {
-			return CAstPattern.findAll(nm, entity).stream().map(s -> (String)((CAstNode)s.get("n")).getValue()).collect(Collectors.toSet());
+			return nm.new Matcher()
+	        	.findAll(
+	        			new Context() {
+	        				@Override
+	        				public CAstEntity top() {
+	        					return entity;
+	        				}
+
+	              @Override
+	              public CAstSourcePositionMap getSourceMap() {
+	                return entity.getSourceMap();
+	              }
+	            },
+	            tree).stream().map(s -> (String)((CAstNode)s.get("n")).getValue()).collect(Collectors.toSet());
 		}
 	}
 	
