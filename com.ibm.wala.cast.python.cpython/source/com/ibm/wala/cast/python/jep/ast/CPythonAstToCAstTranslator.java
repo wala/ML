@@ -57,6 +57,7 @@ import com.ibm.wala.ipa.cha.SeqClassHierarchyFactory;
 import com.ibm.wala.ssa.IRFactory;
 import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.types.ClassLoaderReference;
+import com.ibm.wala.util.collections.EmptyIterator;
 
 import jep.Interpreter;
 import jep.python.PyObject;
@@ -249,9 +250,9 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 			implements WalkContext {
 		
 		private final PyObject ast;
-		CAstEntity self;
+		PythonScriptEntity self;
 		
-		protected ScriptContext(PyObject s, CAstImpl ast, CAstEntity self) {
+		protected ScriptContext(PyObject s, CAstImpl ast, PythonScriptEntity self) {
 			super(null, s);
 			this.ast = s;
 			this.self = self;
@@ -289,7 +290,26 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		public CAstSourcePositionRecorder pos() {
 			return (CAstSourcePositionRecorder) self.getSourceMap();
 		}
-		
+
+		@Override
+		public void addScopedEntity(CAstNode construct, CAstEntity e) {
+			self.addScopedEntity(construct, e);
+		}
+
+		@Override
+		public Map<CAstNode, Collection<CAstEntity>> getScopedEntities() {
+			return self.getAllScopedEntities();
+		}
+	}
+
+	private static class FunctionContext extends TranslatorToCAst.FunctionContext<WalkContext, PyObject>
+		implements WalkContext {
+
+		protected FunctionContext(WalkContext parent, PyObject s) {
+			super(parent, s);
+			// TODO Auto-generated constructor stub
+		}
+
 	}
 
 	private static class LoopContext extends TranslatorToCAst.LoopContext<WalkContext, PyObject>
@@ -363,12 +383,14 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		
 		@SuppressWarnings("unchecked")
 		public CAstNode visitFunctionDef(PyObject o, WalkContext context) {
+			WalkContext fc = new FunctionContext(context, o);
+			
 			String functionName = (String) o.getAttr("name");
 			
 			CAstNode body = 
 				visit(CAstNode.BLOCK_STMT, 
 					  ((List<PyObject>)o.getAttr("body")).stream().collect(Collectors.toList()),
-			          context);
+			          fc);
 			
 			Object rawArgs = o.getAttr("args");
 			List<PyObject> arguments;
@@ -383,6 +405,8 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 			
 			int argumentCount = arguments.size();
 
+			List<CAstType> argumentTypes = Collections.nCopies(argumentCount, CAstType.DYNAMIC);
+			
 			CAstType.Function funType = new CAstType.Function() {
 				
 				@Override
@@ -397,26 +421,22 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 				
 				@Override
 				public CAstType getReturnType() {
-					// TODO Auto-generated method stub
-					return null;
+					return CAstType.DYNAMIC;
 				}
 				
 				@Override
 				public Collection<CAstType> getExceptionTypes() {
-					// TODO Auto-generated method stub
-					return null;
+					return Collections.emptyList();
 				}
 				
 				@Override
 				public List<CAstType> getArgumentTypes() {
-					// TODO Auto-generated method stub
-					return null;
+					return argumentTypes;
 				}
 				
 				@Override
 				public int getArgumentCount() {
-					// TODO Auto-generated method stub
-					return 0;
+					return argumentCount;
 				}
 			}; 
 			
@@ -446,8 +466,7 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 
 				@Override
 				public CAstNode[] getArgumentDefaults() {
-					// TODO Auto-generated method stub
-					return null;
+					return new CAstNode[0];
 				}
 
 				@Override
@@ -457,14 +476,16 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 
 				@Override
 				public Map<CAstNode, Collection<CAstEntity>> getAllScopedEntities() {
-					// TODO Auto-generated method stub
-					return null;
+					return fc.getScopedEntities();
 				}
 
 				@Override
 				public Iterator<CAstEntity> getScopedEntities(CAstNode construct) {
-					// TODO Auto-generated method stub
-					return null;
+					if (fc.getScopedEntities().containsKey(construct)) {
+						return fc.getScopedEntities().get(construct).iterator();
+					} else {
+						return EmptyIterator.instance();
+					}
 				}
 
 				@Override
@@ -483,12 +504,14 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 					// TODO Auto-generated method stub
 					return null;
 				}
-
-				
 			};
 			
-			CAstNode node = ast.makeNode(CAstNode.FUNCTION_STMT, ast.makeConstant(fun));
-			context.addScopedEntity(node, fun);
+			CAstNode fe = ast.makeNode(CAstNode.FUNCTION_EXPR, ast.makeConstant(fun));
+			context.addScopedEntity(fe, fun);
+			CAstNode node = ast.makeNode(CAstNode.DECL_STMT,
+					ast.makeConstant(new CAstSymbolImpl(functionName, funType)),	
+					fe);
+			
 			return node;
 		}
 
