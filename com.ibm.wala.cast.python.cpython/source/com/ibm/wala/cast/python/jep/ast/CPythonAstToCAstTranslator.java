@@ -388,9 +388,10 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 			String functionName = (String) o.getAttr("name");
 			
 			CAstNode body = 
+					ast.makeNode(CAstNode.LOCAL_SCOPE,
 				visit(CAstNode.BLOCK_STMT, 
 					  ((List<PyObject>)o.getAttr("body")).stream().collect(Collectors.toList()),
-			          fc);
+			          fc));
 			
 			Object rawArgs = o.getAttr("args");
 			List<PyObject> arguments;
