@@ -57,6 +57,8 @@ import com.ibm.wala.ipa.cha.SeqClassHierarchyFactory;
 import com.ibm.wala.ssa.IRFactory;
 import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.types.ClassLoaderReference;
+import com.ibm.wala.util.collections.EmptyIterator;
+import com.ibm.wala.util.collections.HashSetFactory;
 
 import jep.Interpreter;
 import jep.python.PyObject;
@@ -242,19 +244,24 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 	}
 
 	public interface WalkContext extends TranslatorToCAst.WalkContext<WalkContext, PyObject> {
-
+		Scope scope();
 	}
 
 	public static class ScriptContext extends TranslatorToCAst.FunctionContext<WalkContext, PyObject>
 			implements WalkContext {
+		private final Scope scope = new Scope();
 		
 		private final PyObject ast;
-		CAstEntity self;
+		PythonScriptEntity self;
 		
-		protected ScriptContext(PyObject s, CAstImpl ast, CAstEntity self) {
+		protected ScriptContext(PyObject s, CAstImpl ast, PythonScriptEntity self) {
 			super(null, s);
 			this.ast = s;
 			this.self = self;
+		}
+		
+		public Scope scope() {
+			return scope;
 		}
 		
 		@Override
@@ -289,7 +296,35 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		public CAstSourcePositionRecorder pos() {
 			return (CAstSourcePositionRecorder) self.getSourceMap();
 		}
+
+		@Override
+		public void addScopedEntity(CAstNode construct, CAstEntity e) {
+			self.addScopedEntity(construct, e);
+		}
+
+		@Override
+		public Map<CAstNode, Collection<CAstEntity>> getScopedEntities() {
+			return self.getAllScopedEntities();
+		}
+	}
+
+	private static class Scope {
+		Set<String> localNames = HashSetFactory.make();
+		Set<String> globalNames = HashSetFactory.make();
+	}
+	
+	private static class FunctionContext extends TranslatorToCAst.FunctionContext<WalkContext, PyObject>
+		implements WalkContext {
+		private final Scope scope = new Scope();
 		
+		public Scope scope() {
+			return scope;
+		}
+
+		protected FunctionContext(WalkContext parent, PyObject s) {
+			super(parent, s);
+			// TODO Auto-generated constructor stub
+		}
 	}
 
 	private static class LoopContext extends TranslatorToCAst.LoopContext<WalkContext, PyObject>
@@ -301,7 +336,12 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 
 		private boolean continued = false;
 		private boolean broke = false;
-		
+				
+		@Override
+		public Scope scope() {
+			return parent.scope();
+		}
+
 		@Override
 		public PyObject getContinueFor(String l) {
 			continued = true;
@@ -363,12 +403,15 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		
 		@SuppressWarnings("unchecked")
 		public CAstNode visitFunctionDef(PyObject o, WalkContext context) {
+			WalkContext fc = new FunctionContext(context, o);
+			
 			String functionName = (String) o.getAttr("name");
 			
 			CAstNode body = 
+					ast.makeNode(CAstNode.LOCAL_SCOPE,
 				visit(CAstNode.BLOCK_STMT, 
 					  ((List<PyObject>)o.getAttr("body")).stream().collect(Collectors.toList()),
-			          context);
+			          fc));
 			
 			Object rawArgs = o.getAttr("args");
 			List<PyObject> arguments;
@@ -383,6 +426,8 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 			
 			int argumentCount = arguments.size();
 
+			List<CAstType> argumentTypes = Collections.nCopies(argumentCount, CAstType.DYNAMIC);
+			
 			CAstType.Function funType = new CAstType.Function() {
 				
 				@Override
@@ -397,26 +442,22 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 				
 				@Override
 				public CAstType getReturnType() {
-					// TODO Auto-generated method stub
-					return null;
+					return CAstType.DYNAMIC;
 				}
 				
 				@Override
 				public Collection<CAstType> getExceptionTypes() {
-					// TODO Auto-generated method stub
-					return null;
+					return Collections.emptyList();
 				}
 				
 				@Override
 				public List<CAstType> getArgumentTypes() {
-					// TODO Auto-generated method stub
-					return null;
+					return argumentTypes;
 				}
 				
 				@Override
 				public int getArgumentCount() {
-					// TODO Auto-generated method stub
-					return 0;
+					return argumentCount;
 				}
 			}; 
 			
@@ -446,8 +487,7 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 
 				@Override
 				public CAstNode[] getArgumentDefaults() {
-					// TODO Auto-generated method stub
-					return null;
+					return new CAstNode[0];
 				}
 
 				@Override
@@ -457,14 +497,16 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 
 				@Override
 				public Map<CAstNode, Collection<CAstEntity>> getAllScopedEntities() {
-					// TODO Auto-generated method stub
-					return null;
+					return fc.getScopedEntities();
 				}
 
 				@Override
 				public Iterator<CAstEntity> getScopedEntities(CAstNode construct) {
-					// TODO Auto-generated method stub
-					return null;
+					if (fc.getScopedEntities().containsKey(construct)) {
+						return fc.getScopedEntities().get(construct).iterator();
+					} else {
+						return EmptyIterator.instance();
+					}
 				}
 
 				@Override
@@ -483,17 +525,20 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 					// TODO Auto-generated method stub
 					return null;
 				}
-
-				
 			};
 			
-			CAstNode node = ast.makeNode(CAstNode.FUNCTION_STMT, ast.makeConstant(fun));
-			context.addScopedEntity(node, fun);
+			CAstNode fe = ast.makeNode(CAstNode.FUNCTION_EXPR, ast.makeConstant(fun));
+			context.addScopedEntity(fe, fun);
+			CAstNode node = ast.makeNode(CAstNode.DECL_STMT,
+					ast.makeConstant(new CAstSymbolImpl(functionName, funType)),	
+					fe);
+			
 			return node;
 		}
 
 		public CAstNode visitName(PyObject o, WalkContext context) {
 			String nm = (String) o.getAttr("id");
+			 
 			return ast.makeNode(CAstNode.VAR, ast.makeConstant(nm));
 		}
 
@@ -811,6 +856,15 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		public CAstNode visitReturn(PyObject ret, WalkContext context) {
 			return ast.makeNode(CAstNode.RETURN, visit(ret.getAttr("value", PyObject.class), context));
 		}
+		
+		public CAstNode visitGlobal(PyObject global, WalkContext context) {
+			Scope s = context.scope();
+			@SuppressWarnings("unchecked")
+			List<String> names = (List<String>) global.getAttr("names");
+			s.globalNames.addAll(names);
+			return ast.makeNode(CAstNode.EMPTY);
+		}
+		
 		
 		public CAstNode visitClassDef(PyObject arg0, WalkContext context) throws Exception {
 			return ast.makeNode(CAstNode.EMPTY);
