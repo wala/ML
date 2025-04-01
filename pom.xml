@@ -31,7 +31,7 @@
     <build-alias>b000</build-alias>
     <wala.version>1.6.9</wala.version>
     <spotless.version>2.44.2</spotless.version>
-    <maven.surefire.version>3.5.2</maven.surefire.version>
+    <maven.surefire.version>3.5.3</maven.surefire.version>
     <parallel>both</parallel>
     <logging.config.file>${maven.multiModuleProjectDirectory}/logging.properties</logging.config.file>
   </properties>
