@@ -288,7 +288,7 @@ public abstract class JDTJava2CAstTranslator<T extends Position> {
   // TYPES
   //
 
-  protected final class ClassEntity implements CAstEntity {
+  protected class ClassEntity implements CAstEntity {
     // TAGALONG (not static, will keep reference to ast, fIdentityMapper, etc)
 
     @Override
@@ -417,7 +417,8 @@ public abstract class JDTJava2CAstTranslator<T extends Position> {
 
     @Override
     public CAstType getType() {
-      // return new JdtJavaType(fCT, getTypeDict(), fTypeSystem);
+  	  CAstType lambdaType = fTypeDict.new JdtLambdaType(fName, fJdtType);
+
       return fTypeDict.new JdtJavaType(fJdtType);
     }
 
@@ -587,7 +588,19 @@ public abstract class JDTJava2CAstTranslator<T extends Position> {
     Collection<CAstQualifier> quals =
         JDT2CAstUtils.mapModifiersToQualifiers(modifiers, isInterface, isAnnotation);
 
-    return new ClassEntity(typeBinding, name, quals, memberEntities, makePosition(n), namePos);
+    if (n instanceof LambdaExpression) {
+    	return new ClassEntity(typeBinding, name, quals, memberEntities, makePosition(n), namePos) {
+    		CAstType lt = fTypeDict.new JdtLambdaType(name, typeBinding);
+
+			@Override
+			public CAstType getType() {
+				return lt;
+			} 
+    	
+    	};    	
+    } else {
+    	return new ClassEntity(typeBinding, name, quals, memberEntities, makePosition(n), namePos);
+    }
   }
 
   private CAstEntity visit(AnonymousClassDeclaration n, WalkContext context) {
@@ -929,16 +942,11 @@ public abstract class JDTJava2CAstTranslator<T extends Position> {
     return new ProcedureEntity(mdast, n, classBinding, memberEntities, context, annotations);
   }
 
-  /**
-   * @param inits Instance intializers & field initializers. Only used if method is a constructor,
-   *     in which case the initializers will be inserted in.
-   */
   public CAstNode visit(
 		  LambdaExpression n,
 		  WalkContext oldContext) {
 	  
-	  ITypeBinding typeBinding = n.resolveTypeBinding();
-	  //TypeReference newTypeRef = fIdentityMapper.getTypeRef(typeBinding);
+	  ITypeBinding typeBinding = n.resolveTypeBinding().getErasure();
 	  String typeName = JDT2CAstUtils.anonTypeName(typeBinding);
 	  List<?> parameters = n.parameters();
 	  List<CAstType> castTypes = new ArrayList<>();
@@ -982,7 +990,8 @@ public abstract class JDTJava2CAstTranslator<T extends Position> {
 	   * createClassDeclaration creates a Function type when instantiating
 	   * the lambda subclass. This is not correct, so a new type will have
 	   * to be implemented.
-	   * */
+	   * */	  
+	  
 	  CAstEntity lambdaClass = createClassDeclaration(
 		        n,
 		        Collections.emptyList(),
@@ -995,10 +1004,37 @@ public abstract class JDTJava2CAstTranslator<T extends Position> {
 		        context,
 		        null);
 	  
-    CAstEntity e = new ProcedureEntity(mdast, n.resolveTypeBinding(), Collections.emptyMap(), 
+    CAstEntity e = new ProcedureEntity(mdast, n.resolveTypeBinding().getErasure(), Collections.emptyMap(), 
     									context, Collections.emptySet(),
     									castTypes, castNames
-    								  );
+    								  ) {
+    	private final CAstType myType = new JdtMethodCAstType() {
+
+			@Override
+			public List<CAstType> getArgumentTypes() {
+				List<CAstType> old = super.getArgumentTypes();
+				return old.stream().map(x -> fTypeDict.getCAstTypeFor(ast.resolveWellKnownType("java.lang.Object"))).toList();
+			}
+
+			@Override
+			public CAstType getDeclaringType() {
+				return lambdaClass.getType();
+			}     		
+    	};
+    	
+    	@Override
+    	public CAstType getType() {
+    		return myType;
+    	}
+
+		@Override
+		public String getName() {
+			return "apply";
+		}
+    	
+    	
+    };
+    
     lambdaClass.getAllScopedEntities().get(null).add(e);
     TypeName tn = TypeName.string2TypeName(lambdaClass.getName());
     TypeReference tr = TypeReference.findOrCreate(fSourceLoader.getReference(), tn);
@@ -1048,10 +1084,71 @@ public abstract class JDTJava2CAstTranslator<T extends Position> {
     return castAnnotations;
   }
 
-  protected final class ProcedureEntity
+  protected class ProcedureEntity
       implements JavaProcedureEntity { // TAGALONG (make static, access ast)
 
-    // From Code Body Entity
+    protected class JdtMethodCAstType implements CAstType.Method {
+		private Collection<CAstType> fExceptionTypes = null;
+
+		@Override
+        public boolean isStatic() {
+          return getQualifiers().contains(CAstQualifier.STATIC);
+        }
+
+		@Override
+        public CAstType getReturnType() {
+          if (fReturnType != null) return fTypeDict.getCAstTypeFor(fReturnType);
+          @SuppressWarnings("deprecation")
+          Type type =
+              fDecl == null
+                  ? null
+                  : (ast.apiLevel() == 2 ? fDecl.getReturnType() : fDecl.getReturnType2());
+          if (type == null) return fTypeDict.getCAstTypeFor(ast.resolveWellKnownType("void"));
+          else return fTypeDict.getCAstTypeFor(type.resolveBinding());
+        }
+
+		/** NOT INCLUDING first parameter 'this' (for non-static methods) */
+        @Override
+        public List<CAstType> getArgumentTypes() {
+          return fParameterTypes;
+        }
+
+		/** NOT INCLUDING first parameter 'this' (for non-static methods) */
+        @Override
+        public int getArgumentCount() {
+          return fDecl == null ? fParameterTypes != null? fParameterTypes.size(): 0 : fParameterTypes.size();
+        }
+
+		@Override
+        public String getName() {
+          Assertions.UNREACHABLE("CAstType.FunctionImpl#getName() called???");
+          return "?";
+        }
+
+		@Override
+        public Collection<CAstType> getSupertypes() {
+          Assertions.UNREACHABLE("CAstType.FunctionImpl#getSupertypes() called???");
+          return null;
+        }
+
+		@Override
+        public Collection<CAstType> /* <CAstType> */ getExceptionTypes() {
+          if (fExceptionTypes == null) {
+            fExceptionTypes = new LinkedHashSet<>();
+            if (fDecl != null)
+              for (SimpleType exception : (Iterable<SimpleType>) fDecl.thrownExceptionTypes())
+                fExceptionTypes.add(fTypeDict.getCAstTypeFor(exception.resolveBinding()));
+          }
+          return fExceptionTypes;
+        }
+
+		@Override
+        public CAstType getDeclaringType() {
+          return fTypeDict.getCAstTypeFor(fType);
+        }
+	}
+
+	// From Code Body Entity
     private final Map<CAstNode, Collection<CAstEntity>> fEntities;
 
     @Override
@@ -1218,7 +1315,7 @@ public abstract class JDTJava2CAstTranslator<T extends Position> {
 	public ProcedureEntity(CAstNode mdast, ITypeBinding typeBinding, Map<CAstNode, CAstEntity> emptyMap,
 			JDTJava2CAstTranslator<T>.MethodContext context, Set<CAstAnnotation> emptySet, List<CAstType> castTypes,
 			List<String> castNames) {
-		this(mdast, null, typeBinding, emptyMap, context, castTypes, null, 0, emptySet, castNames);
+		this(mdast, null, typeBinding, emptyMap, context, castTypes, typeBinding.getFunctionalInterfaceMethod().getReturnType(), 0, emptySet, castNames);
 	}
 
 	@Override
@@ -1294,73 +1391,18 @@ public abstract class JDTJava2CAstTranslator<T extends Position> {
 
     @Override
     public CAstType getType() {
-      return new CAstType.Method() {
-        private Collection<CAstType> fExceptionTypes = null;
-
-        @Override
-        public boolean isStatic() {
-          return getQualifiers().contains(CAstQualifier.STATIC);
-        }
-
-        @Override
-        public CAstType getReturnType() {
-          if (fReturnType != null) return fTypeDict.getCAstTypeFor(fReturnType);
-          @SuppressWarnings("deprecation")
-          Type type =
-              fDecl == null
-                  ? null
-                  : (ast.apiLevel() == 2 ? fDecl.getReturnType() : fDecl.getReturnType2());
-          if (type == null) return fTypeDict.getCAstTypeFor(ast.resolveWellKnownType("void"));
-          else return fTypeDict.getCAstTypeFor(type.resolveBinding());
-        }
-
-        /** NOT INCLUDING first parameter 'this' (for non-static methods) */
-        @Override
-        public List<CAstType> getArgumentTypes() {
-          return fParameterTypes;
-        }
-
-        /** NOT INCLUDING first parameter 'this' (for non-static methods) */
-        @Override
-        public int getArgumentCount() {
-          return fDecl == null ? 0 : fParameterTypes.size();
-        }
-
-        @Override
-        public String getName() {
-          Assertions.UNREACHABLE("CAstType.FunctionImpl#getName() called???");
-          return "?";
-        }
-
-        @Override
-        public Collection<CAstType> getSupertypes() {
-          Assertions.UNREACHABLE("CAstType.FunctionImpl#getSupertypes() called???");
-          return null;
-        }
-
-        @Override
-        public Collection<CAstType> /* <CAstType> */ getExceptionTypes() {
-          if (fExceptionTypes == null) {
-            fExceptionTypes = new LinkedHashSet<>();
-            if (fDecl != null)
-              for (SimpleType exception : (Iterable<SimpleType>) fDecl.thrownExceptionTypes())
-                fExceptionTypes.add(fTypeDict.getCAstTypeFor(exception.resolveBinding()));
-          }
-          return fExceptionTypes;
-        }
-
-        @Override
-        public CAstType getDeclaringType() {
-          return fTypeDict.getCAstTypeFor(fType);
-        }
-      };
+      return new JdtMethodCAstType();
     }
 
     @Override
     public Position getPosition(int arg) {
+    	if (fDecl == null) {
+    		return null;
+    	} else {
       // TODO Auto-generated method stub
       SingleVariableDeclaration p = (SingleVariableDeclaration) fDecl.parameters().get(arg);
       return makePosition(p);
+    	}
     }
 
     @Override

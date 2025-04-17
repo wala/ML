@@ -62,13 +62,12 @@ public class ECJJava8IRTest extends IRTests {
 	   * 	   function body.
 	   */
 	  Pair<CallGraph, CallGraphBuilder<? super InstanceKey>> lambdaTest = runTest(
-			  singlePkgTestSrc(packageName),
+			  singlePkgTestSrc(packageName, "EmptyLambda"),
 			  rtJar,
-			  simplePkgTestEntryPoint(packageName),
+			  simplePkgTestEntryPoint(packageName, "EmptyLambda"),
 			  emptyList,
 			  true,
 			  null
 			  );
-	  System.out.println(lambdaTest.fst.getClassHierarchy());
   }
 }
