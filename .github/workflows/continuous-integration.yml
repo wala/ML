@@ -26,8 +26,6 @@ jobs:
         cache: 'pip'
     - name: Install Python dependencies.
       run: pip install -r requirements.txt
-    - name: Check format ---Xinze
-      run: mvn spotless:apply
     - name: Check formatting with spotless.
       run: mvn spotless:check -B
     - name: Check formatting with Black.
