@@ -39,7 +39,7 @@ jobs:
         pushd ${{ runner.temp }}/jython3
         ant
         pushd dist
-        mvn install:install-file -Dfile=./jython-dev.jar -DgroupId="org.python" -DartifactId="jython3" -Dversion="0.0.1-SNAPSHOT" -Dpackaging="jar" -DgeneratePom=true
+        mvn install:install-file -Dfile=./jython-dev.jar -DgroupId="org.python" -DartifactId="jython3" -Dversion="0.0.1-SNAPSHOT" -Dpackaging="jar" -DgeneratePom=true -B
         popd
         popd
       shell: bash
@@ -50,3 +50,9 @@ jobs:
         popd
     - name: Build with Maven
       run: mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties verify -B
+    - name: Deploy with Maven
+        run: mvn -s .travis.settings.xml -Dgithub.username=$GITHUB_USERNAME -Dgithub.password=$GITHUB_TOKEN deploy -DskipTests -B
+        env:
+          GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
