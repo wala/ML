@@ -57,8 +57,8 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/xz_deploy'
     steps:
-      if: github.ref == 'refs/heads/xz_deploy'
       - name: Checkout code
         uses: actions/checkout@v4
 
