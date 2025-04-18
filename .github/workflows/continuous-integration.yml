@@ -1,11 +1,9 @@
-name: XZ Continuous integration
+name: Continuous integration
 on:
   push:
-    branches:
-      - xz_deploy
+    branches: [ "master" ]
   pull_request:
-    branches:
-      - xz_deploy
+    branches: [ "master" ]
 concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
