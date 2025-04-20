@@ -245,9 +245,11 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 
 	public interface WalkContext extends TranslatorToCAst.WalkContext<WalkContext, PyObject> {
 		Scope scope();
+		
+		List<String> inits();
 	}
 
-	public static class ScriptContext extends TranslatorToCAst.FunctionContext<WalkContext, PyObject>
+	public static class ScriptContext extends FunctionContext
 			implements WalkContext {
 		private final Scope scope = new Scope();
 		
@@ -309,7 +311,6 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 	}
 
 	private static class Scope {
-		Set<String> localNames = HashSetFactory.make();
 		Set<String> globalNames = HashSetFactory.make();
 	}
 	
@@ -317,10 +318,21 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		implements WalkContext {
 		private final Scope scope = new Scope();
 		
+		private final List<String> inits = new ArrayList<>();
+		
 		public Scope scope() {
 			return scope;
 		}
 
+		void addInit(String n) {
+			inits.add(n);
+		}
+		
+		@Override
+		public List<String> inits() {
+			return inits;
+		}
+		
 		protected FunctionContext(WalkContext parent, PyObject s) {
 			super(parent, s);
 			// TODO Auto-generated constructor stub
@@ -337,6 +349,11 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		private boolean continued = false;
 		private boolean broke = false;
 				
+		@Override
+		public List<String> inits() {
+			return parent.inits();
+		}
+
 		@Override
 		public Scope scope() {
 			return parent.scope();
@@ -407,11 +424,13 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 			
 			String functionName = (String) o.getAttr("name");
 			
-			CAstNode body = 
-					ast.makeNode(CAstNode.LOCAL_SCOPE,
-				visit(CAstNode.BLOCK_STMT, 
-					  ((List<PyObject>)o.getAttr("body")).stream().collect(Collectors.toList()),
-			          fc));
+			List<PyObject> code = ((List<PyObject>)o.getAttr("body")).stream().collect(Collectors.toList());
+			CAstNode b1 = visit(CAstNode.BLOCK_STMT, code, fc);
+			CAstNode body = ast.makeNode(CAstNode.LOCAL_SCOPE,
+					ast.makeNode(CAstNode.BLOCK_STMT,
+						ast.makeNode(CAstNode.BLOCK_STMT,
+								fc.inits().stream().map(n -> ast.makeNode(CAstNode.DECL_STMT, ast.makeConstant(new CAstSymbolImpl(n, CAstType.DYNAMIC)))).collect(Collectors.toList())),
+					    b1));
 			
 			Object rawArgs = o.getAttr("args");
 			List<PyObject> arguments;
@@ -553,7 +572,13 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 			@SuppressWarnings("unchecked")
 			List<PyObject> body = (List<PyObject>) o.getAttr("targets");
 			return ast.makeNode(CAstNode.BLOCK_STMT, body.stream()
-					.map(f -> ast.makeNode(CAstNode.ASSIGN, visit(f, context), rhs))
+					.map(f -> {
+						if (! context.scope().globalNames.contains(f.toString()) &&
+							! context.inits().contains(f.toString())) {
+							context.inits().add(f.toString());
+						}
+						return ast.makeNode(CAstNode.ASSIGN, visit(f, context), rhs);
+					})
 					.collect(Collectors.toList()));
 
 		}
