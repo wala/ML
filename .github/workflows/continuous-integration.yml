@@ -1,7 +1,7 @@
 name: Continuous integration
 on:
   push:
-    branches: [ "xz_deploy" ]
+    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 concurrency:
@@ -56,4 +56,4 @@ jobs:
       env:
         GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/xz_deploy' }}
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
