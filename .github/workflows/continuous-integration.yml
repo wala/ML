@@ -1,7 +1,7 @@
 name: Continuous integration
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "xz_deploy" ]
   pull_request:
     branches: [ "master" ]
 concurrency:
