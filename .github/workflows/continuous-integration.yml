@@ -49,7 +49,8 @@ jobs:
         mvn install -B -q -DskipTests
         popd
     - name: Build with Maven
-      run: mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties verify -B Pjacoco coveralls:report
+      run: mvn -Dlogging.config.file=${maven.multiModuleProjectDirectory}/logging.ci.properties verify org.eluder.coveralls:coveralls-maven-plugin:report -B -Pjacoco
+
     - name: Deploy with Maven
       run: mvn -s .travis.settings.xml -Dgithub.username=$GITHUB_USERNAME -Dgithub.password=$GITHUB_TOKEN deploy -DskipTests -B
       env:
