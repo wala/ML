@@ -278,25 +278,6 @@
               </execution>
             </executions>
           </plugin>
-          <plugin>
-            <groupId>org.eluder.coveralls</groupId>
-            <artifactId>coveralls-maven-plugin</artifactId>
-            <version>4.3.0</version>
-            <configuration>
-              <jacocoReports>
-                <jacocoReport>${project.basedir}/report/target/site/jacoco-aggregate/jacoco.xml</jacocoReport>
-              </jacocoReports>
-              <repoToken>zDbKW29vdcZsa2OeMhxlrmdAM5jGJG7rC</repoToken>
-              <serviceName>travis-pro</serviceName>
-            </configuration>
-            <dependencies>
-              <dependency>
-                <groupId>javax.xml.bind</groupId>
-                <artifactId>jaxb-api</artifactId>
-                <version>2.3.1</version>
-              </dependency>
-            </dependencies>
-          </plugin>
         </plugins>
       </build>
     </profile>
