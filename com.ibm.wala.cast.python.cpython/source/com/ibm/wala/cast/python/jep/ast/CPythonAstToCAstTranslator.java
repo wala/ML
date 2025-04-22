@@ -22,12 +22,13 @@ import java.util.stream.Collectors;
 
 import com.ibm.cast.python.loader.JepPythonLoaderFactory;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
+import com.ibm.wala.cast.ir.translator.AbstractClassEntity;
 import com.ibm.wala.cast.ir.translator.AbstractCodeEntity;
-import com.ibm.wala.cast.ir.translator.AbstractScriptEntity;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
 import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
+import com.ibm.wala.cast.python.parser.AbstractParser.MissingType;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstEntity;
@@ -38,9 +39,11 @@ import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.CAstControlFlowRecorder;
 import com.ibm.wala.cast.tree.impl.CAstImpl;
+import com.ibm.wala.cast.tree.impl.CAstNodeTypeMapRecorder;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
 import com.ibm.wala.cast.tree.impl.CAstSourcePositionRecorder;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
+import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriter.CopyKey;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriter.RewriteContext;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriterFactory;
@@ -56,8 +59,11 @@ import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ipa.cha.SeqClassHierarchyFactory;
 import com.ibm.wala.ssa.IRFactory;
 import com.ibm.wala.ssa.SSAOptions;
+import com.ibm.wala.ssa.SSAOptions.DefaultValues;
+import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.util.collections.EmptyIterator;
+import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 
 import jep.Interpreter;
@@ -182,7 +188,7 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 			this.fn = fn;
 				PyObject ast = CPythonAstToCAstTranslator.getAST(scriptCode);
 
-				TestVisitor x = new TestVisitor(this) {
+				TestVisitor x = new TestVisitor(this, new CAstTypeDictionaryImpl<String>()) {
 					@Override
 					public URL url() {
 						try {
@@ -246,12 +252,22 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 	public interface WalkContext extends TranslatorToCAst.WalkContext<WalkContext, PyObject> {
 		Scope scope();
 		
+		CAstEntity entity();
+		
 		List<String> inits();
+		
+		WalkContext getParent();
 	}
 
 	public static class ScriptContext extends FunctionContext
 			implements WalkContext {
-		private final Scope scope = new Scope();
+		private final Scope scope = new Scope() {
+			@Override
+			Scope parent() {
+				// no parent here
+				return null;
+			}
+		};
 		
 		private final PyObject ast;
 		PythonScriptEntity self;
@@ -310,15 +326,23 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		}
 	}
 
-	private static class Scope {
+	private abstract static class Scope {
+		abstract Scope parent();
+		
+		Set<String> nonLocalNames = HashSetFactory.make();
 		Set<String> globalNames = HashSetFactory.make();
 	}
 	
 	private static class FunctionContext extends TranslatorToCAst.FunctionContext<WalkContext, PyObject>
 		implements WalkContext {
-		private final Scope scope = new Scope();
+		private final Scope scope;
+		private CAstEntity entity;
 		
 		private final List<String> inits = new ArrayList<>();
+		
+		public WalkContext getParent() {
+			return (WalkContext) super.getParent();
+		}
 		
 		public Scope scope() {
 			return scope;
@@ -335,7 +359,17 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		
 		protected FunctionContext(WalkContext parent, PyObject s) {
 			super(parent, s);
-			// TODO Auto-generated constructor stub
+			 scope = new Scope() {
+				 @Override
+				 Scope parent() {
+					 return parent.scope();
+				 }			
+			 };
+		}
+
+		@Override
+		public CAstEntity entity() {
+			return entity;
 		}
 	}
 
@@ -377,6 +411,11 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		public WalkContext getParent() {
 			return (WalkContext) super.getParent();
 		}
+
+		@Override
+		public CAstEntity entity() {
+			return parent.entity();
+		}
 	}
 
 	public static abstract class TestVisitor implements JepAstVisitor<CAstNode, WalkContext> {
@@ -384,7 +423,8 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		private int label = 0;
 		private final CAstEntity entity;
 		
-		private TestVisitor(CAstEntity self) {
+		private TestVisitor(CAstEntity self, CAstTypeDictionaryImpl<String> types) {
+			this.types = types;
 			entity = self;
 		}
 		
@@ -437,7 +477,7 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 			if (rawArgs instanceof List) {
 				arguments = (List<PyObject>) rawArgs;
 			} else if (rawArgs instanceof PyObject) {
-				arguments = Arrays.asList((PyObject)rawArgs);
+				arguments = ((List<PyObject>) ((PyObject)rawArgs).getAttr("args"));
 			} else {
 				arguments = null;
 				assert false;
@@ -480,7 +520,7 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 				}
 			}; 
 			
-			CAstEntity fun = new AbstractScriptEntity(functionName, funType) {
+			CAstEntity fun = new AbstractCodeEntity(funType) {
 
 				@Override
 				public int getKind() {
@@ -500,7 +540,7 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 
 				@Override
 				public String[] getArgumentNames() {
-					List<String> names = arguments.stream().map(a -> a.toString()).collect(Collectors.toList());
+					List<String> names = arguments.stream().map(a -> (String)a.getAttr("arg")).collect(Collectors.toList());
 					return names.toArray(new String[names.size()]);
 				}
 
@@ -544,6 +584,11 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 					// TODO Auto-generated method stub
 					return null;
 				}
+
+				@Override
+				public Collection<CAstQualifier> getQualifiers() {
+					return Collections.emptySet();
+				}
 			};
 			
 			CAstNode fe = ast.makeNode(CAstNode.FUNCTION_EXPR, ast.makeConstant(fun));
@@ -574,7 +619,9 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 			return ast.makeNode(CAstNode.BLOCK_STMT, body.stream()
 					.map(f -> {
 						if (! context.scope().globalNames.contains(f.toString()) &&
-							! context.inits().contains(f.toString())) {
+							! context.scope().nonLocalNames.contains(f.toString()) &&
+							! context.inits().contains(f.toString())) 
+						{
 							context.inits().add(f.toString());
 						}
 						return ast.makeNode(CAstNode.ASSIGN, visit(f, context), rhs);
@@ -890,10 +937,40 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 			return ast.makeNode(CAstNode.EMPTY);
 		}
 		
-		
-		public CAstNode visitClassDef(PyObject arg0, WalkContext context) throws Exception {
+		public CAstNode visitNonLocal(PyObject nonlocal, WalkContext context) {
+			Scope s = context.scope();
+			@SuppressWarnings("unchecked")
+			List<String> names = (List<String>) nonlocal.getAttr("names");
+			s.nonLocalNames.addAll(names);
 			return ast.makeNode(CAstNode.EMPTY);
-			/*
+		}		
+		
+		private final CAstTypeDictionaryImpl<String> types;
+
+	    private final Map<String, CAstType> missingTypes = HashMapFactory.make();
+
+	    protected CAstType getMissingType(String name) {
+	      if (!missingTypes.containsKey(name)) {
+	        missingTypes.put(
+	            name,
+	            new MissingType() {
+
+	              @Override
+	              public String getName() {
+	                return name;
+	              }
+
+	              @Override
+	              public Collection<CAstType> getSupertypes() {
+	                return Collections.emptySet();
+	              }
+	            });
+	      }
+
+	      return missingTypes.get(name);
+	    }
+
+		public CAstNode visitClassDef(PyObject arg0, WalkContext context) throws Exception {
 			WalkContext parent = context;
 
 		      CAstType.Class cls =
@@ -901,13 +978,13 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		            @Override
 		            public Collection<CAstType> getSupertypes() {
 		              Collection<CAstType> supertypes = HashSetFactory.make();
-		              for (expr e : arg0.getInternalBases()) {
+		              for (PyObject e : (List<PyObject>) arg0.getAttr("bases")) {
 		                try {
-		                  CAstType type = types.getCAstTypeFor(e.getText());
+		                  CAstType type = types.getCAstTypeFor(e.getAttr("name",  String.class));
 		                  if (type != null) {
 		                    supertypes.add(type);
 		                  } else {
-		                    supertypes.add(getMissingType(e.getText()));
+		                    supertypes.add(getMissingType(e.getAttr("name", String.class)));
 		                  }
 		                } catch (Exception e1) {
 		                  assert false : e1;
@@ -918,7 +995,7 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 
 		            @Override
 		            public String getName() {
-		              return arg0.getInternalName();
+		              return arg0.getAttr("name", String.class);
 		            }
 
 		            @Override
@@ -932,7 +1009,7 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		            }
 		          };
 		      // TODO: CURRENTLY THIS WILL NOT BE CORRECT FOR EXTENDING CLASSES IMPORTED FROM ANOTHER MODULE
-		      types.map(arg0.getInternalName(), cls);
+		      types.map(cls.getName(), cls);
 
 		      Collection<CAstEntity> members = HashSetFactory.make();
 
@@ -966,17 +1043,16 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 
 		            @Override
 		            public Position getPosition() {
-		              return makePosition(arg0);
+		              return null;
 		            }
 
 		            @Override
 		            public Position getNamePosition() {
-		              return makePosition(arg0.getInternalNameNode());
+		              return null;
 		            }
 		          };
 
-		      WalkContext child =
-		          new WalkContext() {
+		      WalkContext child = new WalkContext() {
 		            private final CAstSourcePositionRecorder pos = new CAstSourcePositionRecorder();
 
 		            @Override
@@ -985,7 +1061,7 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		            }
 
 		            @Override
-		            public PythonTree top() {
+		            public PyObject top() {
 		              return arg0;
 		            }
 
@@ -1018,13 +1094,13 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		            }
 
 		            @Override
-		            public PythonTree getContinueFor(String label) {
+		            public PyObject getContinueFor(String label) {
 		              assert false;
 		              return null;
 		            }
 
 		            @Override
-		            public PythonTree getBreakFor(String label) {
+		            public PyObject getBreakFor(String label) {
 		              assert false;
 		              return null;
 		            }
@@ -1038,24 +1114,35 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		            public WalkContext getParent() {
 		              return parent;
 		            }
+
+					@Override
+					public Scope scope() {
+						// TODO Auto-generated method stub
+						return null;
+					}
+
+					@Override
+					public List<String> inits() {
+						// TODO Auto-generated method stub
+						return null;
+					}
 		          };
 
 		      URL url = this.url();
-		      TestVisitor v = new TestVisitor(clse) {
+		      TestVisitor v = new TestVisitor(clse, new CAstTypeDictionaryImpl<String>()) {
 				@Override
 				public URL url() {
 					return url;
 				} };
-		      for (stmt e : arg0.getInternalBody()) {
-		        if (!(e instanceof Pass)) {
-		          e.accept(v);
-		        }
+				
+				List<CAstNode> elts = new ArrayList<>();
+		      for (PyObject e : (List<PyObject>) arg0.getAttr("body")) {
+		          elts.add(v.visit(e, child));
 		      }
 
-		      CAstNode x = Ast.makeNode(CAstNode.CLASS_STMT, Ast.makeConstant(clse));
+		      CAstNode x = ast.makeNode(CAstNode.CLASS_STMT, ast.makeConstant(clse));
 		      context.addScopedEntity(x, clse);
 		      return x;
-		    */
 		    }
 			
 		private Set<String> exposedNames(CAstNode tree) {
@@ -1105,6 +1192,14 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		
 		IClassHierarchy cha = load(sources);
 		
+		SSAOptions.defaultOptions().setDefaultValues(
+			new DefaultValues() {
+				@Override
+				public int getDefaultValue(SymbolTable symtab, int valueNumber) {
+					return symtab.getNullConstant();
+				}
+			});
+
 		cha.forEach(c -> {
 			System.err.println(c);
 			c.getDeclaredMethods().forEach(m -> {
