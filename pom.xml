@@ -145,7 +145,7 @@
               <java.util.logging.config.file>${logging.config.file}</java.util.logging.config.file>
             </systemPropertyVariables>
             <forkMode>once</forkMode>
-	    <argLine>${argLine} -Dpython.import.site=false</argLine>
+            <argLine>${argLine} -Dpython.import.site=false</argLine>
             <trimStackTrace>false</trimStackTrace>
           </configuration>
         </plugin>
