@@ -146,7 +146,7 @@
               <java.util.logging.config.file>${logging.config.file}</java.util.logging.config.file>
             </systemPropertyVariables>
             <forkMode>once</forkMode>
-            <argLine>-Dpython.import.site=false</argLine>
+            <argLine>${argLine} -Dpython.import.site=false</argLine>
             <trimStackTrace>false</trimStackTrace>
           </configuration>
         </plugin>
@@ -271,6 +271,9 @@
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>${jacoco-version}</version>
+            <configuration>
+              <propertyName>argLine</propertyName>
+            </configuration>
             <executions>
               <execution>
                 <goals>
