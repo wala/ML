@@ -862,10 +862,10 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 			while (ops.hasNext()) {
 				assert exprs.hasNext();
 				CAstNode op = translateOperator(
-						ops.next().getAttr("__class__", PyObject.class).getAttr("__name__", String.class));
+					ops.next().getAttr("__class__", PyObject.class).getAttr("__name__", String.class));
 				CAstNode rhs = visit(exprs.next(), context);
 				CAstNode cmpop = ast.makeNode(CAstNode.BINARY_EXPR, op, ln, rhs);
-				expr = expr == null ? cmpop : ast.makeNode(CAstNode.ANDOR_EXPR, CAstOperator.OP_REL_AND, cmpop);
+				expr = expr == null ? cmpop : ast.makeNode(CAstNode.IF_EXPR, cmpop, expr, ast.makeConstant(false));
 			}
 
 			return expr;
