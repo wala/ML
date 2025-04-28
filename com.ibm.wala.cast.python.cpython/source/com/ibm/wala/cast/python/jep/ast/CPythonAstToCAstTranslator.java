@@ -31,7 +31,6 @@ import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.loader.JepPythonLoaderFactory;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
 import com.ibm.wala.cast.python.parser.AbstractParser;
-import com.ibm.wala.cast.python.parser.AbstractParser.MissingType;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstEntity;
@@ -65,7 +64,6 @@ import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.ssa.SSAOptions.DefaultValues;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.ClassLoaderReference;
-import com.ibm.wala.util.collections.EmptyIterator;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 
@@ -476,9 +474,15 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 				return bodyAst;
 		}
 
-		@SuppressWarnings("unchecked")
 		public CAstNode visitFunctionDef(PyObject o, WalkContext context) {
-			Object rawArgs = o.getAttr("args");
+			CAstNode fe = doFunction(o.getAttr("args"), o, o.getAttr("name", String.class), context);
+			return ast.makeNode(CAstNode.DECL_STMT,
+				ast.makeConstant(
+					new CAstSymbolImpl(o.getAttr("name", String.class), ((CAstEntity) fe.getChild(0).getValue()).getType(), fe)));
+		}
+		
+		@SuppressWarnings("unchecked")
+		public CAstNode doFunction(Object rawArgs, PyObject o, String functionName, WalkContext context) {
 			List<PyObject> arguments;
 			if (rawArgs instanceof List) {
 				arguments = (List<PyObject>) rawArgs;
@@ -488,8 +492,6 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 				arguments = null;
 				assert false;
 			}
-
-			String functionName = (String) o.getAttr("name");
 
 			int argumentCount = arguments.size();
 
@@ -633,7 +635,14 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 				
 			};
 
-			List<PyObject> code = ((List<PyObject>) o.getAttr("body")).stream().collect(Collectors.toList());
+			
+			List<PyObject> code;
+			if (o.getAttr("body") instanceof List) {
+				code = ((List<PyObject>) o.getAttr("body")).stream().collect(Collectors.toList());
+			} else {
+				code = Collections.singletonList(o.getAttr("body", PyObject.class));
+			}
+			
 			CAstNode b1 = visit(CAstNode.BLOCK_STMT, code, fc);
 			CAstNode body = ast.makeNode(CAstNode.LOCAL_SCOPE,
 					ast.makeNode(CAstNode.BLOCK_STMT,
@@ -676,10 +685,8 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			
 			CAstNode fe = ast.makeNode(CAstNode.FUNCTION_EXPR, ast.makeConstant(fun));
 			context.addScopedEntity(fe, fun);
-			CAstNode node = ast.makeNode(CAstNode.DECL_STMT,
-					ast.makeConstant(new CAstSymbolImpl(functionName, funType)), fe);
 
-			return node;
+			return fe;
 		}
 
 		public CAstNode visitName(PyObject o, WalkContext context) {
@@ -985,8 +992,10 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			return ast.makeNode(CAstNode.OBJECT_REF, obj, ast.makeConstant(field));
 		}
 
+		private int lambdaCount = 1;
+		
 		public CAstNode visitLambda(PyObject lambda, WalkContext context) {
-			return ast.makeNode(CAstNode.EMPTY);
+			return doFunction(lambda.getAttr("args"), lambda, "lambda" + lambdaCount++, context);
 		}
 
 		public CAstNode handleList(String type, String field, PyObject list, WalkContext context) {
