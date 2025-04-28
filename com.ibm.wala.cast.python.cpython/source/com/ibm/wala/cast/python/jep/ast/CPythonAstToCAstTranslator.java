@@ -30,6 +30,7 @@ import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.loader.JepPythonLoaderFactory;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
+import com.ibm.wala.cast.python.parser.AbstractParser;
 import com.ibm.wala.cast.python.parser.AbstractParser.MissingType;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.tree.CAst;
@@ -75,7 +76,7 @@ import jep.python.PyObject;
  * Create a WALA CASst representation using the standard Python ASTs given
  * source code.
  */
-public class CPythonAstToCAstTranslator implements TranslatorToCAst {
+public class CPythonAstToCAstTranslator extends AbstractParser implements TranslatorToCAst {
 
 	private static CAstType codeBody = new CAstType() {
 		@Override
@@ -416,7 +417,7 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 		}
 	}
 
-	public static abstract class TranslationVisitor implements JepAstVisitor<CAstNode, WalkContext> {
+	public static abstract class TranslationVisitor extends AbstractParser.CAstVisitor implements JepAstVisitor<CAstNode, WalkContext> {
 		CAst ast = new CAstImpl();
 		private int label = 0;
 		private final CAstEntity entity;
@@ -425,6 +426,20 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 			this.types = types;
 			entity = self;
 		}
+
+		
+		@Override
+		public URL url() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+
+		@Override
+		protected CAstNode notePosition(CAstNode makeNode, Position noInformation) {
+			return makeNode;
+		}
+
 
 		@Override
 		public CAstNode visit(PyObject o, WalkContext context) {
@@ -441,8 +456,13 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 			@SuppressWarnings("unchecked")
 			List<PyObject> body = (List<PyObject>) o.getAttr("body");
 			CAstNode bodyAst = ast.makeNode(CAstNode.BLOCK_STMT,
-					body.stream().map(f -> visit(f, context)).collect(Collectors.toList()));
+				body.stream().map(f -> visit(f, context)).collect(Collectors.toList()));
 
+			List<CAstNode> defaults = new LinkedList<>();
+			defaultImports(defaults);
+			
+			bodyAst = ast.makeNode(CAstNode.BLOCK_STMT, ast.makeNode(CAstNode.BLOCK_STMT, defaults), bodyAst);
+			
 			Set<String> exposedNames = exposedNames(bodyAst);
 			if (exposedNames.size() > 0)
 				return ast.makeNode(CAstNode.UNWIND, bodyAst,
@@ -624,6 +644,34 @@ public class CPythonAstToCAstTranslator implements TranslatorToCAst {
 											.collect(Collectors.toList())),
 							b1));
 
+			if (funType instanceof CAstType.Method) {
+				body = ast.makeNode(CAstNode.BLOCK_STMT,
+						ast.makeNode(
+								CAstNode.DECL_STMT,
+								ast.makeConstant(
+										new CAstSymbolImpl("super", PythonCAstToIRTranslator.Any)),
+								ast.makeNode(CAstNode.NEW, ast.makeConstant("superfun"))),
+						ast.makeNode(
+								CAstNode.BLOCK_STMT,
+								ast.makeNode(
+										CAstNode.ASSIGN,
+										ast.makeNode(
+												CAstNode.OBJECT_REF,
+												ast.makeNode(CAstNode.VAR, Ast.makeConstant("super")),
+												ast.makeConstant("$class")),
+										ast.makeNode(
+												CAstNode.VAR,
+												ast.makeConstant(context.entity().getType().getName()))),
+								ast.makeNode(
+										CAstNode.ASSIGN,
+										ast.makeNode(
+												CAstNode.OBJECT_REF,
+												ast.makeNode(CAstNode.VAR, Ast.makeConstant("super")),
+												ast.makeConstant("$self")),
+										ast.makeNode(CAstNode.VAR, Ast.makeConstant(fun.getArgumentNames()[1])))),
+						body);
+			}
+			
 			fun.ast = body;
 			
 			CAstNode fe = ast.makeNode(CAstNode.FUNCTION_EXPR, ast.makeConstant(fun));
