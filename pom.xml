@@ -36,6 +36,7 @@
     <parallel>both</parallel>
     <logging.config.file>${maven.multiModuleProjectDirectory}/logging.properties</logging.config.file>
     <jacoco-version>0.8.13</jacoco-version>
+    <argLine></argLine>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -146,7 +147,7 @@
               <java.util.logging.config.file>${logging.config.file}</java.util.logging.config.file>
             </systemPropertyVariables>
             <forkMode>once</forkMode>
-            <argLine>${argLine} -Dpython.import.site=false</argLine>
+            <argLine>@{argLine} -Dpython.import.site=false</argLine>
             <trimStackTrace>false</trimStackTrace>
           </configuration>
         </plugin>
