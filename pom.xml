@@ -36,7 +36,7 @@
     <parallel>both</parallel>
     <logging.config.file>${maven.multiModuleProjectDirectory}/logging.properties</logging.config.file>
     <jacoco-version>0.8.13</jacoco-version>
-    <argLine></argLine>
+    <argLine/>
   </properties>
   <dependencyManagement>
     <dependencies>
