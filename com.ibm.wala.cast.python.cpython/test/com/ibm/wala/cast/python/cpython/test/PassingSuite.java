@@ -4,13 +4,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.ibm.wala.cast.python.test.TestAssign;
-import com.ibm.wala.cast.python.test.TestCallables;
-import com.ibm.wala.cast.python.test.TestClasses;
-import com.ibm.wala.cast.python.test.TestCompare;
+import com.ibm.wala.cast.python.test.*;
 
 @RunWith(Suite.class)
 @SuiteClasses({
+	TestCalls.class,
 	TestClasses.class,
 	TestCallables.class,
 	TestCompare.class,
