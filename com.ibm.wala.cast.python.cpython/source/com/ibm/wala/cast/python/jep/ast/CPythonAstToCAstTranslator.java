@@ -478,7 +478,8 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			CAstNode fe = doFunction(o.getAttr("args"), o, o.getAttr("name", String.class), context);
 			return ast.makeNode(CAstNode.DECL_STMT,
 				ast.makeConstant(
-					new CAstSymbolImpl(o.getAttr("name", String.class), ((CAstEntity) fe.getChild(0).getValue()).getType(), fe)));
+					new CAstSymbolImpl(o.getAttr("name", String.class), ((CAstEntity) fe.getChild(0).getValue()).getType())),
+				fe);
 		}
 		
 		@SuppressWarnings("unchecked")
