@@ -267,31 +267,52 @@
         <activeByDefault>false</activeByDefault>
       </activation>
       <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>${jacoco-version}</version>
-            <configuration>
-              <propertyName>argLine</propertyName>
-            </configuration>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>prepare-agent</goal>
-                </goals>
-                <phase>initialize</phase>
-              </execution>
-              <execution>
-                <id>report</id>
-                <goals>
-                  <goal>report</goal>
-                </goals>
-                <phase>verify</phase>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>com.github.hazendaz.maven</groupId>
+              <artifactId>coveralls-maven-plugin</artifactId>
+              <version>4.7.0</version>
+              <configuration>
+                <jacocoReports>
+                  <jacocoReport>${project.basedir}/com.ibm.wala.cast.python.report/target/site/jacoco-aggregate/jacoco.xml</jacocoReport>
+                </jacocoReports>
+              </configuration>
+              <dependencies>
+                <dependency>
+                  <groupId>javax.xml.bind</groupId>
+                  <artifactId>jaxb-api</artifactId>
+                  <version>2.3.1</version>
+                </dependency>
+              </dependencies>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.jacoco</groupId>
+              <artifactId>jacoco-maven-plugin</artifactId>
+              <version>${jacoco-version}</version>
+              <configuration>
+                <propertyName>argLine</propertyName>
+              </configuration>
+              <executions>
+                <execution>
+                  <goals>
+                    <goal>prepare-agent</goal>
+                  </goals>
+                  <phase>initialize</phase>
+                </execution>
+                <execution>
+                  <id>report</id>
+                  <goals>
+                    <goal>report</goal>
+                  </goals>
+                  <phase>verify</phase>
+                </execution>
+              </executions>
+            </plugin>
+          </plugins>
       </build>
     </profile>
   </profiles>
