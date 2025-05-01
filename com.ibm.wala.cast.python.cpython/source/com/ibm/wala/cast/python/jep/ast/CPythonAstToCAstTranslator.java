@@ -476,9 +476,11 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 
 		public CAstNode visitFunctionDef(PyObject o, WalkContext context) {
 			CAstNode fe = doFunction(o.getAttr("args"), o, o.getAttr("name", String.class), context);
+			Object x = fe.getChild(0).getValue();
+			CAstEntity fun = (CAstEntity) (x != null? x: fe.getChild(1).getChild(0).getValue());
 			return ast.makeNode(CAstNode.DECL_STMT,
 				ast.makeConstant(
-					new CAstSymbolImpl(o.getAttr("name", String.class), ((CAstEntity) fe.getChild(0).getValue()).getType())),
+					new CAstSymbolImpl(o.getAttr("name", String.class), fun.getType())),
 				fe);
 		}
 		
@@ -497,6 +499,34 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			int argumentCount = arguments.size();
 
 			List<CAstType> argumentTypes = Collections.nCopies(argumentCount+1, CAstType.DYNAMIC);
+
+			Object rawDefaults = o.getAttr("args", PyObject.class).getAttr("defaults");
+			List<PyObject> defaults;
+			if (rawDefaults instanceof List) {
+				defaults = (List<PyObject>) rawDefaults; 
+			} else {
+				defaults = Collections.singletonList((PyObject)rawDefaults);
+			}
+
+			CAstNode[] defaultVars;
+			CAstNode[] defaultCode;
+			if (defaults != null && defaults.size() > 0) {
+				int arg = 0;
+				defaultVars = new CAstNode[defaults.size()];
+				defaultCode = new CAstNode[defaults.size()];
+				for (PyObject dflt : defaults) {
+					String name = functionName + "_default_" + arg;
+					context.scope().globalNames.add(name);
+					defaultCode[arg] =
+							ast.makeNode(
+									CAstNode.ASSIGN,
+									ast.makeNode(CAstNode.VAR, Ast.makeConstant(name)),
+									visit(dflt, context));
+					defaultVars[arg++] = Ast.makeNode(CAstNode.VAR, Ast.makeConstant(name));
+				}
+			} else {
+				defaultVars = defaultCode = new CAstNode[0];
+			}
 
 			class PythonCodeType implements CAstType.Function {
 
@@ -583,7 +613,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 
 				@Override
 				public CAstNode[] getArgumentDefaults() {
-					return new CAstNode[0];
+					return defaultCode;
 				}
 
 				@Override
@@ -687,7 +717,11 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			CAstNode fe = ast.makeNode(CAstNode.FUNCTION_EXPR, ast.makeConstant(fun));
 			context.addScopedEntity(fe, fun);
 
-			return fe;
+	        if (defaultCode.length == 0) {
+	        	return fe;
+	        } else {
+	        	return ast.makeNode(CAstNode.BLOCK_EXPR, ast.makeNode(CAstNode.BLOCK_EXPR, defaultCode), fe);
+	        }
 		}
 
 		public CAstNode visitName(PyObject o, WalkContext context) {
@@ -785,12 +819,17 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 
 		public CAstNode visitImportFrom(PyObject o, WalkContext context) {
 			String module = (String) o.getAttr("module");
+			CAstNode mod = ast.makeNode(CAstNode.DECL_STMT,
+				ast.makeConstant(new CAstSymbolImpl(module, PythonCAstToIRTranslator.Any)),
+				ast.makeNode(CAstNode.PRIMITIVE, ast.makeConstant("import"), ast.makeConstant(module)));
 			@SuppressWarnings("unchecked")
 			List<PyObject> alias = (List<PyObject>) o.getAttr("names");
-			return ast.makeNode(CAstNode.BLOCK_STMT, alias.stream().map(a -> ast.makeNode(CAstNode.ASSIGN,
+			return ast.makeNode(CAstNode.BLOCK_STMT,
+					mod,
+					ast.makeNode(CAstNode.BLOCK_STMT, alias.stream().map(a -> ast.makeNode(CAstNode.ASSIGN,
 					ast.makeNode(CAstNode.VAR, ast.makeConstant(a.getAttr("name"))), ast.makeNode(CAstNode.OBJECT_REF,
 							ast.makeNode(CAstNode.VAR, ast.makeConstant(module)), ast.makeConstant(a.getAttr("name")))))
-					.collect(Collectors.toList()));
+					.collect(Collectors.toList())));
 		}
 
 		public CAstNode visitExpr(PyObject o, WalkContext context) {
