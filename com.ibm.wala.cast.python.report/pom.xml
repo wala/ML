@@ -12,8 +12,23 @@
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>com.ibm.wala.cast.python.jython3.test</artifactId>
+      <artifactId>com.ibm.wala.cast.python</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>com.ibm.wala.cast.python.jython</artifactId>
       <version>0.38.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>com.ibm.wala.cast.python.jython3</artifactId>
+      <version>0.38.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>com.ibm.wala.cast.python.test</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -22,8 +37,8 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>com.ibm.wala.cast.python.test</artifactId>
-      <version>${project.version}</version>
+      <artifactId>com.ibm.wala.cast.python.jython3.test</artifactId>
+      <version>0.38.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -35,12 +50,6 @@
       <artifactId>com.ibm.wala.cast.python.ml.test</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>com.ibm.wala.cast.python</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <!-- TODO: Maybe the other subprojects from the main pom.xml file should be added as well. See https://stackoverflow.com/questions/50806424/reporting-and-merging-multi-module-jacoco-reports-with-report-aggregate -->
   </dependencies>
   <profiles>
     <profile>
