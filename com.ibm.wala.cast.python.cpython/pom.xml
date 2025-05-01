@@ -75,5 +75,6 @@
       </resource>
     </resources>
     <sourceDirectory>source</sourceDirectory>
+    <testSourceDirectory>test</testSourceDirectory>
   </build>
 </project>
