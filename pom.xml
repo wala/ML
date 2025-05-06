@@ -14,6 +14,7 @@
     <module>com.ibm.wala.cast.python.jython3.test</module>
     <module>com.ibm.wala.cast.python.ml</module>
     <module>com.ibm.wala.cast.python.ml.test</module>
+    <module>com.ibm.wala.cast.python.report</module>
   </modules>
   <distributionManagement>
     <repository>
@@ -34,6 +35,8 @@
     <maven.surefire.version>3.5.3</maven.surefire.version>
     <parallel>both</parallel>
     <logging.config.file>${maven.multiModuleProjectDirectory}/logging.properties</logging.config.file>
+    <jacoco-version>0.8.13</jacoco-version>
+    <argLine/>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -144,7 +147,7 @@
               <java.util.logging.config.file>${logging.config.file}</java.util.logging.config.file>
             </systemPropertyVariables>
             <forkMode>once</forkMode>
-            <argLine>-Dpython.import.site=false</argLine>
+            <argLine>@{argLine} -Dpython.import.site=false</argLine>
             <trimStackTrace>false</trimStackTrace>
           </configuration>
         </plugin>
@@ -257,4 +260,39 @@
       </plugin>
     </plugins>
   </reporting>
+  <profiles>
+    <profile>
+      <id>jacoco</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco-version}</version>
+            <configuration>
+              <propertyName>argLine</propertyName>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+                <phase>initialize</phase>
+              </execution>
+              <execution>
+                <id>report</id>
+                <goals>
+                  <goal>report</goal>
+                </goals>
+                <phase>verify</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
