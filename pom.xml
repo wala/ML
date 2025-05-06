@@ -26,12 +26,12 @@
     <project-version>0.0.1-SNAPSHOT</project-version>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
-    <maven.compiler.version>3.13.0</maven.compiler.version>
+    <maven.compiler.version>3.14.0</maven.compiler.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build-alias>b000</build-alias>
-    <wala.version>1.6.9</wala.version>
-    <spotless.version>2.44.2</spotless.version>
-    <maven.surefire.version>3.5.2</maven.surefire.version>
+    <wala.version>1.6.10</wala.version>
+    <spotless.version>2.44.4</spotless.version>
+    <maven.surefire.version>3.5.3</maven.surefire.version>
     <parallel>both</parallel>
     <logging.config.file>${maven.multiModuleProjectDirectory}/logging.properties</logging.config.file>
   </properties>
