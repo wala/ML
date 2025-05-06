@@ -1477,8 +1477,8 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 										ast.makeNode(CAstNode.ASSIGN, 
 												visit(c.target(), context),
 												ast.makeNode(CAstNode.OBJECT_REF,
-														visit(c.target(), context),
-														ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName)))),
+														ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName)),
+														visit(c.target(), context))),
 										result))),
 						context.pos().getPosition(body));
 			}
