@@ -8,6 +8,7 @@ import com.ibm.wala.cast.python.test.*;
 
 @RunWith(Suite.class)
 @SuiteClasses({
+	TestMulti.class,
 	TestPrint.class,
 	TestLambda.class,
 	TestCalls.class,
