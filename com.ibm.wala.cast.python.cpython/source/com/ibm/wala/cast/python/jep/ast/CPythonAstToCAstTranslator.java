@@ -28,6 +28,7 @@ import com.ibm.wala.cast.ir.translator.AbstractFieldEntity;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
 import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
+import com.ibm.wala.cast.python.jep.Util;
 import com.ibm.wala.cast.python.loader.JepPythonLoaderFactory;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
 import com.ibm.wala.cast.python.parser.AbstractParser;
@@ -487,46 +488,17 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 					ast.makeConstant(new CAstSymbolImpl(o.getAttr("name", String.class), fun.getType())), fe);
 		}
 
-		@SuppressWarnings("unchecked")
 		public CAstNode doFunction(Object rawArgs, PyObject o, String functionName, WalkContext context) {
-			List<PyObject> arguments;
-			if (rawArgs instanceof List) {
-				arguments = (List<PyObject>) rawArgs;
-			} else if (rawArgs instanceof PyObject) {
-				arguments = ((List<PyObject>) ((PyObject) rawArgs).getAttr("args"));
-			} else {
-				arguments = null;
-				assert false;
-			}
+			List<PyObject> arguments = extractArguments(rawArgs);
+			return doFunction(o, functionName, context, arguments, getDefaults(o, functionName, context), getCode(o),
+					getArgumentNames(arguments));
+		}
 
+		public CAstNode doFunction(PyObject o, String functionName, WalkContext context, List<PyObject> arguments,
+				CAstNode[] defaultCode, List<PyObject> code, List<String> argumentNames) {
 			int argumentCount = arguments.size();
 
 			List<CAstType> argumentTypes = Collections.nCopies(argumentCount + 1, CAstType.DYNAMIC);
-
-			Object rawDefaults = o.getAttr("args", PyObject.class).getAttr("defaults");
-			List<PyObject> defaults;
-			if (rawDefaults instanceof List) {
-				defaults = (List<PyObject>) rawDefaults;
-			} else {
-				defaults = Collections.singletonList((PyObject) rawDefaults);
-			}
-
-			CAstNode[] defaultVars;
-			CAstNode[] defaultCode;
-			if (defaults != null && defaults.size() > 0) {
-				int arg = 0;
-				defaultVars = new CAstNode[defaults.size()];
-				defaultCode = new CAstNode[defaults.size()];
-				for (PyObject dflt : defaults) {
-					String name = functionName + "_default_" + arg;
-					context.scope().globalNames.add(name);
-					defaultCode[arg] = ast.makeNode(CAstNode.ASSIGN, ast.makeNode(CAstNode.VAR, Ast.makeConstant(name)),
-							visit(dflt, context));
-					defaultVars[arg++] = Ast.makeNode(CAstNode.VAR, Ast.makeConstant(name));
-				}
-			} else {
-				defaultVars = defaultCode = new CAstNode[0];
-			}
 
 			class PythonCodeType implements CAstType.Function {
 
@@ -606,7 +578,9 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 
 				@Override
 				public String[] getArgumentNames() {
-					List<String> names = arguments.stream().map(a -> (String) a.getAttr("arg"))
+					List<String> names = arguments.stream()
+							.map(a -> Util.typeName(a).equals("Name") ? a.getAttr("id", String.class)
+									: (String) a.getAttr("arg"))
 							.collect(Collectors.toList());
 					names.add(0, "the function");
 					return names.toArray(new String[names.size()]);
@@ -648,8 +622,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 
 			FunctionEntity fun = new FunctionEntity(funType);
 
-			WalkContext fc = new FunctionContext(context, o,
-					arguments.stream().map(a -> (String) a.getAttr("arg")).collect(Collectors.toList())) {
+			WalkContext fc = new FunctionContext(context, o, argumentNames) {
 
 				@Override
 				public CAstControlFlowRecorder cfg() {
@@ -667,13 +640,6 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 				}
 
 			};
-
-			List<PyObject> code;
-			if (o.getAttr("body") instanceof List) {
-				code = ((List<PyObject>) o.getAttr("body")).stream().collect(Collectors.toList());
-			} else {
-				code = Collections.singletonList(o.getAttr("body", PyObject.class));
-			}
 
 			CAstNode b1 = visit(CAstNode.BLOCK_STMT, code, fc);
 			CAstNode body = ast.makeNode(CAstNode.LOCAL_SCOPE,
@@ -712,6 +678,64 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			} else {
 				return ast.makeNode(CAstNode.BLOCK_EXPR, ast.makeNode(CAstNode.BLOCK_EXPR, defaultCode), fe);
 			}
+		}
+
+		private List<String> getArgumentNames(List<PyObject> arguments) {
+			return arguments.stream().map(a -> (String) a.getAttr("arg")).collect(Collectors.toList());
+		}
+
+		@SuppressWarnings("unchecked")
+		private List<PyObject> getCode(PyObject o) {
+			List<PyObject> code;
+			if (o.getAttr("body") instanceof List) {
+				code = ((List<PyObject>) o.getAttr("body")).stream().collect(Collectors.toList());
+			} else {
+				code = Collections.singletonList(o.getAttr("body", PyObject.class));
+			}
+			return code;
+		}
+
+		@SuppressWarnings("unchecked")
+		private CAstNode[] getDefaults(PyObject o, String functionName, WalkContext context) {
+			Object rawDefaults = o.getAttr("args", PyObject.class).getAttr("defaults");
+			List<PyObject> defaults;
+			if (rawDefaults instanceof List) {
+				defaults = (List<PyObject>) rawDefaults;
+			} else {
+				defaults = Collections.singletonList((PyObject) rawDefaults);
+			}
+
+			CAstNode[] defaultVars;
+			CAstNode[] defaultCode;
+			if (defaults != null && defaults.size() > 0) {
+				int arg = 0;
+				defaultVars = new CAstNode[defaults.size()];
+				defaultCode = new CAstNode[defaults.size()];
+				for (PyObject dflt : defaults) {
+					String name = functionName + "_default_" + arg;
+					context.scope().globalNames.add(name);
+					defaultCode[arg] = ast.makeNode(CAstNode.ASSIGN, ast.makeNode(CAstNode.VAR, Ast.makeConstant(name)),
+							visit(dflt, context));
+					defaultVars[arg++] = Ast.makeNode(CAstNode.VAR, Ast.makeConstant(name));
+				}
+			} else {
+				defaultVars = defaultCode = new CAstNode[0];
+			}
+			return defaultCode;
+		}
+
+		@SuppressWarnings("unchecked")
+		private List<PyObject> extractArguments(Object rawArgs) {
+			List<PyObject> arguments;
+			if (rawArgs instanceof List) {
+				arguments = (List<PyObject>) rawArgs;
+			} else if (rawArgs instanceof PyObject) {
+				arguments = ((List<PyObject>) ((PyObject) rawArgs).getAttr("args"));
+			} else {
+				arguments = null;
+				assert false;
+			}
+			return arguments;
 		}
 
 		public CAstNode visitName(PyObject o, WalkContext context) {
@@ -1436,14 +1460,18 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 				}
 			};
 
-			return ast.makeNode(CAstNode.BLOCK_EXPR, doGenerators(Collections.singletonList(g),
-					ast.makeNode(CAstNode.BLOCK_EXPR, Ast.makeNode(CAstNode.BLOCK_EXPR, body), continueStmt), context),
-					breakStmt);
+			return ast.makeNode(CAstNode.BLOCK_EXPR, 
+				doGenerators(
+					Collections.singletonList(g),
+					ast.makeNode(CAstNode.BLOCK_EXPR, Ast.makeNode(CAstNode.BLOCK_EXPR, body), continueStmt), context, true),
+				breakStmt);
 		}
 
 		private CAstNode doGenerators(
 				List<com.ibm.wala.cast.python.jep.ast.CPythonAstToCAstTranslator.TranslationVisitor.Comprehension> generators,
-				CAstNode body, WalkContext context) {
+				CAstNode body, 
+				WalkContext context,
+				boolean getValue) {
 			CAstNode result = body;
 
 			for (com.ibm.wala.cast.python.jep.ast.CPythonAstToCAstTranslator.TranslationVisitor.Comprehension c : generators) {
@@ -1451,164 +1479,142 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 				if (j > 0) {
 					for (PyObject test : c.ifs()) {
 						CAstNode v = visit(test, context);
-						result = ast.makeNode(CAstNode.IF_EXPR, v, body);
+						result = ast.makeNode(CAstNode.IF_STMT, v, result);
 					}
 				}
 
 				String tempName = "temp " + ++tmpIndex;
+				String tempName2 = "temp " + ++tmpIndex;
 
 				CAstNode test = ast.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_NE, ast.makeConstant(null),
 						ast.makeNode(CAstNode.BLOCK_EXPR,
-								ast.makeNode(CAstNode.ASSIGN, visit(c.target(), context),
+								ast.makeNode(CAstNode.ASSIGN, ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName2)),
 										ast.makeNode(CAstNode.EACH_ELEMENT_GET,
 												ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName)),
-												visit(c.target(), context)))));
+												ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName2))))));
 
+				CAstNode x = visit(c.target(), context);
+				if (x.getKind() == CAstNode.VAR) {
+					String nm = (String) x.getChild(0).getValue();
+					context.scope().localNames.add(nm);
+					context.inits().add(nm);
+				}
+				
 				result = notePosition(
 						ast.makeNode(CAstNode.BLOCK_EXPR,
 								ast.makeNode(CAstNode.DECL_STMT,
 										ast.makeConstant(new CAstSymbolImpl(tempName, PythonCAstToIRTranslator.Any)),
 										visit(c.iter(), context)),
-								ast.makeNode(CAstNode.ASSIGN, visit(c.target(), context),
+								ast.makeNode(CAstNode.DECL_STMT,
+										ast.makeConstant(new CAstSymbolImpl(tempName2, PythonCAstToIRTranslator.Any))),
+								ast.makeNode(CAstNode.ASSIGN, ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName2)),
 										ast.makeNode(CAstNode.EACH_ELEMENT_GET,
 												ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName)),
 												ast.makeConstant(null))),
-								ast.makeNode(CAstNode.LOOP, test, ast.makeNode(CAstNode.BLOCK_EXPR,
-										ast.makeNode(CAstNode.ASSIGN, 
-												visit(c.target(), context),
-												ast.makeNode(CAstNode.OBJECT_REF,
-														ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName)),
-														visit(c.target(), context))),
-										result))),
+								ast.makeNode(CAstNode.LOOP, test,
+										ast.makeNode(CAstNode.BLOCK_EXPR,
+												ast.makeNode(CAstNode.ASSIGN,
+													visit(c.target(), context),	
+													getValue?
+														ast.makeNode(CAstNode.OBJECT_REF,
+																ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName)),
+																ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName2))):
+														ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName2))),
+												result,
+												ast.makeNode(CAstNode.ASSIGN, 
+														ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName2)),
+														ast.makeNode(CAstNode.BINARY_EXPR, 
+																CAstOperator.OP_ADD,
+																ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName2)),
+																ast.makeConstant(1))),
+												ast.makeNode(CAstNode.ASSIGN, 
+														visit(c.target(), context),
+														ast.makeNode(CAstNode.OBJECT_REF,
+																ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName)),
+																ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName2))))))),
 						context.pos().getPosition(body));
 			}
 
-			return result;
+			return ast.makeNode(CAstNode.LOCAL_SCOPE, result);
 		}
 
-	    private CAstType filter =
-	            new CAstType() {
+		private CAstType filter = new CAstType() {
 
-	              @Override
-	              public String getName() {
-	                return "filter";
-	              }
+			@Override
+			public String getName() {
+				return "filter";
+			}
 
-	              @Override
-	              public Collection<CAstType> getSupertypes() {
-	                return Collections.singleton(codeBody);
-	              }
-	            };
+			@Override
+			public Collection<CAstType> getSupertypes() {
+				return Collections.singleton(codeBody);
+			}
+		};
 
-	    @SuppressWarnings("unchecked")
-		private void getComprehensionArguments(PyObject arg, java.util.List<PyObject> arguments) {
-	    	if ("Tuple".equals(arg.getAttr("type"))) {
-	    		((List<PyObject>)arg.getAttr("elts", List.class))
-	    			.forEach(
-	    				elt -> {
-	    					getComprehensionArguments(elt, arguments);
-	    				});
-	    	} else {
-	    		arguments.add(arg);
-	    	}
-	    }
+		@SuppressWarnings("unchecked")
+		private void getComprehensionArguments(PyObject arg, List<PyObject> arguments) {
+			if ("Tuple".equals(Util.typeName(arg))) {
+				((List<PyObject>) arg.getAttr("elts", List.class)).forEach(elt -> {
+					getComprehensionArguments(elt, arguments);
+				});
+			} else {
+				arguments.add(arg);
+			}
+		}
 
-	    private CAstNode[] comprehensionFilters(java.util.List<Comprehension> gen, WalkContext context) throws Exception {
-	        String name = "filter" + (++tmpIndex);
-
-	        java.util.List<PyObject> arguments = new LinkedList<>();
-	        gen.forEach(
-	            (x) -> {
-	              getComprehensionArguments(x.iter(), arguments);
-	            });
-
-	        java.util.List<CAstNode> filters = new LinkedList<>();
-	        for (Comprehension g : gen) {
-	          for (PyObject test : g.ifs()) {
-	            CAstNode filter_f =
-	                doFunction(
-	                    arguments,
-	                    test,
-	                    name,
-	                    context);
-	            if (filter_f != null) {
-	              filters.add(filter_f);
-	            }
-	          }
-	        }
-
-	        return filters.toArray(new CAstNode[filters.size()]);
-	      }
-
-	    private CAstNode comprehensionLambda(PyObject value, java.util.List<Comprehension> gen, WalkContext context)
-	            throws Exception {
-	          String name = "comprehension" + (++tmpIndex);
-
-	          List<PyObject> arguments = new LinkedList<>();
-	          gen.forEach(
-	              (x) -> {
-	                getComprehensionArguments(x.target(), arguments);
-	              });
-
-	          return doFunction(
-	              arguments,
-	              value,
-	              name,
-	              context);
-	        }
-
-		private CAstNode visitComp(PyObject value, List<Comprehension> gen, TypeReference type, WalkContext context)
+		private CAstNode visitComp(PyObject value, List<Comprehension> gen, TypeReference type, WalkContext context, boolean getValue)
 				throws Exception {
-			java.util.List<CAstNode> arguments = new LinkedList<>();
-			for (Comprehension x : gen) {
-				arguments.add(visit(x.iter(), context));
-			}
+			CAstNode objDecl = ast.makeNode(CAstNode.DECL_STMT,
+					ast.makeConstant(new CAstSymbolImpl("__collection__", CAstType.DYNAMIC)), 
+					ast.makeNode(CAstNode.NEW, ast.makeConstant(type.getName().toString().substring(1))));
+			CAstNode idxDecl = ast.makeNode(CAstNode.DECL_STMT,
+					ast.makeConstant(new CAstSymbolImpl("__idx__", CAstType.DYNAMIC)), 
+					ast.makeConstant(0));
+				CAstNode body = ast.makeNode(CAstNode.ASSIGN,
+					ast.makeNode(CAstNode.OBJECT_REF,
+						ast.makeNode(CAstNode.VAR, ast.makeConstant("__collection__")),
+						ast.makeNode(CAstNode.VAR, ast.makeConstant("__idx__"))),						
+					visit(value, context));
+			return ast.makeNode(CAstNode.BLOCK_EXPR,
+					objDecl,
+					idxDecl,
+					doGenerators(gen, body, context, getValue),
+					ast.makeNode(CAstNode.VAR, ast.makeConstant("__collection__")));
+		}
 
-			CAstNode lambda = comprehensionLambda(value, gen, context);
-			assert lambda != null;
-			CAstNode[] filters = comprehensionFilters(gen, context);
+		public CAstNode visitListComp(PyObject lc, WalkContext context) throws Exception {
+			List<Comprehension> cs = toComprehensions(lc);
+			return visitComp(lc.getAttr("elt", PyObject.class), cs, PythonTypes.list, context, true);
+		}
 
-			return Ast.makeNode(
-					CAstNode.COMPREHENSION_EXPR,
-					Ast.makeNode(CAstNode.NEW, Ast.makeConstant(type.getName().toString().substring(1))),
-					lambda,
-					Ast.makeNode(CAstNode.EXPR_LIST, arguments.toArray(new CAstNode[arguments.size()])),
-					Ast.makeNode(CAstNode.EXPR_LIST, filters));
-			}
-		
-		    public CAstNode visitListComp(PyObject lc, WalkContext context) throws Exception {
-			   List<Comprehension> cs = toComprehensions(lc);
-		      return visitComp(lc.getAttr("iter", PyObject.class), cs, PythonTypes.list, context);
-		    }
+		public CAstNode visitSetComp(PyObject sc, WalkContext context) throws Exception {
+			List<Comprehension> cs = toComprehensions(sc);
+			return visitComp(sc.getAttr("elt", PyObject.class), cs, PythonTypes.set, context, true);
+		}
 
-		    public CAstNode visitSetComp(PyObject sc, WalkContext context) throws Exception {
-			   List<Comprehension> cs = toComprehensions(sc);
-		      return visitComp(sc.getAttr("iter", PyObject.class), cs, PythonTypes.set, context);
-		    }
+		private List<Comprehension> toComprehensions(PyObject lc) {
+			@SuppressWarnings("unchecked")
+			List<PyObject> gen = lc.getAttr("generators", List.class);
+			List<Comprehension> cs = gen.stream().map(g -> new Comprehension() {
 
-		    private List<Comprehension> toComprehensions(PyObject lc) {
+				@Override
+				public PyObject target() {
+					return g.getAttr("target", PyObject.class);
+				}
+
+				@Override
+				public PyObject iter() {
+					return g.getAttr("iter", PyObject.class);
+				}
+
 				@SuppressWarnings("unchecked")
-				   List<PyObject> gen = lc.getAttr("generators", List.class);
-				   List<Comprehension> cs = gen.stream().map(g -> new Comprehension() {
-
-					@Override
-					public PyObject target() {
-						return g.getAttr("target", PyObject.class);
-					}
-
-					@Override
-					public PyObject iter() {
-						return g.getAttr("iter", PyObject.class);
-					}
-
-					@SuppressWarnings("unchecked")
-					@Override
-					public List<PyObject> ifs() {
-						return g.getAttr("ifs", List.class);
-					}}).collect(Collectors.toList());
-				return cs;
-			}
-
+				@Override
+				public List<PyObject> ifs() {
+					return g.getAttr("ifs", List.class);
+				}
+			}).collect(Collectors.toList());
+			return cs;
+		}
 
 	}
 
