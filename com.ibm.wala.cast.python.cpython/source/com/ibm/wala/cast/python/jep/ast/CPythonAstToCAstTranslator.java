@@ -1463,15 +1463,14 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			return ast.makeNode(CAstNode.BLOCK_EXPR, 
 				doGenerators(
 					Collections.singletonList(g),
-					ast.makeNode(CAstNode.BLOCK_EXPR, Ast.makeNode(CAstNode.BLOCK_EXPR, body), continueStmt), context, true),
+					ast.makeNode(CAstNode.BLOCK_EXPR, Ast.makeNode(CAstNode.BLOCK_EXPR, body), continueStmt), context),
 				breakStmt);
 		}
 
 		private CAstNode doGenerators(
 				List<com.ibm.wala.cast.python.jep.ast.CPythonAstToCAstTranslator.TranslationVisitor.Comprehension> generators,
 				CAstNode body, 
-				WalkContext context,
-				boolean getValue) {
+				WalkContext context) {
 			CAstNode result = body;
 
 			for (com.ibm.wala.cast.python.jep.ast.CPythonAstToCAstTranslator.TranslationVisitor.Comprehension c : generators) {
@@ -1515,23 +1514,17 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 										ast.makeNode(CAstNode.BLOCK_EXPR,
 												ast.makeNode(CAstNode.ASSIGN,
 													visit(c.target(), context),	
-													getValue?
-														ast.makeNode(CAstNode.OBJECT_REF,
-																ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName)),
-																ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName2))):
-														ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName2))),
+													ast.makeNode(CAstNode.PRIMITIVE,
+														ast.makeConstant("forElementGet"),
+														ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName)),
+														ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName2)))),
 												result,
 												ast.makeNode(CAstNode.ASSIGN, 
 														ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName2)),
 														ast.makeNode(CAstNode.BINARY_EXPR, 
 																CAstOperator.OP_ADD,
 																ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName2)),
-																ast.makeConstant(1))),
-												ast.makeNode(CAstNode.ASSIGN, 
-														visit(c.target(), context),
-														ast.makeNode(CAstNode.OBJECT_REF,
-																ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName)),
-																ast.makeNode(CAstNode.VAR, ast.makeConstant(tempName2))))))),
+																ast.makeConstant(1)))))),
 						context.pos().getPosition(body));
 			}
 
@@ -1562,7 +1555,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			}
 		}
 
-		private CAstNode visitComp(PyObject value, List<Comprehension> gen, TypeReference type, WalkContext context, boolean getValue)
+		private CAstNode visitComp(PyObject key, PyObject value, List<Comprehension> gen, TypeReference type, WalkContext context)
 				throws Exception {
 			CAstNode objDecl = ast.makeNode(CAstNode.DECL_STMT,
 					ast.makeConstant(new CAstSymbolImpl("__collection__", CAstType.DYNAMIC)), 
@@ -1570,26 +1563,31 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			CAstNode idxDecl = ast.makeNode(CAstNode.DECL_STMT,
 					ast.makeConstant(new CAstSymbolImpl("__idx__", CAstType.DYNAMIC)), 
 					ast.makeConstant(0));
-				CAstNode body = ast.makeNode(CAstNode.ASSIGN,
+			CAstNode body = ast.makeNode(CAstNode.ASSIGN,
 					ast.makeNode(CAstNode.OBJECT_REF,
 						ast.makeNode(CAstNode.VAR, ast.makeConstant("__collection__")),
-						ast.makeNode(CAstNode.VAR, ast.makeConstant("__idx__"))),						
+						key == null? ast.makeNode(CAstNode.VAR, ast.makeConstant("__idx__")): visit(key, context)),						
 					visit(value, context));
 			return ast.makeNode(CAstNode.BLOCK_EXPR,
 					objDecl,
 					idxDecl,
-					doGenerators(gen, body, context, getValue),
+					doGenerators(gen, body, context),
 					ast.makeNode(CAstNode.VAR, ast.makeConstant("__collection__")));
+		}
+
+		public CAstNode visitDictComp(PyObject lc, WalkContext context) throws Exception {
+			List<Comprehension> cs = toComprehensions(lc);
+			return visitComp(lc.getAttr("key", PyObject.class), lc.getAttr("value", PyObject.class), cs, PythonTypes.dict, context);
 		}
 
 		public CAstNode visitListComp(PyObject lc, WalkContext context) throws Exception {
 			List<Comprehension> cs = toComprehensions(lc);
-			return visitComp(lc.getAttr("elt", PyObject.class), cs, PythonTypes.list, context, true);
+			return visitComp(null, lc.getAttr("elt", PyObject.class), cs, PythonTypes.list, context);
 		}
 
 		public CAstNode visitSetComp(PyObject sc, WalkContext context) throws Exception {
 			List<Comprehension> cs = toComprehensions(sc);
-			return visitComp(sc.getAttr("elt", PyObject.class), cs, PythonTypes.set, context, true);
+			return visitComp(null, sc.getAttr("elt", PyObject.class), cs, PythonTypes.set, context);
 		}
 
 		private List<Comprehension> toComprehensions(PyObject lc) {
