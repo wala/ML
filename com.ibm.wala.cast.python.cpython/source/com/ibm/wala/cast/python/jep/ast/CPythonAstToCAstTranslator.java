@@ -753,6 +753,21 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			return ast.makeConstant(nm);
 		}
 
+		public CAstNode visitNamedExpr(PyObject o, WalkContext context) {
+			PyObject rhs = o.getAttr("value", PyObject.class);
+			PyObject lhs = o.getAttr("target", PyObject.class);
+			Scope scope = context.scope();
+			if (!scope.globalNames.contains(lhs.toString())
+					           && 
+			    !scope.nonLocalNames.contains(lhs.toString()) && !context.inits().contains(lhs.toString())) 
+			{
+				context.inits().add(lhs.toString());
+				scope.localNames.add(lhs.toString());
+			}
+			
+			return ast.makeNode(CAstNode.ASSIGN, visit(lhs, context), visit(rhs, context));
+		}
+		
 		public CAstNode visitAssign(PyObject o, WalkContext context) {
 			@SuppressWarnings("unchecked")
 			List<PyObject> body = (List<PyObject>) o.getAttr("targets");
