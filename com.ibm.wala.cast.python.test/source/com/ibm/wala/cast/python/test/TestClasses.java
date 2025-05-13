@@ -10,7 +10,7 @@ import com.ibm.wala.util.CancelException;
 import java.io.IOException;
 import org.junit.Test;
 
-public class TestClasses extends TestPythonCallGraphShape {
+public class TestClasses extends TestJythonCallGraphShape {
 
   protected static final Object[][] assertionsClasses1 =
       new Object[][] {
@@ -114,9 +114,6 @@ public class TestClasses extends TestPythonCallGraphShape {
         (SSAPropagationCallGraphBuilder) engine.defaultCallGraphBuilder();
     CallGraph CG = builder.makeCallGraph(builder.getOptions());
     System.err.println(CG);
-    CAstCallGraphUtil.AVOID_DUMP.set(false);
-    CAstCallGraphUtil.dumpCG(
-        (SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), CG);
     verifyGraphAssertions(CG, assertionsClasses3);
   }
 }

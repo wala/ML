@@ -11,7 +11,7 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 import org.junit.Test;
 
-public class TestCallables extends TestPythonCallGraphShape {
+public class TestCallables extends TestJythonCallGraphShape {
 
   private static Logger logger = Logger.getLogger(TestCallables.class.getName());
 

@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.Collection;
 import org.junit.Test;
 
-public class TestConstants extends TestPythonCallGraphShape {
+public class TestConstants extends TestJythonCallGraphShape {
 
   @Test
   public void testFolding()

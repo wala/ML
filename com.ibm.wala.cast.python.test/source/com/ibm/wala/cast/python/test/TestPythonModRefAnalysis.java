@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Map;
 import org.junit.Test;
 
-public class TestPythonModRefAnalysis extends TestPythonCallGraphShape {
+public class TestPythonModRefAnalysis extends TestJythonCallGraphShape {
 
   private OrdinalSet<PointerKey> getModSet(String filename)
       throws ClassHierarchyException, CancelException, IOException {

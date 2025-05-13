@@ -17,37 +17,6 @@ import static com.ibm.wala.cast.python.util.Util.getNames;
 import static com.ibm.wala.cast.python.util.Util.removeFileProtocolFromPath;
 import static java.util.logging.Logger.getLogger;
 
-import com.ibm.wala.cast.ir.translator.AbstractClassEntity;
-import com.ibm.wala.cast.ir.translator.AbstractCodeEntity;
-import com.ibm.wala.cast.ir.translator.AbstractFieldEntity;
-import com.ibm.wala.cast.ir.translator.AbstractScriptEntity;
-import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
-import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
-import com.ibm.wala.cast.python.loader.DynamicAnnotatableEntity;
-import com.ibm.wala.cast.python.types.PythonTypes;
-import com.ibm.wala.cast.python.util.Util;
-import com.ibm.wala.cast.tree.CAst;
-import com.ibm.wala.cast.tree.CAstAnnotation;
-import com.ibm.wala.cast.tree.CAstEntity;
-import com.ibm.wala.cast.tree.CAstNode;
-import com.ibm.wala.cast.tree.CAstQualifier;
-import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
-import com.ibm.wala.cast.tree.CAstType;
-import com.ibm.wala.cast.tree.impl.AbstractSourcePosition;
-import com.ibm.wala.cast.tree.impl.CAstControlFlowRecorder;
-import com.ibm.wala.cast.tree.impl.CAstNodeTypeMapRecorder;
-import com.ibm.wala.cast.tree.impl.CAstOperator;
-import com.ibm.wala.cast.tree.impl.CAstSourcePositionRecorder;
-import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
-import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
-import com.ibm.wala.cast.tree.rewrite.CAstRewriter.CopyKey;
-import com.ibm.wala.cast.tree.rewrite.CAstRewriter.RewriteContext;
-import com.ibm.wala.cast.tree.rewrite.CAstRewriterFactory;
-import com.ibm.wala.core.util.warnings.Warning;
-import com.ibm.wala.types.TypeReference;
-import com.ibm.wala.util.collections.HashMapFactory;
-import com.ibm.wala.util.collections.HashSetFactory;
-import com.ibm.wala.util.collections.ReverseIterator;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
@@ -65,6 +34,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.python.antlr.PythonTree;
 import org.python.antlr.ast.Assert;
 import org.python.antlr.ast.Assign;
@@ -144,8 +114,43 @@ import org.python.antlr.base.slice;
 import org.python.antlr.base.stmt;
 import org.python.core.PyObject;
 
-public abstract class PythonParser<T> extends AbstractParser<T> implements TranslatorToCAst {
+import com.ibm.wala.cast.ir.translator.AbstractClassEntity;
+import com.ibm.wala.cast.ir.translator.AbstractCodeEntity;
+import com.ibm.wala.cast.ir.translator.AbstractFieldEntity;
+import com.ibm.wala.cast.ir.translator.AbstractScriptEntity;
+import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
+import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
+import com.ibm.wala.cast.python.loader.DynamicAnnotatableEntity;
+import com.ibm.wala.cast.python.types.PythonTypes;
+import com.ibm.wala.cast.python.util.Util;
+import com.ibm.wala.cast.tree.CAst;
+import com.ibm.wala.cast.tree.CAstAnnotation;
+import com.ibm.wala.cast.tree.CAstEntity;
+import com.ibm.wala.cast.tree.CAstNode;
+import com.ibm.wala.cast.tree.CAstQualifier;
+import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
+import com.ibm.wala.cast.tree.CAstType;
+import com.ibm.wala.cast.tree.impl.AbstractSourcePosition;
+import com.ibm.wala.cast.tree.impl.CAstControlFlowRecorder;
+import com.ibm.wala.cast.tree.impl.CAstImpl;
+import com.ibm.wala.cast.tree.impl.CAstNodeTypeMapRecorder;
+import com.ibm.wala.cast.tree.impl.CAstOperator;
+import com.ibm.wala.cast.tree.impl.CAstSourcePositionRecorder;
+import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
+import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
+import com.ibm.wala.cast.tree.rewrite.CAstRewriter.CopyKey;
+import com.ibm.wala.cast.tree.rewrite.CAstRewriter.RewriteContext;
+import com.ibm.wala.cast.tree.rewrite.CAstRewriterFactory;
+import com.ibm.wala.core.util.warnings.Warning;
+import com.ibm.wala.types.TypeReference;
+import com.ibm.wala.util.collections.HashMapFactory;
+import com.ibm.wala.util.collections.HashSetFactory;
+import com.ibm.wala.util.collections.ReverseIterator;
 
+public abstract class PythonParser<T> extends AbstractParser implements TranslatorToCAst {
+
+  private static CAst Ast = new CAstImpl();
+  
   private static final Logger LOGGER = getLogger(PythonParser.class.getName());
 
   private static boolean COMPREHENSION_IR = true;
@@ -164,7 +169,7 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
         }
       };
 
-  interface WalkContext extends TranslatorToCAst.WalkContext<WalkContext, PythonTree> {
+  public interface WalkContext extends TranslatorToCAst.WalkContext<WalkContext, PythonTree> {
 
     default void addDefinedName(String name) {
       getParent().addDefinedName(name);
@@ -292,7 +297,7 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
     }
   }
 
-  public class CAstVisitor extends AbstractParser<T>.CAstVisitor implements VisitorIF<CAstNode> {
+  public class CAstVisitor extends AbstractParser.CAstVisitor implements VisitorIF<CAstNode> {
     private final PythonParser.WalkContext context;
     private final WalaPythonParser parser;
 
