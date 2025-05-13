@@ -1,5 +1,5 @@
 # https://raw.githubusercontent.com/aymericdamien/TensorFlow-Examples/dd2e6dcd9603d5de008d8c766453162d0204affa/examples/3_NeuralNetworks/convolutional_network.py
-""" Convolutional Neural Network.
+"""Convolutional Neural Network.
 
 Build and train a convolutional neural network with TensorFlow.
 This example is using the MNIST database of handwritten digits
