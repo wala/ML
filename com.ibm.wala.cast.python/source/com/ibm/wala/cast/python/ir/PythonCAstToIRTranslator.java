@@ -899,20 +899,17 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
     // exceptional case: flow to target given in CAst, or if null, the exit node
     CAstControlFlowMap cfg = context.getControlFlow();
-	((CAstControlFlowRecorder) cfg).map(call, call);
+    ((CAstControlFlowRecorder) cfg).map(call, call);
 
     if (cfg.getTargetLabels(call).isEmpty()) {
       LOGGER.fine(() -> "no exceptions for " + CAstPrinter.print(call));
       context.cfg().addPreEdgeToExit(call, true);
     } else {
-      cfg
-          .getTargetLabels(call)
+      cfg.getTargetLabels(call)
           .forEach(
               nm -> {
                 if (cfg.getTarget(call, nm) != null) {
-                  context
-                      .cfg()
-                      .addPreEdge(call, cfg.getTarget(call, nm), true);
+                  context.cfg().addPreEdge(call, cfg.getTarget(call, nm), true);
                 }
               });
     }
@@ -1004,7 +1001,10 @@ public class PythonCAstToIRTranslator extends AstTranslator {
           .addInstruction(
               ((AstInstructionFactory) insts)
                   .PropertyRead(
-                      idx, resultVal, resultVal, context.currentScope().getConstantValue(eltName, currentPosition)));
+                      idx,
+                      resultVal,
+                      resultVal,
+                      context.currentScope().getConstantValue(eltName, currentPosition)));
 
       // if the module is the special initialization module and it's not a wildcard import.
       if (context.getName().endsWith("/" + MODULE_INITIALIZATION_FILENAME)
@@ -1024,10 +1024,14 @@ public class PythonCAstToIRTranslator extends AstTranslator {
                 ((AstInstructionFactory) insts).PutInstruction(idx, 1, resultVal, eltField));
       }
     } else if ("forElementGet".equals(primitiveCall.getChild(0).getValue())) {
-    	int obj = context.getValue(primitiveCall.getChild(1));
-    	int elt = context.getValue(primitiveCall.getChild(2));
-  
-    	context.cfg().addInstruction(new ForElementGetInstruction(context.cfg().getCurrentInstruction(), resultVal, obj, elt));
+      int obj = context.getValue(primitiveCall.getChild(1));
+      int elt = context.getValue(primitiveCall.getChild(2));
+
+      context
+          .cfg()
+          .addInstruction(
+              new ForElementGetInstruction(
+                  context.cfg().getCurrentInstruction(), resultVal, obj, elt));
     }
   }
 

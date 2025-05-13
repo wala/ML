@@ -1,14 +1,12 @@
 package com.ibm.wala.cast.python.test;
 
-import java.io.IOException;
-
-import org.junit.Test;
-
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
+import java.io.IOException;
+import org.junit.Test;
 
 public class TestAssign extends TestJythonCallGraphShape {
 

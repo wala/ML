@@ -1,16 +1,12 @@
 package com.ibm.wala.cast.python.test;
 
-import java.io.IOException;
-
-import org.junit.Test;
-
-import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
-import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
+import java.io.IOException;
+import org.junit.Test;
 
 public class TestLambda extends TestJythonCallGraphShape {
 
@@ -84,44 +80,46 @@ public class TestLambda extends TestJythonCallGraphShape {
   @Test
   public void testLambda3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-	    PythonAnalysisEngine<?> engine = this.makeEngine("lambda3.py");
-	    PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
-	    CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
+    PythonAnalysisEngine<?> engine = this.makeEngine("lambda3.py");
+    PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
+    CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
 
-	    /*
-   CAstCallGraphUtil.AVOID_DUMP.set(false);
-    CAstCallGraphUtil.dumpCG(
-        (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
-        callGraphBuilder.getPointerAnalysis(),
-        CG);
-*/
-	    
+    /*
+       CAstCallGraphUtil.AVOID_DUMP.set(false);
+        CAstCallGraphUtil.dumpCG(
+            (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
+            callGraphBuilder.getPointerAnalysis(),
+            CG);
+    */
+
     verifyGraphAssertions(CG, assertionsLambda3);
   }
 
   protected static final Object[][] assertionsLambda4 =
-    new Object[][] {
-	  new Object[] {ROOT, new String[] {"script lambda4.py"}},
-	  new Object[] {"script lambda4.py", new String[] {"script lambda4.py/lambda2"}},
-	  new Object[] {"script lambda4.py/lambda2", new String[] {"script lambda4.py/lambda1", "script lambda4.py/lambda3"}}
-	};
-	  
-  
+      new Object[][] {
+        new Object[] {ROOT, new String[] {"script lambda4.py"}},
+        new Object[] {"script lambda4.py", new String[] {"script lambda4.py/lambda2"}},
+        new Object[] {
+          "script lambda4.py/lambda2",
+          new String[] {"script lambda4.py/lambda1", "script lambda4.py/lambda3"}
+        }
+      };
+
   @Test
   public void testLambda4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-	    PythonAnalysisEngine<?> engine = this.makeEngine("lambda4.py");
-	    PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
-	    CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
+    PythonAnalysisEngine<?> engine = this.makeEngine("lambda4.py");
+    PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
+    CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
 
-	    /*
-   CAstCallGraphUtil.AVOID_DUMP.set(false);
-    CAstCal8lGraphUtil.dumpCG(
-        (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
-        callGraphBuilder.getPointerAnalysis(),
-        CG);
-*/
-	    
+    /*
+       CAstCallGraphUtil.AVOID_DUMP.set(false);
+        CAstCal8lGraphUtil.dumpCG(
+            (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
+            callGraphBuilder.getPointerAnalysis(),
+            CG);
+    */
+
     verifyGraphAssertions(CG, assertionsLambda4);
   }
 }
