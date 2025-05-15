@@ -1001,10 +1001,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
           .addInstruction(
               ((AstInstructionFactory) insts)
                   .PropertyRead(
-                      idx,
-                      resultVal,
-                      resultVal,
-                      context.currentScope().getConstantValue(eltName)));
+                      idx, resultVal, resultVal, context.currentScope().getConstantValue(eltName)));
 
       // if the module is the special initialization module and it's not a wildcard import.
       if (context.getName().endsWith("/" + MODULE_INITIALIZATION_FILENAME)
