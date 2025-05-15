@@ -1004,7 +1004,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
                       idx,
                       resultVal,
                       resultVal,
-                      context.currentScope().getConstantValue(eltName, currentPosition)));
+                      context.currentScope().getConstantValue(eltName)));
 
       // if the module is the special initialization module and it's not a wildcard import.
       if (context.getName().endsWith("/" + MODULE_INITIALIZATION_FILENAME)
@@ -1069,7 +1069,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
         Symbol ls = c.currentScope().lookup(name);
 
         int rvi = c.currentScope().allocateTempValue();
-        int idx = c.currentScope().getConstantValue(i - 1, currentPosition);
+        int idx = c.currentScope().getConstantValue(i - 1);
         c.cfg()
             .addInstruction(
                 Python.instructionFactory()
