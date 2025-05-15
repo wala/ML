@@ -49,7 +49,7 @@ jobs:
         mvn install -B -q -DskipTests
         popd
     - name: Build with Maven
-      run: mvn -U -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties verify -B -Pjacoco
+      run: mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties verify -B -Pjacoco
     - name: Coveralls GitHub Action
       uses: coverallsapp/github-action@v2.3.6
     - name: Upload coverage reports to Codecov

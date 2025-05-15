@@ -16,11 +16,11 @@ install:
  - popd
  - popd
  - pushd /tmp/IDE/com.ibm.wala.cast.lsp
- - mvn install -U -B -q -DskipTests
+ - mvn install -B -q -DskipTests
  - popd
 script:
- - mvn -U -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties verify -B
- - mvn -U -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties verify -Pjacoco -B
+ - mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties verify -B
+ - mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties verify -Pjacoco -B
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
