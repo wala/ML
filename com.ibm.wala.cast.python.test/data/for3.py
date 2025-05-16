@@ -12,6 +12,22 @@ def f3(a):
 
 fs = [f1, f2, f3]
 
+
+def g1(f, a):
+    return f(a)
+
+
+def g2(f, a):
+    return f(a + 1)
+
+
+def g3(f, a):
+    return f(a + 2)
+
+
+gs = [g1, g2, g3]
+
+
 for f in fs:
-    for g in fs:
-        print(f(0) + g(0))
+    for g in gs:
+        print(g(f, 0))

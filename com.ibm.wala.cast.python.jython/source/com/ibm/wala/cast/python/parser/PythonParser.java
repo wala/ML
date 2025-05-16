@@ -123,7 +123,7 @@ import org.python.antlr.base.slice;
 import org.python.antlr.base.stmt;
 import org.python.core.PyObject;
 
-public abstract class PythonParser<T> extends AbstractParser<T> implements TranslatorToCAst {
+public abstract class PythonParser<T> extends AbstractParser implements TranslatorToCAst {
 
   private static boolean COMPREHENSION_IR = true;
 
@@ -215,7 +215,7 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
 
   private final CAst Ast = new CAstImpl();
 
-  private class CAstVisitor extends AbstractParser<T>.CAstVisitor implements VisitorIF<CAstNode> {
+  private class CAstVisitor extends AbstractParser.CAstVisitor implements VisitorIF<CAstNode> {
     private final PythonParser.WalkContext context;
     private final WalaPythonParser parser;
 

@@ -11,7 +11,7 @@ import com.ibm.wala.util.NullProgressMonitor;
 import java.io.IOException;
 import org.junit.Test;
 
-public class TestMulti extends TestPythonCallGraphShape {
+public class TestMulti extends TestJythonCallGraphShape {
 
   protected static final Object[][] assertionsCalls1 =
       new Object[][] {new Object[] {ROOT, new String[] {"script calls1.py", "script calls2.py"}}};
