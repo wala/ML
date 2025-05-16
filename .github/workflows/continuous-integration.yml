@@ -50,8 +50,6 @@ jobs:
         popd
     - name: Build with Maven
       run: mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties verify -B -Pjacoco
-    - name: Coveralls GitHub Action
-      uses: coverallsapp/github-action@v2.3.6
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v5
       with:
