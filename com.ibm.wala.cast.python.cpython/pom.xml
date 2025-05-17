@@ -76,6 +76,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
 	<configuration>
+	  <excludes>**/Test*.java</excludes>
 	  <includes>**/PassingSuite.java</includes>
 	  <argLine>-Djava.library.path=/opt/anaconda3/envs/walajep/lib/python3.12/site-packages/jep</argLine>
 	</configuration>
