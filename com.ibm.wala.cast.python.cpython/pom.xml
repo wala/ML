@@ -11,27 +11,22 @@
     <dependency>
       <groupId>com.ibm.wala</groupId>
       <artifactId>com.ibm.wala.util</artifactId>
-      <version>1.6.10-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.ibm.wala</groupId>
       <artifactId>com.ibm.wala.shrike</artifactId>
-      <version>1.6.10-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.ibm.wala</groupId>
       <artifactId>com.ibm.wala.core</artifactId>
-      <version>1.6.10-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.ibm.wala</groupId>
       <artifactId>com.ibm.wala.cast</artifactId>
-      <version>1.6.10-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.ibm.wala</groupId>
       <artifactId>com.ibm.wala.cast.java</artifactId>
-      <version>1.6.10-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.ibm.wala</groupId>
@@ -76,5 +71,15 @@
     </resources>
     <sourceDirectory>source</sourceDirectory>
     <testSourceDirectory>test</testSourceDirectory>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+	<configuration>
+	  <includes>**/PassingSuite.java</includes>
+	  <argLine>-Djava.library.path=/opt/anaconda3/envs/walajep/lib/python3.12/site-packages/jep</argLine>
+	</configuration>
+      </plugin>
+    </plugins>
   </build>
 </project>
