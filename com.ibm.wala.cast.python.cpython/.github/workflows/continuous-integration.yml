@@ -1,0 +1,30 @@
+name: Continuous integration
+on:
+  push:
+    branches: [ "master", "python_ast" ]
+  pull_request:
+    branches: [ "master", "python_ast" ]
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out wala/ml/cpython sources
+      uses: actions/checkout@v3
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+        miniconda-version: "latest"
+        activate-environment: jep
+        cache: maven
+    - name: installStuff
+      run: pip install -r requirements.txt
+    - name: Build with Maven
+      run: mvn verify 
