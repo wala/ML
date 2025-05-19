@@ -20,7 +20,8 @@ import com.ibm.wala.cast.python.test.*;
 	TestClasses.class,
 	TestCallables.class,
 	TestCompare.class,
-	TestAssign.class})
+	TestAssign.class,
+	TestGenerators.class})
 public class PassingSuite {
 
 }
