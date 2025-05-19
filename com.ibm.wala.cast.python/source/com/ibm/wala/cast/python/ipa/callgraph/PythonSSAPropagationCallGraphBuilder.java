@@ -156,8 +156,10 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
     private boolean isValueForKeyType(IClass objType) {
        	IClassHierarchy cha = getClassHierarchy();
 		return cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.list))
-				  	||
-			cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.set));
+			  	||
+		cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.set))
+				||
+		cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.iterator));
     }
     
     @Override
