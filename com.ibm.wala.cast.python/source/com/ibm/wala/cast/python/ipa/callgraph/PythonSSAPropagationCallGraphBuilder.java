@@ -14,16 +14,6 @@ import static com.ibm.wala.cast.python.util.Util.IMPORT_WILDCARD_CHARACTER;
 import static com.ibm.wala.cast.python.util.Util.MODULE_INITIALIZATION_FILENAME;
 import static com.ibm.wala.cast.python.util.Util.PYTHON_FILE_EXTENSION;
 
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.logging.Logger;
-
 import com.google.common.collect.Maps;
 import com.ibm.wala.cast.ipa.callgraph.AstSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.ipa.callgraph.GlobalObjectKey;
@@ -73,6 +63,15 @@ import com.ibm.wala.util.intset.IntSet;
 import com.ibm.wala.util.intset.IntSetUtil;
 import com.ibm.wala.util.intset.MutableIntSet;
 import com.ibm.wala.util.intset.OrdinalSet;
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.logging.Logger;
 
 public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallGraphBuilder {
 
@@ -144,14 +143,11 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
     }
 
     /**
-     *
      * @param objType the type of the container of which iteration is being done
      * @return whether iteration is over values rather than keys
-     * 
-     *  For some collection types in Python, mainly sets and lists, iteration 
-     * over a collection returns the values contained in that collection.  For
-     * other types, such as dictionaries, iteration is over the keys that that
-     * collection contains.
+     *     <p>For some collection types in Python, mainly sets and lists, iteration over a
+     *     collection returns the values contained in that collection. For other types, such as
+     *     dictionaries, iteration is over the keys that that collection contains.
      */
     private boolean isValueForKeyType(IClass objType) {
        	IClassHierarchy cha = getClassHierarchy();
@@ -161,69 +157,67 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 				||
 		cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.iterator));
     }
-    
+
     @Override
-	public void visitForElementGet(ForElementGetInstruction forElementGet) {
-        SymbolTable symtab = ir.getSymbolTable();
-       	int objVn = forElementGet.getUse(0);
-        final PointerKey objKey = getPointerKeyForLocal(objVn);
-       	int eltVn = forElementGet.getUse(1);
-        final PointerKey eltKey = getPointerKeyForLocal(eltVn);
-       	int resultVn = forElementGet.getDef();
-        final PointerKey resultKey = getPointerKeyForLocal(resultVn);
+    public void visitForElementGet(ForElementGetInstruction forElementGet) {
+      SymbolTable symtab = ir.getSymbolTable();
+      int objVn = forElementGet.getUse(0);
+      final PointerKey objKey = getPointerKeyForLocal(objVn);
+      int eltVn = forElementGet.getUse(1);
+      final PointerKey eltKey = getPointerKeyForLocal(eltVn);
+      int resultVn = forElementGet.getDef();
+      final PointerKey resultKey = getPointerKeyForLocal(resultVn);
 
-        if (contentsAreInvariant(symtab, du, objVn)) {
-            for (InstanceKey ik : getInvariantContents(objVn)) {
-            	if (! isValueForKeyType(ik.getConcreteType())) {
-            		system.newConstraint(resultKey, assignOperator, eltKey);
-            	} else {
-            		newFieldRead(node, objVn, eltVn, resultVn);
-            	}
-            }        	
-        } else {
-            system.newSideEffect(
-                new AbstractOperator<PointsToSetVariable>() {
-                    @Override
-                    public byte evaluate(PointsToSetVariable lhs, PointsToSetVariable[] rhs) {
-                        boolean changed = false;
-                        IntIterator is = rhs[0].getValue().intIterator();
-                        while (is.hasNext()) {
-                            InstanceKey ik = system.getInstanceKey(is.next());
-                            if (! isValueForKeyType(ik.getConcreteType())) {
-                           		changed |= system.newConstraint(resultKey, assignOperator, eltKey);                           	
-                            } else {
-                        		newFieldRead(node, objVn, eltVn, resultVn);
-                            }
-                        }
-                        if (changed) {
-                        	return CHANGED;
-                        } else {
-                        	return NOT_CHANGED;
-                        }
-                    }
-                    
-					@Override
-					public int hashCode() {
-						return objKey.hashCode() * eltKey.hashCode();
-					}
-
-					@Override
-					public boolean equals(Object o) {
-						return this == o;
-					}
-
-					@Override
-					public String toString() {
-						return "next element of " + objKey;
-					}
-                },
-                new PointerKey[]{ objKey, eltKey } 
-            );
+      if (contentsAreInvariant(symtab, du, objVn)) {
+        for (InstanceKey ik : getInvariantContents(objVn)) {
+          if (!isValueForKeyType(ik.getConcreteType())) {
+            system.newConstraint(resultKey, assignOperator, eltKey);
+          } else {
+            newFieldRead(node, objVn, eltVn, resultVn);
+          }
         }
-        	 
+      } else {
+        system.newSideEffect(
+            new AbstractOperator<PointsToSetVariable>() {
+              @Override
+              public byte evaluate(PointsToSetVariable lhs, PointsToSetVariable[] rhs) {
+                boolean changed = false;
+                IntIterator is = rhs[0].getValue().intIterator();
+                while (is.hasNext()) {
+                  InstanceKey ik = system.getInstanceKey(is.next());
+                  if (!isValueForKeyType(ik.getConcreteType())) {
+                    changed |= system.newConstraint(resultKey, assignOperator, eltKey);
+                  } else {
+                    newFieldRead(node, objVn, eltVn, resultVn);
+                  }
+                }
+                if (changed) {
+                  return CHANGED;
+                } else {
+                  return NOT_CHANGED;
+                }
+              }
+
+              @Override
+              public int hashCode() {
+                return objKey.hashCode() * eltKey.hashCode();
+              }
+
+              @Override
+              public boolean equals(Object o) {
+                return this == o;
+              }
+
+              @Override
+              public String toString() {
+                return "next element of " + objKey;
+              }
+            },
+            new PointerKey[] {objKey, eltKey});
+      }
     }
 
-	@Override
+    @Override
     public void visitGet(SSAGetInstruction instruction) {
       SymbolTable symtab = ir.getSymbolTable();
       String name = instruction.getDeclaredField().getName().toString();

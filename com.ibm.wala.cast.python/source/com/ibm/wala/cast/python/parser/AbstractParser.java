@@ -97,9 +97,9 @@ public abstract class AbstractParser {
         "display"
       };
 
-  protected static abstract class CAstVisitor {
+  protected abstract static class CAstVisitor {
 
-	  protected final CAst Ast = new CAstImpl();
+    protected final CAst Ast = new CAstImpl();
 
     protected void defaultImports(Collection<CAstNode> elts) {
       for (String n : BuiltinFunctions.builtins()) {

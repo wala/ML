@@ -3,18 +3,6 @@ package com.ibm.wala.cast.python.client;
 import static java.util.Collections.emptyList;
 import static java.util.logging.Level.SEVERE;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.ibm.wala.cast.ipa.callgraph.AstCFAPointerKeys;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
@@ -76,6 +64,17 @@ import com.ibm.wala.util.WalaException;
 import com.ibm.wala.util.WalaRuntimeException;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public abstract class PythonAnalysisEngine<T>
     extends AbstractAnalysisEngine<InstanceKey, PythonSSAPropagationCallGraphBuilder, T> {
@@ -90,32 +89,33 @@ public abstract class PythonAnalysisEngine<T>
 
   protected PythonSSAPropagationCallGraphBuilder builder;
 
-	static {
-		try {
-			@SuppressWarnings("unchecked")
-			Class<PythonLoaderFactory> j4 = (Class<PythonLoaderFactory>) Class
-					.forName("com.ibm.wala.cast.python.loader.JepPythonLoaderFactory");
-			PythonAnalysisEngine.setLoaderFactory(j4);
-		} catch (UnsatisfiedLinkError | ClassNotFoundException e2) {
-			try {
-				Class<?> j3 = Class.forName("com.ibm.wala.cast.python.loader.Python3LoaderFactory");
-				PythonAnalysisEngine.setLoaderFactory((Class<? extends PythonLoaderFactory>) j3);
-			} catch (ClassNotFoundException e) {
-				try {
-					Class<?> j2 = Class.forName("com.ibm.wala.cast.python.loader.Python2LoaderFactory");
-					PythonAnalysisEngine.setLoaderFactory((Class<? extends PythonLoaderFactory>) j2);
-				} catch (ClassNotFoundException e1) {
-					assert false : e.getMessage() + ", then " + e1.getMessage();
-				}
-			}
-		}
-	}
+  static {
+    try {
+      @SuppressWarnings("unchecked")
+      Class<PythonLoaderFactory> j4 =
+          (Class<PythonLoaderFactory>)
+              Class.forName("com.ibm.wala.cast.python.loader.JepPythonLoaderFactory");
+      PythonAnalysisEngine.setLoaderFactory(j4);
+    } catch (UnsatisfiedLinkError | ClassNotFoundException e2) {
+      try {
+        Class<?> j3 = Class.forName("com.ibm.wala.cast.python.loader.Python3LoaderFactory");
+        PythonAnalysisEngine.setLoaderFactory((Class<? extends PythonLoaderFactory>) j3);
+      } catch (ClassNotFoundException e) {
+        try {
+          Class<?> j2 = Class.forName("com.ibm.wala.cast.python.loader.Python2LoaderFactory");
+          PythonAnalysisEngine.setLoaderFactory((Class<? extends PythonLoaderFactory>) j2);
+        } catch (ClassNotFoundException e1) {
+          assert false : e.getMessage() + ", then " + e1.getMessage();
+        }
+      }
+    }
+  }
 
   private static Class<? extends PythonLoaderFactory> loaders;
 
   public static void setLoaderFactory(Class<? extends PythonLoaderFactory> lf) {
-	  assert loaders == null;
-	  loaders = lf;
+    assert loaders == null;
+    loaders = lf;
   }
 
   protected PythonLoaderFactory loader;

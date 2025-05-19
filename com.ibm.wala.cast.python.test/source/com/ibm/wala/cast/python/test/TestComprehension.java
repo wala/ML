@@ -45,19 +45,19 @@ public class TestComprehension extends TestJythonCallGraphShape {
   @Test
   public void testComp1()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-	    PythonAnalysisEngine<?> engine = this.makeEngine("comp1.py");
-	    PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
-	    CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
+    PythonAnalysisEngine<?> engine = this.makeEngine("comp1.py");
+    PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
+    CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
 
-	    /*
- CAstCallGraphUtil.AVOID_DUMP.set(false);
-  CAstCallGraphUtil.dumpCG(
-      (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
-      callGraphBuilder.getPointerAnalysis(),
-      CG);
-      */
-	    System.err.println(CG);
-	    verifyGraphAssertions(CG, assertionsComp1);
+    /*
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
+     CAstCallGraphUtil.dumpCG(
+         (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
+         callGraphBuilder.getPointerAnalysis(),
+         CG);
+         */
+    System.err.println(CG);
+    verifyGraphAssertions(CG, assertionsComp1);
   }
 
   protected static final Object[][] assertionsComp3 =
@@ -95,23 +95,25 @@ public class TestComprehension extends TestJythonCallGraphShape {
         },
         new Object[] {
           "script comp3.py/comprehension3",
-          new String[] {"script comp3.py/f1/lambda1", "script comp3.py/f2/lambda1", "script comp3.py/f3/lambda1"}
+          new String[] {
+            "script comp3.py/f1/lambda1", "script comp3.py/f2/lambda1", "script comp3.py/f3/lambda1"
+          }
         },
       };
 
   @Test
   public void testComp3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-	    PythonAnalysisEngine<?> engine = this.makeEngine("comp3.py");
-	    PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
-	    CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
+    PythonAnalysisEngine<?> engine = this.makeEngine("comp3.py");
+    PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
+    CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
 
-CAstCallGraphUtil.AVOID_DUMP.set(false);
-CAstCallGraphUtil.dumpCG(
-    (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
-    callGraphBuilder.getPointerAnalysis(),
-    CG);
-    
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
+    CAstCallGraphUtil.dumpCG(
+        (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
+        callGraphBuilder.getPointerAnalysis(),
+        CG);
+
     verifyGraphAssertions(CG, assertionsComp3);
   }
 }
