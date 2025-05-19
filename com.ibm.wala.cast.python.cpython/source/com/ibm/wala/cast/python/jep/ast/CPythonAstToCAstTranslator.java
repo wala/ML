@@ -286,6 +286,10 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		List<String> inits();
 
 		WalkContext getParent();
+		
+		boolean isGenerator();
+
+		boolean isGenerator(boolean v);
 	}
 
 	public static class ScriptContext extends FunctionContext implements WalkContext {
@@ -369,6 +373,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			implements WalkContext {
 		private final Scope scope;
 		private CAstEntity entity;
+		private boolean generator = false;
 
 		private final List<String> inits = new ArrayList<>();
 
@@ -403,6 +408,16 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		@Override
 		public CAstEntity entity() {
 			return entity;
+		}
+
+		@Override
+		public boolean isGenerator() {
+			return generator;
+		}
+
+		@Override
+		public boolean isGenerator(boolean v) {
+			return generator = v;
 		}
 	}
 
@@ -446,6 +461,16 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		@Override
 		public CAstEntity entity() {
 			return parent.entity();
+		}
+
+		@Override
+		public boolean isGenerator() {
+			return parent.isGenerator();
+		}
+
+		@Override
+		public boolean isGenerator(boolean v) {
+			return parent.isGenerator(v);
 		}
 	}
 
@@ -491,7 +516,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 				return ast.makeNode(CAstNode.IF_EXPR, elt, ast.makeConstant(true), combine(elements, isAnd, context));				
 			}
 		}
-		
+
 		public CAstNode visitBoolOp(PyObject o, WalkContext context) {
 			boolean isAnd = "And".equals(o.getAttr("op", PyObject.class).toString()); 
 			@SuppressWarnings("unchecked")
@@ -708,6 +733,12 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 											.collect(Collectors.toList())),
 							b1));
 
+			if (fc.isGenerator()) {
+				body = ast.makeNode(CAstNode.BLOCK_STMT,
+						body,
+						ast.makeNode(CAstNode.RETURN, ast.makeNode(CAstNode.VAR, ast.makeConstant("the function"))));
+			}
+			
 			if (funType instanceof CAstType.Method) {
 				body = ast.makeNode(CAstNode.BLOCK_STMT,
 						ast.makeNode(CAstNode.DECL_STMT,
@@ -1374,6 +1405,18 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 				public List<String> inits() {
 					return inits;
 				}
+
+				@Override
+				public boolean isGenerator() {
+					assert false;
+					return false;
+				}
+
+				@Override
+				public boolean isGenerator(boolean v) {
+					assert false;
+					return false;
+				}
 			};
 
 			URL url = this.url();
@@ -1436,14 +1479,29 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			public List<String> inits() {
 				return getParent().inits();
 			}
+
+			@Override
+			public boolean isGenerator() {
+				return getParent().isGenerator();
+			}
+
+			@Override
+			public boolean isGenerator(boolean v) {
+				return getParent().isGenerator(v);
+			}
 		}
 
 		public CAstNode visitAssert(PyObject asrt, WalkContext context) throws Exception {
 			return ast.makeNode(CAstNode.ASSERT, visit(asrt.getAttr("test", PyObject.class), context));
 		}
 
-		public CAstNode visitYield(PyObject yield, WalkContext context) throws Exception {
-			return ast.makeNode(CAstNode.RETURN_WITHOUT_BRANCH, visit(yield.getAttr("expr", PyObject.class), context));
+		public CAstNode visitYield(PyObject o, WalkContext context) {
+			context.isGenerator(true);
+			return ast.makeNode(CAstNode.ASSIGN, 
+				ast.makeNode(CAstNode.OBJECT_REF,
+					ast.makeNode(CAstNode.VAR, ast.makeConstant("the function")),
+					ast.makeConstant("__content__")),
+				visit(o.getAttr("value", PyObject.class), context));
 		}
 
 		@SuppressWarnings("unchecked")

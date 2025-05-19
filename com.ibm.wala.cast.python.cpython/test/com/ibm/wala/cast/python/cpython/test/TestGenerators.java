@@ -34,6 +34,7 @@ public class TestGenerators extends TestJythonCallGraphShape {
 		  PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
 		  CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
 
+		  System.err.println(CG);
 		  CAstCallGraphUtil.AVOID_DUMP.set(false);
 		  CAstCallGraphUtil.dumpCG(
 				  (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
@@ -41,6 +42,67 @@ public class TestGenerators extends TestJythonCallGraphShape {
 				  CG);
 
 		  verifyGraphAssertions(CG, assertionsForGen1);
+	  }
+
+	  protected static final Object[][] assertionsForGen2 =
+			  new Object[][] {
+		  new Object[] {ROOT, new String[] {"script gen2.py"}},
+		  new Object[] {
+				  "script gen2.py",
+				  new String[] {"script gen2.py/f1/lambda1", "script gen2.py/f2/lambda2", 
+						  "script gen2.py/f3/lambda3", "script gen2.py/f1", 
+						  "script gen2.py/f2", "script gen2.py/f3", "script gen2.py/gen"}
+		  }
+	  };
+
+	  @Test
+	  public void testGen2()
+	      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		  PythonAnalysisEngine<?> engine = this.makeEngine("gen2.py");
+		  PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
+		  CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
+
+		  System.err.println(CG);
+		  CAstCallGraphUtil.AVOID_DUMP.set(false);
+		  CAstCallGraphUtil.dumpCG(
+				  (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
+				  callGraphBuilder.getPointerAnalysis(),
+				  CG);
+
+		  verifyGraphAssertions(CG, assertionsForGen2);
+	  }
+
+	  protected static final Object[][] assertionsForGen3 =
+			  new Object[][] {
+		  new Object[] {ROOT, new String[] {"script gen3.py"}},
+		  new Object[] {
+				  "script gen3.py",
+				  new String[] {"script gen3.py/f1/lambda1", "script gen3.py/f2/lambda2", 
+						  "script gen3.py/f3/lambda3", "script gen3.py/makeGenerator"}
+		  },
+		  new Object[] {
+				  "script gen3.py/makeGenerator",
+				  new String[] {"script gen3.py/f1", 
+									  "script gen3.py/f2", "script gen3.py/f3"}
+		  }
+	  };
+
+
+	  @Test
+	  public void testGen3()
+	      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		  PythonAnalysisEngine<?> engine = this.makeEngine("gen3.py");
+		  PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
+		  CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
+
+		  System.err.println(CG);
+		  CAstCallGraphUtil.AVOID_DUMP.set(false);
+		  CAstCallGraphUtil.dumpCG(
+				  (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
+				  callGraphBuilder.getPointerAnalysis(),
+				  CG);
+
+		  verifyGraphAssertions(CG, assertionsForGen3);
 	  }
 
 }
