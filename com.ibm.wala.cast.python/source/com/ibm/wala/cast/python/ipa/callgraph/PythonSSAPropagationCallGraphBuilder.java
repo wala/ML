@@ -179,21 +179,23 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
           }
         }
       } else {
-        system.newSideEffect(
+        system.newConstraint(resultKey, 
             new AbstractOperator<PointsToSetVariable>() {
               @Override
               public byte evaluate(PointsToSetVariable lhs, PointsToSetVariable[] rhs) {
                 boolean changed = false;
-                if (rhs[0].getValue() != null) {
-                  IntIterator is = rhs[0].getValue().intIterator();
-                  while (is.hasNext()) {
-                    InstanceKey ik = system.getInstanceKey(is.next());
-                    if (!isValueForKeyType(ik.getConcreteType())) {
-                      changed |= system.newConstraint(resultKey, assignOperator, eltKey);
-                    } else {
-                      newFieldRead(node, objVn, eltVn, resultVn);
-                    }
-                  }
+                for(PointsToSetVariable rv : rhs ) {
+                	if (rv.getValue() != null) {
+                		IntIterator is = rv.getValue().intIterator();
+                		while (is.hasNext()) {
+                			InstanceKey ik = system.getInstanceKey(is.next());
+                			if (!isValueForKeyType(ik.getConcreteType())) {
+                				changed |= system.newConstraint(resultKey, assignOperator, eltKey);
+                			} else {
+                				newFieldRead(node, objVn, eltVn, resultVn);
+                			}
+                		}
+                	}
                 }
                 if (changed) {
                   return CHANGED;
@@ -217,7 +219,8 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
                 return "next element of " + objKey;
               }
             },
-            new PointerKey[] {objKey, eltKey});
+            objKey, 
+            eltKey);
       }
     }
 
