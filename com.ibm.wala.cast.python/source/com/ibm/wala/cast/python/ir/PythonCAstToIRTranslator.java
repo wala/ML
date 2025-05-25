@@ -88,7 +88,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
   private final Set<Pair<Scope, String>> globalDeclSet = new HashSet<>();
   private static boolean singleFileAnalysis = true;
 
-   public PythonCAstToIRTranslator(IClassLoader loader) {
+  public PythonCAstToIRTranslator(IClassLoader loader) {
     super(loader);
   }
 
@@ -935,22 +935,22 @@ public class PythonCAstToIRTranslator extends AstTranslator {
   }
 
   public static final CAstType Object =
-	      new CAstType() {
-		  
-	        @Override
-	        public String getName() {
-	          return "object";
-	        }
+      new CAstType() {
 
-	        @Override
-	        public Collection<CAstType> getSupertypes() {
-	          return Collections.singleton(Any);
-	        }
-	      };
+        @Override
+        public String getName() {
+          return "object";
+        }
+
+        @Override
+        public Collection<CAstType> getSupertypes() {
+          return Collections.singleton(Any);
+        }
+      };
 
   public static final CAstType Exception =
       new CAstType() {
-	  
+
         @Override
         public String getName() {
           return "Exception";
@@ -962,10 +962,10 @@ public class PythonCAstToIRTranslator extends AstTranslator {
         }
       };
 
-      {
-    	  walaTypeNames.put(Exception, TypeName.findOrCreate("LException"));
-      }
-      
+  {
+    walaTypeNames.put(Exception, TypeName.findOrCreate("LException"));
+  }
+
   @Override
   protected CAstType exceptionType() {
     return Exception;

@@ -147,20 +147,17 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
      * @return whether iteration is over values rather than keys
      *     <p>For some collection types in Python, mainly sets and lists, iteration over a
      *     collection returns the values contained in that collection. For other types, such as
-     *     dictionaries, iteration is over the keys that that collection contains. </p>
-     *     <p> We also use this mechanism for generators, which put everything in a fake
-     *     field named "__contents__" which is read by this mechanism.  Generator expressions
-     *     use the iterator type and generator functions use CodeBody. </p>
+     *     dictionaries, iteration is over the keys that that collection contains.
+     *     <p>We also use this mechanism for generators, which put everything in a fake field named
+     *     "__contents__" which is read by this mechanism. Generator expressions use the iterator
+     *     type and generator functions use CodeBody.
      */
     private boolean isValueForKeyType(IClass objType) {
-       	IClassHierarchy cha = getClassHierarchy();
-		return cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.list))
-			  	||
-		cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.set))
-				||
-		cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.iterator))
-				||
-		cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.CodeBody));
+      IClassHierarchy cha = getClassHierarchy();
+      return cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.list))
+          || cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.set))
+          || cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.iterator))
+          || cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.CodeBody));
     }
 
     @Override
@@ -187,16 +184,16 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
               @Override
               public byte evaluate(PointsToSetVariable lhs, PointsToSetVariable[] rhs) {
                 boolean changed = false;
-                if (rhs[0].getValue() !=  null) {
-                	IntIterator is = rhs[0].getValue().intIterator();
-                	while (is.hasNext()) {
-                		InstanceKey ik = system.getInstanceKey(is.next());
-                		if (!isValueForKeyType(ik.getConcreteType())) {
-                			changed |= system.newConstraint(resultKey, assignOperator, eltKey);
-                		} else {
-                			newFieldRead(node, objVn, eltVn, resultVn);
-                		}
-                	}
+                if (rhs[0].getValue() != null) {
+                  IntIterator is = rhs[0].getValue().intIterator();
+                  while (is.hasNext()) {
+                    InstanceKey ik = system.getInstanceKey(is.next());
+                    if (!isValueForKeyType(ik.getConcreteType())) {
+                      changed |= system.newConstraint(resultKey, assignOperator, eltKey);
+                    } else {
+                      newFieldRead(node, objVn, eltVn, resultVn);
+                    }
+                  }
                 }
                 if (changed) {
                   return CHANGED;
@@ -711,11 +708,10 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
       PointerKey rret = getPointerKeyForReturnValue(target);
       PointerKey lret = getPointerKeyForLocal(caller, call.getReturnValue(0));
       getSystem().newConstraint(lret, assignOperator, rret);
-      
+
       PointerKey reret = getPointerKeyForExceptionalReturnValue(target);
       PointerKey leret = getPointerKeyForLocal(caller, call.getException());
       getSystem().newConstraint(leret, assignOperator, reret);
-      
     }
   }
 
