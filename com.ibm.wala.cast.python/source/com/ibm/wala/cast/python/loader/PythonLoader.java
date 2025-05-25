@@ -167,7 +167,9 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
       CAstPattern.parse("<top>ASSIGN_POST_OP(CALL(VAR(\"slice\"),<args>**),<value>*,<op>*)");
   final CoreClass Root = new CoreClass(PythonTypes.rootTypeName, null, this, null);
   final CoreClass Exception =
-      new CoreClass(PythonTypes.Exception.getName(), PythonTypes.rootTypeName, this, null);
+	      new CoreClass(PythonTypes.Exception.getName(), PythonTypes.object.getName(), this, null);
+  final CoreClass BaseException =
+	      new CoreClass(PythonTypes.BaseException.getName(), PythonTypes.Exception.getName(), this, null);
 
   protected CAstNode rewriteSubscriptAssign(Segments s) {
     int i = 0;
@@ -376,7 +378,7 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
 
   public void defineType(
       TypeName cls, TypeName parent, Position sourcePosition, Set<CAstType> missingTypes) {
-    new PythonClass(cls, parent, this, sourcePosition, missingTypes);
+    types.put(cls, new PythonClass(cls, parent, this, sourcePosition, missingTypes));
   }
 
   public void defineField(TypeName cls, CAstEntity field) {
