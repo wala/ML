@@ -1,5 +1,5 @@
 def makeGenerator(fs):
-	return (f(3) for f in fs)
+    return (f(3) for f in fs)
 
 
 def f1(a):
