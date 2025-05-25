@@ -14,13 +14,13 @@ class e3(Exception):
 
 
 def f1(x):
-  if x > 5:
-    raise e1()
+    if x > 5:
+        raise e1()
 
 
 def f2(x):
-  if x > 3:
-    raise e2() from e3()
+    if x > 3:
+        raise e2() from e3()
 
 
 def f3(e):
