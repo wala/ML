@@ -1,6 +1,9 @@
 package com.ibm.wala.cast.python.jep.ast;
 
+import static com.ibm.wala.cast.python.jep.Util.fixForCompilation;
+import static com.ibm.wala.cast.python.jep.Util.has;
 import static com.ibm.wala.cast.python.jep.Util.interps;
+import static com.ibm.wala.cast.python.jep.Util.run;
 import static com.ibm.wala.cast.python.jep.Util.runit;
 
 import java.io.File;
@@ -80,6 +83,18 @@ import jep.python.PyObject;
  */
 public class CPythonAstToCAstTranslator extends AbstractParser implements TranslatorToCAst {
 
+	private static CAstType object = new CAstType() {
+		@Override
+		public String getName() {
+			return "object";
+		}
+
+		@Override
+		public Collection<CAstType> getSupertypes() {
+			return Collections.emptySet();
+		}
+	};
+
 	private static CAstType codeBody = new CAstType() {
 		@Override
 		public String getName() {
@@ -89,6 +104,18 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		@Override
 		public Collection<CAstType> getSupertypes() {
 			return Collections.emptySet();
+		}
+	};
+	
+	private static CAstType baseException = new CAstType() {
+		@Override
+		public String getName() {
+			return "BaseException";
+		}
+
+		@Override
+		public Collection<CAstType> getSupertypes() {
+			return Collections.singleton(PythonCAstToIRTranslator.Exception);
 		}
 	};
 
@@ -116,36 +143,11 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		}
 	};
 
-	/**
-	 * parse Python code into the standard CPython AST
-	 * 
-	 * @param code source code to be parsed into an AST
-	 * @return AST as a @PyObject
-	 */
-	public static PyObject getAST(String code) {
-		Interpreter interp = interps.get();
-
-		interp.set("code", code);
-		interp.exec("theast = ast.parse(code)");
-
-		return (PyObject) interp.getValue("theast");
-	}
-
-	/**
-	 * turn an AST into a JSON representation
-	 * 
-	 * @param ast a Python AST as a @PyObject
-	 * @return JSON form of the AST as tree of @Map objects
-	 */
-	@SuppressWarnings("unchecked")
-	public static Map<String, ?> getJSON(PyObject ast) {
-		Interpreter interp = interps.get();
-
-		interp.set("theast", ast);
-		interp.exec("thejson = ast2json.ast2json(theast)");
-
-		return (Map<String, ?>) interp.getValue("thejson");
-
+	private static CAstTypeDictionaryImpl<String> initTypeDictionary() {
+		CAstTypeDictionaryImpl<String> types = new CAstTypeDictionaryImpl<String>();
+		types.map("Exception", PythonCAstToIRTranslator.Exception);
+		types.map("BaseException", baseException);
+		return types;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -216,9 +218,9 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		public PythonScriptEntity(CAstType type, String fn, String scriptCode) throws IOException {
 			super(type);
 			this.fn = fn;
-			PyObject ast = CPythonAstToCAstTranslator.getAST(scriptCode);
+			PyObject ast = Util.getAST(scriptCode);
 
-			TranslationVisitor x = new TranslationVisitor(this, new CAstTypeDictionaryImpl<String>()) {
+			TranslationVisitor x = new TranslationVisitor(this, initTypeDictionary()) {
 				@Override
 				public URL url() {
 					try {
@@ -506,6 +508,47 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			return n;
 		}
 
+		public CAstNode visitAugAssign(PyObject o, WalkContext context) {
+			PyObject value = (PyObject) o.getAttr("value");
+			CAstNode rhs = visit(value, context);
+
+			PyObject target = (PyObject) o.getAttr("target");
+			CAstNode lhs = visit(target, context);
+
+			PyObject op = (PyObject) o.getAttr("op");
+			
+			return ast.makeNode(CAstNode.ASSIGN_POST_OP, 
+					lhs, 
+					rhs, 
+					translateOperator(getNodeType(op)));
+		}
+
+		public CAstNode visitAnnAssign(PyObject o, WalkContext context) {
+			CAstNode target = visit(o.getAttr("target", PyObject.class), context);
+			int simple = o.getAttr("simple", Integer.class);
+			
+			PyObject annotation = o.getAttr("annotation", PyObject.class);
+			
+			PyObject codeForAnnotation = (PyObject) fixForCompilation(annotation);
+			Object annotatedValue = run(codeForAnnotation);			
+			
+			CAstNode annotatedCode = visit(annotation, context);
+			
+			System.err.println(target + " " + simple + " " + annotation + " " + codeForAnnotation + " " + annotatedValue + " " + annotatedCode);
+			
+			if (has(o, "value")) {
+				return ast.makeNode(CAstNode.ASSIGN, target, visit(o.getAttr("value", PyObject.class), context));
+			} else {
+				return ast.makeNode(CAstNode.EMPTY);
+			}
+		}
+		
+		private String getNodeType(PyObject op) {
+			return op.getAttr("op", PyObject.class)
+					.getAttr("__class__", PyObject.class)
+					.getAttr("__name__", String.class);
+		}
+		
 		private CAstNode combine(Iterator<PyObject> elements, boolean isAnd, WalkContext context) { 
 			CAstNode elt = visit(elements.next(), context);
 			if (! elements.hasNext()) {
@@ -540,9 +583,14 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 
 			List<CAstNode> defaults = new LinkedList<>();
 			defaultImports(defaults);
-
 			bodyAst = ast.makeNode(CAstNode.BLOCK_STMT, ast.makeNode(CAstNode.BLOCK_STMT, defaults), bodyAst);
 
+			if (! context.inits().isEmpty()) {
+				bodyAst = ast.makeNode(CAstNode.BLOCK_STMT,
+					handleInits(context),
+					bodyAst);
+			}
+			
 			Set<String> exposedNames = exposedNames(bodyAst);
 			if (exposedNames.size() > 0)
 				return ast.makeNode(CAstNode.UNWIND, bodyAst,
@@ -726,11 +774,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			
 			CAstNode body = ast.makeNode(CAstNode.LOCAL_SCOPE,
 					ast.makeNode(CAstNode.BLOCK_STMT,
-							ast.makeNode(CAstNode.BLOCK_STMT,
-									fc.inits().stream()
-											.map(n -> ast.makeNode(CAstNode.DECL_STMT,
-													ast.makeConstant(new CAstSymbolImpl(n, CAstType.DYNAMIC))))
-											.collect(Collectors.toList())),
+							handleInits(fc),
 							b1));
 
 			if (fc.isGenerator()) {
@@ -766,6 +810,14 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			} else {
 				return ast.makeNode(CAstNode.BLOCK_EXPR, ast.makeNode(CAstNode.BLOCK_EXPR, defaultCode), fe);
 			}
+		}
+
+		private CAstNode handleInits(WalkContext fc) {
+			return ast.makeNode(CAstNode.BLOCK_STMT,
+					fc.inits().stream()
+							.map(n -> ast.makeNode(CAstNode.DECL_STMT,
+									ast.makeConstant(new CAstSymbolImpl(n, CAstType.DYNAMIC))))
+							.collect(Collectors.toList()));
 		}
 
 		private List<String> getArgumentNames(List<PyObject> arguments) {
@@ -922,8 +974,8 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			CAstNode call = ast.makeNode(CAstNode.CALL, ak);
 			context.cfg().map(call, call);
 
-			if (context.getCatchTarget("Exception") != null) {
-				context.cfg().add(call, context.getCatchTarget("Exception"), "Exception");
+			if (context.getCatchTarget("<class 'Exception'>") != null) {
+				context.cfg().add(call, context.getCatchTarget("<class 'Exception'>"), "<class 'Exception'>");
 			}
 
 			return call;
@@ -1108,8 +1160,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			PyObject left = binop.getAttr("left", PyObject.class);
 			PyObject right = binop.getAttr("right", PyObject.class);
 			return ast.makeNode(
-					CAstNode.BINARY_EXPR, translateOperator(binop.getAttr("op", PyObject.class)
-							.getAttr("__class__", PyObject.class).getAttr("__name__", String.class)),
+					CAstNode.BINARY_EXPR, translateOperator(getNodeType(binop)),
 					visit(left, context), visit(right, context));
 		}
 
@@ -1178,8 +1229,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		public CAstNode visitUnaryOp(PyObject unop, WalkContext context) {
 			PyObject op = unop.getAttr("operand", PyObject.class);
 			return ast.makeNode(
-					CAstNode.UNARY_EXPR, translateOperator(unop.getAttr("op", PyObject.class)
-							.getAttr("__class__", PyObject.class).getAttr("__name__", String.class)),
+					CAstNode.UNARY_EXPR, translateOperator(getNodeType(unop)),
 					visit(op, context));
 		}
 
@@ -1251,7 +1301,8 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 					List<PyObject> bases = (List<PyObject>) arg0.getAttr("bases");
 					for (PyObject e : bases) {
 						try {
-							CAstType type = types.getCAstTypeFor(e.getAttr("id", String.class));
+							String superType = e.getAttr("id", String.class);
+							CAstType type = types.getCAstTypeFor(superType);
 							if (type != null) {
 								supertypes.add(type);
 							} else {
@@ -1420,7 +1471,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			};
 
 			URL url = this.url();
-			TranslationVisitor v = new TranslationVisitor(clse, new CAstTypeDictionaryImpl<String>()) {
+			TranslationVisitor v = new TranslationVisitor(clse, types) {
 				@Override
 				public URL url() {
 					return url;
@@ -1504,17 +1555,47 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 				visit(o.getAttr("value", PyObject.class), context));
 		}
 
+		public CAstNode visitRaise(PyObject raise, WalkContext context) throws Exception {
+			CAstNode exp = visit(raise.getAttr("exc", PyObject.class), context);
+			CAstNode raiseNode, result;
+			if (has(raise, "cause") && raise.getAttr("cause") != null) {
+				result = ast.makeNode(CAstNode.LOCAL_SCOPE,
+					ast.makeNode(CAstNode.BLOCK_STMT,
+						ast.makeNode(CAstNode.DECL_STMT,
+							ast.makeConstant(new CAstSymbolImpl("__tmp__", CAstType.DYNAMIC)),
+							exp),
+						ast.makeNode(CAstNode.ASSIGN,
+							ast.makeNode(CAstNode.OBJECT_REF, ast.makeNode(CAstNode.VAR, ast.makeConstant("__tmp__")), ast.makeConstant("__cause__")),
+							visit(raise.getAttr("cause", PyObject.class), context)),
+						raiseNode=ast.makeNode(CAstNode.THROW, ast.makeNode(CAstNode.VAR, ast.makeConstant("__tmp__")))));
+					
+
+			} else {
+				result = raiseNode=ast.makeNode(CAstNode.THROW, exp);
+			}
+			
+			if (context.getCatchTarget("<class 'Exception'>") != null) {
+				context.cfg().map(raise, raiseNode);
+				context.cfg().add(raise, context.getCatchTarget("<class 'Exception'>"), "<class 'Exception'>");
+			}
+
+			return result;
+		}
+		
 		@SuppressWarnings("unchecked")
 		public CAstNode visitTry(PyObject tryNode, WalkContext context) throws Exception {
 			WalkContext cc = context;
 			Map<String, CAstNode> catches = new LinkedHashMap<>();
 			if (tryNode.getAttr("handlers") != null) {
 				((List<PyObject>) tryNode.getAttr("handlers", List.class)).stream().forEach(c -> {
+					String name = c.getAttr("name") == null ? "$dummy" : c.getAttr("name", String.class);
+					context.scope().localNames.add(name);
+					context.inits().add(name);
 					CAstNode catchBlock = ast.makeNode(CAstNode.CATCH,
-							ast.makeConstant(c.getAttr("name") == null ? "$dummy" : c.getAttr("name", String.class)),
+							ast.makeConstant(name),
 							visit(CAstNode.BLOCK_STMT, c.getAttr("body", List.class), context));
 					context.cfg().map(catchBlock, catchBlock);
-					catches.put(c.getAttr("type") != null ? c.getAttr("type", String.class) : "Exception", catchBlock);
+					catches.put(has(c, "type") && fixForCompilation(c.getAttr("type", PyObject.class)) != null ? run(fixForCompilation(c.getAttr("type", PyObject.class))).toString(): "<class 'Exception'>", catchBlock);
 				});
 
 				cc = new TryCatchContext(context, catches);
@@ -1523,15 +1604,21 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			CAstNode body = visit(CAstNode.BLOCK_STMT, (List<PyObject>) tryNode.getAttr("body", List.class), cc);
 
 			if (tryNode.getAttr("orelse") != null) {
-				body = ast.makeNode(CAstNode.BLOCK_STMT, body,
-						visit(CAstNode.BLOCK_STMT, (List<PyObject>) tryNode.getAttr("orelse", List.class), context));
+				List<PyObject> oe = (List<PyObject>) tryNode.getAttr("orelse", List.class);
+				if (! oe.isEmpty()) {
+					body = ast.makeNode(CAstNode.BLOCK_STMT, body,
+						visit(CAstNode.BLOCK_STMT, oe, context));
+				}
 			}
 
 			body = ast.makeNode(CAstNode.TRY, body, catches.values().toArray(new CAstNode[catches.size()]));
 
 			if (tryNode.getAttr("finalbody") != null) {
-				body = ast.makeNode(CAstNode.UNWIND, body,
-						visit(CAstNode.BLOCK_STMT, (List<PyObject>) tryNode.getAttr("finalbody", List.class), context));
+				List<PyObject> fb = (List<PyObject>) tryNode.getAttr("finalbody", List.class);
+				if (! fb.isEmpty()) {
+					body = ast.makeNode(CAstNode.UNWIND, body,
+						visit(CAstNode.BLOCK_STMT, fb, context));
+				}
 			}
 
 			return body;
