@@ -80,7 +80,7 @@ public class Util {
 
   /**
    * Get a {@link List} of {@link File}s corresponding to the sequence of paths represented by the
-   * given {@link String}. The paths are seperated by a colon.
+   * given {@link String}. The paths are separated by a colon.
    *
    * @param pathSequence A colon-seperated list of paths.
    * @return A {@link List} of {@link File}s constructed from the given path sequence.

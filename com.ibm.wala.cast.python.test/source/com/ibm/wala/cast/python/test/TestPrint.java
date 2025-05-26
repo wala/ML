@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import org.junit.Test;
 
-public class TestPrint extends TestPythonCallGraphShape {
+public class TestPrint extends TestJythonCallGraphShape {
 
   private static final String PRINT_FUNCTION_VARIABLE_NAME = "print";
 

@@ -27,8 +27,10 @@ import com.ibm.wala.cast.python.loader.PythonLoader;
 import com.ibm.wala.cast.python.loader.PythonLoader.PythonClass;
 import com.ibm.wala.cast.python.parser.AbstractParser.MissingType;
 import com.ibm.wala.cast.python.parser.AbstractParser.PythonGlobalsEntity;
+import com.ibm.wala.cast.python.ssa.ForElementGetInstruction;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.types.PythonTypes;
+import com.ibm.wala.cast.tree.CAstControlFlowMap;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
@@ -896,21 +898,18 @@ public class PythonCAstToIRTranslator extends AstTranslator {
     context.cfg().newBlock(true);
 
     // exceptional case: flow to target given in CAst, or if null, the exit node
-    ((CAstControlFlowRecorder) context.getControlFlow()).map(call, call);
+    CAstControlFlowMap cfg = context.getControlFlow();
+    ((CAstControlFlowRecorder) cfg).map(call, call);
 
-    if (context.getControlFlow().getTargetLabels(call).isEmpty()) {
+    if (cfg.getTargetLabels(call).isEmpty()) {
       LOGGER.fine(() -> "no exceptions for " + CAstPrinter.print(call));
       context.cfg().addPreEdgeToExit(call, true);
     } else {
-      context
-          .getControlFlow()
-          .getTargetLabels(call)
+      cfg.getTargetLabels(call)
           .forEach(
               nm -> {
-                if (context.getControlFlow().getTarget(call, nm) != null) {
-                  context
-                      .cfg()
-                      .addPreEdge(call, context.getControlFlow().getTarget(call, nm), true);
+                if (cfg.getTarget(call, nm) != null) {
+                  context.cfg().addPreEdge(call, cfg.getTarget(call, nm), true);
                 }
               });
     }
@@ -1021,6 +1020,15 @@ public class PythonCAstToIRTranslator extends AstTranslator {
             .addInstruction(
                 ((AstInstructionFactory) insts).PutInstruction(idx, 1, resultVal, eltField));
       }
+    } else if ("forElementGet".equals(primitiveCall.getChild(0).getValue())) {
+      int obj = context.getValue(primitiveCall.getChild(1));
+      int elt = context.getValue(primitiveCall.getChild(2));
+
+      context
+          .cfg()
+          .addInstruction(
+              new ForElementGetInstruction(
+                  context.cfg().getCurrentInstruction(), resultVal, obj, elt));
     }
   }
 

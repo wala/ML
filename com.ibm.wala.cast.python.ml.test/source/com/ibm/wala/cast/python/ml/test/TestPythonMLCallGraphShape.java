@@ -7,7 +7,7 @@ import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
 import com.ibm.wala.cast.python.ml.analysis.TensorVariable;
 import com.ibm.wala.cast.python.ml.client.PythonTensorAnalysisEngine;
-import com.ibm.wala.cast.python.test.TestPythonCallGraphShape;
+import com.ibm.wala.cast.python.test.TestJythonCallGraphShape;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.python.util.Util;
 import com.ibm.wala.cast.types.AstMethodReference;
@@ -35,7 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public abstract class TestPythonMLCallGraphShape extends TestPythonCallGraphShape {
+public abstract class TestPythonMLCallGraphShape extends TestJythonCallGraphShape {
 
   @FunctionalInterface
   protected interface CheckTensorOps {
