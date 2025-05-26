@@ -148,11 +148,16 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
      *     <p>For some collection types in Python, mainly sets and lists, iteration over a
      *     collection returns the values contained in that collection. For other types, such as
      *     dictionaries, iteration is over the keys that that collection contains.
+     *     <p>We also use this mechanism for generators, which put everything in a fake field named
+     *     "__contents__" which is read by this mechanism. Generator expressions use the iterator
+     *     type and generator functions use CodeBody.
      */
     private boolean isValueForKeyType(IClass objType) {
       IClassHierarchy cha = getClassHierarchy();
       return cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.list))
-          || cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.set));
+          || cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.set))
+          || cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.iterator))
+          || cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.CodeBody));
     }
 
     @Override
@@ -174,18 +179,23 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
           }
         }
       } else {
-        system.newSideEffect(
+        system.newConstraint(
+            resultKey,
             new AbstractOperator<PointsToSetVariable>() {
               @Override
               public byte evaluate(PointsToSetVariable lhs, PointsToSetVariable[] rhs) {
                 boolean changed = false;
-                IntIterator is = rhs[0].getValue().intIterator();
-                while (is.hasNext()) {
-                  InstanceKey ik = system.getInstanceKey(is.next());
-                  if (!isValueForKeyType(ik.getConcreteType())) {
-                    changed |= system.newConstraint(resultKey, assignOperator, eltKey);
-                  } else {
-                    newFieldRead(node, objVn, eltVn, resultVn);
+                for (PointsToSetVariable rv : rhs) {
+                  if (rv.getValue() != null) {
+                    IntIterator is = rv.getValue().intIterator();
+                    while (is.hasNext()) {
+                      InstanceKey ik = system.getInstanceKey(is.next());
+                      if (!isValueForKeyType(ik.getConcreteType())) {
+                        changed |= system.newConstraint(resultKey, assignOperator, eltKey);
+                      } else {
+                        newFieldRead(node, objVn, eltVn, resultVn);
+                      }
+                    }
                   }
                 }
                 if (changed) {
@@ -210,7 +220,8 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
                 return "next element of " + objKey;
               }
             },
-            new PointerKey[] {objKey, eltKey});
+            objKey,
+            eltKey);
       }
     }
 
@@ -701,6 +712,10 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
       PointerKey rret = getPointerKeyForReturnValue(target);
       PointerKey lret = getPointerKeyForLocal(caller, call.getReturnValue(0));
       getSystem().newConstraint(lret, assignOperator, rret);
+
+      PointerKey reret = getPointerKeyForExceptionalReturnValue(target);
+      PointerKey leret = getPointerKeyForLocal(caller, call.getException());
+      getSystem().newConstraint(leret, assignOperator, reret);
     }
   }
 
