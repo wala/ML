@@ -40,6 +40,9 @@ public class PythonTypes extends AstTypeReference {
 
   public static final TypeReference Root = TypeReference.findOrCreate(pythonLoader, rootTypeName);
 
+  public static final TypeReference BaseException =
+      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LBaseException"));
+
   public static final TypeReference Exception =
       TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LException"));
 

@@ -934,7 +934,21 @@ public class PythonCAstToIRTranslator extends AstTranslator {
     return Any;
   }
 
-  public final CAstType Exception =
+  public static final CAstType Object =
+      new CAstType() {
+
+        @Override
+        public String getName() {
+          return "object";
+        }
+
+        @Override
+        public Collection<CAstType> getSupertypes() {
+          return Collections.singleton(Any);
+        }
+      };
+
+  public static final CAstType Exception =
       new CAstType() {
 
         @Override
@@ -944,13 +958,17 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
         @Override
         public Collection<CAstType> getSupertypes() {
-          return Collections.singleton(topType());
+          return Collections.singleton(Object);
         }
       };
 
+  {
+    walaTypeNames.put(Exception, TypeName.findOrCreate("LException"));
+  }
+
   @Override
   protected CAstType exceptionType() {
-    return Any;
+    return Exception;
   }
 
   @Override
