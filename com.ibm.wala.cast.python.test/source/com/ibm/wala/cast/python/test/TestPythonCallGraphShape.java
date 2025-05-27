@@ -146,7 +146,7 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
     CallGraphBuilder<? super InstanceKey> builder = E.defaultCallGraphBuilder();
     CallGraph CG = builder.makeCallGraph(E.getOptions(), new NullProgressMonitor());
 
-    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
     CAstCallGraphUtil.dumpCG(
         ((SSAPropagationCallGraphBuilder) builder).getCFAContextInterpreter(),
         builder.getPointerAnalysis(),

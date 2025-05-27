@@ -114,7 +114,7 @@ public class TestClasses extends TestPythonCallGraphShape {
         (SSAPropagationCallGraphBuilder) engine.defaultCallGraphBuilder();
     CallGraph CG = builder.makeCallGraph(builder.getOptions());
     System.err.println(CG);
-    CAstCallGraphUtil.AVOID_DUMP = false;
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
     CAstCallGraphUtil.dumpCG(
         (SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), CG);
     verifyGraphAssertions(CG, assertionsClasses3);

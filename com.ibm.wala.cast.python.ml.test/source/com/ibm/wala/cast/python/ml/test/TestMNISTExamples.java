@@ -55,7 +55,7 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
     checkTensorOps(
         Ex1URL,
         (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
-          CAstCallGraphUtil.AVOID_DUMP = false;
+          CAstCallGraphUtil.AVOID_DUMP.set(false);
           CAstCallGraphUtil.dumpCG(
               (SSAContextInterpreter) cgBuilder.getContextInterpreter(),
               cgBuilder.getPointerAnalysis(),
@@ -89,7 +89,7 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
     checkTensorOps(
         Ex2URL,
         (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
-          CAstCallGraphUtil.AVOID_DUMP = false;
+          CAstCallGraphUtil.AVOID_DUMP.set(false);
           CAstCallGraphUtil.dumpCG(
               (SSAContextInterpreter) cgBuilder.getContextInterpreter(),
               cgBuilder.getPointerAnalysis(),
