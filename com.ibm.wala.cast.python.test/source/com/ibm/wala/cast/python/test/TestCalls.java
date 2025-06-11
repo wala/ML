@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.logging.Logger;
 import org.junit.Test;
 
-public class TestCalls extends TestPythonCallGraphShape {
+public class TestCalls extends TestJythonCallGraphShape {
 
   private static final Logger LOGGER = Logger.getLogger(TestCalls.class.getName());
 
@@ -231,11 +231,6 @@ public class TestCalls extends TestPythonCallGraphShape {
     PropagationCallGraphBuilder cgBuilder =
         (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
     CallGraph CG = cgBuilder.makeCallGraph(cgBuilder.getOptions());
-    CAstCallGraphUtil.AVOID_DUMP.set(false);
-    CAstCallGraphUtil.dumpCG(
-        (SSAContextInterpreter) cgBuilder.getContextInterpreter(),
-        cgBuilder.getPointerAnalysis(),
-        CG);
     verifyGraphAssertions(CG, assertionsDefaultValues);
   }
 
@@ -270,12 +265,6 @@ public class TestCalls extends TestPythonCallGraphShape {
     addPytestEntrypoints(callGraphBuilder);
 
     CallGraph callGraph = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
-
-    CAstCallGraphUtil.AVOID_DUMP.set(false);
-    CAstCallGraphUtil.dumpCG(
-        (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
-        callGraphBuilder.getPointerAnalysis(),
-        callGraph);
 
     verifyGraphAssertions(callGraph, PYTEST_ASSERTIONS);
   }

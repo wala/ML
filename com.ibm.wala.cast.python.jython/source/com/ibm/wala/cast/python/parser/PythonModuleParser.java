@@ -67,7 +67,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
             pythonPath);
     CAstEntity script = p.translateToCAst();
     System.err.println(script);
-    System.err.println(CAstPrinter.print(script));
+    System.err.println(CAstPrinter.print(script.getAST()));
   }
 
   @Override

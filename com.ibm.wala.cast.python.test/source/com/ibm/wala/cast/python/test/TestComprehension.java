@@ -1,12 +1,16 @@
 package com.ibm.wala.cast.python.test;
 
+import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
+import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.ipa.callgraph.CallGraph;
+import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
+import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 import java.io.IOException;
 import org.junit.Test;
 
-public class TestComprehension extends TestPythonCallGraphShape {
+public class TestComprehension extends TestJythonCallGraphShape {
 
   protected static final Object[][] assertionsComp1 =
       new Object[][] {
@@ -41,7 +45,17 @@ public class TestComprehension extends TestPythonCallGraphShape {
   @Test
   public void testComp1()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    CallGraph CG = process("comp1.py");
+    PythonAnalysisEngine<?> engine = this.makeEngine("comp1.py");
+    PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
+    CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
+
+    /*
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
+     CAstCallGraphUtil.dumpCG(
+         (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
+         callGraphBuilder.getPointerAnalysis(),
+         CG);
+         */
     System.err.println(CG);
     verifyGraphAssertions(CG, assertionsComp1);
   }
@@ -81,14 +95,25 @@ public class TestComprehension extends TestPythonCallGraphShape {
         },
         new Object[] {
           "script comp3.py/comprehension3",
-          new String[] {"script comp3.py/f1", "script comp3.py/f2", "script comp3.py/f3"}
+          new String[] {
+            "script comp3.py/f1/lambda1", "script comp3.py/f2/lambda1", "script comp3.py/f3/lambda1"
+          }
         },
       };
 
   @Test
   public void testComp3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    CallGraph CG = process("comp3.py");
-    System.err.println(CG);
+    PythonAnalysisEngine<?> engine = this.makeEngine("comp3.py");
+    PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
+    CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
+
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
+    CAstCallGraphUtil.dumpCG(
+        (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
+        callGraphBuilder.getPointerAnalysis(),
+        CG);
+
+    verifyGraphAssertions(CG, assertionsComp3);
   }
 }

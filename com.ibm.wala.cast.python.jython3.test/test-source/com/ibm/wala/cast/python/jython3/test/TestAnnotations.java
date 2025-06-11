@@ -7,7 +7,7 @@ import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.python.loader.PythonLoader.DynamicMethodBody;
 import com.ibm.wala.cast.python.modref.PythonModRef;
-import com.ibm.wala.cast.python.test.TestPythonCallGraphShape;
+import com.ibm.wala.cast.python.test.TestJythonCallGraphShape;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.classLoader.IClass;
@@ -28,7 +28,7 @@ import com.ibm.wala.util.CancelException;
 import java.io.IOException;
 import org.junit.Test;
 
-public class TestAnnotations extends TestPythonCallGraphShape {
+public class TestAnnotations extends TestJythonCallGraphShape {
 
   @Test
   public void testAnnotation1()

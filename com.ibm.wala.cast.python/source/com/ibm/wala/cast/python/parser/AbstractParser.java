@@ -11,7 +11,7 @@ import com.ibm.wala.cast.tree.impl.CAstImpl;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
 import java.util.Collection;
 
-public abstract class AbstractParser<T> {
+public abstract class AbstractParser {
 
   public interface MissingType extends CAstType {}
 
@@ -97,9 +97,9 @@ public abstract class AbstractParser<T> {
         "display"
       };
 
-  protected final CAst Ast = new CAstImpl();
+  protected abstract static class CAstVisitor {
 
-  protected abstract class CAstVisitor {
+    protected final CAst Ast = new CAstImpl();
 
     protected void defaultImports(Collection<CAstNode> elts) {
       for (String n : BuiltinFunctions.builtins()) {

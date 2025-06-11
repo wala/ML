@@ -10,7 +10,7 @@ import com.ibm.wala.util.CancelException;
 import java.io.IOException;
 import org.junit.Test;
 
-public class TestPrimitives extends TestPythonCallGraphShape {
+public class TestPrimitives extends TestJythonCallGraphShape {
 
   @Test
   public void testSource1()
