@@ -27,7 +27,8 @@ public class TestNeuroImageExamples extends TestPythonMLCallGraphShape {
           checkTensorOp(cgBuilder, CG, result, "reshape", null, null);
 
           in = "[{[D:Constant,40, D:Constant,40, D:Constant,40, D:Constant,1] of pixel}]";
-          // NOTE: Change next to last argument to `in` once https://github.com/wala/ML/issues/195 is
+          // NOTE: Change next to last argument to `in` once https://github.com/wala/ML/issues/195
+          // is
           // fixed.
           checkTensorOp(cgBuilder, CG, result, "conv3d", null, null);
         });
