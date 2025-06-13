@@ -10,6 +10,8 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.loader;
 
+import static java.util.logging.Level.WARNING;
+
 import com.ibm.wala.cast.ir.translator.ConstantFoldingRewriter;
 import com.ibm.wala.cast.ir.translator.RewritingTranslatorToCAst;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
@@ -32,11 +34,14 @@ import com.ibm.wala.ipa.cha.IClassHierarchy;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 import org.python.core.PyObject;
 import org.python.core.PySyntaxError;
 import org.python.core.PyUnicode;
 
 public class Python3Loader extends PythonLoader {
+
+  private static final Logger logger = Logger.getLogger(Python3Loader.class.getName());
 
   public Python3Loader(IClassHierarchy cha, IClassLoader parent, List<File> pythonPath) {
     super(cha, parent, pythonPath);
@@ -97,21 +102,23 @@ public class Python3Loader extends PythonLoader {
               @Override
               protected Object eval(CAstOperator op, Object lhs, Object rhs) {
                 String s = lhs + " " + op.getValue() + " " + rhs;
-                System.err.println("Evaluating: " + s);
+                logger.info(() -> "Evaluating: " + s);
 
-                // Use the Python interpreter to evaluate the expression
+                // Use the Python interpreter to evaluate the expression.
                 PyUnicode unicode = new PyUnicode(s);
                 PyObject x;
 
                 try {
                   x = Python3Interpreter.getInterp().eval(unicode);
                 } catch (PySyntaxError e) {
-                  System.err.println("Syntax error in expression: " + unicode);
+                  // Handle syntax errors gracefully.
+                  logger.log(WARNING, e, () -> "Syntax error in expression: " + unicode);
                   return null;
                 }
 
                 if (x.isNumberType()) {
-                  System.err.println(s + " -> " + x.asInt());
+                  // If the result is a number, return its integer value.
+                  logger.info(() -> s + " -> " + x.asInt());
                   return x.asInt();
                 }
                 return null;
