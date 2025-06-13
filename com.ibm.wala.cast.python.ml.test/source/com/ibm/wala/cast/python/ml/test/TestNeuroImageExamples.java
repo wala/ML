@@ -23,11 +23,12 @@ public class TestNeuroImageExamples extends TestPythonMLCallGraphShape {
           String in = "[{[D:Constant,64000] of pixel}]";
           String out = "[{[D:Constant,40, D:Constant,40, D:Constant,40, D:Constant,1] of pixel}]";
           // NOTE: Change last two arguments to `in`, `out` once
-          // https://github.com/wala/ML/issues/42 is fixed.
+          // https://github.com/wala/ML/issues/195 is fixed.
           checkTensorOp(cgBuilder, CG, result, "reshape", null, null);
 
           in = "[{[D:Constant,40, D:Constant,40, D:Constant,40, D:Constant,1] of pixel}]";
-          // NOTE: Change next to last argument to `in` once https://github.com/wala/ML/issues/42 is
+          // NOTE: Change next to last argument to `in` once https://github.com/wala/ML/issues/195
+          // is
           // fixed.
           checkTensorOp(cgBuilder, CG, result, "conv3d", null, null);
         });
