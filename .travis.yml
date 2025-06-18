@@ -19,7 +19,7 @@ install:
  - mvn install -B -q -DskipTests
  - popd
 script:
- - mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties verify -Pjacoco coveralls:report -DrepoToken=$COVERALLS_REPO_TOKEN -B
+ - mvn -Dlogging.config.file=./logging.ci.properties verify -Pjacoco coveralls:report -DrepoToken=$COVERALLS_REPO_TOKEN -B
 deploy:
   provider: script
   script: mvn -s .travis.settings.xml -Dgithub.username=$GITHUB_USERNAME -Dgithub.password=$GITHUB_TOKEN deploy -DskipTests
