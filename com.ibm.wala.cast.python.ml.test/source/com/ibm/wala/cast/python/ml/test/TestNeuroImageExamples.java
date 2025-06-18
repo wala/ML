@@ -25,7 +25,7 @@ public class TestNeuroImageExamples extends TestPythonMLCallGraphShape {
           checkTensorOp(cgBuilder, CG, result, "reshape", in, out);
 
           in = "[{[D:Constant,40, D:Constant,40, D:Constant,40, D:Constant,1] of pixel}]";
-          checkTensorOp(cgBuilder, CG, result, "conv3d", null, in);
+          checkTensorOp(cgBuilder, CG, result, "conv3d", in, null);
         });
   }
 
