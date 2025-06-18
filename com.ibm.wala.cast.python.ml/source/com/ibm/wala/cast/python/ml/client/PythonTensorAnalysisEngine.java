@@ -669,7 +669,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 
     Map<PointsToSetVariable, TensorType> placeholders =
         handleShapeSourceOp(builder, dataflow, placeholder, 2);
-    System.err.println(placeholders);
+    logger.fine(() -> "Placeholders: " + placeholders);
     for (Map.Entry<PointsToSetVariable, TensorType> e : placeholders.entrySet()) {
       init.put(e.getKey(), e.getValue());
     }
