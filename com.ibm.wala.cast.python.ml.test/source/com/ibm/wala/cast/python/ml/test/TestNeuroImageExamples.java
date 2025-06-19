@@ -34,12 +34,8 @@ public class TestNeuroImageExamples extends TestPythonMLCallGraphShape {
         });
   }
 
-  /**
-   * FIXME: Point to master branch of nilearn once https://github.com/ponder-lab/ML/issues/4 is
-   * fixed.
-   */
   private static final String Ex2URL =
-      "https://raw.githubusercontent.com/nilearn/nilearn/d43706724a72df089080f62d9f1d9c319fa391b7/examples/03_connectivity/plot_group_level_connectivity.py";
+      "https://raw.githubusercontent.com/nilearn/nilearn/refs/heads/main/examples/03_connectivity/plot_group_level_connectivity.py";
 
   @Test
   public void testEx2CG()
