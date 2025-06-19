@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.ibm.wala.cast.python.test.TestJythonCallGraphShape;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;

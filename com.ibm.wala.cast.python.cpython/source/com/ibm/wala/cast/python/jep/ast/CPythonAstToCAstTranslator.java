@@ -5,6 +5,7 @@ import static com.ibm.wala.cast.python.jep.Util.has;
 import static com.ibm.wala.cast.python.jep.Util.interps;
 import static com.ibm.wala.cast.python.jep.Util.run;
 import static com.ibm.wala.cast.python.jep.Util.runit;
+import static com.ibm.wala.cast.python.jep.Util.typeName;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,6 +58,7 @@ import com.ibm.wala.cast.tree.rewrite.CAstRewriter.RewriteContext;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriterFactory;
 import com.ibm.wala.cast.tree.visit.CAstVisitor.Context;
 import com.ibm.wala.cast.util.CAstPattern;
+import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.SourceFileModule;
 import com.ibm.wala.classLoader.SourceModule;
@@ -83,18 +85,6 @@ import jep.python.PyObject;
  */
 public class CPythonAstToCAstTranslator extends AbstractParser implements TranslatorToCAst {
 
-	private static CAstType object = new CAstType() {
-		@Override
-		public String getName() {
-			return "object";
-		}
-
-		@Override
-		public Collection<CAstType> getSupertypes() {
-			return Collections.emptySet();
-		}
-	};
-
 	private static CAstType codeBody = new CAstType() {
 		@Override
 		public String getName() {
@@ -106,7 +96,19 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			return Collections.emptySet();
 		}
 	};
-	
+
+	private static CAstType methodBody = new CAstType() {
+		@Override
+		public String getName() {
+			return "MethodBody";
+		}
+
+		@Override
+		public Collection<CAstType> getSupertypes() {
+			return Collections.singleton(codeBody);
+		}
+	};
+
 	private static CAstType baseException = new CAstType() {
 		@Override
 		public String getName() {
@@ -131,15 +133,15 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		}
 	};
 
-	private static CAstType iterator = new CAstType() {
+	private static CAstType lambdaMethod = new CAstType() {
 		@Override
 		public String getName() {
-			return "iterator";
+			return "lambdaMethod";
 		}
 
 		@Override
 		public Collection<CAstType> getSupertypes() {
-			return Collections.singleton(codeBody);
+			return Collections.singleton(methodBody);
 		}
 	};
 
@@ -292,6 +294,12 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		boolean isGenerator();
 
 		boolean isGenerator(boolean v);
+		
+		boolean isFunctionScope();
+		
+		CAstType classSelfVar();
+		
+		WalkContext codeParent();
 	}
 
 	public static class ScriptContext extends FunctionContext implements WalkContext {
@@ -421,6 +429,21 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		public boolean isGenerator(boolean v) {
 			return generator = v;
 		}
+
+		@Override
+		public boolean isFunctionScope() {
+			return true;
+		}
+
+		@Override
+		public CAstType classSelfVar() {
+			return null;
+		}
+
+		@Override
+		public WalkContext codeParent() {
+			return this;
+		}
 	}
 
 	private static class LoopContext extends TranslatorToCAst.LoopContext<WalkContext, PyObject>
@@ -474,6 +497,21 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		public boolean isGenerator(boolean v) {
 			return parent.isGenerator(v);
 		}
+
+		@Override
+		public boolean isFunctionScope() {
+			return getParent().isFunctionScope();
+		}
+
+		@Override
+		public CAstType classSelfVar() {
+			return parent.classSelfVar();
+		}
+
+		@Override
+		public WalkContext codeParent() {
+			return parent.codeParent();
+		}
 	}
 
 	public static abstract class TranslationVisitor extends AbstractParser.CAstVisitor
@@ -520,30 +558,83 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			return ast.makeNode(CAstNode.ASSIGN_POST_OP, 
 					lhs, 
 					rhs, 
-					translateOperator(getNodeType(op)));
+					translateOperator(getAstNodeType(op)));
 		}
 
+		
 		public CAstNode visitAnnAssign(PyObject o, WalkContext context) {
-			CAstNode target = visit(o.getAttr("target", PyObject.class), context);
+			List<CAstNode> code = new LinkedList<>();
+			PyObject targetObj = o.getAttr("target", PyObject.class);
+			CAstNode target = visit(targetObj, context);
 			int simple = o.getAttr("simple", Integer.class);
 			
 			PyObject annotation = o.getAttr("annotation", PyObject.class);
-			
-			PyObject codeForAnnotation = (PyObject) fixForCompilation(annotation);
-			Object annotatedValue = run(codeForAnnotation);			
-			
-			CAstNode annotatedCode = visit(annotation, context);
-			
-			System.err.println(target + " " + simple + " " + annotation + " " + codeForAnnotation + " " + annotatedValue + " " + annotatedCode);
+						
+			boolean isClass = isClassContext(context);
+			if (context.isFunctionScope()) {
+				if (simple > 0) {
+					String varName = targetObj.getAttr("id", String.class);
+					context.scope().localNames.add(varName);
+					context.inits().add(varName);
+				}
+				System.err.println(target + " " + simple + " " + annotation);
+			} else if (isClass) {
+				PyObject codeForAnnotation = (PyObject) fixForCompilation(annotation);
+				Object annotatedValue = codeForAnnotation!=null?run(codeForAnnotation):null;		
+				
+				CAstNode annotatedCode = visit(annotation, context.codeParent());
+				if (annotatedValue instanceof PyObject) {
+					String type = typeName((PyObject)annotatedValue);
+					if (type.contains("function") || type.contains("lambda")) {
+						annotatedValue = null;
+					}
+				}
+
+				if (simple > 0) {
+					if (annotatedValue != null) {
+						code.add(annotatedCode);
+						code.add(ast.makeNode(CAstNode.ASSIGN,
+							 ast.makeNode(CAstNode.OBJECT_REF, 
+									 ast.makeNode(CAstNode.OBJECT_REF, 
+											 ast.makeNode(CAstNode.VAR, ast.makeConstant(context.classSelfVar().getName())), 
+											 ast.makeConstant("__annotations__")), 
+									 ast.makeConstant(targetObj.getAttr("id", String.class))),
+								ast.makeConstant(annotatedValue)));
+					} else {
+						code.add(ast.makeNode(CAstNode.ASSIGN,
+								 ast.makeNode(CAstNode.OBJECT_REF, 
+										 ast.makeNode(CAstNode.OBJECT_REF, 
+												 ast.makeNode(CAstNode.VAR, ast.makeConstant(context.classSelfVar().getName())), 
+												 ast.makeConstant("__annotations__")), 
+										 ast.makeConstant(targetObj.getAttr("id", String.class))),
+								annotatedCode));						
+					}
+				} else {
+					code.add(annotatedCode);
+				}
+				
+				System.err.println(target + " " + simple + " " + annotation + " " + codeForAnnotation + " " + annotatedValue + " " + annotatedCode);
+			}
 			
 			if (has(o, "value")) {
-				return ast.makeNode(CAstNode.ASSIGN, target, visit(o.getAttr("value", PyObject.class), context));
-			} else {
+				CAstNode rhs = visit(o.getAttr("value", PyObject.class), context);
+				if (isClass) {
+					addField(context, rhs, targetObj);
+				} else {
+					code.add(ast.makeNode(CAstNode.ASSIGN, target, rhs));
+				}
+			} 
+			
+			if (code.isEmpty()) {
 				return ast.makeNode(CAstNode.EMPTY);
+			} else if (code.size() == 1) {
+				return code.get(0);
+			} else {
+				return ast.makeNode(CAstNode.BLOCK_EXPR, code.toArray(new CAstNode[code.size()]));
 			}
 		}
 		
-		private String getNodeType(PyObject op) {
+		private String getAstNodeType(PyObject op) {
 			return op.getAttr("op", PyObject.class)
 					.getAttr("__class__", PyObject.class)
 					.getAttr("__name__", String.class);
@@ -605,11 +696,13 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		}
 
 		public CAstNode visitFunctionDef(PyObject o, WalkContext context) {
-			CAstNode fe = doFunction(o.getAttr("args"), o, o.getAttr("name", String.class), context, codeBody);
-			Object x = fe.getChild(0).getValue();
-			CAstEntity fun = (CAstEntity) (x != null ? x : fe.getChild(1).getChild(0).getValue());
-			return ast.makeNode(CAstNode.DECL_STMT,
-					ast.makeConstant(new CAstSymbolImpl(o.getAttr("name", String.class), fun.getType())), fe);
+			CAstNode fe = doFunction(o.getAttr("args"), o, o.getAttr("name", String.class), context, isClassContext(context)? methodBody: codeBody);
+			if (isClassContext(context)) {
+				return ast.makeNode(CAstNode.EMPTY);
+			} else {
+				return ast.makeNode(CAstNode.DECL_STMT,
+					ast.makeConstant(new CAstSymbolImpl(o.getAttr("name", String.class), codeBody)), fe);
+			}
 		}
 
 		public CAstNode doFunction(Object rawArgs, PyObject o, String functionName, WalkContext context, CAstType superType) {
@@ -621,7 +714,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		public CAstNode doFunction(PyObject o, String functionName, WalkContext context, List<PyObject> arguments,
 				CAstNode[] defaultCode, Either<List<PyObject>, CAstNode> code, List<String> argumentNames, CAstType superType) {
 			int argumentCount = arguments.size();
-
+			
 			List<CAstType> argumentTypes = Collections.nCopies(argumentCount + 1, CAstType.DYNAMIC);
 
 			class PythonCodeType implements CAstType.Function {
@@ -659,7 +752,8 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			;
 
 			CAstType.Function funType;
-			if (context.entity() != null && context.entity().getKind() == CAstEntity.TYPE_ENTITY) {
+			String ft = typeName(o);
+			if (isClassContext(context) && !"Lambda".equals(ft)) {
 				class PythonMethodType extends PythonCodeType implements CAstType.Method {
 					@Override
 					public CAstType getDeclaringType() {
@@ -763,6 +857,10 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 					return fun.getAllScopedEntities();
 				}
 
+				@Override
+				public boolean isFunctionScope() {
+					return true;
+				}
 			};
 
 			CAstNode b1;
@@ -805,10 +903,51 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			CAstNode fe = ast.makeNode(CAstNode.FUNCTION_EXPR, ast.makeConstant(fun));
 			context.addScopedEntity(fe, fun);
 
-			if (defaultCode.length == 0) {
+			List<CAstNode> annotationCode = new ArrayList<>();
+			List<PyObject> argAnnotations = arguments.stream().filter(a -> has(a, "annotation") && a.getAttr("annotation") != null).toList();
+			if (argAnnotations != null && argAnnotations.size() > 0) {
+				annotationCode.add(
+					ast.makeNode(CAstNode.DECL_STMT, 
+						ast.makeConstant(new CAstSymbolImpl("__ann__", CAstType.DYNAMIC)),
+						ast.makeNode(CAstNode.NEW, ast.makeConstant("dict"))));
+				annotationCode.add(ast.makeNode(CAstNode.ASSIGN,
+					ast.makeNode(CAstNode.OBJECT_REF, ast.makeNode(CAstNode.VAR, ast.makeConstant("__fe__")), ast.makeConstant("__annotations__")),
+					ast.makeNode(CAstNode.VAR, ast.makeConstant("__ann__"))));
+				annotationCode.addAll(
+					argAnnotations.stream().map(
+						a -> ast.makeNode(CAstNode.ASSIGN, 
+								ast.makeNode(CAstNode.OBJECT_REF, 
+									ast.makeNode(CAstNode.VAR, ast.makeConstant("__ann__")),
+									ast.makeConstant(a.getAttr("arg", String.class))),
+								visit(a.getAttr("annotation", PyObject.class), context)))
+					    .toList());
+
+			}
+			if (has(o, "returns") && o.getAttr("returns") != null) {
+				annotationCode.add(
+					ast.makeNode(CAstNode.ASSIGN, 
+						ast.makeNode(CAstNode.OBJECT_REF, 
+							ast.makeNode(CAstNode.VAR, ast.makeConstant("__ann__")),
+							ast.makeConstant("return")),
+						visit(o.getAttr("returns", PyObject.class), context)));
+			}
+
+			if (defaultCode.length == 0 && annotationCode.size() == 0) {
 				return fe;
 			} else {
-				return ast.makeNode(CAstNode.BLOCK_EXPR, ast.makeNode(CAstNode.BLOCK_EXPR, defaultCode), fe);
+				if (annotationCode.size() > 0) {
+					fe = ast.makeNode(CAstNode.BLOCK_EXPR,
+							ast.makeNode(CAstNode.DECL_STMT,
+								ast.makeConstant(new CAstSymbolImpl("__fe__", funType)),
+								fe),
+							annotationCode.isEmpty()? ast.makeNode(CAstNode.EMPTY): ast.makeNode(CAstNode.BLOCK_STMT, annotationCode),
+							ast.makeNode(CAstNode.VAR, ast.makeConstant("__fe__")));
+				}
+				
+				return
+					ast.makeNode(CAstNode.BLOCK_EXPR, 
+						 defaultCode.length==0? ast.makeNode(CAstNode.EMPTY): ast.makeNode(CAstNode.BLOCK_EXPR, defaultCode), 
+						fe);
 			}
 		}
 
@@ -912,30 +1051,15 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			@SuppressWarnings("unchecked")
 			List<PyObject> body = (List<PyObject>) o.getAttr("targets");
 			PyObject value = (PyObject) o.getAttr("value");
-			CAstNode rhs = visit(value, context);
-			boolean isClass = context.entity() != null && context.entity().getKind() == CAstEntity.TYPE_ENTITY;
+			boolean isClass = isClassContext(context);
 			if (isClass) {
+				CAstNode rhs = visit(value, context);
 				for (PyObject lhs : body) {
-					context.addScopedEntity(null, new AbstractFieldEntity(lhs.getAttr("id", String.class),
-							Collections.emptySet(), false, context.entity()) {
-						@Override
-						public CAstNode getAST() {
-							return rhs;
-						}
-
-						@Override
-						public Position getPosition(int arg) {
-							return null;
-						}
-
-						@Override
-						public Position getNamePosition() {
-							return null;
-						}
-					});
+					addField(context, rhs, lhs);
 				}
 				return ast.makeNode(CAstNode.EMPTY);
 			} else {
+				CAstNode rhs = visit(value, context);
 				return ast.makeNode(CAstNode.BLOCK_STMT, body.stream().map(f -> {
 					Scope scope = context.scope();
 					if (!isClass && !scope.globalNames.contains(f.toString())
@@ -946,6 +1070,33 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 					return ast.makeNode(CAstNode.ASSIGN, visit(f, context), rhs);
 				}).collect(Collectors.toList()));
 			}
+		}
+
+		private boolean isClassContext(WalkContext context) {
+			return context.entity() != null && context.entity().getKind() == CAstEntity.TYPE_ENTITY;
+		}
+
+		private AbstractFieldEntity addField(WalkContext context, CAstNode rhs, PyObject lhs) {
+			AbstractFieldEntity f = new AbstractFieldEntity(lhs.getAttr("id", String.class),
+					Collections.emptySet(), false, context.entity()) {
+				@Override
+				public CAstNode getAST() {
+					return rhs;
+				}
+
+				@Override
+				public Position getPosition(int arg) {
+					return null;
+				}
+
+				@Override
+				public Position getNamePosition() {
+					return null;
+				}
+			};
+			
+			context.addScopedEntity(null, f);
+			return f;
 		}
 
 		private CAstNode visit(int node, List<PyObject> l, WalkContext context) {
@@ -1160,7 +1311,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			PyObject left = binop.getAttr("left", PyObject.class);
 			PyObject right = binop.getAttr("right", PyObject.class);
 			return ast.makeNode(
-					CAstNode.BINARY_EXPR, translateOperator(getNodeType(binop)),
+					CAstNode.BINARY_EXPR, translateOperator(getAstNodeType(binop)),
 					visit(left, context), visit(right, context));
 		}
 
@@ -1201,7 +1352,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		private int lambdaCount = 1;
 
 		public CAstNode visitLambda(PyObject lambdaNode, WalkContext context) {
-			return doFunction(lambdaNode.getAttr("args"), lambdaNode, "lambda" + lambdaCount++, context, lambda);
+			return doFunction(lambdaNode.getAttr("args"), lambdaNode, "lambda" + lambdaCount++, context.codeParent(), isClassContext(context)? lambdaMethod: lambda);
 		}
 
 		public CAstNode handleList(String type, String field, PyObject list, WalkContext context) {
@@ -1229,7 +1380,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		public CAstNode visitUnaryOp(PyObject unop, WalkContext context) {
 			PyObject op = unop.getAttr("operand", PyObject.class);
 			return ast.makeNode(
-					CAstNode.UNARY_EXPR, translateOperator(getNodeType(unop)),
+					CAstNode.UNARY_EXPR, translateOperator(getAstNodeType(unop)),
 					visit(op, context));
 		}
 
@@ -1289,7 +1440,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 
 			return missingTypes.get(name);
 		}
-
+		
 		public CAstNode visitClassDef(PyObject arg0, WalkContext context) throws Exception {
 			WalkContext parent = context;
 
@@ -1400,7 +1551,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 					members.add(visit);
 				}
 
-				private WalkContext codeParent() {
+				public WalkContext codeParent() {
 					WalkContext p = parent;
 					while (p.entity().getKind() == CAstEntity.TYPE_ENTITY) {
 						p = p.getParent();
@@ -1468,6 +1619,16 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 					assert false;
 					return false;
 				}
+
+				@Override
+				public boolean isFunctionScope() {
+					return false;
+				}
+
+				@Override
+				public CAstType classSelfVar() {
+					return cls;
+				}
 			};
 
 			URL url = this.url();
@@ -1485,8 +1646,22 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 				elts.add(v.visit(e, child));
 			}
 
-			CAstNode x = ast.makeNode(CAstNode.CLASS_STMT, ast.makeConstant(clse));
-			context.addScopedEntity(x, clse);
+			CAstNode x, y = ast.makeNode(CAstNode.CLASS_STMT, ast.makeConstant(clse));
+			if (elts.isEmpty()) {
+				x = y;
+			} else {
+				elts.add(0, ast.makeNode(CAstNode.ASSIGN,
+						ast.makeNode(CAstNode.OBJECT_REF, 
+							ast.makeNode(CAstNode.VAR, ast.makeConstant(child.classSelfVar().getName())),
+							ast.makeConstant("__annotations__")),
+						ast.makeNode(CAstNode.NEW, ast.makeConstant(PythonTypes.dict.getName().toString().substring(1)))));
+				elts.add(0, y);
+				elts.add(ast.makeNode(CAstNode.VAR, ast.makeConstant(child.classSelfVar().getName())));
+				x = ast.makeNode(CAstNode.BLOCK_EXPR,
+						elts.toArray(new CAstNode[ elts.size() ]));
+			}
+			
+			context.addScopedEntity(y, clse);
 			return x;
 		}
 
@@ -1539,6 +1714,21 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			@Override
 			public boolean isGenerator(boolean v) {
 				return getParent().isGenerator(v);
+			}
+
+			@Override
+			public boolean isFunctionScope() {
+				return getParent().isFunctionScope();
+			}
+
+			@Override
+			public CAstType classSelfVar() {
+				return getParent().classSelfVar();
+			}
+
+			@Override
+			public WalkContext codeParent() {
+				return getParent().codeParent();
 			}
 		}
 
