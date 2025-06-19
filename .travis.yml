@@ -19,7 +19,7 @@ install:
  - mvn install -B -q -DskipTests
  - popd
 script:
- - mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties verify -Pjacoco -B
+ - mvn -Dlogging.config.file=./logging.ci.properties verify -Pjacoco -B
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/

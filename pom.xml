@@ -34,7 +34,7 @@
     <spotless.version>2.44.5</spotless.version>
     <maven.surefire.version>3.5.3</maven.surefire.version>
     <parallel>both</parallel>
-    <logging.config.file>${maven.multiModuleProjectDirectory}/logging.properties</logging.config.file>
+    <logging.config.file>./logging.properties</logging.config.file>
     <jacoco-version>0.8.13</jacoco-version>
     <argLine/>
   </properties>
@@ -226,7 +226,7 @@
                 <eclipseWtp>
                   <type>XML</type>
                   <files>
-                    <file>${maven.multiModuleProjectDirectory}/spotless.xml.prefs</file>
+                    <file>./spotless.xml.prefs</file>
                   </files>
                 </eclipseWtp>
                 <trimTrailingWhitespace/>
