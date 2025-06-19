@@ -44,10 +44,9 @@ public abstract class TestPythonMLCallGraphShape extends TestJythonCallGraphShap
   }
 
   @Override
-  protected PythonAnalysisEngine<TensorTypeAnalysis> makeEngine(
-      List<File> pythonPath, String... name)
+  protected PythonTensorAnalysisEngine makeEngine(List<File> pythonPath, String... name)
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    PythonAnalysisEngine<TensorTypeAnalysis> engine = new PythonTensorAnalysisEngine(pythonPath);
+    PythonTensorAnalysisEngine engine = new PythonTensorAnalysisEngine(pythonPath);
     Set<Module> modules = HashSetFactory.make();
     for (String n : name) {
       modules.add(getScript(n));
