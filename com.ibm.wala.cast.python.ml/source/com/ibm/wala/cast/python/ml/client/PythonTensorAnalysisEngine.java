@@ -80,8 +80,6 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
               PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/conv3d")),
           AstMethodReference.fnSelector);
 
-  /** Not used due to https://github.com/wala/ML/issues/195 workaround. */
-  @SuppressWarnings("unused")
   private static final MethodReference reshape =
       MethodReference.findOrCreate(
           TypeReference.findOrCreate(
@@ -692,9 +690,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
     }
 
     Map<PointsToSetVariable, TensorType> shapeOps = HashMapFactory.make();
-
-    // Don't handle shape source operations for now to workaround
-    // https://github.com/wala/ML/issues/195.
+    shapeOps.putAll(handleShapeSourceOp(builder, dataflow, reshape, 2));
 
     Set<PointsToSetVariable> conv2ds = getKeysDefinedByCall(conv2d, builder);
 
