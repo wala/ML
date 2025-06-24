@@ -267,27 +267,6 @@
         <activeByDefault>false</activeByDefault>
       </activation>
       <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>com.github.hazendaz.maven</groupId>
-              <artifactId>coveralls-maven-plugin</artifactId>
-              <version>4.7.0</version>
-              <configuration>
-                <jacocoReports>
-                  <jacocoReport>${project.basedir}/com.ibm.wala.cast.python.report/target/site/jacoco-aggregate/jacoco.xml</jacocoReport>
-                </jacocoReports>
-              </configuration>
-              <dependencies>
-                <dependency>
-                  <groupId>javax.xml.bind</groupId>
-                  <artifactId>jaxb-api</artifactId>
-                  <version>2.3.1</version>
-                </dependency>
-              </dependencies>
-            </plugin>
-          </plugins>
-        </pluginManagement>
         <plugins>
           <plugin>
             <groupId>org.jacoco</groupId>

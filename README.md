@@ -1,6 +1,6 @@
 # [Ariadne](https://wala.github.io/ariadne/)
 
-[![Continuous integration](https://github.com/ponder-lab/ML/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/ponder-lab/ML/actions/workflows/continuous-integration.yml) [![Coverage Status](https://coveralls.io/repos/github/ponder-lab/ML/badge.svg)](https://coveralls.io/github/ponder-lab/ML)
+[![Continuous integration](https://github.com/ponder-lab/ML/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/ponder-lab/ML/actions/workflows/continuous-integration.yml) [![codecov](https://codecov.io/gh/ponder-lab/ML/graph/badge.svg)](https://codecov.io/gh/ponder-lab/ML)
 
 This is the top level repository for Ariadne code. More information on using the Ariadne tools can be found [here](https://wala.github.io/ariadne/). This repository is code to analyze machine learning code with [WALA]. Currently, the code consists of the analysis of Python (`com.ibm.wala.cast.python`), analysis focused on machine learning in Python (`com.ibm.wala.cast.python.ml`), support for using the analysis via J2EE WebSockets (`com.ibm.wala.cast.python.ml.j2ee`) and their associated test projects.
 
