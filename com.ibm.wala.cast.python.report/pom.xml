@@ -22,6 +22,16 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>com.ibm.wala.cast.python.jython</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>com.ibm.wala.cast.python.jython.test</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>com.ibm.wala.cast.python.jython3</artifactId>
       <version>${project.version}</version>
     </dependency>

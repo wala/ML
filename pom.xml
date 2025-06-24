@@ -7,8 +7,10 @@
   <packaging>pom</packaging>
   <modules>
     <module>com.ibm.wala.cast.python</module>
+    <module>com.ibm.wala.cast.python.jython</module>
     <module>com.ibm.wala.cast.python.jython3</module>
     <module>com.ibm.wala.cast.python.test</module>
+    <module>com.ibm.wala.cast.python.jython.test</module>
     <module>com.ibm.wala.cast.python.jython3.test</module>
     <module>com.ibm.wala.cast.python.ml</module>
     <module>com.ibm.wala.cast.python.ml.test</module>
