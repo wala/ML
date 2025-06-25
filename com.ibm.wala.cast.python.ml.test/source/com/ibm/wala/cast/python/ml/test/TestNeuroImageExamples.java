@@ -21,6 +21,7 @@ public class TestNeuroImageExamples extends TestPythonMLCallGraphShape {
         Ex1URL,
         (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
           String in = "[{[D:Constant,64000] of pixel}]";
+<<<<<<< contrib_jython3_tensor_dims
           // NOTE: Change to "[{[D:Constant,40, D:Constant,40, D:Constant,40, D:Constant,1] of
           // pixel}]" once https://github.com/wala/ML/issues/195 is fixed.
           String out = "[{[D:Symbolic,n, D:Compound,[D:Constant,28, D:Constant,28]] of pixel}]";
@@ -30,6 +31,13 @@ public class TestNeuroImageExamples extends TestPythonMLCallGraphShape {
           // NOTE: Change next to last argument to `in` once https://github.com/wala/ML/issues/195
           // is fixed.
           checkTensorOp(cgBuilder, CG, result, "conv3d", null, null);
+=======
+          String out = "[{[D:Constant,40, D:Constant,40, D:Constant,40, D:Constant,1] of pixel}]";
+          checkTensorOp(cgBuilder, CG, result, "reshape", in, out);
+
+          in = "[{[D:Constant,40, D:Constant,40, D:Constant,40, D:Constant,1] of pixel}]";
+          checkTensorOp(cgBuilder, CG, result, "conv3d", in, null);
+>>>>>>> master
         });
   }
 
