@@ -28,6 +28,7 @@ import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
+import com.ibm.wala.ipa.callgraph.propagation.PropagationSystem;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
@@ -79,8 +80,6 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
               PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/conv3d")),
           AstMethodReference.fnSelector);
 
-  /** Not used due to https://github.com/wala/ML/issues/195 workaround. */
-  @SuppressWarnings("unused")
   private static final MethodReference reshape =
       MethodReference.findOrCreate(
           TypeReference.findOrCreate(
@@ -691,9 +690,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
     }
 
     Map<PointsToSetVariable, TensorType> shapeOps = HashMapFactory.make();
-
-    // Don't handle shape source operations for now to workaround
-    // https://github.com/wala/ML/issues/195.
+    shapeOps.putAll(handleShapeSourceOp(builder, dataflow, reshape, 2));
 
     Set<PointsToSetVariable> conv2ds = getKeysDefinedByCall(conv2d, builder);
 
@@ -721,7 +718,12 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
       int srcVn = srcNode.getDU().getDef(toVn).getUse(1);
       PointerKey from =
           builder.getPointerAnalysis().getHeapModel().getPointerKeyForLocal(srcNode, srcVn);
-      dataflow.addEdge(builder.getPropagationSystem().findOrCreatePointsToSet(from), to);
+
+      final PropagationSystem system = builder.getPropagationSystem();
+
+      // If the source is not implicit, we add an edge from the points-to set of the source to the
+      // target https://github.com/wala/ML/issues/268.
+      if (!system.isImplicit(from)) dataflow.addEdge(system.findOrCreatePointsToSet(from), to);
     }
     return reshapeTypes;
   }
