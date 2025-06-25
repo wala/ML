@@ -8,7 +8,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -257,16 +258,21 @@ public class ClientDriver implements LanguageClient {
           InitializedParams z = new InitializedParams();
           server.initialized(z);
 
-          sendFile(args);
+          try {
+            sendFile(args);
+          } catch (URISyntaxException e) {
+            e.printStackTrace();
+            assert false;
+          }
         });
   }
 
-  private void sendFile(String[] args) {
+  private void sendFile(String[] args) throws URISyntaxException {
     String scriptUri = args[0];
 
     BufferedReader br = null;
     try {
-      br = new BufferedReader(new InputStreamReader(new URL(scriptUri).openStream()));
+      br = new BufferedReader(new InputStreamReader(new URI(scriptUri).toURL().openStream()));
     } catch (IOException e1) {
       e1.printStackTrace();
       assert false;

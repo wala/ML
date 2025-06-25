@@ -188,9 +188,12 @@ public class PythonSuper {
           CallSiteReference ref =
               new DynamicCallSiteReference(
                   AstMethodReference.fnReference(PythonTypes.superfun), pc++);
+          @SuppressWarnings("unchecked")
+          Pair<String, Integer>[] pairs = new Pair[0];
+          Pair<String, Integer>[] keywordParams = pairs;
           ctor.addStatement(
               new PythonInvokeInstruction(
-                  2, result, except, ref, new int[] {1, cls, self}, new Pair[0]));
+                  2, result, except, ref, new int[] {1, cls, self}, keywordParams));
 
           ctor.addStatement(insts.ReturnInstruction(pc++, result, false));
 

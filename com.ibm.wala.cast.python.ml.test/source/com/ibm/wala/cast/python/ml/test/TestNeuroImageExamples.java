@@ -6,6 +6,7 @@ import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -16,7 +17,11 @@ public class TestNeuroImageExamples extends TestPythonMLCallGraphShape {
 
   @Test
   public void testEx1CG()
-      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+      throws ClassHierarchyException,
+          IllegalArgumentException,
+          CancelException,
+          IOException,
+          URISyntaxException {
     checkTensorOps(
         Ex1URL,
         (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
