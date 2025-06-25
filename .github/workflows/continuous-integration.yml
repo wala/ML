@@ -6,7 +6,7 @@ on:
     branches: [ "master" ]
 concurrency:
   group: ${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name != 'push' || !startsWith(github.ref, 'refs/tags/') }} # Cancel if not a tag push.
 jobs:
   build:
     runs-on: ubuntu-latest
