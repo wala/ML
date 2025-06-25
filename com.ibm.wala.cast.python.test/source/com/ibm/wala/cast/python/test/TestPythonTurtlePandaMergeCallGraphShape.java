@@ -54,8 +54,10 @@ public class TestPythonTurtlePandaMergeCallGraphShape extends TestPythonTurtleCa
 
     SSAPropagationCallGraphBuilder builder =
         (SSAPropagationCallGraphBuilder) E.defaultCallGraphBuilder();
+    @SuppressWarnings("unused")
     CallGraph CG = builder.makeCallGraph(E.getOptions(), new NullProgressMonitor());
 
+    @SuppressWarnings("unused")
     Graph<TurtlePath> analysis = E.performAnalysis((SSAPropagationCallGraphBuilder) builder);
   }
 }

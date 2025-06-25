@@ -240,6 +240,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
         system.recordImplicitPointsToSet(objKey);
         for (InstanceKey ik : getInvariantContents(objVn)) {
           if (types.contains(ik.getConcreteType().getReference())) {
+            @SuppressWarnings("unused")
             Pair<String, TypeReference> key = Pair.make(name, ik.getConcreteType().getReference());
             // system.newConstraint(lvalKey, new ConcreteTypeKey(getBuilder().ensure(key)));
           }
@@ -256,6 +257,7 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
                           (i) -> {
                             InstanceKey ik = system.getInstanceKey(i);
                             if (types.contains(ik.getConcreteType().getReference())) {
+                              @SuppressWarnings("unused")
                               Pair<String, TypeReference> key =
                                   Pair.make(name, ik.getConcreteType().getReference());
                               // system.newConstraint(lvalKey, new
