@@ -4680,16 +4680,19 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("decorated_function_test.py", "f", 1, 1, 2);
   }
 
+  /** Test https://github.com/wala/ML/issues/195. */
   @Test
   public void testReshape() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_reshape.py", "f", 1, 1, 2);
   }
 
+  /** Test https://github.com/wala/ML/issues/195. */
   @Test
   public void testReshape2() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_reshape2.py", "f", 1, 1, 2);
   }
 
+  /** Test https://github.com/wala/ML/issues/195. */
   @Test
   public void testReshape3() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_reshape3.py", "f", 1, 1, 2);
