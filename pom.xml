@@ -133,6 +133,7 @@
               <arg>-Xlint:deprecation</arg>
               <arg>-Xlint:unchecked</arg>
             </compilerArgs>
+            <failOnWarning>true</failOnWarning>
           </configuration>
         </plugin>
         <plugin>
@@ -145,7 +146,8 @@
               <!-- Set JUL Formatting -->
               <java.util.logging.config.file>${logging.config.file}</java.util.logging.config.file>
             </systemPropertyVariables>
-            <forkMode>once</forkMode>
+            <forkCount>1</forkCount>
+            <reuseForks>true</reuseForks>
             <argLine>@{argLine} -Dpython.import.site=false</argLine>
             <trimStackTrace>false</trimStackTrace>
           </configuration>

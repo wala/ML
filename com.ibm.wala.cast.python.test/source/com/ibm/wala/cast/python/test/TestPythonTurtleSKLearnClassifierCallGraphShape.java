@@ -56,8 +56,10 @@ public class TestPythonTurtleSKLearnClassifierCallGraphShape
     PythonAnalysisEngine<LabeledGraph<TurtlePath, EdgeType>> E = driver.makeEngine(args);
 
     CallGraphBuilder<? super InstanceKey> builder = E.defaultCallGraphBuilder();
+    @SuppressWarnings("unused")
     CallGraph CG = builder.makeCallGraph(E.getOptions(), new NullProgressMonitor());
 
+    @SuppressWarnings("unused")
     Graph<TurtlePath> analysis = E.performAnalysis((SSAPropagationCallGraphBuilder) builder);
   }
 }

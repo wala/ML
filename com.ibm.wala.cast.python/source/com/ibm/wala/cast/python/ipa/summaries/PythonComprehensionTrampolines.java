@@ -75,7 +75,9 @@ public class PythonComprehensionTrampolines implements MethodTargetSelector {
         int s = idx++;
         int r = v++;
         CallSiteReference ss = new DynamicCallSiteReference(PythonTypes.CodeBody, s);
-        x.addStatement(new PythonInvokeInstruction(s, r, v++, ss, args, new Pair[0]));
+        @SuppressWarnings("unchecked")
+        Pair<String, Integer>[] keywordParams = new Pair[0];
+        x.addStatement(new PythonInvokeInstruction(s, r, v++, ss, args, keywordParams));
 
         x.addStatement(PythonLanguage.Python.instructionFactory().PropertyWrite(idx++, 2, ofv, r));
 
