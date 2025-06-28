@@ -25,8 +25,7 @@
   </distributionManagement>
   <properties>
     <project-version>0.0.1-SNAPSHOT</project-version>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.release>21</maven.compiler.release>
     <maven.compiler.version>3.14.0</maven.compiler.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build-alias>b000</build-alias>
@@ -235,7 +234,7 @@
             </formats>
             <java>
               <googleJavaFormat>
-                <version>1.19.2</version>
+                <version>1.27.0</version>
                 <reflowLongStrings>true</reflowLongStrings>
               </googleJavaFormat>
               <trimTrailingWhitespace/>
