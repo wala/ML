@@ -31,10 +31,11 @@ import java.util.concurrent.ExecutionException;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextEdit;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -161,9 +162,13 @@ public class ServerTest {
                 }
               }
             }
-          } else if (s instanceof SymbolInformation) {
+          } else if (s instanceof DocumentSymbol) {
             synchronized (checks) {
-              checks.add(((SymbolInformation) s).getName());
+              checks.add(((DocumentSymbol) s).getName());
+            }
+          } else if (s instanceof WorkspaceSymbol) {
+            synchronized (checks) {
+              checks.add(((WorkspaceSymbol) s).getName());
             }
           } else if (s instanceof CodeLens) {
             synchronized (checks) {
