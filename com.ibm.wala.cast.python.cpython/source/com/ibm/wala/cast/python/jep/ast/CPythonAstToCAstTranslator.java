@@ -99,7 +99,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 	private static CAstType asyncCodeBody = new CAstType() {
 		@Override
 		public String getName() {
-			return "CodeBody";
+			return "AsyncCodeBody";
 		}
 
 		@Override
@@ -724,7 +724,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 				return ast.makeNode(CAstNode.EMPTY);
 			} else {
 				return ast.makeNode(CAstNode.DECL_STMT,
-					ast.makeConstant(new CAstSymbolImpl(o.getAttr("name", String.class), codeBody)), fe);
+					ast.makeConstant(new CAstSymbolImpl(o.getAttr("name", String.class), type)), fe);
 			}
 		}
 		
@@ -1778,6 +1778,12 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 					ast.makeConstant("__content__")));
 		}
 
+		public CAstNode visitAwait(PyObject o, WalkContext context) {
+			return ast.makeNode(CAstNode.OBJECT_REF,
+					visit(o.getAttr("value", PyObject.class), context),
+					ast.makeConstant("__content__"));
+		}
+		
 		public CAstNode visitYield(PyObject o, WalkContext context) {
 			context.isGenerator(true);
 			return ast.makeNode(CAstNode.ASSIGN, 
