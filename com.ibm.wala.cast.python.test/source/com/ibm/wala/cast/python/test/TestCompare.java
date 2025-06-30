@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.function.Consumer;
 import org.junit.Test;
 
-public class TestCompare extends TestPythonCallGraphShape {
+public class TestCompare extends TestJythonCallGraphShape {
 
   protected static final Object[][] assertionsCmp1 =
       new Object[][] {
@@ -39,7 +39,7 @@ public class TestCompare extends TestPythonCallGraphShape {
   }
 
   @Test
-  public void testAssign1()
+  public void testCompare1()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     PythonAnalysisEngine<?> e =
         new PythonAnalysisEngine<Void>() {
@@ -95,7 +95,7 @@ public class TestCompare extends TestPythonCallGraphShape {
       };
 
   @Test
-  public void testAssign2()
+  public void testCompare2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     PythonAnalysisEngine<?> e =
         new PythonAnalysisEngine<Void>() {

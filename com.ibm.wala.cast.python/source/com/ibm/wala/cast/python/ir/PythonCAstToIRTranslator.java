@@ -27,8 +27,10 @@ import com.ibm.wala.cast.python.loader.PythonLoader;
 import com.ibm.wala.cast.python.loader.PythonLoader.PythonClass;
 import com.ibm.wala.cast.python.parser.AbstractParser.MissingType;
 import com.ibm.wala.cast.python.parser.AbstractParser.PythonGlobalsEntity;
+import com.ibm.wala.cast.python.ssa.ForElementGetInstruction;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.types.PythonTypes;
+import com.ibm.wala.cast.tree.CAstControlFlowMap;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
@@ -380,6 +382,8 @@ public class PythonCAstToIRTranslator extends AstTranslator {
                   visit(a, context, this);
                   int pos = context.cfg().getCurrentInstruction();
                   CallSiteReference site = new DynamicCallSiteReference(PythonTypes.CodeBody, pos);
+                  @SuppressWarnings("unchecked")
+                  Pair<String, Integer>[] keywordParams = new Pair[0];
                   context
                       .cfg()
                       .addInstruction(
@@ -389,7 +393,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
                               context.currentScope().allocateTempValue(),
                               site,
                               new int[] {context.getValue(a), result},
-                              new Pair[0]));
+                              keywordParams));
                 });
       }
     }
@@ -896,21 +900,18 @@ public class PythonCAstToIRTranslator extends AstTranslator {
     context.cfg().newBlock(true);
 
     // exceptional case: flow to target given in CAst, or if null, the exit node
-    ((CAstControlFlowRecorder) context.getControlFlow()).map(call, call);
+    CAstControlFlowMap cfg = context.getControlFlow();
+    ((CAstControlFlowRecorder) cfg).map(call, call);
 
-    if (context.getControlFlow().getTargetLabels(call).isEmpty()) {
+    if (cfg.getTargetLabels(call).isEmpty()) {
       LOGGER.fine(() -> "no exceptions for " + CAstPrinter.print(call));
       context.cfg().addPreEdgeToExit(call, true);
     } else {
-      context
-          .getControlFlow()
-          .getTargetLabels(call)
+      cfg.getTargetLabels(call)
           .forEach(
               nm -> {
-                if (context.getControlFlow().getTarget(call, nm) != null) {
-                  context
-                      .cfg()
-                      .addPreEdge(call, context.getControlFlow().getTarget(call, nm), true);
+                if (cfg.getTarget(call, nm) != null) {
+                  context.cfg().addPreEdge(call, cfg.getTarget(call, nm), true);
                 }
               });
     }
@@ -935,7 +936,21 @@ public class PythonCAstToIRTranslator extends AstTranslator {
     return Any;
   }
 
-  public final CAstType Exception =
+  public static final CAstType Object =
+      new CAstType() {
+
+        @Override
+        public String getName() {
+          return "object";
+        }
+
+        @Override
+        public Collection<CAstType> getSupertypes() {
+          return Collections.singleton(Any);
+        }
+      };
+
+  public static final CAstType Exception =
       new CAstType() {
 
         @Override
@@ -945,13 +960,17 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
         @Override
         public Collection<CAstType> getSupertypes() {
-          return Collections.singleton(topType());
+          return Collections.singleton(Object);
         }
       };
 
+  {
+    walaTypeNames.put(Exception, TypeName.findOrCreate("LException"));
+  }
+
   @Override
   protected CAstType exceptionType() {
-    return Any;
+    return Exception;
   }
 
   @Override
@@ -1021,6 +1040,15 @@ public class PythonCAstToIRTranslator extends AstTranslator {
             .addInstruction(
                 ((AstInstructionFactory) insts).PutInstruction(idx, 1, resultVal, eltField));
       }
+    } else if ("forElementGet".equals(primitiveCall.getChild(0).getValue())) {
+      int obj = context.getValue(primitiveCall.getChild(1));
+      int elt = context.getValue(primitiveCall.getChild(2));
+
+      context
+          .cfg()
+          .addInstruction(
+              new ForElementGetInstruction(
+                  context.cfg().getCurrentInstruction(), resultVal, obj, elt));
     }
   }
 
@@ -1154,10 +1182,12 @@ public class PythonCAstToIRTranslator extends AstTranslator {
       CallSiteReference site = new DynamicCallSiteReference(PythonTypes.CodeBody, pos);
       int result = context.currentScope().allocateTempValue();
       int exception = context.currentScope().allocateTempValue();
+      @SuppressWarnings("unchecked")
+      Pair<String, Integer>[] keywordParams = new Pair[0];
       context
           .cfg()
           .addInstruction(
-              new PythonInvokeInstruction(pos, result, exception, site, args, new Pair[0]));
+              new PythonInvokeInstruction(pos, result, exception, site, args, keywordParams));
 
       context.setValue(n, result);
       return true;

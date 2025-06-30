@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.function.Function;
 import org.junit.Test;
 
-public class TestSlice extends TestPythonCallGraphShape {
+public class TestSlice extends TestJythonCallGraphShape {
 
   private static SSAAbstractInvokeInstruction find(
       IR ir, Function<SSAAbstractInvokeInstruction, Boolean> filter) {

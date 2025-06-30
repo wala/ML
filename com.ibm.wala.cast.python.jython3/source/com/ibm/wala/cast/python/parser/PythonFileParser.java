@@ -52,7 +52,7 @@ public class PythonFileParser extends PythonParser<File> {
         new PythonFileParser(new File(args[0]), new CAstTypeDictionaryImpl<String>(), pythonPath);
     CAstEntity script = p.translateToCAst();
     System.err.println(script);
-    System.err.println(CAstPrinter.print(script));
+    System.err.println(CAstPrinter.print(script.getAST()));
   }
 
   @Override

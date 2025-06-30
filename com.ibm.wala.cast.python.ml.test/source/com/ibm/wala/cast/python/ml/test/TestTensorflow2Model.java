@@ -28,6 +28,8 @@ import com.ibm.wala.util.CancelException;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -43,11 +45,6 @@ import org.junit.Test;
 
 /** Test TF2 APIs. */
 public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
-
-  private static final String JAVA_CLASSPATH_SYSTEM_PROPERTY_KEY = "java.class.path";
-
-  /** Name of the Maven submodule uses for Jython3 testing. */
-  private static final String JYTHON3_TEST_PROJECT = "com.ibm.wala.cast.python.jython3.test";
 
   private static final Logger LOGGER = Logger.getLogger(TestTensorflow2Model.class.getName());
 
@@ -1007,10 +1004,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   @Test
   public void testDataset25()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
-    test("tf2_test_dataset25.py", "f", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
-    test("tf2_test_dataset25.py", "g", 0, 0);
+    test("tf2_test_dataset25.py", "f", 1, 1, 2);
+    test("tf2_test_dataset25.py", "g", 1, 1, 2);
     // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/165 is fixed.
     test("tf2_test_dataset25.py", "h", 1, 1, 2);
   }
@@ -1018,14 +1013,10 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   @Test
   public void testDataset26()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
-    test("tf2_test_dataset26.py", "f", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
-    test("tf2_test_dataset26.py", "g1", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
-    test("tf2_test_dataset26.py", "g2", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/165 is fixed.
-    test("tf2_test_dataset26.py", "g3", 0, 0);
+    test("tf2_test_dataset26.py", "f", 1, 1, 2);
+    test("tf2_test_dataset26.py", "g1", 1, 1, 2);
+    test("tf2_test_dataset26.py", "g2", 1, 1, 2);
+    test("tf2_test_dataset26.py", "g3", 1, 1, 2);
     // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/165 is fixed.
     test("tf2_test_dataset26.py", "h", 1, 1, 2);
   }
@@ -1034,21 +1025,16 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   public void testDataset27()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test("tf2_test_dataset27.py", "f", 1, 1, 2);
-    // TODO: Change to 1, 1, 2 when https://github.com/wala/ML/issues/164 is fixed:
-    test("tf2_test_dataset27.py", "g", 0, 0);
-    // TODO: Change to 1, 1, 2 when https://github.com/wala/ML/issues/164 is fixed:
-    test("tf2_test_dataset27.py", "h", 0, 0);
-    // TODO: Change to 1, 1, 2 when https://github.com/wala/ML/issues/164 is fixed:
-    test("tf2_test_dataset27.py", "i", 0, 0);
+    test("tf2_test_dataset27.py", "g", 1, 1, 2);
+    test("tf2_test_dataset27.py", "h", 1, 1, 2);
+    test("tf2_test_dataset27.py", "i", 1, 1, 2);
   }
 
   @Test
   public void testDataset28()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    // TODO: Change to 1, 1, 2 when https://github.com/wala/ML/issues/164 is fixed:
-    test("tf2_test_dataset28.py", "f", 0, 0);
-    // TODO: Change to 1, 1, 2 when https://github.com/wala/ML/issues/164 is fixed:
-    test("tf2_test_dataset28.py", "g", 0, 0);
+    test("tf2_test_dataset28.py", "f", 1, 1, 2);
+    test("tf2_test_dataset28.py", "g", 1, 1, 2);
     // TODO: Change to 0, 0 when https://github.com/wala/ML/issues/164 is fixed:
     test("tf2_test_dataset28.py", "h", 1, 1, 2);
   }
@@ -1070,30 +1056,21 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/166 is fixed.
     test("tf2_test_dataset31.py", "f", 1, 1, 2);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "g1", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "g2", 0, 0);
+    test("tf2_test_dataset31.py", "g1", 1, 1, 2);
+    test("tf2_test_dataset31.py", "g2", 1, 1, 2);
     // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/166 is fixed.
     test("tf2_test_dataset31.py", "h", 1, 1, 2);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "i1", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "i2", 0, 0);
+    test("tf2_test_dataset31.py", "i1", 1, 1, 2);
+    test("tf2_test_dataset31.py", "i2", 1, 1, 2);
     // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/166 is fixed.
     test("tf2_test_dataset31.py", "j", 1, 1, 2);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "k1", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "k2", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "k2", 0, 0);
+    test("tf2_test_dataset31.py", "k1", 1, 1, 2);
+    test("tf2_test_dataset31.py", "k2", 1, 1, 2);
+    test("tf2_test_dataset31.py", "k2", 1, 1, 2);
     // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/166 is fixed.
     test("tf2_test_dataset31.py", "l", 1, 1, 2);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "m1", 0, 0);
-    // TODO: Change to 1, 1, 2 once https://github.com/wala/ML/issues/166 is fixed.
-    test("tf2_test_dataset31.py", "m2", 0, 0);
+    test("tf2_test_dataset31.py", "m1", 1, 1, 2);
+    test("tf2_test_dataset31.py", "m2", 1, 1, 2);
   }
 
   @Test
@@ -1144,8 +1121,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   @Test
   public void testTensorboardExample()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    // Change to 0, 4 once https://github.com/wala/ML/issues/147 is fixed.
-    test("tensorboard_example.py", "summarize_weights", 0, 12);
+    test("tensorboard_example.py", "summarize_weights", 0, 4);
   }
 
   @Test
@@ -1586,32 +1562,10 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         2);
   }
 
-  /**
-   * This test needs a PYTHONPATH that points to `proj`.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** This test needs a PYTHONPATH that points to `proj`. */
+  @Test
   public void testModule2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj/src/__init__.py", "proj/src/tf2_test_module2a.py", "proj/src/tf2_test_module3.py"
@@ -1619,37 +1573,15 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "src/tf2_test_module2a.py",
         "f",
         "proj",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
-  /**
-   * This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** This test should not need a PYTHONPATH. */
+  @Test
   public void testModule3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj2/src/__init__.py", "proj2/src/tf2_test_module3a.py", "proj2/tf2_test_module4.py"
@@ -1657,38 +1589,18 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "src/tf2_test_module3a.py",
         "f",
         "proj2",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
    * This test should not need a PYTHONPATH, meaning that I don't need to set one in the console
    * when I run the files.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj3/src/__init__.py",
@@ -1699,9 +1611,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "src/tf2_test_module4a.py",
         "f",
         "proj3",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
 
     test(
         new String[] {
@@ -1713,9 +1625,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "src/tf2_test_module4a.py",
         "g",
         "proj3",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   @Test
@@ -1731,32 +1643,10 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         3);
   }
 
-  /**
-   * This test needs a PYTHONPATH that points to `proj4`.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** This test needs a PYTHONPATH that points to `proj4`. */
+  @Test
   public void testModule6()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj4/src/__init__.py", "proj4/src/tf2_test_module4a.py", "proj4/src/tf2_test_module5.py"
@@ -1764,37 +1654,15 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "src/tf2_test_module4a.py",
         "C.f",
         "proj4",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
-  /**
-   * This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** This test should not need a PYTHONPATH. */
+  @Test
   public void testModule7()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj5/src/__init__.py", "proj5/src/tf2_test_module5a.py", "proj5/tf2_test_module6.py"
@@ -1802,38 +1670,18 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "src/tf2_test_module5a.py",
         "C.f",
         "proj5",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
    * This test should not need a PYTHONPATH, meaning that I don't need to set one in the console
    * when I run the files.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule8()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj6/src/__init__.py",
@@ -1844,9 +1692,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "src/tf2_test_module8a.py",
         "C.f",
         "proj6",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
 
     test(
         new String[] {
@@ -1858,9 +1706,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "src/tf2_test_module8a.py",
         "D.g",
         "proj6",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   @Test
@@ -1889,33 +1737,10 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         3);
   }
 
-  /**
-   * This test needs a PYTHONPATH that points to `proj7`.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** This test needs a PYTHONPATH that points to `proj7`. */
+  @Test
   public void testModule11()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj7/src/__init__.py",
@@ -1926,37 +1751,15 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "src/tf2_test_module9b.py",
         "D.f",
         "proj7",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
-  /**
-   * This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** This test should not need a PYTHONPATH. */
+  @Test
   public void testModule12()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj8/src/__init__.py",
@@ -1967,37 +1770,15 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "src/tf2_test_module10b.py",
         "D.f",
         "proj8",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
-  /**
-   * This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** This test should not need a PYTHONPATH. */
+  @Test
   public void testModule13()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj9/src/__init__.py",
@@ -2008,121 +1789,59 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "src/tf2_test_module11b.py",
         "D.g",
         "proj9",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
    * Test for https://github.com/wala/ML/issues/177.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule14()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj10/C/__init__.py", "proj10/C/B.py", "proj10/A.py"},
         "C/B.py",
         "f",
         "proj10",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule15()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj11/C/__init__.py", "proj11/C/B.py", "proj11/A.py"},
         "C/B.py",
         "f",
         "proj11",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
-  /**
-   * This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** This test should not need a PYTHONPATH. */
+  @Test
   public void testModule16()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj12/C/__init__.py", "proj12/C/B.py", "proj12/A.py"},
         "C/B.py",
         "f",
         "proj12",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
@@ -2130,30 +1849,10 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * https://docs.python.org/3/tutorial/modules.html#packages.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule17()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj13/C/__init__.py", "proj13/C/D/__init__.py", "proj13/C/D/B.py", "proj13/A.py"
@@ -2161,9 +1860,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "C/D/B.py",
         "f",
         "proj13",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
@@ -2172,30 +1871,10 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * different packages.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule18()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj14/C/__init__.py",
@@ -2207,9 +1886,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "C/D/B.py",
         "f",
         "proj14",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
 
     test(
         new String[] {
@@ -2222,39 +1901,19 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "C/E.py",
         "g",
         "proj14",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
    * Test for https://github.com/wala/ML/issues/177.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule19()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj15/C/__init__.py", "proj15/C/D/__init__.py", "proj15/C/D/B.py", "proj15/A.py"
@@ -2262,77 +1921,37 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "C/D/B.py",
         "f",
         "proj15",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule20()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj16/C/__init__.py", "proj16/C/B.py", "proj16/A.py"},
         "C/B.py",
         "D.f",
         "proj16",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule21()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj17/C/__init__.py", "proj17/C/E/__init__.py", "proj17/C/E/B.py", "proj17/A.py"
@@ -2340,9 +1959,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "C/E/B.py",
         "D.f",
         "proj17",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
@@ -2360,30 +1979,10 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/177.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule23()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj19/C/__init__.py",
@@ -2395,9 +1994,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "C/D/E/B.py",
         "f",
         "proj19",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
@@ -2451,30 +2050,10 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule27()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj21/C/__init__.py",
@@ -2486,9 +2065,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "C/D/B.py",
         "F.f",
         "proj21",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
 
     test(
         new String[] {
@@ -2501,153 +2080,73 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "C/E.py",
         "G.g",
         "proj21",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
    * Test for https://github.com/wala/ML/issues/177.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule28()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj22/C/__init__.py", "proj22/C/B.py", "proj22/A.py"},
         "C/B.py",
         "D.f",
         "proj22",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule29()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj23/C/__init__.py", "proj23/C/B.py", "proj23/A.py"},
         "C/B.py",
         "f",
         "proj23",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule30()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj24/C/__init__.py", "proj24/C/B.py", "proj24/A.py"},
         "C/B.py",
         "D.f",
         "proj24",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule31()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj25/C/__init__.py", "proj25/C/E/__init__.py", "proj25/C/E/B.py", "proj25/A.py"
@@ -2655,77 +2154,37 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "C/E/B.py",
         "D.f",
         "proj25",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule32()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj26/C/__init__.py", "proj26/C/B.py", "proj26/A.py"},
         "C/B.py",
         "D.f",
         "proj26",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule33()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj27/C/__init__.py", "proj27/C/D/__init__.py", "proj27/C/D/B.py", "proj27/A.py"
@@ -2733,39 +2192,19 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "C/D/B.py",
         "f",
         "proj27",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule34()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj28/C/__init__.py", "proj28/C/D/__init__.py", "proj28/C/D/B.py", "proj28/A.py"
@@ -2773,266 +2212,127 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "C/D/B.py",
         "E.f",
         "proj28",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule35()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj29/C/__init__.py", "proj29/C/B.py", "proj29/A.py"},
         "C/B.py",
         "f",
         "proj29",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
    * Test for https://github.com/wala/ML/issues/178.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule36()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj30/C/__init__.py", "proj30/C/B.py", "proj30/A.py"},
         "C/B.py",
         "f",
         "proj30",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule37()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
     test(
         new String[] {"proj31/C/__init__.py", "proj31/C/B.py", "proj31/C/A.py", "proj31/main.py"},
         "C/B.py",
         "f",
         "proj31",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule38()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj32/C/__init__.py", "proj32/C/B.py", "proj32/C/A.py", "proj32/main.py"},
         "C/B.py",
         "f",
         "proj32",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule39()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj33/C/__init__.py", "proj33/C/B.py", "proj33/C/A.py", "proj33/main.py"},
         "C/B.py",
         "D.f",
         "proj33",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule40()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj34/C/__init__.py", "proj34/C/B.py", "proj34/C/A.py", "proj34/main.py"},
         "C/B.py",
         "D.f",
         "proj34",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule41()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj35/E/__init__.py",
@@ -3045,39 +2345,19 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "E/D/B.py",
         "f",
         "proj35",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule42()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj36/E/__init__.py",
@@ -3090,39 +2370,19 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "E/D/B.py",
         "F.f",
         "proj36",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule43()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj37/E/__init__.py",
@@ -3135,39 +2395,19 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "E/D/B.py",
         "F.f",
         "proj37",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule44()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj38/E/__init__.py",
@@ -3180,191 +2420,91 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "E/D/B.py",
         "f",
         "proj38",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
    * Test relative imports using wildcards.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule45()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj39/C/__init__.py", "proj39/C/B.py", "proj39/C/A.py", "proj39/main.py"},
         "C/B.py",
         "f",
         "proj39",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
    * Test relative imports using wildcards.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule46()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj40/C/__init__.py", "proj40/C/B.py", "proj40/C/A.py", "proj40/main.py"},
         "C/B.py",
         "f",
         "proj40",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
    * Test relative imports using wildcards.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule47()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj41/C/__init__.py", "proj41/C/B.py", "proj41/C/A.py", "proj41/main.py"},
         "C/B.py",
         "D.f",
         "proj41",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
    * Test relative imports using wildcards.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule48()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {"proj42/C/__init__.py", "proj42/C/B.py", "proj42/C/A.py", "proj42/main.py"},
         "C/B.py",
         "D.f",
         "proj42",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
    * Test relative imports using wildcards.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule49()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj43/E/__init__.py",
@@ -3377,39 +2517,19 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "E/D/B.py",
         "f",
         "proj43",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
    * Test relative imports using wildcards.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule50()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj44/E/__init__.py",
@@ -3422,39 +2542,19 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "E/D/B.py",
         "F.f",
         "proj44",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
    * Test relative imports using wildcards.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule51()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj45/E/__init__.py",
@@ -3467,39 +2567,19 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "E/D/B.py",
         "F.f",
         "proj45",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {3});
   }
 
   /**
    * Test relative imports using wildcards.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule52()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj46/E/__init__.py",
@@ -3512,39 +2592,19 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "E/D/B.py",
         "f",
         "proj46",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   /**
    * Test relative imports.
    *
    * <p>This test should not need a PYTHONPATH.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testModule53()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj47/E/__init__.py",
@@ -3559,9 +2619,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "E/D/B.py",
         "f",
         "proj47",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
 
     test(
         new String[] {
@@ -3577,19 +2637,13 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "D/B.py",
         "g",
         "proj47",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/202.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
   public void testModule54()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3602,14 +2656,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {2});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/202.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
   public void testModule55()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3622,14 +2670,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {2});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/202.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
   public void testModule56()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3642,14 +2684,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {3});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/202.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
   public void testModule57()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3662,14 +2698,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {3});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/202.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
   public void testModule58()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3682,14 +2712,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {3});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/202.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
   public void testModule59()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3702,14 +2726,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {2});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/202.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
   public void testModule60()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3722,14 +2740,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {2});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/202.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
   public void testModule61()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3742,14 +2754,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {3});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/202.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
   public void testModule62()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3762,14 +2768,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {3});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/202.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
   public void testModule63()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3782,14 +2782,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {3});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/202.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
   public void testModule64()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3802,14 +2796,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {3});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/202.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
   public void testModule65()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3822,14 +2810,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {2});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/202.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
   public void testModule66()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3842,14 +2824,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {2});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/202.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/202. */
+  @Test
   public void testModule67()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3862,14 +2838,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {3});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/205.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/205. */
+  @Test
   public void testModule68()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3882,14 +2852,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {2});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/205.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/205. */
+  @Test
   public void testModule69()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3930,14 +2894,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {2});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/210.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/210. */
+  @Test
   public void testModule72()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3950,14 +2908,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {2});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/210.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/210. */
+  @Test
   public void testModule73()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -3970,14 +2922,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         new int[] {2});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/210.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/210. */
+  @Test
   public void testModule74()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -4011,14 +2957,8 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test(new String[] {"module.py", "client.py"}, "module.py", "f", "", 1, 1, new int[] {2});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/211.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/211. */
+  @Test
   public void testModule77()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     test(
@@ -4038,32 +2978,10 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test(new String[] {"module.py", "client2.py"}, "module.py", "f", "", 1, 1, new int[] {2});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/209.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/209. */
+  @Test
   public void testModule79()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj73/models/__init__.py",
@@ -4075,9 +2993,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "models/albert.py",
         "f",
         "proj73",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
 
     test(
         new String[] {
@@ -4090,37 +3008,15 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "models/bert.py",
         "g",
         "proj73",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
-  /**
-   * Test https://github.com/wala/ML/issues/209.
-   *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  /** Test https://github.com/wala/ML/issues/209. */
+  @Test
   public void testModule80()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // PYTHONPATH is only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
     test(
         new String[] {
           "proj74/models/__init__.py",
@@ -4132,9 +3028,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "models/albert.py",
         "f",
         "proj74",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
 
     test(
         new String[] {
@@ -4147,9 +3043,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
         "models/bert.py",
         "g",
         "proj74",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+        1,
+        1,
+        new int[] {2});
   }
 
   @Test
@@ -4174,54 +3070,12 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
   @Test
   public void testStaticMethod5() throws ClassHierarchyException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // Static methods are only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
-    test(
-        "tf2_test_static_method5.py",
-        "MyClass.the_static_method",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+    test("tf2_test_static_method5.py", "MyClass.the_static_method", 1, 1, 2);
   }
 
   @Test
   public void testStaticMethod6() throws ClassHierarchyException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // Static methods are only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
-    test(
-        "tf2_test_static_method6.py",
-        "MyClass.the_static_method",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+    test("tf2_test_static_method6.py", "MyClass.the_static_method", 1, 1, 2);
   }
 
   @Test
@@ -4236,132 +3090,27 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
   @Test
   public void testStaticMethod9() throws ClassHierarchyException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // Static methods are only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 2;
-      expectedNumberOfTensorVariables = 2;
-      expectedTensorParameterValueNumbers = new int[] {2, 3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    }
-
-    test(
-        "tf2_test_static_method9.py",
-        "MyClass.the_static_method",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+    test("tf2_test_static_method9.py", "MyClass.the_static_method", 2, 2, 2, 3);
   }
 
   @Test
   public void testStaticMethod10() throws ClassHierarchyException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // Static methods are only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 2;
-      expectedNumberOfTensorVariables = 2;
-      expectedTensorParameterValueNumbers = new int[] {2, 3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    }
-
-    test(
-        "tf2_test_static_method10.py",
-        "MyClass.the_static_method",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+    test("tf2_test_static_method10.py", "MyClass.the_static_method", 2, 2, 2, 3);
   }
 
   @Test
   public void testStaticMethod11() throws ClassHierarchyException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // Static methods are only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
-    test(
-        "tf2_test_static_method11.py",
-        "f",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+    test("tf2_test_static_method11.py", "f", 1, 1, 2);
   }
 
   @Test
   public void testStaticMethod12() throws ClassHierarchyException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // Static methods are only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
-    test(
-        "tf2_test_static_method12.py",
-        "f",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+    test("tf2_test_static_method12.py", "f", 1, 1, 2);
   }
 
   @Test
   public void testClassMethod() throws ClassHierarchyException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // Class methods are only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {2};
-    }
-
-    test(
-        "tf2_test_class_method.py",
-        "MyClass.the_class_method",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+    test("tf2_test_class_method.py", "MyClass.the_class_method", 1, 1, 3);
   }
 
   @Test
@@ -4371,90 +3120,17 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
   @Test
   public void testClassMethod3() throws ClassHierarchyException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // Class methods are only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
-    test(
-        "tf2_test_class_method3.py",
-        "MyClass.f",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+    test("tf2_test_class_method3.py", "MyClass.f", 1, 1, 2);
   }
 
-  /*
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testClassMethod4() throws ClassHierarchyException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // Class methods are only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
-    test(
-        "tf2_test_class_method4.py",
-        "MyClass.f",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+    test("tf2_test_class_method4.py", "MyClass.f", 1, 1, 2);
   }
 
-  /*
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testClassMethod5() throws ClassHierarchyException, CancelException, IOException {
-    int expectNumberofTensorParameters;
-    int expectedNumberOfTensorVariables;
-    int[] expectedTensorParameterValueNumbers;
-
-    // Class methods are only supported for Jython3.
-    if (usesJython3Testing()) {
-      expectNumberofTensorParameters = 1;
-      expectedNumberOfTensorVariables = 1;
-      expectedTensorParameterValueNumbers = new int[] {3};
-    } else {
-      // NOTE: Remove this case once https://github.com/wala/ML/issues/147 is fixed.
-      expectNumberofTensorParameters = 0;
-      expectedNumberOfTensorVariables = 0;
-      expectedTensorParameterValueNumbers = new int[] {};
-    }
-
-    test(
-        "tf2_test_class_method5.py",
-        "MyClass.f",
-        expectNumberofTensorParameters,
-        expectedNumberOfTensorVariables,
-        expectedTensorParameterValueNumbers);
+    test("tf2_test_class_method5.py", "MyClass.f", 1, 1, 2);
   }
 
   @Test
@@ -4480,16 +3156,14 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   }
 
   /** Test https://github.com/wala/ML/issues/188. */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testDecoratedMethod2() throws ClassHierarchyException, CancelException, IOException {
-    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
     test("tf2_test_decorated_method2.py", "f", 1, 1, 2);
   }
 
   /** Test https://github.com/wala/ML/issues/190. */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testDecoratedMethod3() throws ClassHierarchyException, CancelException, IOException {
-    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
     test("tf2_test_decorated_method3.py", "raffi", 1, 1, 2);
   }
 
@@ -4518,17 +3192,20 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_decorated_method8.py", "f", 1, 1, 2);
   }
 
-  /** This decorator isn't defined. Thus, we shouldn't have a CG node for it. */
-  @Test
+  /**
+   * This decorator isn't defined. Thus, we shouldn't have a CG node for it.
+   *
+   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
+   * function doesn't exist.
+   */
+  @Test(expected = AssertionError.class)
   public void testDecoratedMethod9() throws ClassHierarchyException, CancelException, IOException {
-    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
-    test("tf2_test_decorated_method9.py", "f", 1, 1, 2);
+    test("tf2_test_decorated_method9.py", "f", 0, 0);
   }
 
   /** Test https://github.com/wala/ML/issues/190. */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testDecoratedMethod10() throws ClassHierarchyException, CancelException, IOException {
-    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
     test("tf2_test_decorated_method10.py", "f", 1, 1, 2);
   }
 
@@ -4539,14 +3216,13 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
   @Test
   public void testDecoratedMethod12() throws ClassHierarchyException, CancelException, IOException {
-    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
-    test("tf2_test_decorated_method12.py", "f", 1, 1, 2);
+    // NOTE: Change to 1, 1, 2 once https://github.com/wala/ML/issues/188 is fixed.
+    test("tf2_test_decorated_method12.py", "f", 0, 0);
   }
 
   /** Test https://github.com/wala/ML/issues/190. */
-  @Test
+  @Test(expected = AssertionError.class)
   public void testDecoratedMethod13() throws ClassHierarchyException, CancelException, IOException {
-    // NOTE: Change to 0, 0 once https://github.com/wala/ML/issues/147 is fixed.
     test("tf2_test_decorated_method13.py", "f", 1, 1, 2);
   }
 
@@ -4572,13 +3248,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
    * Test a pytest without decorators that needs a PYTHONPATH. This is a "control" case. We'll add a
    * decorator in the next case.
    *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   *
    * @see TestTensorflow2Model#testModule11().
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testDecoratedFunctions3()
       throws ClassHierarchyException, CancelException, IOException {
     test(
@@ -4613,13 +3285,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   /**
    * Test a pytest with a decorator that needs a PYTHONPATH.
    *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   *
    * @see TestTensorflow2Model#testModule11().
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testDecoratedFunctions6()
       throws ClassHierarchyException, CancelException, IOException {
     test(
@@ -4647,13 +3315,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   /**
    * Test a Pytest with a decorator without parameters that needs a PYTHONPATH.
    *
-   * <p>We now require nodes for functions under test. Otherwise, a test could pass even though the
-   * function doesn't exist. Remove the below expected assertion failure once
-   * https://github.com/wala/ML/issues/147 is fixed.
-   *
    * @see TestTensorflow2Model#testModule11().
    */
-  @Test(expected = AssertionError.class)
+  @Test
   public void testDecoratedFunctions8()
       throws ClassHierarchyException, CancelException, IOException {
     test(
@@ -4680,16 +3344,19 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("decorated_function_test.py", "f", 1, 1, 2);
   }
 
+  /** Test https://github.com/wala/ML/issues/195. */
   @Test
   public void testReshape() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_reshape.py", "f", 1, 1, 2);
   }
 
+  /** Test https://github.com/wala/ML/issues/195. */
   @Test
   public void testReshape2() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_reshape2.py", "f", 1, 1, 2);
   }
 
+  /** Test https://github.com/wala/ML/issues/195. */
   @Test
   public void testReshape3() throws ClassHierarchyException, CancelException, IOException {
     test("tf2_test_reshape3.py", "f", 1, 1, 2);
@@ -4878,9 +3545,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
               if (f.exists()) return f;
 
               try {
-                URL url = new URL(s);
+                URL url = new URI(s).toURL();
                 return new File(new FileProvider().filePathFromURL(url));
-              } catch (MalformedURLException e) {
+              } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
                 try {
                   URL resource = this.getClass().getResource("/" + string);
                   String path = resource.getPath();
@@ -4891,16 +3558,5 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
               }
             })
         .collect(toList());
-  }
-
-  /**
-   * Returns true iff Jython3 is used for testing.
-   *
-   * @return True iff Jython3 is used for testing.
-   */
-  protected static boolean usesJython3Testing() {
-    String classpath = System.getProperty(JAVA_CLASSPATH_SYSTEM_PROPERTY_KEY);
-    String[] classpathEntries = classpath.split(File.pathSeparator);
-    return Arrays.stream(classpathEntries).anyMatch(cpe -> cpe.contains(JYTHON3_TEST_PROJECT));
   }
 }

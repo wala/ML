@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 import org.json.JSONArray;
 
-public class TestPythonTurtleCallGraphShape extends TestPythonCallGraphShape {
+public class TestPythonTurtleCallGraphShape extends TestJythonCallGraphShape {
   private final boolean isLibrary;
 
   public TestPythonTurtleCallGraphShape(boolean isLibrary) {

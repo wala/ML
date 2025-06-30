@@ -35,6 +35,7 @@ import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.AbstractSourcePosition;
 import com.ibm.wala.cast.tree.impl.CAstControlFlowRecorder;
+import com.ibm.wala.cast.tree.impl.CAstImpl;
 import com.ibm.wala.cast.tree.impl.CAstNodeTypeMapRecorder;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
 import com.ibm.wala.cast.tree.impl.CAstSourcePositionRecorder;
@@ -144,7 +145,9 @@ import org.python.antlr.base.slice;
 import org.python.antlr.base.stmt;
 import org.python.core.PyObject;
 
-public abstract class PythonParser<T> extends AbstractParser<T> implements TranslatorToCAst {
+public abstract class PythonParser<T> extends AbstractParser implements TranslatorToCAst {
+
+  private static CAst Ast = new CAstImpl();
 
   private static final Logger LOGGER = getLogger(PythonParser.class.getName());
 
@@ -164,7 +167,7 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
         }
       };
 
-  interface WalkContext extends TranslatorToCAst.WalkContext<WalkContext, PythonTree> {
+  public interface WalkContext extends TranslatorToCAst.WalkContext<WalkContext, PythonTree> {
 
     default void addDefinedName(String name) {
       getParent().addDefinedName(name);
@@ -292,7 +295,7 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
     }
   }
 
-  public class CAstVisitor extends AbstractParser<T>.CAstVisitor implements VisitorIF<CAstNode> {
+  public class CAstVisitor extends AbstractParser.CAstVisitor implements VisitorIF<CAstNode> {
     private final PythonParser.WalkContext context;
     private final WalaPythonParser parser;
 
@@ -1281,7 +1284,7 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
 
             // Only add object metadata for non-static and non-class methods.
             if (isMethod && !staticMethod && !classMethod) {
-              CAst Ast = PythonParser.this.Ast;
+              CAst Ast = PythonParser.Ast;
 
               CAstNode[] newNodes = new CAstNode[nodes.length + 2];
               System.arraycopy(nodes, 0, newNodes, 2, nodes.length);
@@ -1311,13 +1314,13 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
                               Ast.makeConstant("$self")),
                           Ast.makeNode(CAstNode.VAR, Ast.makeConstant(getArgumentNames()[1]))));
 
-              return PythonParser.this.Ast.makeNode(CAstNode.BLOCK_STMT, newNodes);
+              return PythonParser.Ast.makeNode(CAstNode.BLOCK_STMT, newNodes);
             } else {
-              return PythonParser.this.Ast.makeNode(CAstNode.BLOCK_STMT, nodes);
+              return PythonParser.Ast.makeNode(CAstNode.BLOCK_STMT, nodes);
             }
           } else {
-            return PythonParser.this.Ast.makeNode(
-                CAstNode.RETURN, PythonParser.this.Ast.makeNode(CAstNode.BLOCK_EXPR, nodes));
+            return PythonParser.Ast.makeNode(
+                CAstNode.RETURN, PythonParser.Ast.makeNode(CAstNode.BLOCK_EXPR, nodes));
           }
         }
 

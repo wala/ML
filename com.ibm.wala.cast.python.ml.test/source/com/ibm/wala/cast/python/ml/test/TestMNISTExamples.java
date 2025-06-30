@@ -26,8 +26,8 @@ import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashSetFactory;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Set;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestMNISTExamples extends TestPythonMLCallGraphShape {
@@ -51,7 +51,8 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
   }
 
   @Test
-  public void testEx1Tensors() throws IllegalArgumentException, CancelException, IOException {
+  public void testEx1Tensors()
+      throws IllegalArgumentException, CancelException, IOException, URISyntaxException {
     checkTensorOps(
         Ex1URL,
         (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
@@ -62,14 +63,10 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
               CG);
 
           String in = "[{[D:Symbolic,n, D:Compound,[D:Constant,28, D:Constant,28]] of pixel}]";
-
-          @SuppressWarnings("unused")
           String out = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
+          checkTensorOp(cgBuilder, CG, result, "reshape", in, out);
 
-          // No change due to the workaround of https://github.com/wala/ML/issues/195.
-          checkTensorOp(cgBuilder, CG, result, "reshape", in, in);
-
-          // No change due to the workaround of https://github.com/wala/ML/issues/195.
+          in = "[{[D:Symbolic,?, D:Constant,28, D:Constant,28, D:Constant,1] of pixel}]";
           checkTensorOp(cgBuilder, CG, result, "conv2d", in, null);
         });
   }
@@ -84,8 +81,8 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
   }
 
   @Test
-  @Ignore("Workaround https://github.com/wala/ML/issues/195")
-  public void testEx2Tensors() throws IllegalArgumentException, CancelException, IOException {
+  public void testEx2Tensors()
+      throws IllegalArgumentException, CancelException, IOException, URISyntaxException {
     checkTensorOps(
         Ex2URL,
         (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {
@@ -116,7 +113,11 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
       "https://raw.githubusercontent.com/tensorflow/tensorflow/r1.12/tensorflow/examples/tutorials/mnist/mnist_softmax.py";
 
   private void testMnistSoftmax(String url)
-      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+      throws ClassHierarchyException,
+          IllegalArgumentException,
+          CancelException,
+          IOException,
+          URISyntaxException {
     Set<SSAInstruction> goodCalls = HashSetFactory.make();
     checkTensorOps(
         url,
@@ -191,7 +192,11 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
 
   @Test
   public void testEx3CG()
-      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+      throws ClassHierarchyException,
+          IllegalArgumentException,
+          CancelException,
+          IOException,
+          URISyntaxException {
     testMnistSoftmax(Ex3URL);
   }
 
@@ -200,7 +205,11 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
 
   @Test
   public void testEx4CG()
-      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+      throws ClassHierarchyException,
+          IllegalArgumentException,
+          CancelException,
+          IOException,
+          URISyntaxException {
     testMnistSoftmax(Ex4URL);
   }
 
@@ -208,9 +217,12 @@ public class TestMNISTExamples extends TestPythonMLCallGraphShape {
       "https://raw.githubusercontent.com/tensorflow/tensorflow/r1.12/tensorflow/examples/tutorials/mnist/mnist_with_summaries.py";
 
   @Test
-  @Ignore("Workaround https://github.com/wala/ML/issues/195")
   public void testEx5CG()
-      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+      throws ClassHierarchyException,
+          IllegalArgumentException,
+          CancelException,
+          IOException,
+          URISyntaxException {
     checkTensorOps(
         Ex5URL,
         (PropagationCallGraphBuilder cgBuilder, CallGraph CG, TensorTypeAnalysis result) -> {

@@ -1,13 +1,13 @@
 os: linux
-dist: jammy
+dist: noble
 language: java
-jdk: openjdk17
+jdk: openjdk21
 before_install:
  - pip install -r requirements.txt
  - mvn spotless:check -B
  - black --fast --check .
- - git clone --depth=50 https://github.com/wala/IDE /tmp/IDE
- - git clone https://github.com/ponder-lab/jython3.git /tmp/jython3
+ - git clone --depth=1 https://github.com/wala/IDE /tmp/IDE
+ - git clone --depth=1 https://github.com/ponder-lab/jython3.git /tmp/jython3
 install:
  - pushd /tmp/jython3
  - ant
@@ -19,7 +19,7 @@ install:
  - mvn install -B -q -DskipTests
  - popd
 script:
- - mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties verify -B
+ - mvn -Dlogging.config.file=./logging.ci.properties verify -Pjacoco -B
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
