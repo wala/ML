@@ -28,6 +28,8 @@ import com.ibm.wala.util.CancelException;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -3543,9 +3545,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
               if (f.exists()) return f;
 
               try {
-                URL url = new URL(s);
+                URL url = new URI(s).toURL();
                 return new File(new FileProvider().filePathFromURL(url));
-              } catch (MalformedURLException e) {
+              } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
                 try {
                   URL resource = this.getClass().getResource("/" + string);
                   String path = resource.getPath();
