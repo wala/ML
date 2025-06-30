@@ -77,7 +77,11 @@ public class TestAsync extends TestJythonCallGraphShape {
 	protected static final Object[][] assertionsAsync3 = new Object[][] {
 		new Object[] { ROOT, new String[] { "script async3.py" } },
 		new Object[] { "script async3.py",
-				new String[] { "CodeBody:$coroutine$Lscript async3.py/fibonacci" }
+				new String[] { "CodeBody:$coroutine$Lscript async3.py/fibonacci",
+						"asyncio/class/run",
+						"script async3.py/fibonacci/lambda1",
+						"script async3.py/fibonacci/lambda2",
+						"script async3.py/fibonacci/lambda3"}
 		},
 		new Object[] { "CodeBody:$coroutine$Lscript async3.py/fibonacci",
 				new String[] { "script async3.py/fibonacci" }
