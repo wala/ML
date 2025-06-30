@@ -193,6 +193,9 @@
                   <exclude>**/.pytest_cache/</exclude>
                   <exclude>**/*.log</exclude>
                   <exclude>**/*.pdf</exclude>
+                  <!-- Exclude Git submodules -->
+                  <exclude>IDE/</exclude>
+                  <exclude>jython3/</exclude>
                 </excludes>
                 <trimTrailingWhitespace/>
                 <endWithNewline/>
@@ -223,6 +226,9 @@
                   <exclude>**/dependency-reduced-pom.xml</exclude>
                   <exclude>**/gradle.xml</exclude>
                   <exclude>**/target/</exclude>
+                  <!-- Exclude Git submodules -->
+                  <exclude>IDE/</exclude>
+                  <exclude>jython3/</exclude>
                 </excludes>
                 <eclipseWtp>
                   <type>XML</type>
