@@ -3372,7 +3372,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   /** Test https://github.com/wala/ML/issues/195. */
   @Test
   public void testReshape5() throws ClassHierarchyException, CancelException, IOException {
-    test("tf2_test_reshape.py", "f", 1, 1, 2);
+    test("tf2_test_reshape5.py", "f", 1, 1, 2);
   }
 
   private void test(
