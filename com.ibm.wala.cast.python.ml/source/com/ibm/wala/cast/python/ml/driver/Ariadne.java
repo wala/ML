@@ -340,6 +340,7 @@ public class Ariadne {
         }
       case client:
         {
+          @SuppressWarnings("unused")
           final WALAServerCore server =
               WALAServer.launchOnClientPort(null, port, PythonDriver.python);
           break;

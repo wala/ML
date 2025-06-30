@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -304,7 +305,7 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
   }
 
   public static void main(String[] args) throws Exception {
-    URL url = new URL(args[0]);
+    URL url = new URI(args[0]).toURL();
     List<File> pythonPath = Util.getPathFiles(args[1]);
 
     PythonParser<ModuleEntry> p =

@@ -1,7 +1,7 @@
 os: linux
-dist: jammy
+dist: noble
 language: java
-jdk: openjdk17
+jdk: openjdk21
 before_install:
  - pip install -r requirements.txt
  - mvn spotless:check -B
