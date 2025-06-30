@@ -58,7 +58,6 @@ import com.ibm.wala.cast.tree.rewrite.CAstRewriter.RewriteContext;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriterFactory;
 import com.ibm.wala.cast.tree.visit.CAstVisitor.Context;
 import com.ibm.wala.cast.util.CAstPattern;
-import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.SourceFileModule;
 import com.ibm.wala.classLoader.SourceModule;
@@ -97,6 +96,18 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		}
 	};
 
+	private static CAstType asyncCodeBody = new CAstType() {
+		@Override
+		public String getName() {
+			return "CodeBody";
+		}
+
+		@Override
+		public Collection<CAstType> getSupertypes() {
+			return Collections.singleton(codeBody);
+		}
+	};
+
 	private static CAstType methodBody = new CAstType() {
 		@Override
 		public String getName() {
@@ -106,6 +117,18 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		@Override
 		public Collection<CAstType> getSupertypes() {
 			return Collections.singleton(codeBody);
+		}
+	};
+
+	private static CAstType asyncMethodBody = new CAstType() {
+		@Override
+		public String getName() {
+			return "AsyncMethodBody";
+		}
+
+		@Override
+		public Collection<CAstType> getSupertypes() {
+			return Collections.singleton(methodBody);
 		}
 	};
 
@@ -695,14 +718,22 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 				return bodyAst;
 		}
 
-		public CAstNode visitFunctionDef(PyObject o, WalkContext context) {
-			CAstNode fe = doFunction(o.getAttr("args"), o, o.getAttr("name", String.class), context, isClassContext(context)? methodBody: codeBody);
+		private CAstNode visitFunction(PyObject o, WalkContext context, CAstType type) {
+			CAstNode fe = doFunction(o.getAttr("args"), o, o.getAttr("name", String.class), context, type);
 			if (isClassContext(context)) {
 				return ast.makeNode(CAstNode.EMPTY);
 			} else {
 				return ast.makeNode(CAstNode.DECL_STMT,
 					ast.makeConstant(new CAstSymbolImpl(o.getAttr("name", String.class), codeBody)), fe);
 			}
+		}
+		
+		public CAstNode visitFunctionDef(PyObject o, WalkContext context) {
+			return visitFunction(o, context, isClassContext(context)? methodBody: codeBody);
+		}
+
+		public CAstNode visitAsyncFunctionDef(PyObject o, WalkContext context) {
+			return visitFunction(o, context, isClassContext(context)? asyncMethodBody: asyncCodeBody);
 		}
 
 		public CAstNode doFunction(Object rawArgs, PyObject o, String functionName, WalkContext context, CAstType superType) {
@@ -1734,6 +1765,17 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 
 		public CAstNode visitAssert(PyObject asrt, WalkContext context) throws Exception {
 			return ast.makeNode(CAstNode.ASSERT, visit(asrt.getAttr("test", PyObject.class), context));
+		}
+
+		public CAstNode visitYieldFrom(PyObject o, WalkContext context) {
+			context.isGenerator(true);
+			return ast.makeNode(CAstNode.ASSIGN, 
+				ast.makeNode(CAstNode.OBJECT_REF,
+					ast.makeNode(CAstNode.VAR, ast.makeConstant("the function")),
+					ast.makeConstant("__content__")),
+				ast.makeNode(CAstNode.OBJECT_REF,
+					visit(o.getAttr("value", PyObject.class), context),
+					ast.makeConstant("__content__")));
 		}
 
 		public CAstNode visitYield(PyObject o, WalkContext context) {
