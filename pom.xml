@@ -119,6 +119,11 @@
         <artifactId>spotless-maven-plugin</artifactId>
         <version>${spotless.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>33.4.8-jre</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <build>

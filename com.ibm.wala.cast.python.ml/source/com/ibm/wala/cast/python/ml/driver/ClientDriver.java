@@ -32,6 +32,7 @@ import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.InitializedParams;
@@ -50,7 +51,6 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentClientCapabilities;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentItem;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -131,7 +131,7 @@ public class ClientDriver implements LanguageClient {
 
     TextDocumentIdentifier id = new TextDocumentIdentifier();
     id.setUri(args[0]);
-    TextDocumentPositionParams a = new TextDocumentPositionParams();
+    HoverParams a = new HoverParams();
     a.setTextDocument(id);
     for (int i = 1; i < args.length; i += 2) {
       Position p = new Position();
@@ -141,11 +141,13 @@ public class ClientDriver implements LanguageClient {
       CompletableFuture<Hover> data = server.getTextDocumentService().hover(a);
       data.thenAccept(
           (Hover t) -> {
+            @SuppressWarnings("deprecation")
             Either<List<Either<String, MarkedString>>, MarkupContent> contents = t.getContents();
             if (contents != null) {
               if (contents.isLeft()) {
                 String xx = "";
-                for (Either<String, MarkedString> hd : contents.getLeft()) {
+                for (@SuppressWarnings("deprecation")
+                Either<String, MarkedString> hd : contents.getLeft()) {
                   xx += hd.getLeft();
                 }
                 process.accept(xx);
