@@ -351,7 +351,7 @@ public class TensorType implements Iterable<Dimension<?>> {
       }
       if (S.isNumberConstant(val)) {
         int v = ((Number) S.getConstantValue(val)).intValue();
-        System.err.println("value: " + v);
+        logger.fine("value: " + v);
         r.add(v >= 0 ? new NumericDim((Integer) v) : new SymbolicDim("?"));
       } else {
         if (du.getDef(val) != null && node.getMethod() instanceof AstMethod) {

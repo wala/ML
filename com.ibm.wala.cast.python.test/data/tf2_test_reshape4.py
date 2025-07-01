@@ -7,6 +7,6 @@ def f(a):
     pass
 
 
-t1 = [[1, 2, 3], [4, 5, 6]]
-t2 = tf.reshape(t1, [6])
+t1 = tf.ones([28, 28])
+t2 = tf.reshape(t1, [-1, 28, 28, 1])
 f(t2)

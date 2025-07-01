@@ -11,10 +11,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
-import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
+import com.ibm.wala.cast.lsp.AnalysisError;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.python.ml.analysis.TensorTypeAnalysis;
 import com.ibm.wala.cast.python.ml.analysis.TensorVariable;
+import com.ibm.wala.cast.python.ml.client.PythonTensorAnalysisEngine;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.core.util.io.FileProvider;
 import com.ibm.wala.ipa.callgraph.CGNode;
@@ -3362,6 +3363,18 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_reshape3.py", "f", 1, 1, 2);
   }
 
+  /** Test https://github.com/wala/ML/issues/195. */
+  @Test
+  public void testReshape4() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_reshape4.py", "f", 1, 1, 2);
+  }
+
+  /** Test https://github.com/wala/ML/issues/195. */
+  @Test
+  public void testReshape5() throws ClassHierarchyException, CancelException, IOException {
+    test("tf2_test_reshape5.py", "f", 1, 1, 2);
+  }
+
   private void test(
       String filename,
       String functionName,
@@ -3389,7 +3402,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
       int... expectedTensorParameterValueNumbers)
       throws ClassHierarchyException, CancelException, IOException {
     List<File> pathFiles = this.getPathFiles(pythonPath);
-    PythonAnalysisEngine<TensorTypeAnalysis> E = makeEngine(pathFiles, projectFilenames);
+    PythonTensorAnalysisEngine E = makeEngine(pathFiles, projectFilenames);
     PythonSSAPropagationCallGraphBuilder builder = E.defaultCallGraphBuilder();
 
     addPytestEntrypoints(builder);
@@ -3407,8 +3420,15 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     }
 
     TensorTypeAnalysis analysis = E.performAnalysis(builder);
-
     LOGGER.info("Tensor analysis: " + analysis);
+
+    Map<PointerKey, AnalysisError> errors = E.getErrors();
+
+    if (LOGGER.isLoggable(Level.INFO))
+      errors.forEach(
+          (k, v) ->
+              LOGGER.info(
+                  () -> "Pointer key: " + k + " has analysis error: " + v + " at " + v.position()));
 
     // Create a mapping from function signatures to pointer keys.
     Map<String, Set<LocalPointerKey>> functionSignatureToPointerKeys = new HashMap<>();
