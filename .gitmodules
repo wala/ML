@@ -1,0 +1,6 @@
+[submodule "IDE"]
+	path = IDE
+	url = https://github.com/wala/IDE
+[submodule "jython3"]
+	path = jython3
+	url = https://github.com/ponder-lab/jython3.git
