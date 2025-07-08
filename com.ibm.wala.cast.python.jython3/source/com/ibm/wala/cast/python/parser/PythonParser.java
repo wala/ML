@@ -1492,7 +1492,8 @@ public abstract class PythonParser<T> extends AbstractParser implements Translat
     private String name(alias n) {
       String s = n.getInternalAsname() == null ? n.getInternalName() : n.getInternalAsname();
       if (s.contains(".")) {
-        s = s.substring(s.lastIndexOf('.') + 1);
+        // s = s.substring(s.lastIndexOf('.') + 1);
+        s = s.replace(".", "/");
       }
       return s;
     }
@@ -1522,7 +1523,7 @@ public abstract class PythonParser<T> extends AbstractParser implements Translat
     @Override
     public CAstNode visitImportFrom(ImportFrom arg0) throws Exception {
       String tree = "importTree" + (++tmpIndex);
-      CAstNode[] elts = new CAstNode[arg0.getInternalNames().size() + 1];
+      CAstNode[] elts = new CAstNode[arg0.getInternalNames().size() * 2];
 
       elts[0] =
           notePosition(
@@ -1533,6 +1534,16 @@ public abstract class PythonParser<T> extends AbstractParser implements Translat
               arg0);
 
       int i = 1;
+      java.util.List<Name> names = arg0.getInternalModuleNames();
+
+      StringBuilder sb = new StringBuilder();
+      String prev = ".";
+      for (Name name : names) {
+        if (!prev.equals(".")) sb.append(".");
+        sb.append(name.getInternalId());
+        prev = name.getInternalId();
+      }
+      String moduleName = sb.toString();
       for (alias n : arg0.getInternalNames()) {
         java.util.List<Name> nn = n.getInternalNameNodes();
         if (nn == null) {
@@ -1542,12 +1553,18 @@ public abstract class PythonParser<T> extends AbstractParser implements Translat
             notePosition(
                 Ast.makeNode(
                     CAstNode.DECL_STMT,
-                    Ast.makeConstant(new CAstSymbolImpl(name(n), PythonCAstToIRTranslator.Any)),
-                    Ast.makeNode(
-                        CAstNode.OBJECT_REF,
-                        Ast.makeNode(CAstNode.VAR, Ast.makeConstant(tree)),
-                        Ast.makeConstant(n.getInternalName()))),
-                nn == null ? n : nn.get(nn.size() - 1));
+                    Ast.makeConstant(new CAstSymbolImpl(name(n), PythonCAstToIRTranslator.Any))));
+        CAstNode importAst =
+            Ast.makeNode(
+                CAstNode.PRIMITIVE,
+                Ast.makeConstant("import"),
+                Ast.makeConstant(moduleName.replace(".", "/")));
+        elts[i++] =
+            Ast.makeNode(
+                CAstNode.ASSIGN,
+                Ast.makeNode(CAstNode.VAR, Ast.makeConstant(name(n))),
+                Ast.makeNode(
+                    CAstNode.OBJECT_REF, importAst, Ast.makeConstant(n.getInternalName())));
       }
 
       return Ast.makeNode(CAstNode.BLOCK_STMT, elts);

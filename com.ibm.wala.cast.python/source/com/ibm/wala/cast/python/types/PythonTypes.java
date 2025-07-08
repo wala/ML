@@ -112,4 +112,7 @@ public class PythonTypes extends AstTypeReference {
           return new HashSet<>();
         }
       };
+
+  public static final TypeReference module =
+      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lmodule"));
 }

@@ -24,6 +24,7 @@ import com.ibm.wala.cast.java.loader.JavaSourceLoaderImpl;
 import com.ibm.wala.cast.python.cfg.PythonInducedCFG;
 import com.ibm.wala.cast.python.modref.PythonModRef.PythonModVisitor;
 import com.ibm.wala.cast.python.modref.PythonModRef.PythonRefVisitor;
+import com.ibm.wala.cast.python.ssa.PythonImportFromGetInstruction;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.ssa.PythonPropertyRead;
 import com.ibm.wala.cast.python.ssa.PythonPropertyWrite;
@@ -51,6 +52,7 @@ import com.ibm.wala.ipa.modref.ModRef.RefVisitor;
 import com.ibm.wala.shrike.shrikeCT.BootstrapMethodsReader.BootstrapMethod;
 import com.ibm.wala.shrike.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
+import com.ibm.wala.ssa.SSAGetInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
@@ -231,6 +233,15 @@ public class PythonLanguage implements Language {
       @Override
       public AstGlobalWrite GlobalWrite(int iindex, FieldReference global, int rhs) {
         return new AstGlobalWrite(iindex, global, rhs);
+      }
+
+      @Override
+      public SSAGetInstruction GetInstruction(
+          int iindex, int result, int ref, FieldReference field) {
+        if (field.getDeclaringClass().getName().toString().equals("Lmodule"))
+          return new PythonImportFromGetInstruction(iindex, result, ref, field);
+
+        return super.GetInstruction(iindex, result, ref, field);
       }
 
       @SuppressWarnings("unchecked")

@@ -34,6 +34,7 @@ import com.ibm.wala.cast.tree.CAstControlFlowMap;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
+import com.ibm.wala.cast.tree.CAstSymbol;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.CAstControlFlowRecorder;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
@@ -295,6 +296,32 @@ public class PythonCAstToIRTranslator extends AstTranslator {
     }
   }
 
+  protected void leaveDeclStmt(CAstNode n, WalkContext c, CAstVisitor<WalkContext> visitor) {
+    CAstSymbol s = (CAstSymbol) n.getChild(0).getValue();
+    String nm = s.name();
+    CAstType t = s.type();
+    Scope scope = c.currentScope();
+    if (n.getChildCount() == 2) {
+      CAstNode v = n.getChild(1);
+      if (isGlobal(c, nm)) {
+        scope.declare(s);
+        doGlobalWrite(c, nm, makeType(t), c.getValue(v));
+      } else if (scope.contains(nm) && scope.lookup(nm).getDefiningScope() == scope) {
+        assert !s.isFinal();
+        doLocalWrite(c, nm, makeType(t), c.getValue(v));
+      } else if (v.getKind() != CAstNode.CONSTANT
+          && v.getKind() != CAstNode.VAR
+          && v.getKind() != CAstNode.THIS) {
+        scope.declare(s, c.getValue(v));
+      } else {
+        scope.declare(s);
+        doLocalWrite(c, nm, makeType(t), c.getValue(v));
+      }
+    } else {
+      c.currentScope().declare(s);
+    }
+  }
+
   @Override
   public void doArrayWrite(
       WalkContext context, int arrayValue, CAstNode arrayRef, int[] dimValues, int rval) {
@@ -311,20 +338,37 @@ public class PythonCAstToIRTranslator extends AstTranslator {
   protected void doFieldRead(
       WalkContext context, int result, int receiver, CAstNode elt, CAstNode parent) {
     int currentInstruction = context.cfg().getCurrentInstruction();
-    //		if (elt.getKind() == CAstNode.CONSTANT && elt.getValue() instanceof String) {
-    //			FieldReference f = FieldReference.findOrCreate(PythonTypes.Root,
-    // Atom.findOrCreateUnicodeAtom((String)elt.getValue()), PythonTypes.Root);
-    //			context.cfg().addInstruction(Python.instructionFactory().GetInstruction(currentInstruction,
-    // result, receiver, f));
-    //		} else {
-    visit(elt, context, this);
-    assert context.getValue(elt) != -1;
-    context
-        .cfg()
-        .addInstruction(
-            ((AstInstructionFactory) insts)
-                .PropertyRead(currentInstruction, result, receiver, context.getValue(elt)));
-    //		}
+    if (elt.getKind() == CAstNode.CONSTANT && elt.getValue() instanceof String) {
+      FieldReference f;
+      if (parent.getChildCount() > 1
+          && parent.getChild(0).getKind() == CAstNode.PRIMITIVE
+          && parent.getChild(0).getChildCount() == 2
+          && parent.getChild(0).getChild(0).getValue().equals("import")) {
+        f =
+            FieldReference.findOrCreate(
+                PythonTypes.module,
+                Atom.findOrCreateUnicodeAtom((String) elt.getValue()),
+                PythonTypes.Root);
+      } else
+        f =
+            FieldReference.findOrCreate(
+                PythonTypes.Root,
+                Atom.findOrCreateUnicodeAtom((String) elt.getValue()),
+                PythonTypes.Root);
+
+      context
+          .cfg()
+          .addInstruction(
+              Python.instructionFactory().GetInstruction(currentInstruction, result, receiver, f));
+    } else {
+      visit(elt, context, this);
+      assert context.getValue(elt) != -1;
+      context
+          .cfg()
+          .addInstruction(
+              ((AstInstructionFactory) insts)
+                  .PropertyRead(currentInstruction, result, receiver, context.getValue(elt)));
+    }
     context
         .cfg()
         .noteOperands(
@@ -426,7 +470,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
     super.leaveFunctionEntity(n, context, codeContext, visitor);
 
     String fnName = composeEntityName(context, n) + "_defaults";
-    if (n.getArgumentDefaults() != null) {
+    if (n.getArgumentDefaults() != null && n.getArgumentDefaults().length > 0) {
       int first = n.getArgumentCount() - n.getArgumentDefaults().length;
       for (int i = first; i < n.getArgumentCount(); i++) {
         CAstNode dflt = n.getArgumentDefaults()[i - first];
