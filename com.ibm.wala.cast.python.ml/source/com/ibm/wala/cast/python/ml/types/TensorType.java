@@ -113,7 +113,7 @@ public class TensorType implements Iterable<Dimension<?>> {
   }
 
   public static class SymbolicDim extends Dimension<String> {
-    SymbolicDim(String name) {
+    public SymbolicDim(String name) {
       super(name);
     }
 
@@ -147,8 +147,8 @@ public class TensorType implements Iterable<Dimension<?>> {
     }
   }
 
-  static class NumericDim extends Dimension<Integer> {
-    NumericDim(Integer v) {
+  public static class NumericDim extends Dimension<Integer> {
+    public NumericDim(Integer v) {
       super(v);
     }
 
@@ -179,7 +179,7 @@ public class TensorType implements Iterable<Dimension<?>> {
   }
 
   public static class CompoundDim extends Dimension<List<Dimension<?>>> {
-    CompoundDim(List<Dimension<?>> v) {
+    public CompoundDim(List<Dimension<?>> v) {
       super(v);
     }
 
