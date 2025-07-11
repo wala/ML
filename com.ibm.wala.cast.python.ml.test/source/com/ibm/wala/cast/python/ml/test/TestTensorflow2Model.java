@@ -3398,7 +3398,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
       String functionName,
       String pythonPath,
       int expectedNumberOfTensorParameters,
-      int expectedNumberOfTensorVariables,
+      int expectedNumberOfFunctionTensorVariables,
       int... expectedTensorParameterValueNumbers)
       throws ClassHierarchyException, CancelException, IOException {
     List<File> pathFiles = this.getPathFiles(pythonPath);
@@ -3430,16 +3430,16 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
               LOGGER.info(
                   () -> "Pointer key: " + k + " has analysis error: " + v + " at " + v.position()));
 
-    // Create a mapping from function signatures to pointer keys.
+    // a mapping from function signatures to pointer keys.
     Map<String, Set<LocalPointerKey>> functionSignatureToPointerKeys = new HashMap<>();
 
-    // Create a mapping from function signatures to tensor variables.
+    // a mapping from function signatures to tensor variables.
     Map<String, Set<TensorVariable>> functionSignatureToTensorVariables = new HashMap<>();
 
     // for each pointer key, tensor variable pair.
     analysis.forEach(
-        p -> {
-          PointerKey pointerKey = p.fst;
+        pt -> {
+          PointerKey pointerKey = pt.fst;
 
           if (pointerKey instanceof LocalPointerKey) {
             LocalPointerKey localPointerKey = (LocalPointerKey) pointerKey;
@@ -3460,7 +3460,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
                   return v;
                 });
 
-            TensorVariable tensorVariable = p.snd;
+            TensorVariable tensorVariable = pt.snd;
 
             // associate the method to the tensor variables.
             functionSignatureToTensorVariables.compute(
@@ -3491,9 +3491,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     Set<TensorVariable> functionTensorVariables =
         functionSignatureToTensorVariables.getOrDefault(functionSignature, emptySet());
 
-    assertEquals(expectedNumberOfTensorVariables, functionTensorVariables.size());
+    assertEquals(expectedNumberOfFunctionTensorVariables, functionTensorVariables.size());
 
-    // check value numbers.
+    // check value number cardinality.
     assertEquals(
         "Each tensor parameter should have a unique value number.",
         expectedNumberOfTensorParameters,
@@ -3517,7 +3517,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
       assertEquals(expectedNumberOfTensorParameters, functionParameterPointerKeys.size());
 
-      // check value numbers.
+      // check actual value numbers.
       Set<Integer> actualParameterValueNumberSet =
           functionParameterPointerKeys.stream()
               .map(LocalPointerKey::getValueNumber)
