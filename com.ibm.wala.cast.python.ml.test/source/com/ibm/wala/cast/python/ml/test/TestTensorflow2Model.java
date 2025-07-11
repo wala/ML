@@ -3424,11 +3424,10 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
     Map<PointerKey, AnalysisError> errors = E.getErrors();
 
-    if (LOGGER.isLoggable(Level.INFO))
-      errors.forEach(
-          (k, v) ->
-              LOGGER.info(
-                  () -> "Pointer key: " + k + " has analysis error: " + v + " at " + v.position()));
+    errors.forEach(
+        (k, v) ->
+            LOGGER.info(
+                () -> "Pointer key: " + k + " has analysis error: " + v + " at " + v.position()));
 
     // a mapping from function signatures to pointer keys.
     Map<String, Set<LocalPointerKey>> functionSignatureToPointerKeys = new HashMap<>();
