@@ -50,707 +50,707 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   private static final Logger LOGGER = Logger.getLogger(TestTensorflow2Model.class.getName());
 
   @Test
-  public void test()
+  public void testAdd7()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add7.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testB()
+  public void testAdd8()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2b.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add8.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testC()
+  public void testAdd9()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2c.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add9.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testD()
+  public void testAdd10()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2d.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add10.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testD2()
+  public void testAdd11()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2d2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add11.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testD3()
+  public void testAdd12()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2d3.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add12.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testD4()
+  public void testAdd13()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2d4.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add13.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testD5()
+  public void testAdd14()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2d5.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add14.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testE()
+  public void testAdd15()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2e.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add15.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testE2()
+  public void testAdd16()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2e2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add16.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testE3()
+  public void testAdd17()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2e3.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add17.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testE4()
+  public void testAdd18()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2e4.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add18.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testE5()
+  public void testAdd19()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2e5.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add19.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testE6()
+  public void testAdd20()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2e6.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add20.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testE7()
+  public void testAdd21()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2e7.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add21.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testE8()
+  public void testAdd22()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2e8.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add22.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testF()
+  public void testAdd23()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2f.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add23.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testF2()
+  public void testAdd24()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2f2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add24.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testF3()
+  public void testAdd25()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2f3.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add25.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testG()
+  public void testAdd26()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2g.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add26.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testG2()
+  public void testAdd27()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2g2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add27.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testH()
+  public void testAdd28()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2h.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add28.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testH2()
+  public void testAdd29()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2h2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add29.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testI()
+  public void testAdd30()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2i.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add30.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testI2()
+  public void testAdd31()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2i2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add31.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testJ()
+  public void testAdd32()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2j.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add32.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testJ2()
+  public void testAdd33()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2j2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add33.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testK()
+  public void testAdd34()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2k.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add34.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testK2()
+  public void testAdd35()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2k2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add35.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testL()
+  public void testAdd36()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2l.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add36.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testL2()
+  public void testAdd37()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2l2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add37.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testM()
+  public void testAdd38()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2m.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add38.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testM2()
+  public void testAdd39()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2m2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add39.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testN()
+  public void testAdd40()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2n.py", "func2", 1, 1, 2);
+    test("tf2_test_add40.py", "func2", 1, 1, 2);
   }
 
   @Test
-  public void testN2()
+  public void testAdd41()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2n2.py", "func2", 1, 1, 2);
+    test("tf2_test_add41.py", "func2", 1, 1, 2);
   }
 
   @Test
-  public void testN3()
+  public void testAdd42()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2n3.py", "func2", 1, 1, 2);
+    test("tf2_test_add42.py", "func2", 1, 1, 2);
   }
 
   @Test
-  public void testO()
+  public void testAdd43()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2o.py", "add", 2, 3, 2, 3);
+    test("tf2_test_add43.py", "add", 2, 3, 2, 3);
   }
 
   @Test
-  public void testO2()
+  public void testAdd44()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2o2.py", "add", 2, 3, 2, 3);
+    test("tf2_test_add44.py", "add", 2, 3, 2, 3);
   }
 
   @Test
-  public void testP()
+  public void testAdd45()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2p.py", "value_index", 2, 2, 2, 3);
+    test("tf2_test_add45.py", "value_index", 2, 2, 2, 3);
   }
 
   @Test
-  public void testP2()
+  public void testAdd46()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2p2.py", "value_index", 2, 2, 2, 3);
+    test("tf2_test_add46.py", "value_index", 2, 2, 2, 3);
   }
 
   @Test
-  public void testQ()
+  public void testAdd47()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2q.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add47.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testR()
+  public void testAdd48()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2r.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add48.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testS()
+  public void testAdd49()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     // NOTE: Set the expected number of tensor variables to 3 once
     // https://github.com/wala/ML/issues/135 is fixed.
-    test("tf2s.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add49.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testT()
+  public void testAdd50()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2t.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add50.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testU()
+  public void testAdd51()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2u.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add51.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testU2()
+  public void testAdd52()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2u2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add52.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testU3()
+  public void testAdd53()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2u3.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add53.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testV()
+  public void testAdd54()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2v.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add54.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testV2()
+  public void testAdd55()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2v2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add55.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testV3()
+  public void testAdd56()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2v3.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add56.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testV4()
+  public void testAdd57()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2v4.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add57.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testV5()
+  public void testAdd58()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2v5.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add58.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testW()
+  public void testAdd59()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2w.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add59.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testW2()
+  public void testAdd60()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2w2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add60.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testW3()
+  public void testAdd61()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2w3.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add61.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testW4()
+  public void testAdd62()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2w4.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add62.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testX()
+  public void testAdd63()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2x.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add63.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testX2()
+  public void testAdd64()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2x2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add64.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testX3()
+  public void testAdd65()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2x3.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add65.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testY()
+  public void testAdd66()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2y.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add66.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testY2()
+  public void testAdd67()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2y2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add67.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testY3()
+  public void testAdd68()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2y3.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add68.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testY4()
+  public void testAdd69()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2y4.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add69.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testY5()
+  public void testAdd70()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2y5.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add70.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testY6()
+  public void testAdd71()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2y6.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add71.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testZ()
+  public void testAdd72()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2z.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add72.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testZ2()
+  public void testAdd73()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2z2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add73.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testZ3()
+  public void testAdd74()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2z3.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add74.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testZ4()
+  public void testAdd75()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2z4.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add75.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testAA()
+  public void testAdd76()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2aa.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add76.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testAA2()
+  public void testAdd77()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2aa2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add77.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testAA3()
+  public void testAdd78()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2aa3.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add78.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testAA4()
+  public void testAdd79()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2aa4.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add79.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testAA5()
+  public void testAdd80()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2aa5.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add80.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testAA6()
+  public void testAdd81()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2aa6.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add81.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testAA7()
+  public void testAdd82()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2aa7.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add82.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testAA8()
+  public void testAdd83()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2aa8.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add83.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testBB()
+  public void testAdd84()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2bb.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add84.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testBB2()
+  public void testAdd85()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2bb2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add85.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testBB3()
+  public void testAdd86()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2bb3.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add86.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testBB4()
+  public void testAdd87()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2bb4.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add87.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testCC()
+  public void testAdd88()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2cc.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add88.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testCC2()
+  public void testAdd89()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2cc2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add89.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testCC3()
+  public void testAdd90()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2cc3.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add90.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testDD()
+  public void testAdd91()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2dd.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add91.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testDD2()
+  public void testAdd92()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2dd2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add92.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testEE()
+  public void testAdd93()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2ee.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add93.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testEE2()
+  public void testAdd94()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2ee2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add94.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testFF()
+  public void testAdd95()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2ff.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add95.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testFF2()
+  public void testAdd96()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2ff2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add96.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testGG()
+  public void testAdd97()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2gg.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add97.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testGG2()
+  public void testAdd98()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2gg2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add98.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testGG3()
+  public void testAdd99()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2gg3.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add99.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testHH()
+  public void testAdd100()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2hh.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add100.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testHH2()
+  public void testAdd101()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2hh2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add101.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testHH3()
+  public void testAdd102()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2hh3.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add102.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testHH4()
+  public void testAdd103()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2hh4.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add103.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testII()
+  public void testAdd104()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2ii.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add104.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testII2()
+  public void testAdd105()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2ii2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add105.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testII3()
+  public void testAdd106()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2ii3.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add106.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testJJ()
+  public void testAdd107()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2jj.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add107.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testJJ2()
+  public void testAdd108()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2jj2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add108.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testKK()
+  public void testAdd109()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2kk.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add109.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testKK2()
+  public void testAdd110()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2kk2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add110.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testLL()
+  public void testAdd111()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2ll.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add111.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testLL2()
+  public void testAdd112()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2ll2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add112.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testLL3()
+  public void testAdd113()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2ll3.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add113.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testMM()
+  public void testAdd114()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2mm.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add114.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testMM2()
+  public void testAdd115()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2mm2.py", "add", 2, 2, 2, 3);
+    test("tf2_test_add115.py", "add", 2, 2, 2, 3);
   }
 
   @Test
-  public void testNN()
+  public void testValueIndex()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2nn.py", "value_index", 2, 2, 2, 3);
+    test("tf2_test_value_index.py", "value_index", 2, 2, 2, 3);
   }
 
   @Test
-  public void testNN2()
+  public void testValueIndex2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2nn2.py", "value_index", 2, 2, 2, 3);
+    test("tf2_test_value_index2.py", "value_index", 2, 2, 2, 3);
   }
 
   @Test
-  public void testNN3()
+  public void testValueIndex3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2nn3.py", "value_index", 2, 2, 2, 3);
+    test("tf2_test_value_index3.py", "value_index", 2, 2, 2, 3);
   }
 
   @Test
-  public void testNN4()
+  public void testValueIndex4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2nn4.py", "value_index", 2, 2, 2, 3);
+    test("tf2_test_value_index4.py", "value_index", 2, 2, 2, 3);
   }
 
   @Test
-  public void testOO()
+  public void testFunction()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2oo.py", "func2", 1, 1, 2);
+    test("tf2_test_function.py", "func2", 1, 1, 2);
   }
 
   @Test
-  public void testOO2()
+  public void testFunction2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2oo2.py", "func2", 1, 1, 2);
+    test("tf2_test_function2.py", "func2", 1, 1, 2);
   }
 
   @Test
-  public void testOO3()
+  public void testFunction3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2oo3.py", "func2", 1, 1, 2);
+    test("tf2_test_function3.py", "func2", 1, 1, 2);
   }
 
   @Test
-  public void testOO4()
+  public void testFunction4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2oo4.py", "func2", 1, 1, 2);
+    test("tf2_test_function4.py", "func2", 1, 1, 2);
   }
 
   @Test
@@ -3398,7 +3398,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
       String functionName,
       String pythonPath,
       int expectedNumberOfTensorParameters,
-      int expectedNumberOfTensorVariables,
+      int expectedNumberOfFunctionTensorVariables,
       int... expectedTensorParameterValueNumbers)
       throws ClassHierarchyException, CancelException, IOException {
     List<File> pathFiles = this.getPathFiles(pythonPath);
@@ -3424,22 +3424,21 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
     Map<PointerKey, AnalysisError> errors = E.getErrors();
 
-    if (LOGGER.isLoggable(Level.INFO))
-      errors.forEach(
-          (k, v) ->
-              LOGGER.info(
-                  () -> "Pointer key: " + k + " has analysis error: " + v + " at " + v.position()));
+    errors.forEach(
+        (k, v) ->
+            LOGGER.info(
+                () -> "Pointer key: " + k + " has analysis error: " + v + " at " + v.position()));
 
-    // Create a mapping from function signatures to pointer keys.
+    // a mapping from function signatures to pointer keys.
     Map<String, Set<LocalPointerKey>> functionSignatureToPointerKeys = new HashMap<>();
 
-    // Create a mapping from function signatures to tensor variables.
+    // a mapping from function signatures to tensor variables.
     Map<String, Set<TensorVariable>> functionSignatureToTensorVariables = new HashMap<>();
 
     // for each pointer key, tensor variable pair.
     analysis.forEach(
-        p -> {
-          PointerKey pointerKey = p.fst;
+        pt -> {
+          PointerKey pointerKey = pt.fst;
 
           if (pointerKey instanceof LocalPointerKey) {
             LocalPointerKey localPointerKey = (LocalPointerKey) pointerKey;
@@ -3460,7 +3459,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
                   return v;
                 });
 
-            TensorVariable tensorVariable = p.snd;
+            TensorVariable tensorVariable = pt.snd;
 
             // associate the method to the tensor variables.
             functionSignatureToTensorVariables.compute(
@@ -3491,9 +3490,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     Set<TensorVariable> functionTensorVariables =
         functionSignatureToTensorVariables.getOrDefault(functionSignature, emptySet());
 
-    assertEquals(expectedNumberOfTensorVariables, functionTensorVariables.size());
+    assertEquals(expectedNumberOfFunctionTensorVariables, functionTensorVariables.size());
 
-    // check value numbers.
+    // check value number cardinality.
     assertEquals(
         "Each tensor parameter should have a unique value number.",
         expectedNumberOfTensorParameters,
@@ -3517,7 +3516,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
       assertEquals(expectedNumberOfTensorParameters, functionParameterPointerKeys.size());
 
-      // check value numbers.
+      // check actual value numbers.
       Set<Integer> actualParameterValueNumberSet =
           functionParameterPointerKeys.stream()
               .map(LocalPointerKey::getValueNumber)
