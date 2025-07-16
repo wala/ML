@@ -3829,7 +3829,6 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
                     "Tensor variable for pointer key: " + lpk + " should have types, but was null.",
                     types);
 
-                // check that the type is in the expected set.
                 Set<TensorType> expectedTypes =
                     expectedTensorParameterValueNumberToTypes.get(lpk.getValueNumber());
                 assertNotNull(
@@ -3838,19 +3837,16 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
                         + " should not be null.",
                     expectedTypes);
 
+                // check that the types are the same.
                 assertEquals(
-                    "Expected number of types for value number: "
+                    "Expected types for value number: "
                         + lpk.getValueNumber()
                         + " should be "
-                        + expectedTypes.size()
+                        + expectedTypes
                         + ", but was "
-                        + types.size(),
-                    expectedTypes.size(),
-                    types.size());
-
-                assertTrue(
-                    "Expected types: " + expectedTypes + " to contain actual types: " + types,
-                    expectedTypes.containsAll(types));
+                        + types,
+                    expectedTypes,
+                    types);
               });
     }
   }
