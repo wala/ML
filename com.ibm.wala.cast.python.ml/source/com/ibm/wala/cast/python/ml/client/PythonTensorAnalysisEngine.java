@@ -664,29 +664,32 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 
     TensorType mnistData = TensorType.mnistInput();
     Map<PointsToSetVariable, TensorType> init = HashMapFactory.make();
-    for (PointsToSetVariable v : sources) {
-      init.put(v, mnistData);
-    }
+
+    for (PointsToSetVariable v : sources) init.put(v, mnistData);
 
     Map<PointsToSetVariable, TensorType> placeholders =
         handleShapeSourceOp(builder, dataflow, placeholder, 2);
     logger.fine(() -> "Placeholders: " + placeholders);
-    for (Map.Entry<PointsToSetVariable, TensorType> e : placeholders.entrySet()) {
+
+    for (Map.Entry<PointsToSetVariable, TensorType> e : placeholders.entrySet())
       init.put(e.getKey(), e.getValue());
-    }
 
     Map<PointsToSetVariable, TensorType> setCalls = HashMapFactory.make();
     Map<PointsToSetVariable, TensorType> set_shapes = getShapeSourceCalls(set_shape, builder, 1);
+
     for (Map.Entry<PointsToSetVariable, TensorType> x : set_shapes.entrySet()) {
-      CGNode setNode = ((LocalPointerKey) x.getKey().getPointerKey()).getNode();
-      int defVn = ((LocalPointerKey) x.getKey().getPointerKey()).getValueNumber();
+      LocalPointerKey localPointerKey = (LocalPointerKey) x.getKey().getPointerKey();
+      CGNode setNode = localPointerKey.getNode();
+      int defVn = localPointerKey.getValueNumber();
       SSAInstruction read = setNode.getDU().getDef(defVn);
       SSAInstruction call = setNode.getDU().getDef(read.getUse(0));
+
       PointerKey setKey =
           builder
               .getPointerAnalysis()
               .getHeapModel()
               .getPointerKeyForLocal(setNode, call.getUse(0));
+
       setCalls.put(builder.getPropagationSystem().findOrCreatePointsToSet(setKey), x.getValue());
     }
 
