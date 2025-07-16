@@ -3821,30 +3821,20 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
               lpk -> {
                 TensorVariable tensorVariable = pointerKeyToTensorVariable.get(lpk);
                 assertNotNull(
-                    "Tensor variable for pointer key: " + lpk + " should not be null.",
-                    tensorVariable);
+                    "Checking tensor variable for pointer key: " + lpk + ".", tensorVariable);
 
                 Set<TensorType> types = tensorVariable.getTypes();
-                assertNotNull(
-                    "Tensor variable for pointer key: " + lpk + " should have types, but was null.",
-                    types);
+                assertNotNull("Checking tensor variable for pointer key: " + lpk + ".", types);
 
                 Set<TensorType> expectedTypes =
                     expectedTensorParameterValueNumberToTypes.get(lpk.getValueNumber());
                 assertNotNull(
-                    "Expected types for value number: "
-                        + lpk.getValueNumber()
-                        + " should not be null.",
+                    "Checking expected types for value number: " + lpk.getValueNumber() + ".",
                     expectedTypes);
 
                 // check that the types are the same.
                 assertEquals(
-                    "Expected types for value number: "
-                        + lpk.getValueNumber()
-                        + " should be "
-                        + expectedTypes
-                        + ", but was "
-                        + types,
+                    "Comparing expected types for value number: " + lpk.getValueNumber() + ".",
                     expectedTypes,
                     types);
               });
