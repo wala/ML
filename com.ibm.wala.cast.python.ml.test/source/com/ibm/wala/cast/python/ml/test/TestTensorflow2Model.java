@@ -501,7 +501,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
     test("tf2_test_dataset31.py", "j", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
     test("tf2_test_dataset31.py", "k1", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
     test("tf2_test_dataset31.py", "k2", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
-    test("tf2_test_dataset31.py", "k2", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
+    test("tf2_test_dataset31.py", "k3", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
     // TODO: Change to 0, 0 once https://github.com/wala/ML/issues/166 is fixed.
     test("tf2_test_dataset31.py", "l", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
     test("tf2_test_dataset31.py", "m1", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
