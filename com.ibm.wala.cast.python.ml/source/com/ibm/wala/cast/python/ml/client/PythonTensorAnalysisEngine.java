@@ -169,12 +169,12 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
           int objectRef = propertyRead.getObjectRef();
           SSAInstruction def = du.getDef(objectRef);
 
-          if (def == null) {
+          if (def == null)
             // definition is unavailable from the local DefUse. Use interprocedural analysis using
             // the PA.
             processInstructionInterprocedurally(
                 propertyRead, objectRef, localPointerKeyNode, src, sources, pointerAnalysis);
-          } else if (def instanceof EachElementGetInstruction
+          else if (def instanceof EachElementGetInstruction
               || def instanceof PythonPropertyRead
               || def instanceof PythonInvokeInstruction) {
             boolean added = false;
