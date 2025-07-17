@@ -408,7 +408,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
         IClass concreteType = asin.getConcreteType();
         TypeReference reference = concreteType.getReference();
 
-        if (reference.equals(DATASET) && isDatasetTensorElement(src, use, node, pointerAnalysis)) {
+        if (reference.equals(DATASET) && isDatasetTensorElement(src, use, pointerAnalysis)) {
           sources.add(src);
           logger.info("Added dataflow source from tensor dataset: " + src + ".");
           return true;
@@ -421,69 +421,71 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 
   /**
    * Returns true iff the given {@link PointsToSetVariable} refers to a tensor dataset element of
-   * the dataset defined by the given value number in the given {@link CGNode}.
+   * the dataset defined by the given value number in the its associated {@link CGNode}.
    *
    * @param variable The {@link PointsToSetVariable} to consider.
    * @param val The value in the given {@link CGNode} representing the tensor dataset.
-   * @param node The {@link CGNode} containing the given {@link PointsToSetVariable} and value.
    * @param pointerAnalysis The {@link PointerAnalysis} that includes points-to information for the
    *     given {@link CGNode}.
    * @return True iff src refers to a tensor dataset element defined by the dataset represented by
-   *     val in node.
+   *     val in the node associated with src.
    */
   private static boolean isDatasetTensorElement(
-      PointsToSetVariable variable,
-      int val,
-      CGNode node,
-      PointerAnalysis<InstanceKey> pointerAnalysis) {
-    SSAInstruction def = node.getDU().getDef(val);
+      PointsToSetVariable variable, int val, PointerAnalysis<InstanceKey> pointerAnalysis) {
+    if (variable.getPointerKey() instanceof LocalPointerKey) {
+      LocalPointerKey localPointerKey = (LocalPointerKey) variable.getPointerKey();
+      CGNode node = localPointerKey.getNode();
+      SSAInstruction def = node.getDU().getDef(val);
 
-    if (def instanceof PythonInvokeInstruction) {
-      PythonInvokeInstruction invokeInstruction = (PythonInvokeInstruction) def;
+      if (def instanceof PythonInvokeInstruction) {
+        PythonInvokeInstruction invokeInstruction = (PythonInvokeInstruction) def;
 
-      // Check whether we are calling enumerate(), as that returns a tuple.
-      // Get the invoked function.
-      int invocationUse = invokeInstruction.getUse(0);
+        // Check whether we are calling enumerate(), as that returns a tuple.
+        // Get the invoked function.
+        int invocationUse = invokeInstruction.getUse(0);
 
-      PointerKey invocationUsePointerKey =
-          pointerAnalysis.getHeapModel().getPointerKeyForLocal(node, invocationUse);
+        PointerKey invocationUsePointerKey =
+            pointerAnalysis.getHeapModel().getPointerKeyForLocal(node, invocationUse);
 
-      for (InstanceKey functionInstance : pointerAnalysis.getPointsToSet(invocationUsePointerKey)) {
-        if (functionInstance instanceof ConcreteTypeKey) {
-          ConcreteTypeKey typeKey = (ConcreteTypeKey) functionInstance;
-          IClass type = typeKey.getType();
-          TypeReference typeReference = type.getReference();
+        for (InstanceKey functionInstance :
+            pointerAnalysis.getPointsToSet(invocationUsePointerKey)) {
+          if (functionInstance instanceof ConcreteTypeKey) {
+            ConcreteTypeKey typeKey = (ConcreteTypeKey) functionInstance;
+            IClass type = typeKey.getType();
+            TypeReference typeReference = type.getReference();
 
-          if (typeReference.equals(ENUMERATE.getDeclaringClass())) {
-            // it's a call to enumerate(), where the returned value is an iterator over
-            // tuples. Each tuple consists of the enumeration number and the dataset
-            // element. Check that we are not looking at the enumeration number.
+            if (typeReference.equals(ENUMERATE.getDeclaringClass())) {
+              // it's a call to enumerate(), where the returned value is an iterator over
+              // tuples. Each tuple consists of the enumeration number and the dataset
+              // element. Check that we are not looking at the enumeration number.
 
-            PythonPropertyRead srcDef =
-                (PythonPropertyRead)
-                    node.getDU()
-                        .getDef(((LocalPointerKey) variable.getPointerKey()).getValueNumber());
+              PythonPropertyRead srcDef =
+                  (PythonPropertyRead)
+                      node.getDU()
+                          .getDef(((LocalPointerKey) variable.getPointerKey()).getValueNumber());
 
-            // What does the member reference point to?
-            PointerKey memberRefPointerKey =
-                pointerAnalysis.getHeapModel().getPointerKeyForLocal(node, srcDef.getMemberRef());
+              // What does the member reference point to?
+              PointerKey memberRefPointerKey =
+                  pointerAnalysis.getHeapModel().getPointerKeyForLocal(node, srcDef.getMemberRef());
 
-            for (InstanceKey memberInstance : pointerAnalysis.getPointsToSet(memberRefPointerKey)) {
-              ConstantKey<?> constant = (ConstantKey<?>) memberInstance;
-              Object value = constant.getValue();
+              for (InstanceKey memberInstance :
+                  pointerAnalysis.getPointsToSet(memberRefPointerKey)) {
+                ConstantKey<?> constant = (ConstantKey<?>) memberInstance;
+                Object value = constant.getValue();
 
-              // if it's the first tuple element.
-              if (value.equals(0)) {
-                // Now that we know it's the first tuple element, we now need to know whether it's
-                // the first tuple, i.e., the one returned by enumerate.
-                // To do that, we examine the object being referenced on the RHS.
+                // if it's the first tuple element.
+                if (value.equals(0)) {
+                  // Now that we know it's the first tuple element, we now need to know whether it's
+                  // the first tuple, i.e., the one returned by enumerate.
+                  // To do that, we examine the object being referenced on the RHS.
 
-                SSAInstruction objRefDef = node.getDU().getDef(srcDef.getObjectRef());
+                  SSAInstruction objRefDef = node.getDU().getDef(srcDef.getObjectRef());
 
-                // If the object being read is that of the dataset, we know that this is the first
-                // tuple read of the result of enumerate() on the dataset.
-                if (objRefDef instanceof PythonPropertyRead
-                    && ((PythonPropertyRead) objRefDef).getObjectRef() == val) return false;
+                  // If the object being read is that of the dataset, we know that this is the first
+                  // tuple read of the result of enumerate() on the dataset.
+                  if (objRefDef instanceof PythonPropertyRead
+                      && ((PythonPropertyRead) objRefDef).getObjectRef() == val) return false;
+                }
               }
             }
           }
