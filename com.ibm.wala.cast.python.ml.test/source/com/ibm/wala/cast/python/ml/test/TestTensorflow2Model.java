@@ -3806,14 +3806,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
               .collect(Collectors.toSet());
 
       assertEquals(
-          expectedTensorParameterValueNumberToTypes.size(), actualParameterValueNumberSet.size());
-
-      expectedTensorParameterValueNumberToTypes.keySet().stream()
-          .forEach(
-              ev ->
-                  assertTrue(
-                      "Expecting " + actualParameterValueNumberSet + " to contain " + ev + ".",
-                      actualParameterValueNumberSet.contains(ev)));
+          expectedTensorParameterValueNumberToTypes.keySet(), actualParameterValueNumberSet);
 
       // check types.
       functionParameterPointerKeys.stream()
