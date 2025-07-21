@@ -26,12 +26,12 @@ public class Python3Interpreter extends com.ibm.wala.cast.python.util.PythonInte
       PyObject val = getInterp().eval(expr);
       if (val.isInteger()) {
         return val.asInt();
-      }
+      } else
+        throw new IllegalArgumentException(
+            "Python expression: " + expr + " cannot be evaluated to an integer.");
     } catch (PyException e) {
       LOGGER.log(Level.SEVERE, "Unable to interpret Python expression: " + expr, e);
       throw new IllegalArgumentException("Can't interpret Python expression: " + expr + ".", e);
     }
-
-    return null;
   }
 }
