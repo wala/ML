@@ -7,7 +7,7 @@ import org.python.util.PythonInterpreter;
 
 public class Python2Interpreter extends com.ibm.wala.cast.python.util.PythonInterpreter {
 
-  private static PythonInterpreter interp = null;
+  private static PythonInterpreter interp;
 
   public static PythonInterpreter getInterp() {
     if (interp == null) {
