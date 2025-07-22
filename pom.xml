@@ -14,6 +14,7 @@
     <module>com.ibm.wala.cast.python.jython3.test</module>
     <module>com.ibm.wala.cast.python.ml</module>
     <module>com.ibm.wala.cast.python.ml.test</module>
+    <module>com.ibm.wala.cast.python.report</module>
   </modules>
   <distributionManagement>
     <repository>
@@ -24,14 +25,17 @@
   </distributionManagement>
   <properties>
     <project-version>0.0.1-SNAPSHOT</project-version>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <maven.compiler.version>3.10.1</maven.compiler.version>
+    <maven.compiler.release>21</maven.compiler.release>
+    <maven.compiler.version>3.14.0</maven.compiler.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build-alias>b000</build-alias>
-    <wala.version>1.6.0</wala.version>
-    <spotless.version>2.37.0</spotless.version>
-    <maven.surefire.version>3.0.0-M7</maven.surefire.version>
+    <wala.version>1.6.10</wala.version>
+    <spotless.version>2.45.0</spotless.version>
+    <maven.surefire.version>3.5.3</maven.surefire.version>
+    <parallel>both</parallel>
+    <logging.config.file>./logging.properties</logging.config.file>
+    <jacoco-version>0.8.13</jacoco-version>
+    <argLine/>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -63,22 +67,22 @@
       <dependency>
         <groupId>org.eclipse.lsp4j</groupId>
         <artifactId>org.eclipse.lsp4j</artifactId>
-        <version>0.8.1</version>
+        <version>0.24.0</version>
       </dependency>
       <dependency>
         <groupId>commons-cli</groupId>
         <artifactId>commons-cli</artifactId>
-        <version>1.3.1</version>
+        <version>1.9.0</version>
       </dependency>
       <dependency>
         <groupId>org.json</groupId>
         <artifactId>json</artifactId>
-        <version>20230227</version>
+        <version>20250517</version>
       </dependency>
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.13.1</version>
+        <version>4.13.2</version>
       </dependency>
       <dependency>
         <groupId>org.python</groupId>
@@ -98,17 +102,27 @@
       <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm-all</artifactId>
-        <version>5.1</version>
+        <version>6.0_BETA</version>
       </dependency>
       <dependency>
         <groupId>com.github.jnr</groupId>
         <artifactId>jnr-constants</artifactId>
-        <version>0.9.12</version>
+        <version>0.10.4</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>2.18.0</version>
       </dependency>
       <dependency>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
         <version>${spotless.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>33.4.8-jre</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -124,6 +138,7 @@
               <arg>-Xlint:deprecation</arg>
               <arg>-Xlint:unchecked</arg>
             </compilerArgs>
+            <failOnWarning>true</failOnWarning>
           </configuration>
         </plugin>
         <plugin>
@@ -131,12 +146,15 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven.surefire.version}</version>
           <configuration>
-            <parallel>both</parallel>
             <threadCount>1</threadCount>
             <systemPropertyVariables>
               <!-- Set JUL Formatting -->
-              <java.util.logging.SimpleFormatter.format>[%4$s] %5$s%n</java.util.logging.SimpleFormatter.format>
+              <java.util.logging.config.file>${logging.config.file}</java.util.logging.config.file>
             </systemPropertyVariables>
+            <forkCount>1</forkCount>
+            <reuseForks>true</reuseForks>
+            <argLine>@{argLine} -Dpython.import.site=false</argLine>
+            <trimStackTrace>false</trimStackTrace>
           </configuration>
         </plugin>
         <plugin>
@@ -147,9 +165,54 @@
             <formats>
               <format>
                 <includes>
+                  <include>**/*</include>
+                </includes>
+                <excludes>
+                  <exclude>**/target/</exclude>
+                  <exclude>**/__pycache__/</exclude>
+                  <exclude>**/*.swp</exclude>
+                  <exclude>**/*.swp</exclude>
+                  <exclude>**/*.swo</exclude>
+                  <exclude>**/*.swn</exclude>
+                  <exclude>**/.idea/</exclude>
+                  <exclude>**/.vscode/</exclude>
+                  <exclude>**/node_modules/</exclude>
+                  <exclude>**/cachedir/</exclude>
+                  <exclude>**/*~</exclude>
+                  <exclude>**/*.min.*</exclude>
+                  <exclude>**/tmp.*</exclude>
+                  <exclude>**/*.jar</exclude>
+                  <exclude>**/*.exe</exclude>
+                  <exclude>**/*.dll</exclude>
+                  <exclude>**/*.class</exclude>
+                  <exclude>**/*.png</exclude>
+                  <exclude>**/*.jpg</exclude>
+                  <exclude>**/*.gif</exclude>
+                  <exclude>**/*.xml</exclude>
+                  <exclude>**/.pydevproject</exclude>
+                  <exclude>**/*pom.xml</exclude>
+                  <exclude>**/*.md</exclude>
+                  <exclude>**/.gitignore</exclude>
+                  <exclude>**/*.java</exclude>
+                  <exclude>**/*.gradle/</exclude>
+                  <exclude>**/.pytest_cache/</exclude>
+                  <exclude>**/*.log</exclude>
+                  <exclude>**/*.pdf</exclude>
+                  <!-- Exclude Git submodules -->
+                  <exclude>IDE/</exclude>
+                  <exclude>jython3/</exclude>
+                </excludes>
+                <trimTrailingWhitespace/>
+                <endWithNewline/>
+              </format>
+              <format>
+                <includes>
                   <include>**/*.md</include>
                   <include>**/.gitignore</include>
                 </includes>
+                <excludes>
+                  <exclude>**/target/</exclude>
+                </excludes>
                 <trimTrailingWhitespace/>
                 <endWithNewline/>
                 <indent>
@@ -160,36 +223,41 @@
               <format>
                 <includes>
                   <include>**/*.xml</include>
+                  <include>**/.pydevproject</include>
                 </includes>
                 <excludes>
                   <exclude>**/plugin.xml</exclude>
-                  <exclude>pom.xml</exclude>
+                  <exclude>**/pom.xml</exclude>
+                  <exclude>**/dependency-reduced-pom.xml</exclude>
+                  <exclude>**/gradle.xml</exclude>
+                  <exclude>**/target/</exclude>
+                  <!-- Exclude Git submodules -->
+                  <exclude>IDE/</exclude>
+                  <exclude>jython3/</exclude>
                 </excludes>
                 <eclipseWtp>
                   <type>XML</type>
                   <files>
-                    <file>${maven.multiModuleProjectDirectory}/spotless.xml.prefs</file>
+                    <file>./spotless.xml.prefs</file>
                   </files>
                 </eclipseWtp>
+                <trimTrailingWhitespace/>
+                <endWithNewline/>
               </format>
             </formats>
             <java>
               <googleJavaFormat>
-                <version>1.17.0</version>
+                <version>1.27.0</version>
                 <reflowLongStrings>true</reflowLongStrings>
               </googleJavaFormat>
+              <trimTrailingWhitespace/>
+              <endWithNewline/>
             </java>
             <pom>
               <sortPom>
                 <expandEmptyElements>false</expandEmptyElements>
               </sortPom>
             </pom>
-            <python>
-              <includes>
-                <include>*.py</include>
-              </includes>
-              <black/>
-            </python>
           </configuration>
         </plugin>
       </plugins>
@@ -204,4 +272,39 @@
       </plugin>
     </plugins>
   </reporting>
+  <profiles>
+    <profile>
+      <id>jacoco</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco-version}</version>
+            <configuration>
+              <propertyName>argLine</propertyName>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+                <phase>initialize</phase>
+              </execution>
+              <execution>
+                <id>report</id>
+                <goals>
+                  <goal>report</goal>
+                </goals>
+                <phase>verify</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

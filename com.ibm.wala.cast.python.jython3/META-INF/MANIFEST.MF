@@ -10,5 +10,5 @@ Export-Package: com.ibm.wala.cast.python.client,
  com.ibm.wala.cast.python.util,
  org.python.antlr
 Bundle-Vendor: IBM
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: com.ibm.wala.cast.python

@@ -10,6 +10,8 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.parser;
 
+import static com.ibm.wala.cast.python.util.Util.removeFileProtocolFromPath;
+
 import com.ibm.wala.cast.ir.translator.AbstractClassEntity;
 import com.ibm.wala.cast.ir.translator.AbstractCodeEntity;
 import com.ibm.wala.cast.ir.translator.AbstractFieldEntity;
@@ -39,9 +41,12 @@ import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.ReverseIterator;
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -118,7 +123,7 @@ import org.python.antlr.base.slice;
 import org.python.antlr.base.stmt;
 import org.python.core.PyObject;
 
-public abstract class PythonParser<T> extends AbstractParser<T> implements TranslatorToCAst {
+public abstract class PythonParser<T> extends AbstractParser implements TranslatorToCAst {
 
   private static boolean COMPREHENSION_IR = true;
 
@@ -210,7 +215,7 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
 
   private final CAst Ast = new CAstImpl();
 
-  private class CAstVisitor extends AbstractParser<T>.CAstVisitor implements VisitorIF<CAstNode> {
+  private class CAstVisitor extends AbstractParser.CAstVisitor implements VisitorIF<CAstNode> {
     private final PythonParser.WalkContext context;
     private final WalaPythonParser parser;
 
@@ -1821,8 +1826,18 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
 
   private final CAstTypeDictionaryImpl<String> types;
 
-  protected PythonParser(CAstTypeDictionaryImpl<String> types) {
+  /**
+   * The <a href="https://docs.python.org/3/using/cmdline.html#envvar-PYTHONPATH">PYTHONPATH</a> to
+   * use in the analysis.
+   *
+   * @apiNote PYTHONPATH is currently only supported for Python 3.
+   * @see https://docs.python.org/3/tutorial/modules.html#the-module-search-path.
+   */
+  protected java.util.List<File> pythonPath;
+
+  protected PythonParser(CAstTypeDictionaryImpl<String> types, java.util.List<File> pythonPath) {
     this.types = types;
+    this.pythonPath = pythonPath;
   }
 
   @Override
@@ -1906,6 +1921,35 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
             public Position getNamePosition() {
               return null;
             }
+
+            @Override
+            public String getSignature() {
+              File file = this.getFile();
+              java.util.List<File> pythonPath = getPythonPath();
+
+              // If the PYTHONPATH isn't specified.
+              if (pythonPath.isEmpty())
+                // Revert to just the name.
+                return this.getName();
+
+              for (File pathEntry : pythonPath) {
+                String pathEntryAbsolutePath = pathEntry.getAbsoluteFile().getPath();
+                // Remove protocol.
+                pathEntryAbsolutePath = removeFileProtocolFromPath(pathEntryAbsolutePath);
+
+                String fileAbsolutePath = file.getAbsolutePath();
+
+                if (fileAbsolutePath.startsWith(pathEntryAbsolutePath)) {
+                  // Found it.
+                  Path filePath = Paths.get(fileAbsolutePath);
+                  Path pathEntryPath = Paths.get(pathEntryAbsolutePath);
+
+                  Path scriptRelativePath = pathEntryPath.relativize(filePath);
+                  return "script " + scriptRelativePath.toString();
+                }
+              }
+              return null; // Not found.
+            }
           };
 
       return script;
@@ -1923,5 +1967,17 @@ public abstract class PythonParser<T> extends AbstractParser<T> implements Trans
 
   public void print(PyObject ast) {
     System.err.println(ast.getClass());
+  }
+
+  /**
+   * Gets the <a
+   * href="https://docs.python.org/3/using/cmdline.html#envvar-PYTHONPATH">PYTHONPATH</a> to use in
+   * the analysis.
+   *
+   * @apiNote PYTHONPATH is currently only supported for Python 3.
+   * @see https://docs.python.org/3/tutorial/modules.html#the-module-search-path.
+   */
+  public java.util.List<File> getPythonPath() {
+    return pythonPath;
   }
 }

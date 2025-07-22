@@ -1,13 +1,14 @@
 class Foo:
-	def foo(self, a, b):
-		return a, b
+    def foo(self, a, b):
+        return a, b
 
 
 def bad(x):
     return x + 1
 
+
 def id(x):
-	return x
+    return x
 
 
 m = Foo()

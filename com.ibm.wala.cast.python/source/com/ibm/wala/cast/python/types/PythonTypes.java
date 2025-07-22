@@ -10,17 +10,26 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.types;
 
+import static com.ibm.wala.cast.python.util.Util.CLASS_METHOD_ANNOTATION_NAME;
+import static com.ibm.wala.cast.python.util.Util.STATIC_METHOD_ANNOTATION_NAME;
+
+import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.types.AstTypeReference;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
+import java.util.Collection;
+import java.util.HashSet;
 
 public class PythonTypes extends AstTypeReference {
 
   public static final String pythonNameStr = "Python";
 
   public static final String pythonLoaderNameStr = "PythonLoader";
+
+  /** The name of the type used for CAst dynamic annotations (decorators). */
+  private static final String DYNAMIC_ANNOTATION_TYPE_NAME = "DYNAMIC_ANNOTATION";
 
   public static final Atom pythonName = Atom.findOrCreateUnicodeAtom(pythonNameStr);
 
@@ -30,6 +39,9 @@ public class PythonTypes extends AstTypeReference {
       new ClassLoaderReference(pythonLoaderName, pythonName, null);
 
   public static final TypeReference Root = TypeReference.findOrCreate(pythonLoader, rootTypeName);
+
+  public static final TypeReference BaseException =
+      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LBaseException"));
 
   public static final TypeReference Exception =
       TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LException"));
@@ -72,4 +84,32 @@ public class PythonTypes extends AstTypeReference {
 
   public static final TypeReference superfun =
       TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lsuperfun"));
+
+  /** https://docs.python.org/3/library/stdtypes.html#typeiter. */
+  public static final TypeReference iterator =
+      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Literator"));
+
+  /** https://docs.python.org/3/library/functions.html#staticmethod. */
+  public static final TypeReference STATIC_METHOD =
+      TypeReference.findOrCreate(
+          pythonLoader, TypeName.findOrCreate("L" + STATIC_METHOD_ANNOTATION_NAME));
+
+  /** https://docs.python.org/3/library/functions.html#classmethod. */
+  public static final TypeReference CLASS_METHOD =
+      TypeReference.findOrCreate(
+          pythonLoader, TypeName.findOrCreate("L" + CLASS_METHOD_ANNOTATION_NAME));
+
+  /** A {@link CAstType} representing a dynamic annotation (decorator). */
+  public static final CAstType CAST_DYNAMIC_ANNOTATION =
+      new CAstType() {
+        @Override
+        public String getName() {
+          return DYNAMIC_ANNOTATION_TYPE_NAME;
+        }
+
+        @Override
+        public Collection<CAstType> getSupertypes() {
+          return new HashSet<>();
+        }
+      };
 }

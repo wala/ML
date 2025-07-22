@@ -48,7 +48,8 @@ public class Python2Loader extends PythonLoader {
     RewritingTranslatorToCAst x =
         new RewritingTranslatorToCAst(
             M,
-            new PythonModuleParser((SourceModule) M, typeDictionary, allModules) {
+            new PythonModuleParser(
+                (SourceModule) M, typeDictionary, allModules, this.getPythonPath()) {
               @Override
               public CAstEntity translateToCAst() throws Error, IOException {
                 CAstEntity ce = super.translateToCAst();

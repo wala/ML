@@ -6,7 +6,7 @@ import com.ibm.wala.util.CancelException;
 import java.io.IOException;
 import org.junit.Test;
 
-public class TestTry extends TestPythonCallGraphShape {
+public class TestTry extends TestJythonCallGraphShape {
 
   protected static final Object[][] assertionsTry =
       new Object[][] {

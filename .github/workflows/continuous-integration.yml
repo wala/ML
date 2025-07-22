@@ -6,38 +6,52 @@ on:
     branches: [ "master" ]
 concurrency:
   group: ${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name != 'push' || !startsWith(github.ref, 'refs/tags/') }} # Cancel if not a tag push.
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - name: Check out wala/ML sources
-      uses: actions/checkout@v3
-    - name: Set up JDK 11
-      uses: actions/setup-java@v3
+      uses: actions/checkout@v4
       with:
-        java-version: '11'
+        submodules: 'recursive'
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
         distribution: 'temurin'
         cache: maven
-    - name: Checkout wala/IDE sources.
-      run: git clone --depth=1 https://github.com/wala/IDE ${{ runner.temp }}/IDE
-    - name: Checkout juliandolby/jython3 sources.
-      run: git clone --depth=1 https://github.com/juliandolby/jython3.git ${{ runner.temp }}/jython3
+    - name: Install Python.
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+    - name: Install Python dependencies.
+      run: pip install -r requirements.txt
+    - name: Check formatting with spotless.
+      run: mvn spotless:check -B
+    - name: Check formatting with Black.
+      run: black --fast --check --extend-exclude IDE --extend-exclude jython3 .
     - name: Install Jython3.
       run: |
-        pushd ${{ runner.temp }}/jython3
+        pushd jython3
         ant
         pushd dist
-        mvn install:install-file -Dfile=./jython-dev.jar -DgroupId="org.python" -DartifactId="jython3" -Dversion="0.0.1-SNAPSHOT" -Dpackaging="jar" -DgeneratePom=true
+        mvn install:install-file -Dfile=./jython-dev.jar -DgroupId="org.python" -DartifactId="jython3" -Dversion="0.0.1-SNAPSHOT" -Dpackaging="jar" -DgeneratePom=true -B
         popd
         popd
       shell: bash
     - name: Install IDE.
       run: |
-        pushd ${{ runner.temp }}/IDE/com.ibm.wala.cast.lsp
-        mvn clean install -B -q -DskipTests
+        pushd IDE/com.ibm.wala.cast.lsp
+        mvn install -B -q -DskipTests
         popd
-    - name: Check formatting with spotless.
-      run: mvn spotless:check -B
     - name: Build with Maven
-      run: mvn clean verify -B
+      run: mvn -Dlogging.config.file=./logging.ci.properties verify -B -Pjacoco
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: $CODECOV_TOKEN
+        slug: wala/ML
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

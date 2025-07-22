@@ -11,7 +11,7 @@ while i < 5:
         break
 
     x = 7
-    i = i + 1    
+    i = i + 1
 
 print(x)
 reveal_type(x)

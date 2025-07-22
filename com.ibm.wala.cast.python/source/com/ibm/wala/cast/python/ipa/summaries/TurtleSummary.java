@@ -465,6 +465,8 @@ public class TurtleSummary {
             .NewInstruction(0, 10, NewSiteReference.make(0, turtleClassRef)));
     x.addStatement(
         PythonLanguage.Python.instructionFactory().PutInstruction(1, 10, 10, turtleFieldRef));
+    @SuppressWarnings("unchecked")
+    Pair<String, Integer>[] keywordParams = new Pair[0];
     x.addStatement(
         new PythonInvokeInstruction(
             2,
@@ -472,7 +474,7 @@ public class TurtleSummary {
             12,
             CallSiteReference.make(2, turtleCallbackMethodRef, Dispatch.VIRTUAL),
             new int[] {2},
-            new Pair[0]));
+            keywordParams));
     x.addStatement(PythonLanguage.Python.instructionFactory().ReturnInstruction(3, 10, false));
     code = new PythonSummarizedFunction(turtleMethodRef, x, turtleClass);
 
@@ -535,8 +537,9 @@ public class TurtleSummary {
       @Override
       public SSAAbstractInvokeInstruction addCall(AbstractRootMethod m) {
         int paramValues[];
-        IClassHierarchy cha = m.getClassHierarchy();
         paramValues = new int[getNumberOfParameters()];
+        @SuppressWarnings("unchecked")
+        Pair<String, Integer>[] keywordParams = new Pair[0];
         for (int j = 0; j < paramValues.length; j++) {
           AstInstructionFactory insts = PythonLanguage.Python.instructionFactory();
           if (j == 0 && getMethod().getDeclaringClass().getName().toString().contains("/")) {
@@ -572,7 +575,7 @@ public class TurtleSummary {
                       m.nextLocal++,
                       new DynamicCallSiteReference(PythonTypes.CodeBody, idx),
                       new int[] {cls},
-                      new Pair[0]));
+                      keywordParams));
               idx = m.statements.size();
               String method = getMethod().getDeclaringClass().getName().toString();
               String field = method.substring(method.lastIndexOf('/') + 1);
@@ -613,7 +616,7 @@ public class TurtleSummary {
                 m.nextLocal++,
                 new DynamicCallSiteReference(PythonTypes.CodeBody, pc),
                 paramValues,
-                new Pair[0]);
+                keywordParams);
 
         m.statements.add(call);
 

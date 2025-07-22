@@ -1,20 +1,23 @@
 package com.ibm.wala.cast.python.client;
 
+import static java.util.Collections.emptyList;
+import static java.util.logging.Level.SEVERE;
+
 import com.ibm.wala.cast.ipa.callgraph.AstCFAPointerKeys;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.loader.AstDynamicField;
+import com.ibm.wala.cast.python.ipa.callgraph.PythonClassMethodTrampolineTargetSelector;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonConstructorTargetSelector;
+import com.ibm.wala.cast.python.ipa.callgraph.PythonInstanceMethodTrampolineTargetSelector;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonScopeMappingInstanceKeys;
-import com.ibm.wala.cast.python.ipa.callgraph.PythonTrampolineTargetSelector;
 import com.ibm.wala.cast.python.ipa.summaries.BuiltinFunctions;
 import com.ibm.wala.cast.python.ipa.summaries.PythonComprehensionTrampolines;
 import com.ibm.wala.cast.python.ipa.summaries.PythonSuper;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
 import com.ibm.wala.cast.python.types.PythonTypes;
-import com.ibm.wala.cast.python.util.PythonInterpreter;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cast.util.Util;
 import com.ibm.wala.classLoader.IClass;
@@ -61,29 +64,55 @@ import com.ibm.wala.util.WalaException;
 import com.ibm.wala.util.WalaRuntimeException;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public abstract class PythonAnalysisEngine<T>
     extends AbstractAnalysisEngine<InstanceKey, PythonSSAPropagationCallGraphBuilder, T> {
 
+  private static final Logger logger = Logger.getLogger(PythonAnalysisEngine.class.getName());
+
+  /** Library summaries to load. */
+  private static final String[] LIBRARIES =
+      new String[] {
+        "flask.xml", "pandas.xml", "functools.xml", "pytest.xml", "click.xml", "abseil.xml"
+      };
+
+  protected PythonSSAPropagationCallGraphBuilder builder;
+
   static {
     try {
-      Class<?> j3 = Class.forName("com.ibm.wala.cast.python.loader.Python3LoaderFactory");
-      PythonAnalysisEngine.setLoaderFactory((Class<? extends PythonLoaderFactory>) j3);
-      Class<?> i3 = Class.forName("com.ibm.wala.cast.python.util.Python3Interpreter");
-      PythonInterpreter.setInterpreter((PythonInterpreter) i3.newInstance());
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+      @SuppressWarnings("unchecked")
+      Class<PythonLoaderFactory> j4 =
+          (Class<PythonLoaderFactory>)
+              Class.forName("com.ibm.wala.cast.python.loader.JepPythonLoaderFactory");
+      PythonAnalysisEngine.setLoaderFactory(j4);
+    } catch (UnsatisfiedLinkError | ClassNotFoundException e2) {
       try {
-        Class<?> j2 = Class.forName("com.ibm.wala.cast.python.loader.Python2LoaderFactory");
-        PythonAnalysisEngine.setLoaderFactory((Class<? extends PythonLoaderFactory>) j2);
-        Class<?> i2 = Class.forName("com.ibm.wala.cast.python.util.Python2Interpreter");
-        PythonInterpreter.setInterpreter((PythonInterpreter) i2.newInstance());
-      } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e1) {
-        assert false : e.getMessage() + ", then " + e1.getMessage();
+        @SuppressWarnings("unchecked")
+        Class<? extends PythonLoaderFactory> j3 =
+            (Class<? extends PythonLoaderFactory>)
+                Class.forName("com.ibm.wala.cast.python.loader.Python3LoaderFactory");
+        PythonAnalysisEngine.setLoaderFactory(j3);
+      } catch (ClassNotFoundException e) {
+        try {
+          @SuppressWarnings("unchecked")
+          Class<? extends PythonLoaderFactory> j2 =
+              (Class<? extends PythonLoaderFactory>)
+                  Class.forName("com.ibm.wala.cast.python.loader.Python2LoaderFactory");
+          PythonAnalysisEngine.setLoaderFactory(j2);
+        } catch (ClassNotFoundException e1) {
+          assert false : e.getMessage() + ", then " + e1.getMessage();
+        }
       }
     }
   }
@@ -91,6 +120,7 @@ public abstract class PythonAnalysisEngine<T>
   private static Class<? extends PythonLoaderFactory> loaders;
 
   public static void setLoaderFactory(Class<? extends PythonLoaderFactory> lf) {
+    assert loaders == null;
     loaders = lf;
   }
 
@@ -98,16 +128,22 @@ public abstract class PythonAnalysisEngine<T>
 
   private final IRFactory<IMethod> irs = AstIRFactory.makeDefaultFactory();
 
-  public PythonAnalysisEngine() {
-    super();
+  public PythonAnalysisEngine(List<File> pythonPath) {
     PythonLoaderFactory f;
     try {
-      f = loaders.newInstance();
-    } catch (InstantiationException | IllegalAccessException e) {
+      f = loaders.getConstructor(java.util.List.class).newInstance(pythonPath);
+    } catch (InstantiationException
+        | IllegalAccessException
+        | InvocationTargetException
+        | NoSuchMethodException e) {
       f = null;
       assert false : e.getMessage();
     }
     loader = f;
+  }
+
+  public PythonAnalysisEngine() {
+    this(emptyList());
   }
 
   @Override
@@ -130,17 +166,23 @@ public abstract class PythonAnalysisEngine<T>
 
   @Override
   public IClassHierarchy buildClassHierarchy() {
+    IClassHierarchy cha = null;
     try {
-      IClassHierarchy cha = SeqClassHierarchyFactory.make(scope, loader);
-      Util.checkForFrontEndErrors(cha);
-      setClassHierarchy(cha);
-      return cha;
+      cha = SeqClassHierarchyFactory.make(scope, loader);
     } catch (ClassHierarchyException e) {
-      assert false : e;
-      return null;
-    } catch (WalaException e) {
-      throw new WalaRuntimeException(e.getMessage(), e);
+      final String msg = "Failed to build class hierarchy.";
+      logger.log(SEVERE, msg, e);
+      throw new WalaRuntimeException(msg, e);
     }
+
+    try {
+      Util.checkForFrontEndErrors(cha);
+    } catch (WalaException e) {
+      logger.log(Level.WARNING, e, () -> "Encountered WALA exception: " + e.getLocalizedMessage());
+    }
+
+    setClassHierarchy(cha);
+    return cha;
   }
 
   protected void addSummaryBypassLogic(AnalysisOptions options, String summary) {
@@ -274,16 +316,17 @@ public abstract class PythonAnalysisEngine<T>
 
   protected void addBypassLogic(IClassHierarchy cha, AnalysisOptions options) {
     options.setSelector(
-        new PythonTrampolineTargetSelector(
-            new PythonConstructorTargetSelector(
-                new PythonComprehensionTrampolines(options.getMethodTargetSelector()))));
+        new PythonInstanceMethodTrampolineTargetSelector<T>(
+            new PythonClassMethodTrampolineTargetSelector<T>(
+                new PythonConstructorTargetSelector(
+                    new PythonComprehensionTrampolines(options.getMethodTargetSelector()))),
+            this));
 
     BuiltinFunctions builtins = new BuiltinFunctions(cha);
     options.setSelector(builtins.builtinClassTargetSelector(options.getClassTargetSelector()));
 
-    addSummaryBypassLogic(options, "flask.xml");
-    addSummaryBypassLogic(options, "pandas.xml");
-    addSummaryBypassLogic(options, "functools.xml");
+    // load the library summaries.
+    Arrays.stream(LIBRARIES).forEach(l -> addSummaryBypassLogic(options, l));
   }
 
   @Override
@@ -337,7 +380,11 @@ public abstract class PythonAnalysisEngine<T>
 
     new PythonSuper(cha).handleSuperCalls(builder, options);
 
-    return builder;
+    return this.builder = builder;
+  }
+
+  public PythonSSAPropagationCallGraphBuilder getCachedCallGraphBuilder() {
+    return this.builder;
   }
 
   protected PythonSSAPropagationCallGraphBuilder makeBuilder(

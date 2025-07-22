@@ -10,6 +10,10 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.ipa.callgraph;
 
+import static com.ibm.wala.cast.python.types.Util.getGlobalName;
+import static com.ibm.wala.cast.python.types.Util.makeGlobalRef;
+
+import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.ipa.summaries.PythonInstanceMethodTrampoline;
 import com.ibm.wala.cast.python.ipa.summaries.PythonSummarizedFunction;
@@ -35,8 +39,13 @@ import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
 import java.util.Collections;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class PythonConstructorTargetSelector implements MethodTargetSelector {
+
+  private static final Logger LOGGER =
+      Logger.getLogger(PythonConstructorTargetSelector.class.getName());
+
   private final Map<IClass, IMethod> ctors = HashMapFactory.make();
 
   private final MethodTargetSelector base;
@@ -48,6 +57,9 @@ public class PythonConstructorTargetSelector implements MethodTargetSelector {
   @Override
   public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
     if (receiver != null) {
+      LOGGER.fine("Getting callee target for receiver: " + receiver);
+      LOGGER.fine("Calling method name is: " + caller.getMethod().getName());
+
       IClassHierarchy cha = receiver.getClassHierarchy();
       if (cha.isSubclassOf(receiver, cha.lookupClass(PythonTypes.object))
           && receiver instanceof PythonClass) {
@@ -129,6 +141,27 @@ public class PythonConstructorTargetSelector implements MethodTargetSelector {
                         PythonTypes.Root)));
             pc++;
 
+            // Add a metadata variable that refers to the declaring class.
+            // NOTE: Per https://docs.python.org/3/library/functions.html#classmethod, "[i]f a class
+            // method is called for a derived class, the derived class object is passed as the
+            // implied first argument." I'm unsure whether `receiver` can refer to the derived
+            // class especially in light of https://github.com/wala/ML/issues/107.
+            int classVar = v++;
+            String globalName = getGlobalName(r);
+            FieldReference globalRef = makeGlobalRef(receiver.getClassLoader(), globalName);
+
+            ctor.addStatement(new AstGlobalRead(pc++, classVar, globalRef));
+
+            ctor.addStatement(
+                insts.PutInstruction(
+                    pc++,
+                    f,
+                    classVar,
+                    FieldReference.findOrCreate(
+                        PythonTypes.Root,
+                        Atom.findOrCreateUnicodeAtom("$class"),
+                        PythonTypes.Root)));
+
             ctor.addStatement(
                 insts.PutInstruction(
                     pc,
@@ -151,18 +184,21 @@ public class PythonConstructorTargetSelector implements MethodTargetSelector {
                         PythonTypes.Root)));
             pc++;
 
-            int[] cps = new int[init.getNumberOfParameters()];
+            int numberOfParameters = init.getNumberOfParameters();
+            int[] cps = new int[numberOfParameters > 1 ? numberOfParameters : 2];
             cps[0] = fv;
             cps[1] = inst;
-            for (int j = 2; j < init.getNumberOfParameters(); j++) {
+            for (int j = 2; j < numberOfParameters; j++) {
               cps[j] = j;
             }
 
             int result = v++;
             int except = v++;
             CallSiteReference cref = new DynamicCallSiteReference(site.getDeclaredTarget(), pc);
+            @SuppressWarnings("unchecked")
+            Pair<String, Integer>[] keywordParams = new Pair[0];
             ctor.addStatement(
-                new PythonInvokeInstruction(2, result, except, cref, cps, new Pair[0]));
+                new PythonInvokeInstruction(2, result, except, cref, cps, keywordParams));
             pc++;
           }
 

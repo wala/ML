@@ -10,7 +10,11 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.ir;
 
+import static com.google.common.io.Files.getNameWithoutExtension;
 import static com.ibm.wala.cast.python.ir.PythonLanguage.Python;
+import static com.ibm.wala.cast.python.types.PythonTypes.pythonLoader;
+import static com.ibm.wala.cast.python.util.Util.IMPORT_WILDCARD_CHARACTER;
+import static com.ibm.wala.cast.python.util.Util.MODULE_INITIALIZATION_FILENAME;
 
 import com.ibm.wala.cast.ir.ssa.AssignInstruction;
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
@@ -23,8 +27,10 @@ import com.ibm.wala.cast.python.loader.PythonLoader;
 import com.ibm.wala.cast.python.loader.PythonLoader.PythonClass;
 import com.ibm.wala.cast.python.parser.AbstractParser.MissingType;
 import com.ibm.wala.cast.python.parser.AbstractParser.PythonGlobalsEntity;
+import com.ibm.wala.cast.python.ssa.ForElementGetInstruction;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.types.PythonTypes;
+import com.ibm.wala.cast.tree.CAstControlFlowMap;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
@@ -39,13 +45,18 @@ import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
+import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.NewSiteReference;
+import com.ibm.wala.classLoader.SourceModule;
 import com.ibm.wala.core.util.strings.Atom;
+import com.ibm.wala.ipa.callgraph.AnalysisScope;
+import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.shrike.shrikeBT.IBinaryOpInstruction;
 import com.ibm.wala.shrike.shrikeBT.IBinaryOpInstruction.IOperator;
 import com.ibm.wala.shrike.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.ssa.SSAInstruction;
+import com.ibm.wala.ssa.SSAPutInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
@@ -54,35 +65,39 @@ import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class PythonCAstToIRTranslator extends AstTranslator {
 
+  private static final Logger LOGGER = Logger.getLogger(PythonCAstToIRTranslator.class.getName());
+
   private final Map<CAstType, TypeName> walaTypeNames = HashMapFactory.make();
   private final Set<Pair<Scope, String>> globalDeclSet = new HashSet<>();
-  private static boolean signleFileAnalysis = true;
-  private final Set<Pair<CAstEntity, ModuleEntry>> topLevelEntities;
+  private static boolean singleFileAnalysis = true;
 
-  public PythonCAstToIRTranslator(
-      IClassLoader loader, Set<Pair<CAstEntity, ModuleEntry>> topLevelEntities) {
+  public PythonCAstToIRTranslator(IClassLoader loader) {
     super(loader);
-    this.topLevelEntities = topLevelEntities;
   }
 
   public static boolean isSingleFileAnalysis() {
-    return signleFileAnalysis;
+    return singleFileAnalysis;
   }
 
   public static void setSingleFileAnalysis(boolean singleFile) {
-    PythonCAstToIRTranslator.signleFileAnalysis = singleFile;
+    PythonCAstToIRTranslator.singleFileAnalysis = singleFile;
   }
 
   @Override
@@ -225,7 +240,8 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
   @Override
   protected String composeEntityName(WalkContext parent, CAstEntity f) {
-    if (f.getKind() == CAstEntity.SCRIPT_ENTITY) return f.getName();
+    // Use the entity signature here to resolve entities in files under different directories.
+    if (f.getKind() == CAstEntity.SCRIPT_ENTITY) return f.getSignature();
     else {
       String name;
       // if (f.getType() instanceof CAstType.Method) {
@@ -246,7 +262,10 @@ public class PythonCAstToIRTranslator extends AstTranslator {
           .unknownInstructions(
               () -> {
                 doGlobalWrite(
-                    context, context.currentScope().getEntity().getName(), PythonTypes.Root, 1);
+                    context,
+                    context.currentScope().getEntity().getSignature(),
+                    PythonTypes.Root,
+                    1);
               });
     }
 
@@ -363,6 +382,8 @@ public class PythonCAstToIRTranslator extends AstTranslator {
                   visit(a, context, this);
                   int pos = context.cfg().getCurrentInstruction();
                   CallSiteReference site = new DynamicCallSiteReference(PythonTypes.CodeBody, pos);
+                  @SuppressWarnings("unchecked")
+                  Pair<String, Integer>[] keywordParams = new Pair[0];
                   context
                       .cfg()
                       .addInstruction(
@@ -372,7 +393,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
                               context.currentScope().allocateTempValue(),
                               site,
                               new int[] {context.getValue(a), result},
-                              new Pair[0]));
+                              keywordParams));
                 });
       }
     }
@@ -444,6 +465,191 @@ public class PythonCAstToIRTranslator extends AstTranslator {
     }
 
     return false;
+  }
+
+  @Override
+  protected boolean visitScriptEntity(
+      CAstEntity n,
+      WalkContext context,
+      WalkContext codeContext,
+      CAstVisitor<WalkContext> visitor) {
+    boolean ret = super.visitScriptEntity(n, context, codeContext, visitor);
+
+    ModuleEntry module = context.getModule();
+    String scriptName = module.getName();
+
+    // if the module is the special initialization module.
+    if (scriptName.endsWith("/" + MODULE_INITIALIZATION_FILENAME)) {
+      // we've hit a module. Get the other scripts in the module.
+      PythonLoader loader = (PythonLoader) this.loader;
+      IClassHierarchy classHierarchy = loader.getClassHierarchy();
+      AnalysisScope scope = classHierarchy.getScope();
+      List<Module> allModules = scope.getModules(pythonLoader);
+
+      // collect the all local modules.
+      Set<SourceModule> localModules = getLocalModules(allModules);
+
+      String moduleName = Path.of(scriptName).getParent().getFileName().toString();
+      LOGGER.fine("Initializing module: " + moduleName + ".");
+
+      localModules.stream()
+          .filter(
+              m -> {
+                LOGGER.finer("Examining: " + m + " for filteration.");
+
+                Path path = Path.of(m.getURL().getFile());
+                Path parent = path.getParent();
+                String parentFileName = parent.getFileName().toString();
+                String grandparentFileName = parent.getParent().getFileName().toString();
+
+                // Return whether the script is in the module or whether we are looking at a direct
+                // subpackage.
+                boolean include =
+                    parentFileName.equals(moduleName)
+                        || (grandparentFileName.equals(moduleName)
+                            && path.getFileName()
+                                .toString()
+                                .equals(MODULE_INITIALIZATION_FILENAME));
+
+                LOGGER.finer(
+                    (include ? "Including" : "Not including")
+                        + " script: "
+                        + path.getFileName()
+                        + " in module: "
+                        + moduleName
+                        + " initialization.");
+
+                return include;
+              })
+          .map(
+              m -> {
+                // For each module in the package, add a field referring to the script representing
+                // the module.
+                LOGGER.finer("Mapping: " + m + " to instructions.");
+
+                List<File> pythonPath = loader.getPythonPath();
+                LOGGER.finest("PYTHONPATH is: " + pythonPath);
+
+                Path path = Path.of(m.getURL().getFile());
+                LOGGER.finer("Found module path: " + path + ".");
+
+                for (File pathEntry : pythonPath) {
+                  LOGGER.finest("Path entry is:" + pathEntry);
+
+                  if (path.startsWith(pathEntry.toPath())) {
+                    // Found it.
+                    Path scriptRelativePath = pathEntry.toPath().relativize(path);
+                    LOGGER.finer("Relativized path is: " + scriptRelativePath + ".");
+
+                    // Get the package name.
+                    Path packagePath = scriptRelativePath.getParent();
+                    List<SSAInstruction> instructions = new ArrayList<SSAInstruction>(2);
+
+                    if (packagePath == null) {
+                      // it must be a top-level module. I don't think we need the extra instructions
+                      // in this case.
+                      LOGGER.finer("Found top-level module; no extra instructions needed.");
+                      return instructions;
+                    }
+
+                    LOGGER.fine("Package path is: " + packagePath + ".");
+                    LOGGER.finer("Mapping fields for package: " + packagePath + ".");
+
+                    int res = 0;
+
+                    // Don't add a redundant global read for `__init__.py` for `moduleName`.
+                    boolean moduleInitializationFile = isModuleInitializationFile(path);
+
+                    if (!moduleInitializationFile || !packagePath.toString().equals(moduleName)) {
+                      FieldReference global =
+                          makeGlobalRef("script " + packagePath + "/" + path.getFileName());
+
+                      LOGGER.finer("Creating global field reference: " + global + ".");
+
+                      int idx = codeContext.cfg().getCurrentInstruction();
+                      res = codeContext.currentScope().allocateTempValue();
+
+                      AstGlobalRead globalRead = new AstGlobalRead(idx, res, global);
+                      instructions.add(globalRead);
+                      LOGGER.finer("Adding global read: " + globalRead + ".");
+                    }
+
+                    FieldReference moduleField =
+                        FieldReference.findOrCreate(
+                            PythonTypes.Root,
+                            // If it's the package, use the package name. Otherwise, use the
+                            // filename.
+                            Atom.findOrCreateUnicodeAtom(
+                                getNameWithoutExtension(
+                                    (moduleInitializationFile ? path.getParent() : path)
+                                        .toString())),
+                            PythonTypes.Root);
+
+                    LOGGER.finer("Creating module field reference: " + moduleField + ".");
+
+                    // If we are looking at the package for `moduleName`.
+                    if (moduleInitializationFile && packagePath.toString().equals(moduleName))
+                      // use the existing global read for the script.
+                      res = 1;
+
+                    SSAPutInstruction putInstruction =
+                        Python.instructionFactory()
+                            .PutInstruction(
+                                codeContext.cfg().getCurrentInstruction(), 1, res, moduleField);
+
+                    instructions.add(putInstruction);
+                    LOGGER.finer("Adding field write: " + putInstruction + ".");
+
+                    return instructions;
+                  }
+                }
+                //  Not found.
+                throw new IllegalStateException(
+                    "Cannot find module: " + m + " in PYTHONPATH: " + pythonPath);
+              })
+          .flatMap(List::stream)
+          .forEachOrdered(i -> codeContext.cfg().addInstruction(i));
+    }
+
+    return ret;
+  }
+
+  /**
+   * Returns true iff the given {@link Path} represents the Python modularization file
+   * (`__init__.py`).
+   *
+   * @param path The {@link Path} in question.
+   * @return true iff the given {@link Path} represents the Python modularization file
+   *     (`__init__.py`).
+   */
+  private static boolean isModuleInitializationFile(Path path) {
+    return path.getFileName().toString().equals(MODULE_INITIALIZATION_FILENAME);
+  }
+
+  /**
+   * Returns local modules {@link Module}s from the given {@link List} of {@link Module}s.
+   *
+   * @param allModules A {@link List} of {@link Module}s in question.
+   * @return A {@link Set} of local {@link Module}s.
+   */
+  private static Set<SourceModule> getLocalModules(List<Module> allModules) {
+    Set<SourceModule> ret = HashSetFactory.make();
+
+    allModules.stream()
+        .map(Module::getEntries)
+        .forEach(
+            it ->
+                it.forEachRemaining(
+                    new Consumer<ModuleEntry>() {
+                      @Override
+                      public void accept(ModuleEntry f) {
+                        if (f.isModuleFile())
+                          f.asModule().getEntries().forEachRemaining(sm -> accept(sm));
+                        else ret.add((SourceModule) f);
+                      }
+                    }));
+
+    return ret;
   }
 
   @Override
@@ -610,6 +816,20 @@ public class PythonCAstToIRTranslator extends AstTranslator {
                             .PutInstruction(code.cfg().getCurrentInstruction(), v, val, fr));
               });
     }
+
+    code.cfg()
+        .unknownInstructions(
+            () -> {
+              FieldReference fnField =
+                  FieldReference.findOrCreate(
+                      PythonTypes.Root,
+                      Atom.findOrCreateUnicodeAtom(n.getName()),
+                      PythonTypes.Root);
+              code.cfg()
+                  .addInstruction(
+                      Python.instructionFactory()
+                          .PutInstruction(code.cfg().getCurrentInstruction(), 1, v, fnField));
+            });
   }
 
   @Override
@@ -680,21 +900,18 @@ public class PythonCAstToIRTranslator extends AstTranslator {
     context.cfg().newBlock(true);
 
     // exceptional case: flow to target given in CAst, or if null, the exit node
-    ((CAstControlFlowRecorder) context.getControlFlow()).map(call, call);
+    CAstControlFlowMap cfg = context.getControlFlow();
+    ((CAstControlFlowRecorder) cfg).map(call, call);
 
-    if (context.getControlFlow().getTargetLabels(call).isEmpty()) {
-      System.err.println("no exceptions for " + CAstPrinter.print(call));
+    if (cfg.getTargetLabels(call).isEmpty()) {
+      LOGGER.fine(() -> "no exceptions for " + CAstPrinter.print(call));
       context.cfg().addPreEdgeToExit(call, true);
     } else {
-      context
-          .getControlFlow()
-          .getTargetLabels(call)
+      cfg.getTargetLabels(call)
           .forEach(
               nm -> {
-                if (context.getControlFlow().getTarget(call, nm) != null) {
-                  context
-                      .cfg()
-                      .addPreEdge(call, context.getControlFlow().getTarget(call, nm), true);
+                if (cfg.getTarget(call, nm) != null) {
+                  context.cfg().addPreEdge(call, cfg.getTarget(call, nm), true);
                 }
               });
     }
@@ -719,7 +936,21 @@ public class PythonCAstToIRTranslator extends AstTranslator {
     return Any;
   }
 
-  public final CAstType Exception =
+  public static final CAstType Object =
+      new CAstType() {
+
+        @Override
+        public String getName() {
+          return "object";
+        }
+
+        @Override
+        public Collection<CAstType> getSupertypes() {
+          return Collections.singleton(Any);
+        }
+      };
+
+  public static final CAstType Exception =
       new CAstType() {
 
         @Override
@@ -729,13 +960,17 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
         @Override
         public Collection<CAstType> getSupertypes() {
-          return Collections.singleton(topType());
+          return Collections.singleton(Object);
         }
       };
 
+  {
+    walaTypeNames.put(Exception, TypeName.findOrCreate("LException"));
+  }
+
   @Override
   protected CAstType exceptionType() {
-    return Any;
+    return Exception;
   }
 
   @Override
@@ -787,6 +1022,33 @@ public class PythonCAstToIRTranslator extends AstTranslator {
               ((AstInstructionFactory) insts)
                   .PropertyRead(
                       idx, resultVal, resultVal, context.currentScope().getConstantValue(eltName)));
+
+      // if the module is the special initialization module and it's not a wildcard import.
+      if (context.getName().endsWith("/" + MODULE_INITIALIZATION_FILENAME)
+          && !Objects.equals(eltName, IMPORT_WILDCARD_CHARACTER)) {
+        // add the imported name to the module so that other files can use it.
+        FieldReference eltField =
+            FieldReference.findOrCreate(
+                PythonTypes.Root, Atom.findOrCreateUnicodeAtom(eltName), PythonTypes.Root);
+
+        LOGGER.info("Adding write of field: " + eltField + " to initialization script.");
+
+        // The script should be in v1.
+        idx = context.cfg().getCurrentInstruction();
+        context
+            .cfg()
+            .addInstruction(
+                ((AstInstructionFactory) insts).PutInstruction(idx, 1, resultVal, eltField));
+      }
+    } else if ("forElementGet".equals(primitiveCall.getChild(0).getValue())) {
+      int obj = context.getValue(primitiveCall.getChild(1));
+      int elt = context.getValue(primitiveCall.getChild(2));
+
+      context
+          .cfg()
+          .addInstruction(
+              new ForElementGetInstruction(
+                  context.cfg().getCurrentInstruction(), resultVal, obj, elt));
     }
   }
 
@@ -882,7 +1144,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
   }
 
   boolean isGlobal(WalkContext context, String varName) {
-    if (signleFileAnalysis) return false;
+    if (singleFileAnalysis) return false;
     else {
       if (context.currentScope().getEntity().getKind() == CAstEntity.SCRIPT_ENTITY) return true;
       else {
@@ -920,10 +1182,12 @@ public class PythonCAstToIRTranslator extends AstTranslator {
       CallSiteReference site = new DynamicCallSiteReference(PythonTypes.CodeBody, pos);
       int result = context.currentScope().allocateTempValue();
       int exception = context.currentScope().allocateTempValue();
+      @SuppressWarnings("unchecked")
+      Pair<String, Integer>[] keywordParams = new Pair[0];
       context
           .cfg()
           .addInstruction(
-              new PythonInvokeInstruction(pos, result, exception, site, args, new Pair[0]));
+              new PythonInvokeInstruction(pos, result, exception, site, args, keywordParams));
 
       context.setValue(n, result);
       return true;

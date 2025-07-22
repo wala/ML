@@ -1,5 +1,9 @@
 package com.ibm.wala.cast.python.loader;
 
+import static com.ibm.wala.cast.python.types.PythonTypes.pythonLoader;
+import static com.ibm.wala.cast.python.util.Util.getNames;
+import static java.util.stream.Collectors.toList;
+
 import com.ibm.wala.cast.ir.translator.AstTranslator.AstLexicalInformation;
 import com.ibm.wala.cast.ir.translator.AstTranslator.WalkContext;
 import com.ibm.wala.cast.ir.translator.TranslatorToIR;
@@ -41,6 +45,7 @@ import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.types.annotations.Annotation;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -59,6 +64,8 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
   public class DynamicMethodBody extends DynamicCodeBody {
     private final IClass container;
 
+    private final Collection<Annotation> annotations;
+
     public DynamicMethodBody(
         TypeReference codeName,
         TypeReference parent,
@@ -69,10 +76,25 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
         IClass container) {
       super(codeName, parent, loader, sourcePosition, entity, context);
       this.container = container;
+
+      // fill in the decorators.
+      // FIXME: Process annotations with parameters.
+      this.annotations =
+          getNames(entity.getAnnotations()).stream()
+              .map(s -> "L" + s)
+              .map(TypeName::findOrCreate)
+              .map(tn -> TypeReference.findOrCreate(pythonLoader, tn))
+              .map(Annotation::make)
+              .collect(toList());
     }
 
     public IClass getContainer() {
       return container;
+    }
+
+    @Override
+    public Collection<Annotation> getAnnotations() {
+      return this.annotations;
     }
   }
 
@@ -145,7 +167,10 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
       CAstPattern.parse("<top>ASSIGN_POST_OP(CALL(VAR(\"slice\"),<args>**),<value>*,<op>*)");
   final CoreClass Root = new CoreClass(PythonTypes.rootTypeName, null, this, null);
   final CoreClass Exception =
-      new CoreClass(PythonTypes.Exception.getName(), PythonTypes.rootTypeName, this, null);
+      new CoreClass(PythonTypes.Exception.getName(), PythonTypes.object.getName(), this, null);
+  final CoreClass BaseException =
+      new CoreClass(
+          PythonTypes.BaseException.getName(), PythonTypes.Exception.getName(), this, null);
 
   protected CAstNode rewriteSubscriptAssign(Segments s) {
     int i = 0;
@@ -176,7 +201,7 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
 
   @Override
   protected TranslatorToIR initTranslator(Set<Pair<CAstEntity, ModuleEntry>> topLevelEntities) {
-    return new PythonCAstToIRTranslator(this, topLevelEntities);
+    return new PythonCAstToIRTranslator(this);
   }
 
   final CoreClass CodeBody =
@@ -204,13 +229,34 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
       new CoreClass(PythonTypes.trampoline.getName(), PythonTypes.CodeBody.getName(), this, null);
   final CoreClass superfun =
       new CoreClass(PythonTypes.superfun.getName(), PythonTypes.CodeBody.getName(), this, null);
+  final CoreClass iterator =
+      new CoreClass(PythonTypes.iterator.getName(), PythonTypes.object.getName(), this, null);
+
+  /**
+   * The <a href="https://docs.python.org/3/using/cmdline.html#envvar-PYTHONPATH">PYTHONPATH</a> to
+   * use in the analysis.
+   *
+   * @apiNote PYTHONPATH is currently only supported for Python 3.
+   * @see https://docs.python.org/3/tutorial/modules.html#the-module-search-path.
+   */
+  protected List<File> pythonPath;
 
   public PythonLoader(IClassHierarchy cha, IClassLoader parent) {
     super(cha, parent);
   }
 
+  public PythonLoader(IClassHierarchy cha, IClassLoader parent, List<File> pythonPath) {
+    super(cha, parent);
+    this.pythonPath = pythonPath;
+  }
+
   public PythonLoader(IClassHierarchy cha) {
     super(cha);
+  }
+
+  public PythonLoader(IClassHierarchy cha, List<File> pythonPath) {
+    super(cha);
+    this.pythonPath = pythonPath;
   }
 
   public IClass makeMethodBodyType(
@@ -268,14 +314,13 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
 
     assert types.containsKey(typeName);
 
-    if (entity.getArgumentCount() > 0 && "self".equals(entity.getArgumentNames()[1])) {
-      MethodReference me =
-          MethodReference.findOrCreate(
-              fun.getReference(),
-              Atom.findOrCreateUnicodeAtom(entity.getType().getName()),
-              AstMethodReference.fnDesc);
-      self.methodTypes.add(me);
-    }
+    // Includes static methods.
+    MethodReference me =
+        MethodReference.findOrCreate(
+            fun.getReference(),
+            Atom.findOrCreateUnicodeAtom(entity.getType().getName()),
+            AstMethodReference.fnDesc);
+    self.methodTypes.add(me);
 
     return fun;
   }
@@ -334,7 +379,7 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
 
   public void defineType(
       TypeName cls, TypeName parent, Position sourcePosition, Set<CAstType> missingTypes) {
-    new PythonClass(cls, parent, this, sourcePosition, missingTypes);
+    types.put(cls, new PythonClass(cls, parent, this, sourcePosition, missingTypes));
   }
 
   public void defineField(TypeName cls, CAstEntity field) {
@@ -408,5 +453,26 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
                 return false;
               }
             });
+  }
+
+  /**
+   * Return this {@link PythonLoader}'s {@link IClassHierarchy}.
+   *
+   * @return this {@link PythonLoader}'s {@link IClassHierarchy}.
+   */
+  public IClassHierarchy getClassHierarchy() {
+    return this.cha;
+  }
+
+  /**
+   * Gets the <a
+   * href="https://docs.python.org/3/using/cmdline.html#envvar-PYTHONPATH">PYTHONPATH</a> to use in
+   * the analysis.
+   *
+   * @apiNote PYTHONPATH is currently only supported for Python 3.
+   * @see https://docs.python.org/3/tutorial/modules.html#the-module-search-path.
+   */
+  public List<File> getPythonPath() {
+    return pythonPath;
   }
 }

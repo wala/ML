@@ -29,9 +29,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class TensorType implements Iterable<Dimension<?>> {
+
+  private static final Logger logger = Logger.getLogger(TensorType.class.getName());
 
   public enum Format {
     CString,
@@ -110,7 +113,7 @@ public class TensorType implements Iterable<Dimension<?>> {
   }
 
   public static class SymbolicDim extends Dimension<String> {
-    SymbolicDim(String name) {
+    public SymbolicDim(String name) {
       super(name);
     }
 
@@ -144,8 +147,8 @@ public class TensorType implements Iterable<Dimension<?>> {
     }
   }
 
-  static class NumericDim extends Dimension<Integer> {
-    NumericDim(Integer v) {
+  public static class NumericDim extends Dimension<Integer> {
+    public NumericDim(Integer v) {
       super(v);
     }
 
@@ -176,7 +179,7 @@ public class TensorType implements Iterable<Dimension<?>> {
   }
 
   public static class CompoundDim extends Dimension<List<Dimension<?>>> {
-    CompoundDim(List<Dimension<?>> v) {
+    public CompoundDim(List<Dimension<?>> v) {
       super(v);
     }
 
@@ -327,7 +330,7 @@ public class TensorType implements Iterable<Dimension<?>> {
   }
 
   public static TensorType shapeArg(CGNode node, int literalVn) {
-    System.err.println(node.getIR());
+    logger.fine(() -> node.getIR().toString());
     ArrayList<Dimension<?>> r = new ArrayList<>();
     DefUse du = node.getDU();
     SymbolTable S = node.getIR().getSymbolTable();
@@ -348,7 +351,7 @@ public class TensorType implements Iterable<Dimension<?>> {
       }
       if (S.isNumberConstant(val)) {
         int v = ((Number) S.getConstantValue(val)).intValue();
-        System.err.println("value: " + v);
+        logger.fine("value: " + v);
         r.add(v >= 0 ? new NumericDim((Integer) v) : new SymbolicDim("?"));
       } else {
         if (du.getDef(val) != null && node.getMethod() instanceof AstMethod) {

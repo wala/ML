@@ -44,7 +44,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>com.ibm.wala.cast.python.jython</artifactId>
+      <artifactId>com.ibm.wala.cast.python.jython3</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -66,7 +66,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>2.3</version>
+        <version>3.6.0</version>
         <configuration>
           <filters>
             <filter>

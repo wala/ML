@@ -10,6 +10,7 @@
  *****************************************************************************/
 package com.ibm.wala.cast.python.parser;
 
+import com.ibm.wala.cast.python.util.Util;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.impl.CAstTypeDictionaryImpl;
 import com.ibm.wala.cast.util.CAstPrinter;
@@ -17,9 +18,11 @@ import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.SourceModule;
 import com.ibm.wala.classLoader.SourceURLModule;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
@@ -40,8 +43,11 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
   }
 
   public PythonModuleParser(
-      SourceModule fileName, CAstTypeDictionaryImpl<String> types, List<Module> allModules) {
-    super(types);
+      SourceModule fileName,
+      CAstTypeDictionaryImpl<String> types,
+      List<Module> allModules,
+      List<File> pythonPath) {
+    super(types, pythonPath);
     this.fileName = fileName;
   }
 
@@ -51,15 +57,18 @@ public class PythonModuleParser extends PythonParser<ModuleEntry> {
   }
 
   public static void main(String[] args) throws Exception {
-    URL url = new URL(args[0]);
+    URL url = new URI(args[0]).toURL();
+    List<File> pythonPath = Util.getPathFiles(args[1]);
+
     PythonParser<ModuleEntry> p =
         new PythonModuleParser(
             new SourceURLModule(url),
             new CAstTypeDictionaryImpl<String>(),
-            Collections.singletonList(new SourceURLModule(url)));
+            Collections.singletonList(new SourceURLModule(url)),
+            pythonPath);
     CAstEntity script = p.translateToCAst();
     System.err.println(script);
-    System.err.println(CAstPrinter.print(script));
+    System.err.println(CAstPrinter.print(script.getAST()));
   }
 
   @Override

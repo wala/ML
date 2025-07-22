@@ -313,9 +313,13 @@ public class TensorTypeAnalysis extends DataflowSolver<PointsToSetVariable, Tens
               int csz = reshapeTo.concreteSize();
               if (rhs != null && rhs.state != null) {
                 for (TensorType t : rhs.state) {
-                  if (t.symbolicDims() == ssz && t.concreteSize() == csz) {
-                    changed |= lhs.state.add(reshapeTo);
-                  } else {
+                  // Process the reshape normally regardless of whether there is a shape mismatch so
+                  // that tensor type propagation continues. The shape may be inaccurate, but users
+                  // can inspect the error messages to find out about it. See
+                  // https://github.com/wala/ML/issues/195.
+                  changed |= lhs.state.add(reshapeTo);
+
+                  if (t.symbolicDims() != ssz || t.concreteSize() != csz) {
                     Position pos = getTargetPos(v.getPointerKey());
                     assert pos != null;
                     errorLog.put(
