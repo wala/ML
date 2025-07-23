@@ -14,6 +14,7 @@ import static com.ibm.wala.cast.python.types.Util.getGlobalName;
 import static com.ibm.wala.cast.python.types.Util.makeGlobalRef;
 
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
+import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.ipa.summaries.PythonInstanceMethodTrampoline;
 import com.ibm.wala.cast.python.ipa.summaries.PythonSummarizedFunction;
@@ -25,12 +26,14 @@ import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IClass;
+import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.NewSiteReference;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.MethodTargetSelector;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
+import com.ibm.wala.ssa.ConstantValue;
 import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
@@ -77,7 +80,7 @@ public class PythonConstructorTargetSelector implements MethodTargetSelector {
               MethodReference.findOrCreate(
                   receiver.getReference(), site.getDeclaredTarget().getSelector());
           PythonSummary ctor = new PythonSummary(ref, params);
-          SSAInstructionFactory insts = PythonLanguage.Python.instructionFactory();
+          AstInstructionFactory insts = PythonLanguage.Python.instructionFactory();
           ctor.addStatement(
               insts.NewInstruction(pc, inst, NewSiteReference.make(pc, PythonTypes.object)));
           pc++;
@@ -171,6 +174,15 @@ public class PythonConstructorTargetSelector implements MethodTargetSelector {
             pc++;
           }
 
+          for(IField f : ((PythonClass)receiver).getAllStaticFields()) {
+              int tmp = v++;
+              int name = v++; 
+              
+              ctor.addConstant(name, new ConstantValue(f.getName().toString()));
+              ctor.addStatement(insts.PropertyRead(pc++, tmp, 1, name));
+              ctor.addStatement(insts.PropertyWrite(pc++, inst, name, tmp));
+          }
+          
           if (init != null) {
             int fv = v++;
             ctor.addStatement(

@@ -14,6 +14,7 @@ import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuild
 import com.ibm.wala.cast.python.ipa.callgraph.PythonScopeMappingInstanceKeys;
 import com.ibm.wala.cast.python.ipa.summaries.BuiltinFunctions;
 import com.ibm.wala.cast.python.ipa.summaries.PythonComprehensionTrampolines;
+import com.ibm.wala.cast.python.ipa.summaries.PythonCoroutineTrampolines;
 import com.ibm.wala.cast.python.ipa.summaries.PythonSuper;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
@@ -84,7 +85,7 @@ public abstract class PythonAnalysisEngine<T>
   /** Library summaries to load. */
   private static final String[] LIBRARIES =
       new String[] {
-        "flask.xml", "pandas.xml", "functools.xml", "pytest.xml", "click.xml", "abseil.xml"
+        "asyncio.xml", "flask.xml", "pandas.xml", "functools.xml", "pytest.xml", "click.xml", "abseil.xml"
       };
 
   protected PythonSSAPropagationCallGraphBuilder builder;
@@ -309,12 +310,13 @@ public abstract class PythonAnalysisEngine<T>
   }
 
   protected void addBypassLogic(IClassHierarchy cha, AnalysisOptions options) {
-    options.setSelector(
-        new PythonInstanceMethodTrampolineTargetSelector<T>(
-            new PythonClassMethodTrampolineTargetSelector<T>(
-                new PythonConstructorTargetSelector(
-                    new PythonComprehensionTrampolines(options.getMethodTargetSelector()))),
-            this));
+	  options.setSelector(
+	    new PythonCoroutineTrampolines(
+		  new PythonInstanceMethodTrampolineTargetSelector<T>(
+		    new PythonClassMethodTrampolineTargetSelector<T>(
+			  new PythonConstructorTargetSelector(
+			    new PythonComprehensionTrampolines(options.getMethodTargetSelector()))),
+							  this)));
 
     BuiltinFunctions builtins = new BuiltinFunctions(cha);
     options.setSelector(builtins.builtinClassTargetSelector(options.getClassTargetSelector()));

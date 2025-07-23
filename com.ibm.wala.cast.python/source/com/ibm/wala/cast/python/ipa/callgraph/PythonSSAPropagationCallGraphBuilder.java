@@ -14,11 +14,24 @@ import static com.ibm.wala.cast.python.util.Util.IMPORT_WILDCARD_CHARACTER;
 import static com.ibm.wala.cast.python.util.Util.MODULE_INITIALIZATION_FILENAME;
 import static com.ibm.wala.cast.python.util.Util.PYTHON_FILE_EXTENSION;
 
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.logging.Logger;
+
+import org.jspecify.annotations.Nullable;
+
 import com.google.common.collect.Maps;
 import com.ibm.wala.cast.ipa.callgraph.AstSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.ipa.callgraph.GlobalObjectKey;
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.ir.ssa.AstPropertyRead;
+import com.ibm.wala.cast.python.ipa.summaries.PythonInstanceMethodTrampoline;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.ssa.ForElementGetInstruction;
 import com.ibm.wala.cast.python.ssa.PythonInstructionVisitor;
@@ -30,6 +43,7 @@ import com.ibm.wala.classLoader.NewSiteReference;
 import com.ibm.wala.core.util.CancelRuntimeException;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.fixpoint.AbstractOperator;
+import com.ibm.wala.fixpoint.UnaryOperator;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
@@ -57,23 +71,25 @@ import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.collections.EmptyIterator;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.intset.IntIterator;
 import com.ibm.wala.util.intset.IntSet;
 import com.ibm.wala.util.intset.IntSetUtil;
 import com.ibm.wala.util.intset.MutableIntSet;
 import com.ibm.wala.util.intset.OrdinalSet;
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.logging.Logger;
 
 public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallGraphBuilder {
+
+	private static final FieldReference functionField = FieldReference.findOrCreate(
+			PythonTypes.Root,
+			Atom.findOrCreateUnicodeAtom("$function"),
+			PythonTypes.Root);
+
+	private static final FieldReference selfField = FieldReference.findOrCreate(
+			PythonTypes.Root,
+			Atom.findOrCreateUnicodeAtom("$self"),
+			PythonTypes.Root);
 
   private static final Logger logger =
       Logger.getLogger(PythonSSAPropagationCallGraphBuilder.class.getName());
@@ -610,6 +626,189 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
       return declaredFieldName.substring(
           (GLOBAL_IDENTIFIER + " ").length(), declaredFieldName.length());
     }
+
+    private boolean possiblyObjectType(int vn) {
+    	if (contentsAreInvariant(ir.getSymbolTable(), du, vn)) {
+    		for (InstanceKey ik : getInvariantContents(vn)) {
+    			if (getClassHierarchy().isSubclassOf(ik.getConcreteType(), getClassHierarchy().lookupClass(PythonTypes.object))) {
+    				return true;
+    			}
+    		}
+    		
+    		return false;
+    	} else {
+    		return true;
+    	}
+    }
+        
+    private InstanceKey toTrampolineIfNeeded(InstanceKey ik, InstanceKey container) {
+    	if (getClassHierarchy().isSubclassOf(ik.getConcreteType(), getClassHierarchy().lookupClass(PythonTypes.MethodBody)) ||
+    		getClassHierarchy().isSubclassOf(ik.getConcreteType(), getClassHierarchy().lookupClass(PythonTypes.LambdaMethod))) 
+    	{
+    		System.err.println(ik.getConcreteType().getName().toString());
+    		System.err.println(container.getConcreteType().getName().toString());
+    		TypeReference trampolineClassRef = PythonInstanceMethodTrampoline.findOrCreate(ik.getConcreteType().getReference(), getClassHierarchy());
+    		IClass trampolineClass = getClassHierarchy().lookupClass(trampolineClassRef);
+    	    
+    		class TrampolineInstanceKey implements InstanceKey {
+    			@Override
+    			public IClass getConcreteType() {
+    				return trampolineClass;
+    			}
+
+    			@Override
+    			public Iterator<Pair<CGNode, NewSiteReference>> getCreationSites(CallGraph CG) {
+    				return EmptyIterator.instance();
+    			}
+    	    	
+       			@Override
+    			public boolean equals(Object o) {
+    				return o instanceof TrampolineInstanceKey && ((TrampolineInstanceKey)o).getConcreteType() == trampolineClass;
+    			}
+    			
+       			@Override
+       			public int hashCode() {
+       				return trampolineClass.hashCode();
+       			}
+    	    }
+    		
+    		TrampolineInstanceKey t =  new TrampolineInstanceKey();
+    		IField fun = getClassHierarchy().resolveField(functionField);
+    		PointerKey funKey = builder.getPointerKeyFactory().getPointerKeyForInstanceField(t, fun);
+    		system.newConstraint(funKey, ik);
+    		
+			IField self = getClassHierarchy().resolveField(selfField);
+    		PointerKey selfKey = builder.getPointerKeyFactory().getPointerKeyForInstanceField(t, self);
+       		system.newConstraint(selfKey, container);
+       	    		
+    		return t;
+    	
+    	} else {
+    		return ik;
+    	}
+    }
+
+	private class TrampolineWriter implements ReflectedFieldAction {
+        private final PointerKey rhs;
+
+        private TrampolineWriter(PointerKey rhs) {
+          this.rhs = rhs;
+        }
+
+        @Override
+        public void action(AbstractFieldPointerKey fieldKey) {
+        	if (getClassHierarchy().isSubclassOf(fieldKey.getInstanceKey().getConcreteType(), getClassHierarchy().lookupClass(PythonTypes.object))) {
+        		system.newConstraint(fieldKey, new UnaryOperator<PointsToSetVariable>() {
+    				byte changed;
+
+        			@Override
+        			public byte evaluate(@Nullable PointsToSetVariable lhs, PointsToSetVariable rhs) {
+        				changed = NOT_CHANGED;
+        				if (rhs.getValue() != null) {
+        					rhs.getValue().foreach(i -> { 
+        						InstanceKey ik = system.getInstanceKey(i);
+        						InstanceKey newRhs = toTrampolineIfNeeded(ik, fieldKey.getInstanceKey());
+        						system.findOrCreateIndexForInstanceKey(newRhs);
+        						if (system.newConstraint(fieldKey, newRhs)) {
+        							changed = CHANGED;
+        						}
+        					});
+        				}
+        				// TODO Auto-generated method stub
+        				return changed;
+        			}
+
+        			@Override
+        			public int hashCode() {
+        				return fieldKey.hashCode()*rhs.hashCode();
+        			}
+
+        			@Override
+        			public boolean equals(Object o) {
+        				return this == o;
+        			}
+
+        			@Override
+        			public String toString() {
+        				return fieldKey + " <-- " + rhs + " with trampolines";
+        			} 
+        		}, rhs);
+        	} else {
+        		if (!representsNullType(fieldKey.getInstanceKey())) {
+        			system.newConstraint(fieldKey, assignOperator, rhs);
+        		}
+        	}
+        }
+
+		@Override
+		public void dump(AbstractFieldPointerKey fieldKey, boolean constObj, boolean constProp) {
+			// TODO Auto-generated method stub
+			
+		}
+    }
+
+    private class TrampolineConstantWriter implements ReflectedFieldAction {
+        private final InstanceKey[] rhsFixedValues;
+
+        private TrampolineConstantWriter(InstanceKey[] rhsFixedValues) {
+          this.rhsFixedValues = rhsFixedValues;
+        }
+
+		@Override
+		public void action(AbstractFieldPointerKey fieldKey) {
+		     if (!representsNullType(fieldKey.getInstanceKey())) {
+		          for (InstanceKey rhsFixedValue : rhsFixedValues) {
+		        	InstanceKey newRhs = toTrampolineIfNeeded(rhsFixedValue, fieldKey.getInstanceKey());
+		            system.findOrCreateIndexForInstanceKey(newRhs);
+		            system.newConstraint(fieldKey, newRhs);
+		          }
+		     }
+		}
+
+		@Override
+		public void dump(AbstractFieldPointerKey fieldKey, boolean constObj, boolean constProp) {
+			// TODO Auto-generated method stub
+			
+		}
+    	
+    	
+    }
+    	 
+	@Override
+	public void newFieldWrite(CGNode opNode, int objVn, int fieldsVn, InstanceKey[] rhsFixedValues) {
+		if (possiblyObjectType(objVn)) {
+			newFieldOperation(opNode, objVn, fieldsVn, false, new TrampolineConstantWriter(rhsFixedValues));			
+		} else {
+			super.newFieldWrite(opNode, objVn, fieldsVn, rhsFixedValues);
+		}
+	}
+
+	@Override
+	public void newFieldWrite(CGNode opNode, int objVn, InstanceKey[] fieldKeys, InstanceKey[] rhsValues) {
+		if (possiblyObjectType(objVn)) {
+			newFieldOperationFieldConstant(opNode, false, new TrampolineConstantWriter(rhsValues), objVn, fieldKeys);			
+		} else {
+			super.newFieldWrite(opNode, objVn, fieldKeys, rhsValues);
+		}
+	}
+
+	@Override
+	public void newFieldWrite(CGNode opNode, int objVn, int fieldsVn, PointerKey rhs) {
+		if (possiblyObjectType(objVn)) {
+	      newFieldOperation(opNode, objVn, fieldsVn, false, new TrampolineWriter(rhs));
+		} else {
+	      super.newFieldWrite(opNode, objVn, fieldsVn, rhs);
+		}
+	}
+
+	@Override
+	public void newFieldWrite(CGNode opNode, int objVn, InstanceKey[] fieldKeys, PointerKey rhs) {
+		if (possiblyObjectType(objVn)) {
+	      newFieldOperationFieldConstant(opNode, false, new TrampolineWriter(rhs), objVn, fieldKeys);
+		} else {
+		  super.newFieldWrite(opNode, objVn, fieldKeys, rhs);
+		}
+	}
   }
 
   @Override

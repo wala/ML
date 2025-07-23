@@ -95,6 +95,10 @@ public class TestClasses extends TestJythonCallGraphShape {
           new String[] {"$script classes3.py/Ctor/__init__:trampoline4"}
         },
         new Object[] {
+          "$script classes3.py/Ctor/get:trampoline2",
+          new String[] {"script classes3.py/Ctor/get"}
+        },
+        new Object[] {
           "$script classes3.py/Ctor/__init__:trampoline4",
           new String[] {"script classes3.py/Ctor/__init__"}
         },
