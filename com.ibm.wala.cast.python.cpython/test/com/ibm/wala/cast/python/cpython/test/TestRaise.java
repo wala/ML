@@ -105,19 +105,35 @@ public class TestRaise extends TestJythonCallGraphShape {
 		        }
 	  };
 
-	@Test
-	public void testRaise2() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		  PythonAnalysisEngine<?> engine = this.makeEngine("raise2.py");
-		  PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
-		  CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
+		@Test
+		public void testRaise2() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+			  PythonAnalysisEngine<?> engine = this.makeEngine("raise2.py");
+			  PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
+			  CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
 
-		  System.err.println(CG);
-		  CAstCallGraphUtil.AVOID_DUMP.set(false);
-		  CAstCallGraphUtil.dumpCG(
-				  (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
-				  callGraphBuilder.getPointerAnalysis(),
-				  CG);
+			  System.err.println(CG);
+			  CAstCallGraphUtil.AVOID_DUMP.set(false);
+			  CAstCallGraphUtil.dumpCG(
+					  (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
+					  callGraphBuilder.getPointerAnalysis(),
+					  CG);
 
-	    verifyGraphAssertions(CG, assertionsForRaise2);
-	}
+		    verifyGraphAssertions(CG, assertionsForRaise2);
+		}
+
+		@Test
+		public void testRaise3() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+			  PythonAnalysisEngine<?> engine = this.makeEngine("raise3.py");
+			  PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
+			  CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
+
+			  System.err.println(CG);
+			  CAstCallGraphUtil.AVOID_DUMP.set(false);
+			  CAstCallGraphUtil.dumpCG(
+					  (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
+					  callGraphBuilder.getPointerAnalysis(),
+					  CG);
+
+		    //verifyGraphAssertions(CG, assertionsForRaise2);
+		}
 }

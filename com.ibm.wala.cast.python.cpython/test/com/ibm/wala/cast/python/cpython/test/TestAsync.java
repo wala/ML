@@ -111,5 +111,20 @@ public class TestAsync extends TestJythonCallGraphShape {
 	    verifyGraphAssertions(CG, assertionsAsync3);
 
 	}
+	
+	@Test
+	public void testAsync4() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		PythonAnalysisEngine<?> engine = this.makeEngine("async4.py");
+		PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
+		CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
+		
+		CAstCallGraphUtil.AVOID_DUMP.set(false); CAstCallGraphUtil.dumpCG(
+			(SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
+			callGraphBuilder.getPointerAnalysis(), CG);
+		
+		System.err.println(CG);
+	    // verifyGraphAssertions(CG, assertionsAsync4);
+
+	}
 
 }

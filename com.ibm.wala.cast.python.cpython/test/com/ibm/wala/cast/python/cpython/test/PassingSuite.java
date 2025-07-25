@@ -8,6 +8,7 @@ import com.ibm.wala.cast.python.test.*;
 
 @RunWith(Suite.class)
 @SuiteClasses({
+	TestFString.class,
 	TestAsync.class,
 	TestRaise.class,
 	TestWalrus.class,
