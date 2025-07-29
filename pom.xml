@@ -30,7 +30,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build-alias>b000</build-alias>
     <wala.version>1.6.10</wala.version>
-    <spotless.version>2.45.0</spotless.version>
+    <spotless.version>2.46.1</spotless.version>
     <maven.surefire.version>3.5.3</maven.surefire.version>
     <parallel>both</parallel>
     <logging.config.file>./logging.properties</logging.config.file>
