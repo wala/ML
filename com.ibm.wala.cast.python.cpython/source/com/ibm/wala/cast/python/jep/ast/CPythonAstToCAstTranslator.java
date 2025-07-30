@@ -317,6 +317,8 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		boolean isGenerator();
 
 		boolean isGenerator(boolean v);
+
+		boolean isAsync();
 		
 		boolean isFunctionScope();
 		
@@ -338,7 +340,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		PythonScriptEntity self;
 
 		protected ScriptContext(PyObject s, CAstImpl ast, PythonScriptEntity self) {
-			super(null, s, Collections.emptyList());
+			super(null, s, Collections.emptyList(), false);
 			this.ast = s;
 			this.self = self;
 		}
@@ -407,6 +409,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		private final Scope scope;
 		private CAstEntity entity;
 		private boolean generator = false;
+		private final boolean async;
 
 		private final List<String> inits = new ArrayList<>();
 
@@ -427,8 +430,9 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			return inits;
 		}
 
-		protected FunctionContext(WalkContext parent, PyObject s, List<String> argumentNames) {
+		protected FunctionContext(WalkContext parent, PyObject s, List<String> argumentNames, boolean async) {
 			super(parent, s);
+			this.async = async;
 			scope = new Scope() {
 				@Override
 				Scope parent() {
@@ -466,6 +470,11 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		@Override
 		public WalkContext codeParent() {
 			return this;
+		}
+
+		@Override
+		public boolean isAsync() {
+			return async;
 		}
 	}
 
@@ -509,6 +518,11 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		@Override
 		public CAstEntity entity() {
 			return parent.entity();
+		}
+
+		@Override
+		public boolean isAsync() {
+			return parent.isAsync();
 		}
 
 		@Override
@@ -871,7 +885,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 
 			FunctionEntity fun = new FunctionEntity(funType);
 
-			WalkContext fc = new FunctionContext(context, o, argumentNames) {
+			WalkContext fc = new FunctionContext(context, o, argumentNames, superType==asyncCodeBody||superType==asyncMethodBody) {
 
 				@Override
 				public CAstControlFlowRecorder cfg() {
@@ -1640,6 +1654,12 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 				}
 
 				@Override
+				public boolean isAsync() {
+					assert false;
+					return false;
+				}
+
+				@Override
 				public boolean isGenerator() {
 					assert false;
 					return false;
@@ -1735,6 +1755,11 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			@Override
 			public List<String> inits() {
 				return getParent().inits();
+			}
+
+			@Override
+			public boolean isAsync() {
+				return getParent().isAsync();
 			}
 
 			@Override
@@ -1927,7 +1952,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			PyObject iter = forNode.getAttr("iter", PyObject.class);
 			java.util.List<PyObject> internalBody = forNode.getAttr("body", List.class);
 
-			return handleFor(target, iter, internalBody, context);
+			return handleFor(target, iter, internalBody, context, false);
 
 		}
 
@@ -1937,11 +1962,11 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 			PyObject iter = forNode.getAttr("iter", PyObject.class);
 			java.util.List<PyObject> internalBody = forNode.getAttr("body", List.class);
 
-			return handleFor(target, iter, internalBody, context);
+			return handleFor(target, iter, internalBody, context, true);
 
 		}
 
-		private CAstNode handleFor(PyObject target, PyObject iter, List<PyObject> internalBody, WalkContext context)
+		private CAstNode handleFor(PyObject target, PyObject iter, List<PyObject> internalBody, WalkContext context, boolean async)
 				throws Exception {
 			PyObject contLabel = runit("ast.Pass()");
 			PyObject breakLabel = runit("ast.Pass()");
@@ -1974,6 +1999,11 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 
 				public List<PyObject> ifs() {
 					return Collections.emptyList();
+				}
+
+				@Override
+				public boolean async() {
+					return async;
 				}
 			};
 

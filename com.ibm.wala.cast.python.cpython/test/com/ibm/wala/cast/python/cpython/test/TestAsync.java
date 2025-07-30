@@ -112,6 +112,34 @@ public class TestAsync extends TestJythonCallGraphShape {
 
 	}
 	
+	protected static final Object[][] assertionsAsync4 = new Object[][] {
+		new Object[] { ROOT, new String[] { "script async4.py" } },
+		new Object[] { "script async4.py",
+				new String[] { 
+					"asyncio/class/run",
+					"CodeBody:$coroutine$Lscript async4.py/main"
+		        }
+		},
+		new Object[] { "CodeBody:$coroutine$Lscript async4.py/main",
+			new String[] { "script async4.py/main" }
+		},
+		new Object[] { "script async4.py/main",
+			new String[] {
+					"CodeBody:$coroutine$Lscript async4.py/gen",
+				"script async4.py/f1",
+				"script async4.py/f2",
+				"script async4.py/f3",
+				"script async4.py/f1/lambda1",
+				"script async4.py/f2/lambda2",
+				"script async4.py/f3/lambda3"
+			}
+		},
+		new Object[] { "CodeBody:$coroutine$Lscript async4.py/gen",
+				new String[] { "script async4.py/gen" }
+			},
+
+	};
+	
 	@Test
 	public void testAsync4() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 		PythonAnalysisEngine<?> engine = this.makeEngine("async4.py");
@@ -123,7 +151,7 @@ public class TestAsync extends TestJythonCallGraphShape {
 			callGraphBuilder.getPointerAnalysis(), CG);
 		
 		System.err.println(CG);
-	    // verifyGraphAssertions(CG, assertionsAsync4);
+	    verifyGraphAssertions(CG, assertionsAsync4);
 
 	}
 
