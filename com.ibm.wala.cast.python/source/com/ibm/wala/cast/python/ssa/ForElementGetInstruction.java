@@ -34,7 +34,7 @@ public class ForElementGetInstruction extends SSAAbstractBinaryInstruction {
         + " = nextElt "
         + getValueString(symbolTable, val1)
         + ", "
-        + getValueString(symbolTable, val1);
+        + getValueString(symbolTable, val2);
   }
 
   @Override

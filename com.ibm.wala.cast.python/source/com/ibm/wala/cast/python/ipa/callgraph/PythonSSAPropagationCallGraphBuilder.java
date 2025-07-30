@@ -176,6 +176,12 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
      *     "__contents__" which is read by this mechanism. Generator expressions use the iterator
      *     type and generator functions use CodeBody.
      */
+    private boolean isAsyncKeyType(IClass objType) {
+        IClassHierarchy cha = getClassHierarchy();
+        return cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.AsyncCodeBody))
+            || cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.AsyncMethodBody));
+    }
+    
     private boolean isValueForKeyType(IClass objType) {
       IClassHierarchy cha = getClassHierarchy();
       return cha.isSubclassOf(objType, cha.lookupClass(PythonTypes.list))
@@ -196,7 +202,9 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
 
       if (contentsAreInvariant(symtab, du, objVn)) {
         for (InstanceKey ik : getInvariantContents(objVn)) {
-          if (!isValueForKeyType(ik.getConcreteType())) {
+          if (isAsyncKeyType(ik.getConcreteType())) {
+        	system.newConstraint(resultKey, assignOperator, builder.getPointerKeyForInstanceField(ik, ik.getConcreteType().getField(Atom.findOrCreateAsciiAtom("__content__"))));
+          } else if (!isValueForKeyType(ik.getConcreteType())) {
             system.newConstraint(resultKey, assignOperator, eltKey);
           } else {
             newFieldRead(node, objVn, eltVn, resultVn);
@@ -209,18 +217,21 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
               @Override
               public byte evaluate(PointsToSetVariable lhs, PointsToSetVariable[] rhs) {
                 boolean changed = false;
-                for (PointsToSetVariable rv : rhs) {
-                  if (rv.getValue() != null) {
-                    IntIterator is = rv.getValue().intIterator();
-                    while (is.hasNext()) {
-                      InstanceKey ik = system.getInstanceKey(is.next());
-                      if (!isValueForKeyType(ik.getConcreteType())) {
-                        changed |= system.newConstraint(resultKey, assignOperator, eltKey);
-                      } else {
-                        newFieldRead(node, objVn, eltVn, resultVn);
-                      }
-                    }
-                  }
+                PointsToSetVariable rv = rhs[0];
+                if (rv.getValue() != null) {
+                	IntIterator is = rv.getValue().intIterator();
+                	while (is.hasNext()) {
+                		InstanceKey ik = system.getInstanceKey(is.next());
+                        if (isAsyncKeyType(ik.getConcreteType())) {
+                        	PointerKey ifpk = builder.getPointerKeyForInstanceField(ik, ik.getConcreteType().getField(Atom.findOrCreateAsciiAtom("__content__")));
+							system.newConstraint(resultKey, assignOperator, ifpk);
+                        } else if (!isValueForKeyType(ik.getConcreteType())) {
+                			changed |= system.newConstraint(resultKey, assignOperator, eltKey);
+                		} else {
+                			newFieldRead(node, objVn, eltVn, resultVn);
+                		}
+                	}
+
                 }
                 if (changed) {
                   return CHANGED;

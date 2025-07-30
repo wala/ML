@@ -23,6 +23,8 @@ public class PythonCoroutineTrampolines extends PythonTrampolines {
 
   PythonSummarizedFunction makeTrampoline(CGNode caller, CallSiteReference site, IClass receiver,
 		MethodReference method) {
+	int instIdx = 0;
+	
 	int i = 0;
 	MethodReference synth =
 	    MethodReference.findOrCreate(
@@ -32,21 +34,27 @@ public class PythonCoroutineTrampolines extends PythonTrampolines {
 	            method.getSelector().getDescriptor()));
 
 	SSAAbstractInvokeInstruction inst = caller.getIR().getCalls(site)[0];
-	int v = inst.getNumberOfUses();
+	PythonSummary x = new PythonSummary(synth, inst.getNumberOfUses());
+
+	int v = inst.getNumberOfUses()+1;
 	int[] args = new int[inst.getNumberOfUses() ];
 	for(i = 1; i <= inst.getNumberOfUses(); i++) {
-		args[i-1] = i;
+		if (i == 1) {
+			x.addStatement(PythonLanguage.Python.instructionFactory().CheckCastInstruction(instIdx++, v, i, receiver.getReference(), true));
+			args[i-1] = v++;
+		} else {
+			args[i-1] = i;
+		}
 	}
 
-	PythonSummary x = new PythonSummary(synth, inst.getNumberOfUses());
 	int r = i+1;
 	CallSiteReference ss = new DynamicCallSiteReference(PythonTypes.CodeBody, i);
-	x.addStatement(new PythonInvokeInstruction(0, r, v++, ss, args, new Pair[0]));
+	x.addStatement(new PythonInvokeInstruction(instIdx++, r, v++, ss, args, new Pair[0]));
 
-	x.addConstant(i+2, new ConstantValue("__async_content__")) ;
-	x.addStatement(PythonLanguage.Python.instructionFactory().PropertyWrite(1, 1, i+2, r));
+	x.addConstant(v, new ConstantValue("__async_content__")) ;
+	x.addStatement(PythonLanguage.Python.instructionFactory().PropertyWrite(instIdx++, 1, v++, r));
 
-	x.addStatement(PythonLanguage.Python.instructionFactory().ReturnInstruction(2, 1, false));
+	x.addStatement(PythonLanguage.Python.instructionFactory().ReturnInstruction(instIdx++, 1, false));
 	
 	PythonSummarizedFunction code = new PythonSummarizedFunction(synth, x, receiver);
 	return code;
