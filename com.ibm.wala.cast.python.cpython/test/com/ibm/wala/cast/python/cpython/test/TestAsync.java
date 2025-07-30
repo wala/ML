@@ -175,10 +175,19 @@ public class TestAsync extends TestJythonCallGraphShape {
 			new String[] {
 				"script async5.py/f1",
 				"script async5.py/f2",
-				"script async5.py/f3"}
+				"script async5.py/f3",
+				"!script async5.py/gen",
+				"!script async5.py/f1/lambda1",
+				"!script async5.py/f2/lambda2",
+				"!script async5.py/f3/lambda3"
+		    }
 		},
 		new Object[] { "script async5.py/p2",
 			new String[] {
+				"!script async5.py/f1",
+				"!script async5.py/f2",
+				"!script async5.py/f3",
+				"!script async5.py/gen",
 				"script async5.py/f1/lambda1",
 				"script async5.py/f2/lambda2",
 				"script async5.py/f3/lambda3"
