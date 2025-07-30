@@ -169,7 +169,14 @@ public class TestAsync extends TestJythonCallGraphShape {
 			new String[] {
 				"CodeBody:$coroutine$Lscript async5.py/gen",
 				"script async5.py/p1",
-				"script async5.py/p2"}
+				"script async5.py/p2",
+				"!script async5.py/f1",
+				"!script async5.py/f2",
+				"!script async5.py/f3",
+				"!script async5.py/gen",
+				"!script async5.py/f1/lambda1",
+				"!script async5.py/f2/lambda2",
+				"!script async5.py/f3/lambda3"}
 		},
 		new Object[] { "script async5.py/p1",
 			new String[] {
@@ -194,7 +201,15 @@ public class TestAsync extends TestJythonCallGraphShape {
 			}
 		},
 		new Object[] { "CodeBody:$coroutine$Lscript async5.py/gen",
-				new String[] { "script async5.py/gen" }
+				new String[] { "script async5.py/gen",
+						"!script async5.py/f1",
+						"!script async5.py/f2",
+						"!script async5.py/f3",
+						"!script async5.py/f1/lambda1",
+						"!script async5.py/f2/lambda2",
+						"!script async5.py/f3/lambda3"
+
+				}
 			},
 	};
 	
