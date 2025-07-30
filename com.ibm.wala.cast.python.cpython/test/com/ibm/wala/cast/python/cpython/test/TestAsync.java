@@ -125,7 +125,7 @@ public class TestAsync extends TestJythonCallGraphShape {
 		},
 		new Object[] { "script async4.py/main",
 			new String[] {
-					"CodeBody:$coroutine$Lscript async4.py/gen",
+				"CodeBody:$coroutine$Lscript async4.py/gen",
 				"script async4.py/f1",
 				"script async4.py/f2",
 				"script async4.py/f3",
@@ -152,7 +152,55 @@ public class TestAsync extends TestJythonCallGraphShape {
 		
 		System.err.println(CG);
 	    verifyGraphAssertions(CG, assertionsAsync4);
+	}
 
+	protected static final Object[][] assertionsAsync5 = new Object[][] {
+		new Object[] { ROOT, new String[] { "script async5.py" } },
+		new Object[] { "script async5.py",
+				new String[] { 
+					"asyncio/class/run",
+					"CodeBody:$coroutine$Lscript async5.py/main"
+		        }
+		},
+		new Object[] { "CodeBody:$coroutine$Lscript async5.py/main",
+			new String[] { "script async5.py/main" }
+		},
+		new Object[] { "script async5.py/main",
+			new String[] {
+				"CodeBody:$coroutine$Lscript async5.py/gen",
+				"script async5.py/p1",
+				"script async5.py/p2"}
+		},
+		new Object[] { "script async5.py/p1",
+			new String[] {
+				"script async5.py/f1",
+				"script async5.py/f2",
+				"script async5.py/f3"}
+		},
+		new Object[] { "script async5.py/p2",
+			new String[] {
+				"script async5.py/f1/lambda1",
+				"script async5.py/f2/lambda2",
+				"script async5.py/f3/lambda3"
+			}
+		},
+		new Object[] { "CodeBody:$coroutine$Lscript async5.py/gen",
+				new String[] { "script async5.py/gen" }
+			},
+	};
+	
+	@Test
+	public void testAsync5() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		PythonAnalysisEngine<?> engine = this.makeEngine("async5.py");
+		PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
+		CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
+		
+		CAstCallGraphUtil.AVOID_DUMP.set(false); CAstCallGraphUtil.dumpCG(
+			(SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
+			callGraphBuilder.getPointerAnalysis(), CG);
+		
+		System.err.println(CG);
+	    verifyGraphAssertions(CG, assertionsAsync5);
 	}
 
 }
