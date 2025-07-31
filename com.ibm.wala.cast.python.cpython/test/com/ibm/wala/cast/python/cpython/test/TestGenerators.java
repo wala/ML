@@ -137,4 +137,47 @@ public class TestGenerators extends TestJythonCallGraphShape {
 		  verifyGraphAssertions(CG, assertionsForGen4);
 	  }
 
+	  protected static final Object[][] assertionsForGen5 =
+			  new Object[][] {
+		  new Object[] {ROOT, new String[] {"script gen5.py"}},
+		  new Object[] {
+				  "script gen5.py/gen",
+				  new String[] { "script gen5.py/gen1" }
+		  },
+		  new Object[] {
+				  "script gen5.py",
+				  new String[] {"script gen5.py/gen", "script gen5.py/p1", "script gen5.py/p2"}
+		  },
+		  new Object[] {
+				  "script gen5.py/p2",
+				  new String[] {"script gen5.py/f1/lambda1", "script gen5.py/f2/lambda2", 
+						  "script gen5.py/f3/lambda3", "!script gen5.py/f1", 
+						  "!script gen5.py/f2", "!script gen5.py/f3", "!script gen5.py/gen"}
+		  },
+		  new Object[] {
+				  "script gen5.py/p1",
+				  new String[] {"script gen5.py/f1", 
+						  "script gen5.py/f2", "script gen5.py/f3",
+						  "!script gen5.py/f1/lambda1", "!script gen5.py/f2/lambda2", 
+						  "!script gen5.py/f3/lambda3", "!script gen5.py/gen"}
+		  }
+	  };
+
+	  @Test
+	  public void testGen5()
+	      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+		  PythonAnalysisEngine<?> engine = this.makeEngine("gen5.py");
+		  PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
+		  CallGraph CG = callGraphBuilder.makeCallGraph(callGraphBuilder.getOptions());
+
+		  System.err.println(CG);
+		  CAstCallGraphUtil.AVOID_DUMP.set(false);
+		  CAstCallGraphUtil.dumpCG(
+				  (SSAContextInterpreter) callGraphBuilder.getContextInterpreter(),
+				  callGraphBuilder.getPointerAnalysis(),
+				  CG);
+
+		  verifyGraphAssertions(CG, assertionsForGen5);
+	  }
+
 }
