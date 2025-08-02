@@ -7,36 +7,46 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>com.ibm.wala.cast.python.cpython</artifactId>
+  <properties>
+    <wala.version>1.6.10-SNAPSHOT</wala.version>
+  </properties>
   <dependencies>
-    <dependency>
-      <groupId>com.ibm.wala</groupId>
-      <artifactId>com.ibm.wala.util</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.ibm.wala</groupId>
-      <artifactId>com.ibm.wala.shrike</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.ibm.wala</groupId>
-      <artifactId>com.ibm.wala.core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.ibm.wala</groupId>
-      <artifactId>com.ibm.wala.cast</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.ibm.wala</groupId>
-      <artifactId>com.ibm.wala.cast.java</artifactId>
-    </dependency>
     <dependency>
       <groupId>com.ibm.wala</groupId>
       <artifactId>com.ibm.wala.cast.python</artifactId>
       <version>0.0.1-SNAPSHOT</version>
+      <type>jar</type>
     </dependency>
     <dependency>
       <groupId>com.ibm.wala</groupId>
       <artifactId>com.ibm.wala.cast.python.test</artifactId>
       <version>0.0.1-SNAPSHOT</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>com.ibm.wala</groupId>
+      <artifactId>com.ibm.wala.util</artifactId>
+      <version>${wala.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ibm.wala</groupId>
+      <artifactId>com.ibm.wala.shrike</artifactId>
+      <version>${wala.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ibm.wala</groupId>
+      <artifactId>com.ibm.wala.core</artifactId>
+      <version>${wala.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ibm.wala</groupId>
+      <artifactId>com.ibm.wala.cast</artifactId>
+      <version>${wala.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ibm.wala</groupId>
+      <artifactId>com.ibm.wala.cast.java</artifactId>
+      <version>${wala.version}</version>
     </dependency>
     <dependency>
       <groupId>org.antlr</groupId>
@@ -48,20 +58,30 @@
       <version>4.2.0</version>
     </dependency>
     <dependency>
-   	 <groupId>org.apache.parquet</groupId>
-  	 <artifactId>parquet-avro</artifactId>
-     <version>1.14.3</version>
+      <groupId>org.apache.parquet</groupId>
+      <artifactId>parquet-avro</artifactId>
+      <version>1.14.3</version>
     </dependency>
-<dependency>
-    <groupId>org.apache.hadoop</groupId>
-    <artifactId>hadoop-common</artifactId>
-    <version>3.4.1</version>
-</dependency>
-<dependency>
-    <groupId>org.apache.hadoop</groupId>
-    <artifactId>hadoop-mapreduce-client-core</artifactId>
-    <version>3.4.1</version>
-</dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>3.4.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-mapreduce-client-core</artifactId>
+      <version>3.4.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20250517</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.lsp4j</groupId>
+      <artifactId>org.eclipse.lsp4j</artifactId>
+      <version>0.8.1</version>
+    </dependency>
   </dependencies>
   <build>
     <resources>
@@ -72,13 +92,58 @@
     <sourceDirectory>source</sourceDirectory>
     <testSourceDirectory>test</testSourceDirectory>
     <plugins>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <id>retrieve-config</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <executable>python</executable>
+          <arguments>
+            <argument>-c</argument>
+	    <argument>import site; print("sitePackages=" + site.getsitepackages()[0])</argument>
+          </arguments>
+	  <outputFile>config.properties</outputFile>
+          <workingDirectory>${basedir}</workingDirectory>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>properties-maven-plugin</artifactId>
+        <version>1.0-alpha-2</version>
+        <executions>
+          <execution>
+            <id>read-properties</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>read-project-properties</goal>
+            </goals>
+            <configuration>
+              <files>
+                <file>${basedir}/config.properties</file>
+              </files>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
 	<configuration>
 	  <excludes>**/Test*.java</excludes>
 	  <includes>**/PassingSuite.java</includes>
-	  <argLine>-Djava.library.path=/opt/anaconda3/envs/walajep/lib/python3.12/site-packages/jep</argLine>
+	  <argLine>-Djava.library.path=${sitePackages}/jep</argLine>
 	</configuration>
       </plugin>
     </plugins>
