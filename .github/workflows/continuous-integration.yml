@@ -28,9 +28,9 @@ jobs:
     - name: find libjep
       run: |
         A=`which python`
-	echo $A
+        echo $A
         B=`find . -name '*libjep*'`
-	echo $B
+        echo $B
     - name: build WALA
       run: |
         pushd /tmp
