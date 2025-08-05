@@ -27,14 +27,12 @@ jobs:
     - name: installStuff
       run: pip install -r requirements.txt
     - name: build WALA ML core
-      run: \
-        pushd /tmp \
+      run: pushd /tmp \
 	git clone https://github.com/WALA/ML \
 	cd ML \
 	git checkout jumpstart-jep-merge \
 	mvn -f pom-core.xml install \
 	popd
     - name: Build with Maven
-      run: \
-        cd com.ibm.wala.cast.python.cpython \
+      run: cd com.ibm.wala.cast.python.cpython \
         mvn verify 
