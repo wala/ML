@@ -31,6 +31,7 @@ jobs:
         echo $A
         B=`find /opt/hostedtoolcache/ -name '*libjep*'`
         echo $B
+        python -c 'import site; print("sitePackages=" + site.getsitepackages()[0])'
     - name: build WALA
       run: |
         pushd /tmp
