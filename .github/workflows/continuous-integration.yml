@@ -19,10 +19,9 @@ jobs:
         java-version: '24'
         distribution: 'temurin'
         cache: maven
-    - uses: conda-incubator/setup-miniconda@v3
+    - uses: actions/setup-python@v5
       with:
-        miniconda-version: "latest"
-        activate-environment: jep
+        python-version: '3.13' 
     - name: installStuff
       run: pip install -r com.ibm.wala.cast.python.cpython/requirements.txt
     - name: build WALA
@@ -45,5 +44,4 @@ jobs:
     - name: Build with Maven
       run: |
         cd com.ibm.wala.cast.python.cpython
-        conda activate jep
         mvn verify 
