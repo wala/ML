@@ -135,14 +135,6 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
   private static final Collection<TypeReference> types =
       Arrays.asList(PythonTypes.string, TypeReference.Int);
 
-  @Override
-  protected void addAssignmentForCatchPointerKey(PointerKey exceptionVar, PointerKey e, IClass c) {
-	// TODO Auto-generated method stub
-	//  PointsToSetVariable rhs = getPropagationSystem().findOrCreatePointsToSet(e);
-	//  rhs.getValue().foreach(null);
-	super.addAssignmentForCatchPointerKey(exceptionVar, e, c);
-  }
-
   /**
    * A mapping of script names to wildcard imports. We use a {@link Deque} here because we want to
    * always examine the last (front of the queue) encountered wildcard import library for known
