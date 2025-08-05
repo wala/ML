@@ -26,7 +26,9 @@ jobs:
     - name: installStuff
       run: pip install -r com.ibm.wala.cast.python.cpython/requirements.txt
     - name: find libjep
-      run: find . -name '*libjep*'
+      run: |
+        which python
+        find . -name '*libjep*'
     - name: build WALA
       run: |
         pushd /tmp
