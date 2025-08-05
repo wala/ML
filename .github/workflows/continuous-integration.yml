@@ -29,7 +29,7 @@ jobs:
       run: |
         A=`which python`
         echo $A
-        B=`find . -name '*libjep*'`
+        B=`find /opt/hostedtoolcache/ -name '*libjep*'`
         echo $B
     - name: build WALA
       run: |
