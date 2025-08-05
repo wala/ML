@@ -32,7 +32,7 @@ jobs:
         git clone https://github.com/WALA/ML
         cd ML
         git checkout jumpstart-jep-merge
-	cd core
+        cd core
         mvn install
         popd
     - name: Build with Maven
