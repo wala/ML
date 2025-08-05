@@ -29,11 +29,11 @@ jobs:
     - name: build WALA ML core
       run: |
         pushd /tmp
-	git clone https://github.com/WALA/ML
-	cd ML
-	git checkout jumpstart-jep-merge
-	mvn -f pom-core.xml install
-	popd
+        git clone https://github.com/WALA/ML
+        cd ML
+        git checkout jumpstart-jep-merge
+        mvn -f pom-core.xml install
+        popd
     - name: Build with Maven
       run: |
         cd com.ibm.wala.cast.python.cpython
