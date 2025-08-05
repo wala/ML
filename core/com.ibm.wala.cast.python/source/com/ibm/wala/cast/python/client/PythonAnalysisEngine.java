@@ -336,6 +336,7 @@ public abstract class PythonAnalysisEngine<T>
             result.add(new DefaultEntrypoint(er, cha));
           }
         });
+    assert !result.isEmpty() : cha;
     return result;
   }
 
