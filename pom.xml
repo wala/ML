@@ -29,7 +29,7 @@
     <maven.compiler.version>3.14.0</maven.compiler.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build-alias>b000</build-alias>
-    <wala.version>1.6.10</wala.version>
+    <wala.version>1.6.11</wala.version>
     <spotless.version>2.46.1</spotless.version>
     <maven.surefire.version>3.5.3</maven.surefire.version>
     <parallel>both</parallel>
