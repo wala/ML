@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="com.ibm.wala.cast.lsp.tomcat">
+        <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/source"/>
+        <dependent-module archiveName="com.ibm.wala.cast.python.ml-0.0.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/com.ibm.wala.cast.python.ml/target/com.ibm.wala.cast.python.ml-0.0.1-SNAPSHOT.jar">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <property name="context-root" value="com.ibm.wala.cast.lsp.tomcat"/>
+        <property name="java-output-path" value="/com.ibm.wala.cast.lsp.tomcat/build/classes"/>
+    </wb-module>
+</project-modules>

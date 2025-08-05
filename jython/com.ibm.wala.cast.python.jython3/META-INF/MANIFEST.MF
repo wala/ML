@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: WALA Python
+Bundle-SymbolicName: com.ibm.wala.cast.python
+Bundle-Version: 0.0.1.qualifier
+Export-Package: com.ibm.wala.cast.python.client,
+ com.ibm.wala.cast.python.driver,
+ com.ibm.wala.cast.python.loader,
+ com.ibm.wala.cast.python.parser,
+ com.ibm.wala.cast.python.util,
+ org.python.antlr
+Bundle-Vendor: IBM
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Automatic-Module-Name: com.ibm.wala.cast.python

@@ -1,0 +1,70 @@
+<?xml version="1.0" ?>
+<!DOCTYPE summary-spec>
+<!-- Pytest model -->
+<summary-spec>
+  <classloader name="PythonLoader">
+    <class name="pytest" allocatable="true">
+      <method name="import" static="true" descriptor="()Lpytest;">
+        <new def="x" class="Lpytest" />
+        <new def="mark" class="Lobject" />
+        <putfield class="LRoot" field="mark" fieldType="LRoot" ref="x" value="mark" />
+        <new def="parametrize" class="Lpytest/class/parametrize" />
+        <putfield class="LRoot" field="parametrize" fieldType="LRoot" ref="mark" value="parametrize" />
+        <new def="skip" class="Lpytest/class/skip" />
+        <putfield class="LRoot" field="skip" fieldType="LRoot" ref="mark" value="skip" />
+        <new def="skipif" class="Lpytest/class/skipif" />
+        <putfield class="LRoot" field="skipif" fieldType="LRoot" ref="mark" value="skipif" />
+        <return value="x" />
+      </method>
+    </class>
+    <package name="pytest/class">
+      <class name="Parametrize" allocatable="true">
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self test">
+          <putfield class="LRoot" field="params" fieldType="LRoot" ref="test" value="self" />
+          <return value="test" />
+        </method>
+      </class>
+      <class name="parametrize" allocatable="true">
+        <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self params values extra">
+          <new def="closure" class="Lpytest/class/Parametrize" />
+          <putfield class="LRoot" field="test" fieldType="LRoot" ref="closure" value="self" />
+          <putfield class="LRoot" field="params" fieldType="LRoot" ref="closure" value="params" />
+          <putfield class="LRoot" field="values" fieldType="LRoot" ref="closure" value="values" />
+          <return value="closure" />
+        </method>
+      </class>
+      <class name="Skip" allocatable="true">
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self test">
+          <putfield class="LRoot" field="params" fieldType="LRoot" ref="test" value="self" />
+          <return value="test" />
+        </method>
+      </class>
+      <class name="skip" allocatable="true">
+        <!-- https://docs.pytest.org/en/8.2.x/reference/reference.html#pytest.mark.skip -->
+        <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self params values extra">
+          <new def="closure" class="Lpytest/class/Skip" />
+          <putfield class="LRoot" field="test" fieldType="LRoot" ref="closure" value="self" />
+          <putfield class="LRoot" field="params" fieldType="LRoot" ref="closure" value="params" />
+          <putfield class="LRoot" field="values" fieldType="LRoot" ref="closure" value="values" />
+          <return value="closure" />
+        </method>
+      </class>
+      <class name="Skipif" allocatable="true">
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self test">
+          <putfield class="LRoot" field="params" fieldType="LRoot" ref="test" value="self" />
+          <return value="test" />
+        </method>
+      </class>
+      <class name="skipif" allocatable="true">
+        <!-- https://docs.pytest.org/en/8.2.x/reference/reference.html#pytest.mark.skipif -->
+        <method name="do" descriptor="()LRoot;" numArgs="4" paramNames="self params values extra">
+          <new def="closure" class="Lpytest/class/Skipif" />
+          <putfield class="LRoot" field="test" fieldType="LRoot" ref="closure" value="self" />
+          <putfield class="LRoot" field="params" fieldType="LRoot" ref="closure" value="params" />
+          <putfield class="LRoot" field="values" fieldType="LRoot" ref="closure" value="values" />
+          <return value="closure" />
+        </method>
+      </class>
+    </package>
+  </classloader>
+</summary-spec>
