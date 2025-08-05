@@ -25,13 +25,6 @@ jobs:
         cache: 'pip'
     - name: installStuff
       run: pip install -r com.ibm.wala.cast.python.cpython/requirements.txt
-    - name: find libjep
-      run: |
-        A=`which python`
-        echo $A
-        B=`find /opt/hostedtoolcache/ -name '*libjep*'`
-        echo $B
-        python -c 'import site; print("sitePackages=" + site.getsitepackages()[0])'
     - name: build WALA
       run: |
         pushd /tmp
