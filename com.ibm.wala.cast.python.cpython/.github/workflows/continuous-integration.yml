@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Check out wala/ml/cpython sources
+    - name: Check out wala cpython sources
       uses: actions/checkout@v3
     - name: Set up JDK 17
       uses: actions/setup-java@v3
@@ -26,5 +26,13 @@ jobs:
         cache: maven
     - name: installStuff
       run: pip install -r requirements.txt
+    - name: build WALA ML core
+      run: |
+        pushd /tmp
+	git clone https://github.com/WALA/ML
+	cd ML
+	git checkout jumpstart-jep-merge
+	mvn -f pom-core.xml install
+	popd
     - name: Build with Maven
       run: mvn verify 
