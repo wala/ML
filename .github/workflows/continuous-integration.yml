@@ -30,7 +30,7 @@ jobs:
         pushd /tmp
         git clone https://github.com/wala/WALA
         cd WALA
-	git checkout jumpstart-jep-merge
+        git checkout jumpstart-jep-merge
         ./gradlew build publishToMavenLocal -x test -x javadoc -x lintMarkdown
         popd
     - name: build WALA ML core
