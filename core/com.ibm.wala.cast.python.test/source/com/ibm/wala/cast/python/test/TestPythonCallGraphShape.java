@@ -83,6 +83,7 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
     for (String n : name) {
       modules.add(getScript(n));
     }
+    assert ! modules.isEmpty() : name;
     engine.setModuleFiles(modules);
     return engine;
   }
