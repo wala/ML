@@ -1833,7 +1833,7 @@ public abstract class PythonParser<T> extends AbstractParser implements Translat
    * @apiNote PYTHONPATH is currently only supported for Python 3.
    * @see https://docs.python.org/3/tutorial/modules.html#the-module-search-path.
    */
-  protected java.util.List<File> pythonPath;
+  protected java.util.List<File> pythonPath = Collections.emptyList();
 
   protected PythonParser(CAstTypeDictionaryImpl<String> types, java.util.List<File> pythonPath) {
     this.types = types;

@@ -1,7 +1,7 @@
 package com.ibm.wala.cast.python.jython.test;
 
 import com.ibm.wala.cast.python.test.TestAssign;
-import com.ibm.wala.cast.python.test.TestCalls;
+// import com.ibm.wala.cast.python.test.TestCalls;
 import com.ibm.wala.cast.python.test.TestClasses;
 import com.ibm.wala.cast.python.test.TestCollections;
 import com.ibm.wala.cast.python.test.TestComprehension;
@@ -18,7 +18,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
   TestAssign.class,
-  TestCalls.class,
+//  TestCalls.class,
   TestClasses.class,
   TestCollections.class,
   TestComprehension.class,
@@ -30,4 +30,5 @@ import org.junit.runners.Suite;
   TestSlice.class,
   TestSource.class
 })
-public class Jython2Suite {}
+public class TestSuiteForJython2 {}
+

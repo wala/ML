@@ -3,35 +3,21 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.ibm.wala</groupId>
-    <artifactId>ml</artifactId>
+    <artifactId>ml-jython</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>com.ibm.wala.cast.python.jython3</artifactId>
   <dependencies>
     <dependency>
       <groupId>com.ibm.wala</groupId>
-      <artifactId>com.ibm.wala.util</artifactId>
+      <artifactId>ml-core</artifactId>
+      <type>pom</type>
+      <version>0.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.ibm.wala</groupId>
-      <artifactId>com.ibm.wala.shrike</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.ibm.wala</groupId>
-      <artifactId>com.ibm.wala.core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.ibm.wala</groupId>
-      <artifactId>com.ibm.wala.cast</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.ibm.wala</groupId>
-      <artifactId>com.ibm.wala.cast.java</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>com.ibm.wala.cast.python</artifactId>
-      <version>${project.version}</version>
+      <version>0.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.python</groupId>

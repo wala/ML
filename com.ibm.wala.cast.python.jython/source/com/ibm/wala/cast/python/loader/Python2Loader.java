@@ -30,16 +30,17 @@ import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.SourceModule;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import org.python.core.PyObject;
 
 public class Python2Loader extends PythonLoader {
   public Python2Loader(IClassHierarchy cha, IClassLoader parent) {
-    super(cha, parent);
+    super(cha, parent, Collections.emptyList());
   }
 
   public Python2Loader(IClassHierarchy cha) {
-    super(cha);
+    super(cha, Collections.emptyList());
   }
 
   @Override
