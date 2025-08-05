@@ -26,6 +26,13 @@ jobs:
         cache: maven
     - name: installStuff
       run: pip install -r com.ibm.wala.cast.python.cpython/requirements.txt
+    - name: build WALA
+      run: |
+        pushd /tmp
+        git clone https://github.com/WALA
+        cd WALA
+        ./gradlew build publishToMavenLocal -x test -x javadoc -x markdownlint
+        popd
     - name: build WALA ML core
       run: |
         pushd /tmp
