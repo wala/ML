@@ -139,7 +139,7 @@
         <configuration>
           <excludes>**/Test*.java</excludes>
           <includes>**/PassingSuite.java</includes>
-          <argLine>-Djava.library.path=${sitePackages}/jep</argLine>
+          <argLine>--enable-native-access=ALL-UNNAMED -Djava.library.path=${sitePackages}/jep</argLine>
         </configuration>
       </plugin>
     </plugins>
