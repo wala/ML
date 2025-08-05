@@ -139,7 +139,7 @@
         <configuration>
           <excludes>**/Test*.java</excludes>
           <includes>**/PassingSuite.java</includes>
-          <argLine>--enable-native-access=ALL-UNNAMED -Djava.library.path=${sitePackages}/jep</argLine>
+          <argLine>--enable-native-access=ALL-UNNAMED -Djava.library.path=${sitePackages}/jep/:/opt/hostedtoolcache/Python/3.13.5/x64/lib/python3.13/site-packages/jep/</argLine>
         </configuration>
       </plugin>
     </plugins>
