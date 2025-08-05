@@ -45,4 +45,5 @@ jobs:
     - name: Build with Maven
       run: |
         cd com.ibm.wala.cast.python.cpython
+        conda activate jep
         mvn verify 
