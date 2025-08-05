@@ -31,12 +31,12 @@ jobs:
         pushd /tmp
         git clone https://github.com/wala/WALA
         cd WALA
-        ./gradlew build publishToMavenLocal -x test -x javadoc -x markdownlint
+        ./gradlew build publishToMavenLocal -x test -x javadoc -x lintMarkdown
         popd
     - name: build WALA ML core
       run: |
         pushd /tmp
-        git clone https://github.com/WALA/ML
+        git clone https://github.com/wala/ML
         cd ML
         git checkout jumpstart-jep-merge
         cd core
