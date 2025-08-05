@@ -40,7 +40,7 @@ jobs:
         cd ML
         git checkout jumpstart-jep-merge
         cd core
-        mvn install
+        mvn install -DskipTests
         popd
     - name: Build with Maven
       run: |
