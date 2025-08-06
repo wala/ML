@@ -8,7 +8,10 @@ public class RunJep {
 
 	@Test
 	public void runJep() {
-		assert Util.getAST("1 + a") != null;
+		Util.run(() -> {
+			assert Util.getAST("1 + a") != null;
+			return null;
+		});
 	}
 	
 }
