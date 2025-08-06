@@ -13,11 +13,11 @@ jobs:
     steps:
     - name: Check out wala cpython sources
       uses: actions/checkout@v3
-    - name: Set up JDK 24
+    - name: Set up JDK 21
       uses: actions/setup-java@v3
       with:
-        java-version: '24'
-        distribution: 'temurin'
+        java-version: '21'
+        distribution: 'oracle'
         cache: maven
     - uses: actions/setup-python@v5
       with:
