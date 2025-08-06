@@ -18,7 +18,7 @@ public class Util {
 	//
 	public static final ThreadLocal<Interpreter> interps = new ThreadLocal<>() {
 		@Override
-		protected Interpreter initialValue() {
+		synchronized protected Interpreter initialValue() {
 			Interpreter interp = new SharedInterpreter();
 		    interp.exec("import ast");
 		    interp.exec("import ast2json");
