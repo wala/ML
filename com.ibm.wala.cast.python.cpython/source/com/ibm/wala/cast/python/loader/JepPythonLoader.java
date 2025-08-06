@@ -46,7 +46,7 @@ public class JepPythonLoader extends PythonLoader {
 	  @Override
 	  public void init(List<Module> modules) {
 	    // TODO Auto-generated method stub
-		Util.run(() -> { super.init(modules); return null; });
+		Util.runWithJep(() -> { super.init(modules); return null; });
 	  }
 
 	@Override

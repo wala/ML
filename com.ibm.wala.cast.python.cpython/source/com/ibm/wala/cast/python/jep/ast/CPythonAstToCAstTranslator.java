@@ -2,7 +2,7 @@ package com.ibm.wala.cast.python.jep.ast;
 
 import static com.ibm.wala.cast.python.jep.Util.fixForCompilation;
 import static com.ibm.wala.cast.python.jep.Util.has;
-import static com.ibm.wala.cast.python.jep.Util.run;
+import static com.ibm.wala.cast.python.jep.Util.runWithJep;
 import static com.ibm.wala.cast.python.jep.Util.runit;
 import static com.ibm.wala.cast.python.jep.Util.typeName;
 
@@ -544,7 +544,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		private int label = 0;
 		private final CAstEntity entity;
 
-		private TranslationVisitor(CAstEntity self, CAstTypeDictionaryImpl<String> types) {
+		TranslationVisitor(CAstEntity self, CAstTypeDictionaryImpl<String> types) {
 			this.types = types;
 			entity = self;
 		}
@@ -604,7 +604,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 				System.err.println(target + " " + simple + " " + annotation);
 			} else if (isClass) {
 				PyObject codeForAnnotation = (PyObject) fixForCompilation(annotation);
-				Object annotatedValue = codeForAnnotation!=null?run(codeForAnnotation):null;		
+				Object annotatedValue = codeForAnnotation!=null?Util.run(codeForAnnotation):null;		
 				
 				CAstNode annotatedCode = visit(annotation, context.codeParent());
 				if (annotatedValue instanceof PyObject) {
@@ -1849,7 +1849,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 							ast.makeConstant(name),
 							visit(CAstNode.BLOCK_STMT, c.getAttr("body", List.class), context));
 					context.cfg().map(catchBlock, catchBlock);
-					catches.put(has(c, "type") && fixForCompilation(c.getAttr("type", PyObject.class)) != null ? String.valueOf(run(fixForCompilation(c.getAttr("type", PyObject.class)))) : "<class 'Exception'>", catchBlock);
+					catches.put(has(c, "type") && fixForCompilation(c.getAttr("type", PyObject.class)) != null ? String.valueOf(Util.run(fixForCompilation(c.getAttr("type", PyObject.class)))) : "<class 'Exception'>", catchBlock);
 				});
 
 				cc = new TryCatchContext(context, catches);

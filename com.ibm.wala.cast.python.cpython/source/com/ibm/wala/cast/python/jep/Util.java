@@ -65,7 +65,7 @@ public class Util {
 		queueThread.start();
 	}
 	
-	public static <T> T run(Supplier<T> job) {
+	public static <T> T runWithJep(Supplier<T> job) {
 		try {
 			return queueThread.addTask(new Function<Interpreter,T>() {
 				@Override
@@ -80,6 +80,7 @@ public class Util {
 	}
 	
 	public static String typeName(PyObject obj) {
+		assert Thread.currentThread() == queueThread;
 		interp.set("obj", obj);
 		interp.exec("objname = type(obj).__name__");
 		
@@ -87,6 +88,7 @@ public class Util {
 	}
 
 	public static String moduleName(PyObject obj) {
+		assert Thread.currentThread() == queueThread;
 		interp.set("obj", obj);
 		interp.exec("modname = type(obj).__module__");
 		
@@ -94,6 +96,7 @@ public class Util {
 	}
 	
 	public static <T> T runit(String expr) {
+		assert Thread.currentThread() == queueThread;
 		interp.exec("result = " + expr);
 		
 		return (T) interp.getValue("result");	
@@ -106,6 +109,7 @@ public class Util {
 	 * @return AST as a @PyObject
 	 */
 	public static PyObject getAST(String code) {
+		assert Thread.currentThread() == queueThread;
 		interp.set("code", code);
 		interp.exec("theast = ast.parse(code)");
 
@@ -120,6 +124,7 @@ public class Util {
 	 */
 	@SuppressWarnings("unchecked")
 	public static Map<String, ?> getJSON(PyObject ast) {
+		assert Thread.currentThread() == queueThread;
 		interp.set("theast", ast);
 		interp.exec("thejson = ast2json.ast2json(theast)");
 
@@ -129,6 +134,7 @@ public class Util {
 		
 	public static PyObject fixForCompilation(PyObject ast) {
 		try {
+			assert Thread.currentThread() == queueThread;
 			return (PyObject) interp.invoke("ast.fix_missing_locations", ast);
 		} catch (JepException e) {
 			return null;
@@ -136,16 +142,19 @@ public class Util {
 	}
 
 	public static boolean has(PyObject o, String property) {
+		assert Thread.currentThread() == queueThread;
 		return (Boolean) interp.invoke("has", o, property);
 	}
 	
 	public static PyObject compile(PyObject o) {
+		assert Thread.currentThread() == queueThread;
 		PyObject exprNode = (PyObject) interp.invoke("ast.Expression", o);
 		return (PyObject) interp.invoke("compile_ast", exprNode, "", "eval");
 	}
 	
 	public static Object run(PyObject o) {
 		try {
+			assert Thread.currentThread() == queueThread;
 			return interp.invoke("get_value", o);
 		} catch (JepException e) {
 			return null;

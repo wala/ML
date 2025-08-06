@@ -8,7 +8,7 @@ public class RunJep {
 
 	@Test
 	public void runJep() {
-		Util.run(() -> {
+		Util.runWithJep(() -> {
 			assert Util.getAST("1 + a") != null;
 			return null;
 		});
