@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
+import com.ibm.wala.cast.python.jep.Util;
 import com.ibm.wala.cast.python.jep.ast.CPythonAstToCAstTranslator;
 import com.ibm.wala.cast.python.loader.PythonLoader;
 import com.ibm.wala.cast.tree.CAst;
@@ -42,6 +43,12 @@ public class JepPythonLoader extends PythonLoader {
 		// TODO Auto-generated constructor stub
 	}
 
+	  @Override
+	  public void init(List<Module> modules) {
+	    // TODO Auto-generated method stub
+		Util.run(() -> { super.init(modules); return null; });
+	  }
+
 	@Override
 	protected TranslatorToCAst getTranslatorToCAst(CAst ast, ModuleEntry M, List<Module> modules) throws IOException {
 		return new TranslatorToCAst() {
@@ -54,7 +61,7 @@ public class JepPythonLoader extends PythonLoader {
 
 			@Override
 			public CAstEntity translateToCAst() throws Error, IOException {
-				try (BufferedReader src = new BufferedReader(((SourceModule)M).getInputReader())) {
+				try (BufferedReader src = new BufferedReader(((SourceModule)M).getInputReader())) {	 
 					return new CPythonAstToCAstTranslator.PythonScriptEntity(M.getName(), src.lines().collect(Collectors.joining("\n")));
 				}
 			}

@@ -2,7 +2,6 @@ package com.ibm.wala.cast.python.jep.ast;
 
 import static com.ibm.wala.cast.python.jep.Util.fixForCompilation;
 import static com.ibm.wala.cast.python.jep.Util.has;
-import static com.ibm.wala.cast.python.jep.Util.interps;
 import static com.ibm.wala.cast.python.jep.Util.run;
 import static com.ibm.wala.cast.python.jep.Util.runit;
 import static com.ibm.wala.cast.python.jep.Util.typeName;
@@ -75,7 +74,6 @@ import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 
-import jep.Interpreter;
 import jep.python.PyObject;
 
 /**
@@ -173,17 +171,6 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 		types.map("Exception", PythonCAstToIRTranslator.Exception);
 		types.map("BaseException", baseException);
 		return types;
-	}
-
-	@SuppressWarnings("unchecked")
-	public static Collection<String> properties(PyObject obj) {
-		Interpreter interp = interps.get();
-
-		interp.set("obj", obj);
-		interp.exec("d = dir(obj)");
-
-		return (Collection<String>) interp.getValue("d");
-
 	}
 
 	@Override

@@ -1,6 +1,14 @@
 package com.ibm.wala.cast.python.jep;
 
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import jep.Interpreter;
 import jep.JepException;
@@ -8,6 +16,38 @@ import jep.SharedInterpreter;
 import jep.python.PyObject;
 
 public class Util {
+	private static Interpreter interp;
+
+	private static final class JepQueue extends Thread {
+		
+		@Override
+		public void run() {
+			interp = new SharedInterpreter();
+			interp.exec("import ast");
+			interp.exec("import ast2json");
+			interp.exec("has = hasattr");
+			interp.exec("get_value = lambda x: eval(compile(ast.Expression(x), '', 'eval'))");				
+
+			while (true) {
+				try {
+					operations.take().run();
+				} catch (InterruptedException e) {
+					assert false : e;
+				}
+			}
+		}
+
+		public <T> Future<T> addTask(Function<Interpreter, T> op) {
+			FutureTask<T> t = new FutureTask<T>(new Callable<T>() {
+				@Override
+				public T call() throws Exception {
+					return op.apply(interp);
+				} 
+			});
+			operations.add(t);
+			return t;
+		}
+	}
 
 	//
 	// the JEP api provides a JNI wrapper for calling Python from Java.
@@ -16,46 +56,47 @@ public class Util {
 	// ensure that any one JEP interpreter is only ever accessed from
 	// a single thread
 	//
-	public static final ThreadLocal<Interpreter> interps = new ThreadLocal<>() {
-		@Override
-		synchronized protected Interpreter initialValue() {
-			Interpreter interp = new SharedInterpreter();
-		    interp.exec("import ast");
-		    interp.exec("import ast2json");
-		    interp.exec("has = hasattr");
-		    interp.exec("get_value = lambda x: eval(compile(ast.Expression(x), '', 'eval'))");
-		    return interp;
-		} 
-	};
-
-	public static String typeName(PyObject obj) {
-		Interpreter interp = interps.get();
+	static BlockingQueue<FutureTask<?>> operations = new LinkedBlockingQueue<>();
+	static JepQueue queueThread;
+	static {
+		queueThread = new JepQueue();
+		
+		queueThread.setDaemon(true);
+		queueThread.start();
+	}
 	
+	public static <T> T run(Supplier<T> job) {
+		try {
+			return queueThread.addTask(new Function<Interpreter,T>() {
+				@Override
+				public T apply(Interpreter interp) {
+					return job.get();
+				}
+			}).get();
+		} catch (InterruptedException | ExecutionException e) {
+			assert false : e;
+			return null;
+		}
+	}
+	
+	public static String typeName(PyObject obj) {
 		interp.set("obj", obj);
 		interp.exec("objname = type(obj).__name__");
 		
 		return (String) interp.getValue("objname");
-		
 	}
 
 	public static String moduleName(PyObject obj) {
-		Interpreter interp = interps.get();
-	
 		interp.set("obj", obj);
 		interp.exec("modname = type(obj).__module__");
 		
 		return (String) interp.getValue("modname");
-		
 	}
-
-	public static PyObject runit(String expr) {
-		Interpreter interp = interps.get();
-		
+	
+	public static <T> T runit(String expr) {
 		interp.exec("result = " + expr);
 		
-		return (PyObject) interp.getValue("result");
-		
-		
+		return (T) interp.getValue("result");	
 	}
 
 	/**
@@ -65,11 +106,9 @@ public class Util {
 	 * @return AST as a @PyObject
 	 */
 	public static PyObject getAST(String code) {
-		Interpreter interp = interps.get();
-	
 		interp.set("code", code);
 		interp.exec("theast = ast.parse(code)");
-	
+
 		return (PyObject) interp.getValue("theast");
 	}
 
@@ -81,43 +120,36 @@ public class Util {
 	 */
 	@SuppressWarnings("unchecked")
 	public static Map<String, ?> getJSON(PyObject ast) {
-		Interpreter interp = interps.get();
-	
 		interp.set("theast", ast);
 		interp.exec("thejson = ast2json.ast2json(theast)");
-	
+
 		return (Map<String, ?>) interp.getValue("thejson");
-	
 	}
-	
-	public static PyObject fixForCompilation(PyObject ast) {
-		Interpreter interp = interps.get();
+
 		
+	public static PyObject fixForCompilation(PyObject ast) {
 		try {
 			return (PyObject) interp.invoke("ast.fix_missing_locations", ast);
 		} catch (JepException e) {
 			return null;
 		}
 	}
-	
-	public static boolean has(PyObject o, String property) {
-		Interpreter interp = interps.get();
 
+	public static boolean has(PyObject o, String property) {
 		return (Boolean) interp.invoke("has", o, property);
 	}
 	
 	public static PyObject compile(PyObject o) {
-		Interpreter interp = interps.get();
 		PyObject exprNode = (PyObject) interp.invoke("ast.Expression", o);
 		return (PyObject) interp.invoke("compile_ast", exprNode, "", "eval");
 	}
 	
 	public static Object run(PyObject o) {
-		Interpreter interp = interps.get();
 		try {
-			return (Object) interp.invoke("get_value", o);
+			return interp.invoke("get_value", o);
 		} catch (JepException e) {
 			return null;
 		}
 	}
+
 }
