@@ -139,6 +139,7 @@
 	<version>3.5.3</version>
         <configuration>
 	  <forkCount>0</forkCount>
+	  <useUnlimitedThreads>true</useUnlimitedThreads>
           <argLine>--enable-native-access=ALL-UNNAMED -Djava.library.path=${sitePackages}/jep/</argLine>
         </configuration>
       </plugin>
