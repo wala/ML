@@ -4,9 +4,6 @@ on:
     branches: [ "master", "python_ast" ]
   pull_request:
     branches: [ "master", "python_ast" ]
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 jobs:
   test:
     runs-on: macos-latest
