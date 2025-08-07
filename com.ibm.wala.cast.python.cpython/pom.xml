@@ -138,7 +138,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
 	<version>3.5.3</version>
         <configuration>
-	  <useUnlimitedThreads>true</useUnlimitedThreads>
+	  <forkCount>0</forkCount>
           <argLine>--enable-native-access=ALL-UNNAMED -Djava.library.path=${sitePackages}/jep/</argLine>
         </configuration>
       </plugin>

@@ -47,5 +47,5 @@ jobs:
     - name: Test with Maven
       run: |
         pushd com.ibm.wala.cast.python.cpython
-        mvn -debug test
+        MAVEN_OPTS="--enable-native-access=ALL-UNNAMED -Djava.library.path=$(python -c 'import site; print(site.getsitepackages()[0])')" mvn test
         popd
