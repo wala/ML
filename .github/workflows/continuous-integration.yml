@@ -45,10 +45,10 @@ jobs:
         mvn install -DskipTests
         popd
     - name: get jni dir
-      run: echo "MAVEN_OPTS=--enable-native-access=ALL-UNNAMED -Djava.library.path=$(python -c 'import site; print(site.getsitepackages()[0])' + "/jep")" >> $GITHUB_ENV
+      run: echo "SITE_PATH=(python -c 'import site; print(site.getsitepackages()[0]))" >> $GITHUB_ENV
     - name: Test with Maven
       run: |
-        echo "${{ env.MAVEN_OPTS }}"
+        echo "${{ env.SITE_PATH }}"
         pushd com.ibm.wala.cast.python.cpython
-        bash -c 'MAVEN_OPTS="${{ env.MAVEN_OPTS }}" mvn test'
+        bash -c 'MAVEN_OPTS="--enable-native-access=ALL-UNNAMED -Djava.library.path=${{ env.SITE_PATH }}/jep" mvn test'
         popd
