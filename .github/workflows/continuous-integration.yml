@@ -51,5 +51,5 @@ jobs:
         echo "${{ env.MAVEN_OPTS }}"
         pushd com.ibm.wala.cast.python.cpython
         export MAVEN_OPTS="${{ env.MAVEN_OPTS }}"
-	mvn test
+        mvn test
         popd
