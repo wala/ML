@@ -5,7 +5,7 @@ on:
   pull_request:
     branches: [ "master", "python_ast" ]
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   build:
@@ -45,4 +45,10 @@ jobs:
     - name: Build with Maven
       run: |
         cd com.ibm.wala.cast.python.cpython
-        mvn verify 
+        mvn install -DskipTests
+  test:
+    runs-on: macos-latest
+    steps:
+      run: |
+        cd com.ibm.wala.cast.python.cpython
+        mvn verify
