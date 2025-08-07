@@ -623,7 +623,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 											 ast.makeNode(CAstNode.VAR, ast.makeConstant(context.classSelfVar().getName())), 
 											 ast.makeConstant("__annotations__")), 
 									 ast.makeConstant(targetObj.getAttr("id", String.class))),
-								ast.makeConstant(annotatedValue)));
+								ast.makeConstant(annotatedValue instanceof PyObject? annotatedValue.toString(): annotatedValue)));
 					} else {
 						code.add(ast.makeNode(CAstNode.ASSIGN,
 								 ast.makeNode(CAstNode.OBJECT_REF, 
