@@ -50,5 +50,5 @@ jobs:
     - name: Test with Maven
       run: |
         pushd com.ibm.wala.cast.python.cpython
-        mvn "-Dtest=com.ibm.wala.cast.python.cpython.test.PassingSuite" test
+        mvn test
         popd
