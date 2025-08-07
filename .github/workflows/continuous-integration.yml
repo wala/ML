@@ -50,5 +50,5 @@ jobs:
       run: |
         echo "${{ env.SITE_PATH }}"
         pushd com.ibm.wala.cast.python.cpython
-        bash -c 'MAVEN_OPTS="--enable-native-access=ALL-UNNAMED -Djava.library.path=${{ env.SITE_PATH }}/jep" mvn test'
+        bash -c 'MAVEN_OPTS="--enable-native-access=ALL-UNNAMED -Djava.library.path=${{ env.SITE_PATH }}/jep" mvn -debug test'
         popd
