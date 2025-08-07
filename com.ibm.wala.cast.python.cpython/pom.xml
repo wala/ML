@@ -138,8 +138,8 @@
         <artifactId>maven-surefire-plugin</artifactId>
 	<version>3.5.3</version>
         <configuration>
-	  <forkCount>3</forkCount>
-          <reuseForks>true</reuseForks>
+	  <forkCount>1</forkCount>
+          <reuseForks>false</reuseForks>
           <excludes>**/Test*.java</excludes>
           <includes>**/PassingSuite.java</includes>
           <argLine>--enable-native-access=ALL-UNNAMED -Djava.library.path=${sitePackages}/jep/</argLine>
