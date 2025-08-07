@@ -47,5 +47,5 @@ jobs:
     - name: Test with Maven
       run: |
         pushd com.ibm.wala.cast.python.cpython
-        mvn test
+        mvn -debug test
         popd
