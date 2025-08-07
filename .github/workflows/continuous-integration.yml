@@ -8,7 +8,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  build:
+  test:
     runs-on: macos-latest
     steps:
     - name: Check out wala cpython sources
@@ -46,10 +46,4 @@ jobs:
       run: |
         cd com.ibm.wala.cast.python.cpython
         mvn install -DskipTests
-  test:
-    runs-on: macos-latest
-    steps:
-    - name: Test with Maven
-      run: |
-        cd com.ibm.wala.cast.python.cpython
         mvn verify
