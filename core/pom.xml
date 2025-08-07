@@ -115,21 +115,6 @@
           </configuration>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>${maven.surefire.version}</version>
-          <configuration>
-            <threadCount>1</threadCount>
-            <systemPropertyVariables>
-              <!-- Set JUL Formatting -->
-              <java.util.logging.config.file>${logging.config.file}</java.util.logging.config.file>
-            </systemPropertyVariables>
-            <forkMode>once</forkMode>
-            <argLine>@{argLine} -Dpython.import.site=false</argLine>
-            <trimStackTrace>false</trimStackTrace>
-          </configuration>
-        </plugin>
-        <plugin>
           <groupId>com.diffplug.spotless</groupId>
           <artifactId>spotless-maven-plugin</artifactId>
           <version>${spotless.version}</version>
