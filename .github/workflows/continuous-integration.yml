@@ -45,7 +45,7 @@ jobs:
         mvn install -DskipTests
         popd
     - name: get jni dir
-      run: echo "MAVEN_OPTS=\"--enable-native-access=ALL-UNNAMED -Djava.library.path=$(python -c 'import site; print(site.getsitepackages()[0])')\"" >> $GITHUB_ENV
+      run: echo "MAVEN_OPTS=--enable-native-access=ALL-UNNAMED -Djava.library.path=$(python -c 'import site; print(site.getsitepackages()[0])')" >> $GITHUB_ENV
     - name: Test with Maven
       run: |
         echo "${{ env.MAVEN_OPTS }}"
