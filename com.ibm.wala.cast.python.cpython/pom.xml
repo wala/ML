@@ -156,7 +156,7 @@
         </executions>
       </plugin>
 
-            <plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <version>3.6.0</version>
@@ -181,7 +181,7 @@
             </goals>
             <phase>package</phase>
             <configuration>
-	      <shadedTests>true</shadedTests>
+	      <shadeTestJar>true</shadeTestJar>
               <shadedArtifactAttached>true</shadedArtifactAttached>
             </configuration>
           </execution>

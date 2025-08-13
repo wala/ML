@@ -52,5 +52,5 @@ jobs:
       run: |
         echo "${{ env.SITE_PATH }}"
         pushd com.ibm.wala.cast.python.cpython
-        java --enable-native-access=ALL-UNNAMED -Djava.library.path=${{ env.SITE_PATH }}/jep -cp target/com.ibm.wala.cast.python.cpython-0.0.1-SNAPSHOT-tests.jar:target/com.ibm.wala.cast.python.cpython-0.0.1-SNAPSHOT-shaded-tests.jar:target/com.ibm.wala.cast.python.cpython-0.0.1-SNAPSHOT-tests.jar com.ibm.wala.cast.python.cpython.test.PassingSuite
+        java --enable-native-access=ALL-UNNAMED -Djava.library.path=${{ env.SITE_PATH }}/jep -cp target/com.ibm.wala.cast.python.cpython-0.0.1-SNAPSHOT-tests.jar:target/com.ibm.wala.cast.python.cpython-0.0.1-SNAPSHOT-shaded.jar:target/com.ibm.wala.cast.python.cpython-0.0.1-SNAPSHOT-shaded-tests.jar com.ibm.wala.cast.python.cpython.test.PassingSuite
         popd
