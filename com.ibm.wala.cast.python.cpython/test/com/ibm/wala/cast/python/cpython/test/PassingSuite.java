@@ -1,5 +1,6 @@
 package com.ibm.wala.cast.python.cpython.test;
 
+import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -28,4 +29,8 @@ import com.ibm.wala.cast.python.test.*;
 	TestGenerators.class})
 public class PassingSuite {
 
+	public static void main(String... args ) {
+		JUnitCore.runClasses(PassingSuite.class);
+	}
+	
 }

@@ -23,7 +23,7 @@ jobs:
     - name: installStuff
       run: pip install -r com.ibm.wala.cast.python.cpython/requirements.txt
     - name: test jep
-      run: echo 1 + 1 | jep
+      run:  echo 'print("1 + 1 is " + str(1 + 1))' | jep
     - name: build WALA
       run: |
         pushd /tmp
@@ -52,5 +52,5 @@ jobs:
       run: |
         echo "${{ env.SITE_PATH }}"
         pushd com.ibm.wala.cast.python.cpython
-        bash -c 'MAVEN_OPTS="--enable-native-access=ALL-UNNAMED -Djava.library.path=${{ env.SITE_PATH }}/jep" mvn -debug test'
+        java --enable-native-access=ALL-UNNAMED -Djava.library.path=${{ env.SITE_PATH }}/jep" -cp target/com.ibm.wala.cast.python.cpython-0.0.1-SNAPSHOT-tests.jar:target/com.ibm.wala.cast.python.cpython-0.0.1-SNAPSHOT-shaded-tests.jar:target/com.ibm.wala.cast.python.cpython-0.0.1-SNAPSHOT-tests.jar com.ibm.wala.cast.python.cpython.test.PassingSuite
         popd

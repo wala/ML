@@ -138,10 +138,54 @@
         <artifactId>maven-surefire-plugin</artifactId>
 	<version>3.5.3</version>
         <configuration>
-	  <forkCount>0</forkCount>
 	  <useUnlimitedThreads>true</useUnlimitedThreads>
           <argLine>--enable-native-access=ALL-UNNAMED -Djava.library.path=${sitePackages}/jep/</argLine>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.2</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+            <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.6.0</version>
+        <configuration>
+          <filters>
+            <filter>
+              <artifact>*:*</artifact>
+              <excludes>
+                <exclude>META-INF/*.SF</exclude>
+                <exclude>META-INF/*.DSA</exclude>
+                <exclude>META-INF/*.RSA</exclude>
+              </excludes>
+            </filter>
+          </filters>
+          <!-- Additional configuration. -->
+        </configuration>
+        <executions>
+          <!-- Run shade goal on package phase -->
+          <execution>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+	      <shadedTests>true</shadedTests>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

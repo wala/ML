@@ -7,6 +7,7 @@
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
         <listEntry value="1"/>
     </listAttribute>
+    <mapAttribute key="org.eclipse.debug.core.environmentVariables"/>
     <stringAttribute key="org.eclipse.jdt.junit.CONTAINER" value=""/>
     <booleanAttribute key="org.eclipse.jdt.junit.KEEPRUNNING_ATTR" value="false"/>
     <stringAttribute key="org.eclipse.jdt.junit.TESTNAME" value=""/>
@@ -27,5 +28,5 @@
     <listAttribute key="org.eclipse.jdt.launching.MODULEPATH"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="com.ibm.wala.cast.python.cpython"/>
     <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea -Djava.library.path=/Users/dolby/miniforge3/envs/walajep/lib/python3.13/site-packages/jep"/>
+    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea&#10;--enable-native-access=ALL-UNNAMED -Djava.library.path=${sitePackages}/jep/"/>
 </launchConfiguration>

@@ -28,5 +28,5 @@
     <listAttribute key="org.eclipse.jdt.launching.MODULEPATH"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="com.ibm.wala.cast.python.cpython"/>
     <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea&#10;-Dpython.import.site=false&#10;-Djava.util.logging.config.file=${maven.multiModuleProjectDirectory}/logging.properties"/>
+    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea&#10;--enable-native-access=ALL-UNNAMED -Djava.library.path=${sitePackages}/jep/"/>
 </launchConfiguration>
