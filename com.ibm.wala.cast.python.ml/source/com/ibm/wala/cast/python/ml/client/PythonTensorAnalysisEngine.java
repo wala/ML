@@ -619,7 +619,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
         op,
         builder,
         (CGNode src, SSAAbstractInvokeInstruction call) -> {
-          if (call.getNumberOfUses() > param) {
+          if (call.getNumberOfUses() > param)
             targets.put(
                 builder
                     .getPropagationSystem()
@@ -629,7 +629,6 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
                             .getHeapModel()
                             .getPointerKeyForLocal(src, call.getDef())),
                 TensorType.shapeArg(src, call.getUse(param)));
-          }
         });
     return targets;
   }
