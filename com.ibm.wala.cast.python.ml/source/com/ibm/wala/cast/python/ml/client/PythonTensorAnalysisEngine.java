@@ -44,6 +44,7 @@ import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
 import com.ibm.wala.util.intset.OrdinalSet;
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -619,16 +620,20 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
         op,
         builder,
         (CGNode src, SSAAbstractInvokeInstruction call) -> {
-          if (call.getNumberOfUses() > param)
-            targets.put(
-                builder
-                    .getPropagationSystem()
-                    .findOrCreatePointsToSet(
-                        builder
-                            .getPointerAnalysis()
-                            .getHeapModel()
-                            .getPointerKeyForLocal(src, call.getDef())),
-                TensorType.shapeArg(src, call.getUse(param)));
+          try {
+            if (call.getNumberOfUses() > param)
+              targets.put(
+                  builder
+                      .getPropagationSystem()
+                      .findOrCreatePointsToSet(
+                          builder
+                              .getPointerAnalysis()
+                              .getHeapModel()
+                              .getPointerKeyForLocal(src, call.getDef())),
+                  TensorType.shapeArg(src, call.getUse(param)));
+          } catch (IOException e) {
+            throw new RuntimeException("Error while processing shape source call: " + call, e);
+          }
         });
     return targets;
   }
@@ -667,9 +672,13 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 
     for (PointsToSetVariable v : sources) init.put(v, mnistData);
 
-    Map<PointsToSetVariable, TensorType> placeholders =
-        handleShapeSourceOp(builder, dataflow, placeholder, 2);
-    logger.fine(() -> "Placeholders: " + placeholders);
+    Map<PointsToSetVariable, TensorType> placeholders = null;
+    try {
+      placeholders = handleShapeSourceOp(builder, dataflow, placeholder, 2);
+    } catch (IOException e) {
+      throw new RuntimeException("Error while processing placeholder calls.", e);
+    }
+    logger.fine("Placeholders: " + placeholders);
 
     for (Map.Entry<PointsToSetVariable, TensorType> e : placeholders.entrySet())
       init.put(e.getKey(), e.getValue());
@@ -694,7 +703,12 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
     }
 
     Map<PointsToSetVariable, TensorType> shapeOps = HashMapFactory.make();
-    shapeOps.putAll(handleShapeSourceOp(builder, dataflow, reshape, 2));
+
+    try {
+      shapeOps.putAll(handleShapeSourceOp(builder, dataflow, reshape, 2));
+    } catch (IOException e) {
+      throw new RuntimeException("Error while processing reshape calls.", e);
+    }
 
     Set<PointsToSetVariable> conv2ds = getKeysDefinedByCall(conv2d, builder);
 
@@ -712,7 +726,8 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
       PropagationCallGraphBuilder builder,
       Graph<PointsToSetVariable> dataflow,
       MethodReference op,
-      int shapeSrcOperand) {
+      int shapeSrcOperand)
+      throws IOException {
     Map<PointsToSetVariable, TensorType> reshapeTypes =
         getShapeSourceCalls(op, builder, shapeSrcOperand);
     for (PointsToSetVariable to : reshapeTypes.keySet()) {
