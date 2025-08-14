@@ -329,7 +329,7 @@ public class TensorType implements Iterable<Dimension<?>> {
     return new TensorType("pixel", Arrays.asList(batch, vec));
   }
 
-  public static TensorType shapeArg(CGNode node, int literalVn) {
+  public static TensorType shapeArg(CGNode node, int literalVn) throws IOException {
     logger.fine(() -> node.getIR().toString());
     ArrayList<Dimension<?>> r = new ArrayList<>();
     DefUse du = node.getDU();
@@ -360,18 +360,13 @@ public class TensorType implements Iterable<Dimension<?>> {
                   .debugInfo()
                   .getInstructionPosition(du.getDef(val).iIndex());
           System.err.println(p);
-          try {
-            SourceBuffer b = new SourceBuffer(p);
-            String expr = b.toString();
-            System.err.println(expr);
-            Integer ival = PythonInterpreter.interpretAsInt(expr);
-            if (ival != null) {
-              r.add(new NumericDim(ival));
-              continue;
-            }
-          } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+          SourceBuffer b = new SourceBuffer(p);
+          String expr = b.toString();
+          System.err.println(expr);
+          Integer ival = PythonInterpreter.interpretAsInt(expr);
+          if (ival != null) {
+            r.add(new NumericDim(ival));
+            continue;
           }
         }
         r.add(new SymbolicDim("?"));
