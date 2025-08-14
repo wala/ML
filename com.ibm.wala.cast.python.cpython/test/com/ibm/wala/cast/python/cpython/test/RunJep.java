@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import com.ibm.wala.cast.python.jep.Util;
 
-public class RunJep {
+public class RunJep extends TestBase {
 
 	@Test
 	public void runJep() {
@@ -14,4 +14,8 @@ public class RunJep {
 		});
 	}
 	
+	public static void main(String... args ) {
+		assert run(RunJep.class);
+	}
+
 }

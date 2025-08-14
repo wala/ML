@@ -140,6 +140,13 @@
         <configuration>
 	  <useUnlimitedThreads>true</useUnlimitedThreads>
           <argLine>--enable-native-access=ALL-UNNAMED -Djava.library.path=${sitePackages}/jep/</argLine>
+	  <includes>
+	    <include>**/PassingSuite.java</include>
+	    <include>**/RunJep.java</include>
+	  </includes>
+	  <excludes>
+	    <exclude>**/Test*.java</exclude>
+	  </excludes>
         </configuration>
       </plugin>
 
