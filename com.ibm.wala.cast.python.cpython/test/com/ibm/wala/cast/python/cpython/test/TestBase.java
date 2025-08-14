@@ -15,7 +15,7 @@ public class TestBase {
 		List<Failure> failures = result.getFailures();
 		if (! failures.isEmpty()) {
 			int fc = result.getFailureCount();
-			System.err.println(fc + "test" + (fc>1? "s": "") + " run");
+			System.err.println(fc + " test" + (fc>1? "s": "") + " failed");
 			failures.forEach(f -> { 
 				System.err.println(f.getDescription());
 				System.err.println(f.getException());
