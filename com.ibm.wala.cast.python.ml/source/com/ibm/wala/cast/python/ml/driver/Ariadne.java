@@ -31,10 +31,11 @@ import java.util.stream.Collectors;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.help.HelpFormatter;
+import org.apache.commons.cli.help.HelpFormatter.Builder;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 
@@ -77,7 +78,7 @@ public class Ariadne {
                     + default_mode
                     + ".")
             .required(false)
-            .build();
+            .get();
     options.addOption(modeOpt);
 
     final EnumSet<MODE> portOptModes = EnumSet.of(MODE.server, MODE.daemon, MODE.client);
@@ -91,7 +92,7 @@ public class Ariadne {
                     + collToString(portOptModes)
                     + "].")
             .required(false)
-            .build();
+            .get();
     options.addOption(portOpt);
     optModes.put(portOpt.getLongOpt(), portOptModes);
 
@@ -110,7 +111,7 @@ public class Ariadne {
                     + collToString(portOptModes)
                     + "]")
             .required(false)
-            .build();
+            .get();
     options.addOption(formatOption);
     optModes.put(formatOption.getLongOpt(), formatOptModes);
 
@@ -130,7 +131,7 @@ public class Ariadne {
                     + collToString(severityOptModes)
                     + "]")
             .required(false)
-            .build();
+            .get();
     options.addOption(severityOption);
     optModes.put(severityOption.getLongOpt(), severityOptModes);
 
@@ -146,7 +147,7 @@ public class Ariadne {
                     + collToString(relatedOptModes)
                     + "]")
             .required(false)
-            .build();
+            .get();
     options.addOption(relatedOption);
     optModes.put(relatedOption.getLongOpt(), relatedOptModes);
 
@@ -156,7 +157,7 @@ public class Ariadne {
             .argName("help")
             .desc("Print usage information")
             .required(false)
-            .build();
+            .get();
     options.addOption(helpOpt);
 
     MODE mode = default_mode;
@@ -381,9 +382,13 @@ public class Ariadne {
   private static final String APP_NAME = "Ariadne";
   private static final String APP_DESCRIPTION =
       "Ariadne: A Language Server Protocol server and linter for WALA Python/ML analysis";
+  private static final String APP_FOOTER =
+      "Please report issues at http://github.com/wala/ML/issues";
 
-  private static void printUsage(final Options options) {
-    final HelpFormatter formatter = new HelpFormatter();
-    formatter.printHelp(APP_NAME + " [arguments] [filenames]", APP_DESCRIPTION, options, null);
+  private static void printUsage(final Options options) throws IOException {
+    Builder builder = HelpFormatter.builder();
+    final HelpFormatter formatter = builder.get();
+    formatter.printHelp(
+        APP_NAME + " [arguments] [filenames]", APP_DESCRIPTION, options, APP_FOOTER, false);
   }
 }
