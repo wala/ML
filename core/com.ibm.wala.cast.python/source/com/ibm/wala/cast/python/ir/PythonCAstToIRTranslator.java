@@ -487,6 +487,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
       // collect the all local modules.
       Set<SourceModule> localModules = getLocalModules(allModules);
 
+      if (Path.of(scriptName).getParent().getFileName() != null) {
       String moduleName = Path.of(scriptName).getParent().getFileName().toString();
       LOGGER.fine("Initializing module: " + moduleName + ".");
 
@@ -607,6 +608,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
               })
           .flatMap(List::stream)
           .forEachOrdered(i -> codeContext.cfg().addInstruction(i));
+    }
     }
 
     return ret;

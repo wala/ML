@@ -61,8 +61,17 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
         URL url = new URL(name);
         return new SourceURLModule(url);
       }
-    } catch (MalformedURLException e) {
-      return new SourceURLModule(getClass().getClassLoader().getResource(name));
+    } catch (MalformedURLException e) {     
+      return new SourceURLModule(getClass().getClassLoader().getResource(name)) {
+		@Override
+		public String getName() {
+			if (name.contains("/")) {
+				return name.substring(name.lastIndexOf("/"));
+			} else {
+				return name;
+			}
+		}    	  
+      };
     }
   }
 

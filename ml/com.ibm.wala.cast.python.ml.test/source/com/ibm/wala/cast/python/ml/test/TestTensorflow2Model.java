@@ -1144,8 +1144,11 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   @Test
   public void testTensorboardExample()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    // Change to 0, 4 once https://github.com/wala/ML/issues/147 is fixed.
-    test("tensorboard_example.py", "summarize_weights", 0, 12);
+    if (usesJython3Testing()) {
+	  test("tensorboard_example.py", "summarize_weights", 0, 4);
+    } else {
+  	  test("tensorboard_example.py", "summarize_weights", 0, 12);    	
+    }
   }
 
   @Test
@@ -4797,7 +4800,7 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
 
     // check that the function exists in the call graph.
     assertTrue(
-        "Function must exist in call graph.",
+        "Function " + functionSignature + " must exist in call graph.",
         getFunctionSignatures(CG).anyMatch(s -> s.equals(functionSignature)));
 
     // get the tensor variables for the function.
