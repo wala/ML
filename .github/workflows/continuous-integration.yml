@@ -60,9 +60,9 @@ jobs:
 name: test jep
 on:
   push:
-    branches: [ "master", "python_ast" ]
+    branches: [ "master", "jep-jumpstart-merge" ]
   pull_request:
-    branches: [ "master", "python_ast" ]
+    branches: [ "master", "jep-jumpstart-merge" ]
 jobs:
   test:
     runs-on: macos-latest
