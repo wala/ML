@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.ibm.wala</groupId>
-    <artifactId>ml-ml</artifactId>
+    <artifactId>ml</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>com.ibm.wala.cast.python.report</artifactId>

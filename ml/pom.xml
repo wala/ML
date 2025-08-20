@@ -8,7 +8,6 @@
   <modules>
     <module>com.ibm.wala.cast.python.ml</module>
     <module>com.ibm.wala.cast.python.ml.test</module>
-    <module>com.ibm.wala.cast.python.report</module>
   </modules>
   <distributionManagement>
     <repository>

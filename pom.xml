@@ -10,5 +10,6 @@
     <module>jep</module>
     <module>jython</module>
     <module>ml</module>
+    <module>com.ibm.wala.cast.python.report</module>
   </modules>
 </project>
