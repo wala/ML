@@ -1,7 +1,6 @@
 name: Continuous integration
 on:
   push:
-<<<<<<< HEAD
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
@@ -58,7 +57,9 @@ jobs:
         slug: wala/ML
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-=======
+name: test jep
+on:
+  push:
     branches: [ "master", "python_ast" ]
   pull_request:
     branches: [ "master", "python_ast" ]
@@ -92,16 +93,13 @@ jobs:
         popd
     - name: build WALA ML core
       run: |
-        pushd /tmp
-        git clone https://github.com/wala/ML
-        cd ML
+        core
         git checkout jumpstart-jep-merge
-        cd core
         mvn install -DskipTests
         popd
     - name: Build with Maven
       run: |
-        pushd com.ibm.wala.cast.python.cpython
+        pushd jep
         mvn install -DskipTests
         popd
     - name: get jni dir
@@ -109,7 +107,6 @@ jobs:
     - name: Test with Maven
       run: |
         echo "${{ env.SITE_PATH }}"
-        pushd com.ibm.wala.cast.python.cpython
+        pushd jep/com.ibm.wala.cast.python.cpython
         java -ea --enable-native-access=ALL-UNNAMED -Djava.library.path=${{ env.SITE_PATH }}/jep -cp target/com.ibm.wala.cast.python.cpython-0.0.1-SNAPSHOT-tests.jar:target/com.ibm.wala.cast.python.cpython-0.0.1-SNAPSHOT-shaded.jar:target/com.ibm.wala.cast.python.cpython-0.0.1-SNAPSHOT-shaded-tests.jar com.ibm.wala.cast.python.cpython.test.PassingSuite
         popd
->>>>>>> jumpstart2024/python_ast
