@@ -129,67 +129,67 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   @Test
   public void testDecorator()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2_testing_decorator.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
+    test("tf2_test_decorator.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
   }
 
   @Test
   public void testDecorator2()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2_testing_decorator2.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
+    test("tf2_test_decorator2.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
   }
 
   @Test
   public void testDecorator3()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2_testing_decorator3.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
+    test("tf2_test_decorator3.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
   }
 
   @Test
   public void testDecorator4()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2_testing_decorator4.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
+    test("tf2_test_decorator4.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
   }
 
   @Test
   public void testDecorator5()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2_testing_decorator5.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
+    test("tf2_test_decorator5.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
   }
 
   @Test
   public void testDecorator6()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2_testing_decorator6.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
+    test("tf2_test_decorator6.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
   }
 
   @Test
   public void testDecorator7()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2_testing_decorator7.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
+    test("tf2_test_decorator7.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
   }
 
   @Test
   public void testDecorator8()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2_testing_decorator8.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
+    test("tf2_test_decorator8.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
   }
 
   @Test
   public void testDecorator9()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2_testing_decorator9.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
+    test("tf2_test_decorator9.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
   }
 
   @Test
   public void testDecorator10()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2_testing_decorator10.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
+    test("tf2_test_decorator10.py", "returned", 1, 1, Map.of(2, Set.of(MNIST_INPUT)));
   }
 
   @Test
   public void testDecorator11()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    test("tf2_testing_decorator11.py", "C.returned", 1, 1, Map.of(3, Set.of(MNIST_INPUT)));
+    test("tf2_test_decorator11.py", "C.returned", 1, 1, Map.of(3, Set.of(MNIST_INPUT)));
   }
 
   @Test
