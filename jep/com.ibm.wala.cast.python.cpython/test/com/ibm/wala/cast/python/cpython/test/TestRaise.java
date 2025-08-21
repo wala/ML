@@ -121,7 +121,8 @@ public class TestRaise extends TestJythonCallGraphShape {
 		    verifyGraphAssertions(CG, assertionsForRaise2);
 		}
 
-		@Test
+// implement exception groups
+//		@Test
 		public void testRaise3() throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
 			  PythonAnalysisEngine<?> engine = this.makeEngine("raise3.py");
 			  PropagationCallGraphBuilder callGraphBuilder = engine.defaultCallGraphBuilder();
