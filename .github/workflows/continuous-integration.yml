@@ -73,7 +73,7 @@ jobs:
         python-version: '3.13' 
         cache: 'pip'
     - name: installStuff
-      run: pip install -r com.ibm.wala.cast.python.cpython/requirements.txt
+      run: pip install -r jep/com.ibm.wala.cast.python.cpython/requirements.txt
     - name: test jep
       run:  echo 'print("1 + 1 is " + str(1 + 1))' | jep
     - name: build WALA
