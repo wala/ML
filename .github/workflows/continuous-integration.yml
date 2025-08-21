@@ -86,7 +86,7 @@ jobs:
         popd
     - name: build WALA ML core
       run: |
-        cd core
+        pushd core
         mvn install -DskipTests
         popd
     - name: Build with Maven
