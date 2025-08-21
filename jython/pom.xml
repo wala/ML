@@ -23,21 +23,6 @@
       <url>file://${project.build.directory}/mvn-repo</url>
     </repository>
   </distributionManagement>
-  <properties>
-    <project-version>0.0.1-SNAPSHOT</project-version>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
-    <maven.compiler.version>3.14.0</maven.compiler.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <build-alias>b000</build-alias>
-    <wala.version>1.6.10-SNAPSHOT</wala.version>
-    <spotless.version>2.44.4</spotless.version>
-    <maven.surefire.version>3.5.3</maven.surefire.version>
-    <parallel>both</parallel>
-    <logging.config.file>${maven.multiModuleProjectDirectory}/logging.properties</logging.config.file>
-    <jacoco-version>0.8.13</jacoco-version>
-    <argLine/>
-  </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>
