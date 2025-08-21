@@ -39,7 +39,7 @@ jobs:
       shell: bash
     - name: build WALA
       run: |
-        pushd /tmp
+        pushd ${{ runner.temp }}/wala
         git clone https://github.com/wala/WALA
         cd WALA
         git checkout jumpstart-jep-merge
