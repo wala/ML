@@ -1,0 +1,53 @@
+name: test jep
+on:
+  push:
+    branches: [ "master", "jep-jumpstart-merge" ]
+  pull_request:
+    branches: [ "master", "jep-jumpstart-merge" ]
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+    - name: Check out wala cpython sources
+      uses: actions/checkout@v3
+    - name: Set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+        distribution: 'oracle'
+        cache: maven
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.13' 
+        cache: 'pip'
+    - name: installStuff
+      run: pip install -r com.ibm.wala.cast.python.cpython/requirements.txt
+    - name: test jep
+      run:  echo 'print("1 + 1 is " + str(1 + 1))' | jep
+    - name: build WALA
+      run: |
+        pushd /tmp
+        git clone https://github.com/wala/WALA
+        cd WALA
+        git checkout jumpstart-jep-merge
+        ./gradlew build publishToMavenLocal -x test -x javadoc -x lintMarkdown
+        popd
+    - name: build WALA ML core
+      run: |
+        core
+        git checkout jumpstart-jep-merge
+        mvn install -DskipTests
+        popd
+    - name: Build with Maven
+      run: |
+        pushd jep
+        mvn install -DskipTests
+        popd
+    - name: get jni dir
+      run: echo "SITE_PATH=$(python -c 'import site; print(site.getsitepackages()[0])')" >> $GITHUB_ENV
+    - name: Test with Maven
+      run: |
+        echo "${{ env.SITE_PATH }}"
+        pushd jep/com.ibm.wala.cast.python.cpython
+        java -ea --enable-native-access=ALL-UNNAMED -Djava.library.path=${{ env.SITE_PATH }}/jep -cp target/com.ibm.wala.cast.python.cpython-0.0.1-SNAPSHOT-tests.jar:target/com.ibm.wala.cast.python.cpython-0.0.1-SNAPSHOT-shaded.jar:target/com.ibm.wala.cast.python.cpython-0.0.1-SNAPSHOT-shaded-tests.jar com.ibm.wala.cast.python.cpython.test.PassingSuite
+        popd
