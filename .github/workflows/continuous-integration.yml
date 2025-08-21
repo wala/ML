@@ -40,7 +40,7 @@ jobs:
     - name: build WALA
       run: |
         git clone https://github.com/wala/WALA ${{ runner.temp }}/wala
-        pushd ${{ runner.temp }}/wala
+        pushd ${{ runner.temp }}/wala/WALA
         git checkout jumpstart-jep-merge
         ./gradlew build publishToMavenLocal -x test -x javadoc -x lintMarkdown
         popd
