@@ -26,8 +26,6 @@ jobs:
         cache: 'pip'
     - name: Install Python dependencies.
       run: pip install -r requirements.txt
-    - name: Checkout wala/IDE sources.
-      run: git clone --depth=1 https://github.com/wala/IDE ${{ runner.temp }}/IDE
     - name: Checkout ponder-lab/jython3 sources.
       run: git clone --depth=1 https://github.com/ponder-lab/jython3.git ${{ runner.temp }}/jython3
     - name: Install Jython3.
@@ -47,6 +45,8 @@ jobs:
         git checkout jumpstart-jep-merge
         ./gradlew build publishToMavenLocal -x test -x javadoc -x lintMarkdown
         popd
+    - name: Checkout wala/IDE sources.
+      run: git clone --depth=1 https://github.com/wala/IDE ${{ runner.temp }}/IDE
     - name: Install IDE.
       run: |
         pushd ${{ runner.temp }}/IDE/com.ibm.wala.cast.lsp
