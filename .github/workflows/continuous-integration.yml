@@ -26,10 +26,6 @@ jobs:
         cache: 'pip'
     - name: Install Python dependencies.
       run: pip install -r requirements.txt
-    - name: Check formatting with spotless.
-      run: mvn spotless:check -B
-    - name: Check formatting with Black.
-      run: black --fast --check .
     - name: Checkout wala/IDE sources.
       run: git clone --depth=1 https://github.com/wala/IDE ${{ runner.temp }}/IDE
     - name: Checkout ponder-lab/jython3 sources.
@@ -43,6 +39,14 @@ jobs:
         popd
         popd
       shell: bash
+    - name: build WALA
+      run: |
+        pushd /tmp
+        git clone https://github.com/wala/WALA
+        cd WALA
+        git checkout jumpstart-jep-merge
+        ./gradlew build publishToMavenLocal -x test -x javadoc -x lintMarkdown
+        popd
     - name: Install IDE.
       run: |
         pushd ${{ runner.temp }}/IDE/com.ibm.wala.cast.lsp
@@ -50,6 +54,10 @@ jobs:
         popd
     - name: Build with Maven
       run: mvn -Dlogging.config.file=\${maven.multiModuleProjectDirectory}/logging.ci.properties verify -B -Pjacoco
+    - name: Check formatting with spotless.
+      run: mvn spotless:check -B
+    - name: Check formatting with Black.
+      run: black --fast --check .
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v5
       with:
