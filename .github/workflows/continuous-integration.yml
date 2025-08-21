@@ -39,9 +39,8 @@ jobs:
       shell: bash
     - name: build WALA
       run: |
+        git clone https://github.com/wala/WALA ${{ runner.temp }}/wala
         pushd ${{ runner.temp }}/wala
-        git clone https://github.com/wala/WALA
-        cd WALA
         git checkout jumpstart-jep-merge
         ./gradlew build publishToMavenLocal -x test -x javadoc -x lintMarkdown
         popd
