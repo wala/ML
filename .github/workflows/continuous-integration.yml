@@ -86,8 +86,7 @@ jobs:
         popd
     - name: build WALA ML core
       run: |
-        core
-        git checkout jumpstart-jep-merge
+        cd core
         mvn install -DskipTests
         popd
     - name: Build with Maven
