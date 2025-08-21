@@ -20,10 +20,10 @@ def gen1():
 
 def p1(f, i):
     return f(i)
-    
+
 def p2(f, i):
     print(f(i))
-    
+
 i = 0
 for f in gen():
     g = p1(f, i)

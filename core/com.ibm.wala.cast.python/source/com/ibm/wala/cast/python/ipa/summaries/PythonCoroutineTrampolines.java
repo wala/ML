@@ -21,47 +21,49 @@ public class PythonCoroutineTrampolines extends PythonTrampolines {
     super(base);
   }
 
-  PythonSummarizedFunction makeTrampoline(CGNode caller, CallSiteReference site, IClass receiver,
-		MethodReference method) {
-	int instIdx = 0;
-	
-	int i = 0;
-	MethodReference synth =
-	    MethodReference.findOrCreate(
-	        method.getDeclaringClass(),
-	        new Selector(
-	            Atom.findOrCreateUnicodeAtom("$coroutine$" + receiver.getName()),
-	            method.getSelector().getDescriptor()));
+  PythonSummarizedFunction makeTrampoline(
+      CGNode caller, CallSiteReference site, IClass receiver, MethodReference method) {
+    int instIdx = 0;
 
-	SSAAbstractInvokeInstruction inst = caller.getIR().getCalls(site)[0];
-	PythonSummary x = new PythonSummary(synth, inst.getNumberOfUses());
+    int i = 0;
+    MethodReference synth =
+        MethodReference.findOrCreate(
+            method.getDeclaringClass(),
+            new Selector(
+                Atom.findOrCreateUnicodeAtom("$coroutine$" + receiver.getName()),
+                method.getSelector().getDescriptor()));
 
-	int v = inst.getNumberOfUses()+1;
-	int[] args = new int[inst.getNumberOfUses() ];
-	for(i = 1; i <= inst.getNumberOfUses(); i++) {
-		if (i == 1) {
-			x.addStatement(PythonLanguage.Python.instructionFactory().CheckCastInstruction(instIdx++, v, i, receiver.getReference(), true));
-			args[i-1] = v++;
-		} else {
-			args[i-1] = i;
-		}
-	}
+    SSAAbstractInvokeInstruction inst = caller.getIR().getCalls(site)[0];
+    PythonSummary x = new PythonSummary(synth, inst.getNumberOfUses());
 
-	int r = i+1;
-	CallSiteReference ss = new DynamicCallSiteReference(PythonTypes.CodeBody, i);
-	x.addStatement(new PythonInvokeInstruction(instIdx++, r, v++, ss, args, new Pair[0]));
+    int v = inst.getNumberOfUses() + 1;
+    int[] args = new int[inst.getNumberOfUses()];
+    for (i = 1; i <= inst.getNumberOfUses(); i++) {
+      if (i == 1) {
+        x.addStatement(
+            PythonLanguage.Python.instructionFactory()
+                .CheckCastInstruction(instIdx++, v, i, receiver.getReference(), true));
+        args[i - 1] = v++;
+      } else {
+        args[i - 1] = i;
+      }
+    }
 
-	x.addConstant(v, new ConstantValue("__async_content__")) ;
-	x.addStatement(PythonLanguage.Python.instructionFactory().PropertyWrite(instIdx++, 1, v++, r));
+    int r = i + 1;
+    CallSiteReference ss = new DynamicCallSiteReference(PythonTypes.CodeBody, i);
+    x.addStatement(new PythonInvokeInstruction(instIdx++, r, v++, ss, args, new Pair[0]));
 
-	x.addStatement(PythonLanguage.Python.instructionFactory().ReturnInstruction(instIdx++, 1, false));
-	
-	PythonSummarizedFunction code = new PythonSummarizedFunction(synth, x, receiver);
-	return code;
+    x.addConstant(v, new ConstantValue("__async_content__"));
+    x.addStatement(PythonLanguage.Python.instructionFactory().PropertyWrite(instIdx++, 1, v++, r));
+
+    x.addStatement(
+        PythonLanguage.Python.instructionFactory().ReturnInstruction(instIdx++, 1, false));
+
+    PythonSummarizedFunction code = new PythonSummarizedFunction(synth, x, receiver);
+    return code;
   }
-  
-	protected TypeReference specializedType() {
-		return PythonTypes.AsyncCodeBody;
-	}
 
+  protected TypeReference specializedType() {
+    return PythonTypes.AsyncCodeBody;
+  }
 }

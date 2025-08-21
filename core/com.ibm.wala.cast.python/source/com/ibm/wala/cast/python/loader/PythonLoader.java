@@ -205,19 +205,22 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
   }
 
   final CoreClass CodeBody =
-	      new CoreClass(PythonTypes.CodeBody.getName(), PythonTypes.rootTypeName, this, null);
+      new CoreClass(PythonTypes.CodeBody.getName(), PythonTypes.rootTypeName, this, null);
   final CoreClass Coroutine =
-	      new CoreClass(PythonTypes.CodeBody.getName(), PythonTypes.rootTypeName, this, null);
+      new CoreClass(PythonTypes.CodeBody.getName(), PythonTypes.rootTypeName, this, null);
   final CoreClass AsyncCodeBody =
-	      new CoreClass(PythonTypes.AsyncCodeBody.getName(), PythonTypes.CodeBody.getName(), this, null);
+      new CoreClass(
+          PythonTypes.AsyncCodeBody.getName(), PythonTypes.CodeBody.getName(), this, null);
   final CoreClass MethodBody =
-	      new CoreClass(PythonTypes.MethodBody.getName(), PythonTypes.CodeBody.getName(), this, null);
+      new CoreClass(PythonTypes.MethodBody.getName(), PythonTypes.CodeBody.getName(), this, null);
   final CoreClass AsyncMethodBody =
-	      new CoreClass(PythonTypes.AsyncMethodBody.getName(), PythonTypes.MethodBody.getName(), this, null);
+      new CoreClass(
+          PythonTypes.AsyncMethodBody.getName(), PythonTypes.MethodBody.getName(), this, null);
   final CoreClass lambda =
-	      new CoreClass(PythonTypes.lambda.getName(), PythonTypes.CodeBody.getName(), this, null);
+      new CoreClass(PythonTypes.lambda.getName(), PythonTypes.CodeBody.getName(), this, null);
   final CoreClass lambdaMethod =
-	      new CoreClass(PythonTypes.LambdaMethod.getName(), PythonTypes.MethodBody.getName(), this, null);
+      new CoreClass(
+          PythonTypes.LambdaMethod.getName(), PythonTypes.MethodBody.getName(), this, null);
   final CoreClass filter =
       new CoreClass(PythonTypes.filter.getName(), PythonTypes.CodeBody.getName(), this, null);
   final CoreClass comprehension =
@@ -240,9 +243,9 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
   final CoreClass superfun =
       new CoreClass(PythonTypes.superfun.getName(), PythonTypes.CodeBody.getName(), this, null);
   final CoreClass iterator =
-	      new CoreClass(PythonTypes.iterator.getName(), PythonTypes.Root.getName(), this, null);
+      new CoreClass(PythonTypes.iterator.getName(), PythonTypes.Root.getName(), this, null);
   final CoreClass coroutine =
-	      new CoreClass(PythonTypes.coroutine.getName(), PythonTypes.Root.getName(), this, null);
+      new CoreClass(PythonTypes.coroutine.getName(), PythonTypes.Root.getName(), this, null);
 
   /**
    * The <a href="https://docs.python.org/3/using/cmdline.html#envvar-PYTHONPATH">PYTHONPATH</a> to

@@ -38,12 +38,12 @@ public class TestAssign extends TestJythonCallGraphShape {
         new Object[] {"script assign2.py/fff", new String[] {"script assign2.py/ff"}}
       };
 
-      @Test
-      public void testAssign2()
-          throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-        PythonAnalysisEngine<?> E = makeEngine("assign2.py");
-        PythonSSAPropagationCallGraphBuilder B = E.defaultCallGraphBuilder();
-        CallGraph CG = B.makeCallGraph(B.getOptions());
-        verifyGraphAssertions(CG, assertionsAssign2);
-      }
+  @Test
+  public void testAssign2()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    PythonAnalysisEngine<?> E = makeEngine("assign2.py");
+    PythonSSAPropagationCallGraphBuilder B = E.defaultCallGraphBuilder();
+    CallGraph CG = B.makeCallGraph(B.getOptions());
+    verifyGraphAssertions(CG, assertionsAssign2);
+  }
 }

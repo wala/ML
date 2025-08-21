@@ -85,23 +85,12 @@
         <directory>data</directory>
       </resource>
     </resources>
-    <sourceDirectory>source</sourceDirectory>
-    <testSourceDirectory>test</testSourceDirectory>
     <plugins>
 
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <version>1.1</version>
-        <executions>
-          <execution>
-            <id>retrieve-config</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-          </execution>
-        </executions>
         <configuration>
           <executable>python</executable>
           <arguments>
@@ -111,6 +100,15 @@
           <outputFile>config.properties</outputFile>
           <workingDirectory>${basedir}</workingDirectory>
         </configuration>
+        <executions>
+          <execution>
+            <id>retrieve-config</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>validate</phase>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>
@@ -120,10 +118,10 @@
         <executions>
           <execution>
             <id>read-properties</id>
-            <phase>initialize</phase>
             <goals>
               <goal>read-project-properties</goal>
             </goals>
+            <phase>initialize</phase>
             <configuration>
               <files>
                 <file>${basedir}/config.properties</file>
@@ -132,21 +130,21 @@
           </execution>
         </executions>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-	<version>3.5.3</version>
+        <version>3.5.3</version>
         <configuration>
-	  <useUnlimitedThreads>true</useUnlimitedThreads>
+          <useUnlimitedThreads>true</useUnlimitedThreads>
           <argLine>--enable-native-access=ALL-UNNAMED -Djava.library.path=${sitePackages}/jep/</argLine>
-	  <includes>
-	    <include>**/PassingSuite.java</include>
-	    <include>**/RunJep.java</include>
-	  </includes>
-	  <excludes>
-	    <exclude>**/Test*.java</exclude>
-	  </excludes>
+          <includes>
+            <include>**/PassingSuite.java</include>
+            <include>**/RunJep.java</include>
+          </includes>
+          <excludes>
+            <exclude>**/Test*.java</exclude>
+          </excludes>
         </configuration>
       </plugin>
 
@@ -188,12 +186,14 @@
             </goals>
             <phase>package</phase>
             <configuration>
-	      <shadeTestJar>true</shadeTestJar>
+              <shadeTestJar>true</shadeTestJar>
               <shadedArtifactAttached>true</shadedArtifactAttached>
             </configuration>
           </execution>
         </executions>
       </plugin>
     </plugins>
+    <sourceDirectory>source</sourceDirectory>
+    <testSourceDirectory>test</testSourceDirectory>
   </build>
 </project>

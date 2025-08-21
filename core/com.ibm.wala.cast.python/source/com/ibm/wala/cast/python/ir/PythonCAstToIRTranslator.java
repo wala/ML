@@ -467,151 +467,154 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
   @Override
   protected boolean visitScriptEntity(
-		  CAstEntity n,
-		  WalkContext context,
-		  WalkContext codeContext,
-		  CAstVisitor<WalkContext> visitor) {
-	  boolean ret = super.visitScriptEntity(n, context, codeContext, visitor);
+      CAstEntity n,
+      WalkContext context,
+      WalkContext codeContext,
+      CAstVisitor<WalkContext> visitor) {
+    boolean ret = super.visitScriptEntity(n, context, codeContext, visitor);
 
-	  ModuleEntry module = context.getModule();
-	  String scriptName = module.getName();
+    ModuleEntry module = context.getModule();
+    String scriptName = module.getName();
 
-	  // if the module is the special initialization module.
-	  if (scriptName.endsWith("/" + MODULE_INITIALIZATION_FILENAME)) {
-		  // we've hit a module. Get the other scripts in the module.
-		  PythonLoader loader = (PythonLoader) this.loader;
-		  IClassHierarchy classHierarchy = loader.getClassHierarchy();
-		  AnalysisScope scope = classHierarchy.getScope();
-		  List<Module> allModules = scope.getModules(pythonLoader);
+    // if the module is the special initialization module.
+    if (scriptName.endsWith("/" + MODULE_INITIALIZATION_FILENAME)) {
+      // we've hit a module. Get the other scripts in the module.
+      PythonLoader loader = (PythonLoader) this.loader;
+      IClassHierarchy classHierarchy = loader.getClassHierarchy();
+      AnalysisScope scope = classHierarchy.getScope();
+      List<Module> allModules = scope.getModules(pythonLoader);
 
-		  // collect the all local modules.
-		  Set<SourceModule> localModules = getLocalModules(allModules);
+      // collect the all local modules.
+      Set<SourceModule> localModules = getLocalModules(allModules);
 
-		  if (Path.of(scriptName).getParent().getFileName() != null) {
-			  String moduleName = Path.of(scriptName).getParent().getFileName().toString();
-			  LOGGER.fine("Initializing module: " + moduleName + ".");
+      if (Path.of(scriptName).getParent().getFileName() != null) {
+        String moduleName = Path.of(scriptName).getParent().getFileName().toString();
+        LOGGER.fine("Initializing module: " + moduleName + ".");
 
-			  localModules.stream()
-			  .filter(
-					  m -> {
-						  LOGGER.finer("Examining: " + m + " for filteration.");
+        localModules.stream()
+            .filter(
+                m -> {
+                  LOGGER.finer("Examining: " + m + " for filteration.");
 
-						  Path path = Path.of(m.getURL().getFile());
-						  Path parent = path.getParent();
-						  String parentFileName = parent.getFileName().toString();
-						  String grandparentFileName = parent.getParent().getFileName().toString();
+                  Path path = Path.of(m.getURL().getFile());
+                  Path parent = path.getParent();
+                  String parentFileName = parent.getFileName().toString();
+                  String grandparentFileName = parent.getParent().getFileName().toString();
 
-						  // Return whether the script is in the module or whether we are looking at a direct
-						  // subpackage.
-						  boolean include =
-								  parentFileName.equals(moduleName)
-								  || (grandparentFileName.equals(moduleName)
-										  && path.getFileName()
-										  .toString()
-										  .equals(MODULE_INITIALIZATION_FILENAME));
+                  // Return whether the script is in the module or whether we are looking at a
+                  // direct
+                  // subpackage.
+                  boolean include =
+                      parentFileName.equals(moduleName)
+                          || (grandparentFileName.equals(moduleName)
+                              && path.getFileName()
+                                  .toString()
+                                  .equals(MODULE_INITIALIZATION_FILENAME));
 
-						  LOGGER.finer(
-								  (include ? "Including" : "Not including")
-								  + " script: "
-								  + path.getFileName()
-								  + " in module: "
-								  + moduleName
-								  + " initialization.");
+                  LOGGER.finer(
+                      (include ? "Including" : "Not including")
+                          + " script: "
+                          + path.getFileName()
+                          + " in module: "
+                          + moduleName
+                          + " initialization.");
 
-						  return include;
-					  })
-			  .map(
-					  m -> {
-						  // For each module in the package, add a field referring to the script representing
-						  // the module.
-						  LOGGER.finer("Mapping: " + m + " to instructions.");
+                  return include;
+                })
+            .map(
+                m -> {
+                  // For each module in the package, add a field referring to the script
+                  // representing
+                  // the module.
+                  LOGGER.finer("Mapping: " + m + " to instructions.");
 
-						  List<File> pythonPath = loader.getPythonPath();
-						  LOGGER.finest("PYTHONPATH is: " + pythonPath);
+                  List<File> pythonPath = loader.getPythonPath();
+                  LOGGER.finest("PYTHONPATH is: " + pythonPath);
 
-						  Path path = Path.of(m.getURL().getFile());
-						  LOGGER.finer("Found module path: " + path + ".");
+                  Path path = Path.of(m.getURL().getFile());
+                  LOGGER.finer("Found module path: " + path + ".");
 
-						  for (File pathEntry : pythonPath) {
-							  LOGGER.finest("Path entry is:" + pathEntry);
+                  for (File pathEntry : pythonPath) {
+                    LOGGER.finest("Path entry is:" + pathEntry);
 
-							  if (path.startsWith(pathEntry.toPath())) {
-								  // Found it.
-								  Path scriptRelativePath = pathEntry.toPath().relativize(path);
-								  LOGGER.finer("Relativized path is: " + scriptRelativePath + ".");
+                    if (path.startsWith(pathEntry.toPath())) {
+                      // Found it.
+                      Path scriptRelativePath = pathEntry.toPath().relativize(path);
+                      LOGGER.finer("Relativized path is: " + scriptRelativePath + ".");
 
-								  // Get the package name.
-								  Path packagePath = scriptRelativePath.getParent();
-								  List<SSAInstruction> instructions = new ArrayList<SSAInstruction>(2);
+                      // Get the package name.
+                      Path packagePath = scriptRelativePath.getParent();
+                      List<SSAInstruction> instructions = new ArrayList<SSAInstruction>(2);
 
-								  if (packagePath == null) {
-									  // it must be a top-level module. I don't think we need the extra instructions
-									  // in this case.
-									  LOGGER.finer("Found top-level module; no extra instructions needed.");
-									  return instructions;
-								  }
+                      if (packagePath == null) {
+                        // it must be a top-level module. I don't think we need the extra
+                        // instructions
+                        // in this case.
+                        LOGGER.finer("Found top-level module; no extra instructions needed.");
+                        return instructions;
+                      }
 
-								  LOGGER.fine("Package path is: " + packagePath + ".");
-								  LOGGER.finer("Mapping fields for package: " + packagePath + ".");
+                      LOGGER.fine("Package path is: " + packagePath + ".");
+                      LOGGER.finer("Mapping fields for package: " + packagePath + ".");
 
-								  int res = 0;
+                      int res = 0;
 
-								  // Don't add a redundant global read for `__init__.py` for `moduleName`.
-								  boolean moduleInitializationFile = isModuleInitializationFile(path);
+                      // Don't add a redundant global read for `__init__.py` for `moduleName`.
+                      boolean moduleInitializationFile = isModuleInitializationFile(path);
 
-								  if (!moduleInitializationFile || !packagePath.toString().equals(moduleName)) {
-									  FieldReference global =
-											  makeGlobalRef("script " + packagePath + "/" + path.getFileName());
+                      if (!moduleInitializationFile || !packagePath.toString().equals(moduleName)) {
+                        FieldReference global =
+                            makeGlobalRef("script " + packagePath + "/" + path.getFileName());
 
-									  LOGGER.finer("Creating global field reference: " + global + ".");
+                        LOGGER.finer("Creating global field reference: " + global + ".");
 
-									  int idx = codeContext.cfg().getCurrentInstruction();
-									  res = codeContext.currentScope().allocateTempValue();
+                        int idx = codeContext.cfg().getCurrentInstruction();
+                        res = codeContext.currentScope().allocateTempValue();
 
-									  AstGlobalRead globalRead = new AstGlobalRead(idx, res, global);
-									  instructions.add(globalRead);
-									  LOGGER.finer("Adding global read: " + globalRead + ".");
-								  }
+                        AstGlobalRead globalRead = new AstGlobalRead(idx, res, global);
+                        instructions.add(globalRead);
+                        LOGGER.finer("Adding global read: " + globalRead + ".");
+                      }
 
-								  FieldReference moduleField =
-										  FieldReference.findOrCreate(
-												  PythonTypes.Root,
-												  // If it's the package, use the package name. Otherwise, use the
-												  // filename.
-												  Atom.findOrCreateUnicodeAtom(
-														  getNameWithoutExtension(
-																  (moduleInitializationFile ? path.getParent() : path)
-																  .toString())),
-												  PythonTypes.Root);
+                      FieldReference moduleField =
+                          FieldReference.findOrCreate(
+                              PythonTypes.Root,
+                              // If it's the package, use the package name. Otherwise, use the
+                              // filename.
+                              Atom.findOrCreateUnicodeAtom(
+                                  getNameWithoutExtension(
+                                      (moduleInitializationFile ? path.getParent() : path)
+                                          .toString())),
+                              PythonTypes.Root);
 
-								  LOGGER.finer("Creating module field reference: " + moduleField + ".");
+                      LOGGER.finer("Creating module field reference: " + moduleField + ".");
 
-								  // If we are looking at the package for `moduleName`.
-								  if (moduleInitializationFile && packagePath.toString().equals(moduleName))
-									  // use the existing global read for the script.
-									  res = 1;
+                      // If we are looking at the package for `moduleName`.
+                      if (moduleInitializationFile && packagePath.toString().equals(moduleName))
+                        // use the existing global read for the script.
+                        res = 1;
 
-								  SSAPutInstruction putInstruction =
-										  Python.instructionFactory()
-										  .PutInstruction(
-												  codeContext.cfg().getCurrentInstruction(), 1, res, moduleField);
+                      SSAPutInstruction putInstruction =
+                          Python.instructionFactory()
+                              .PutInstruction(
+                                  codeContext.cfg().getCurrentInstruction(), 1, res, moduleField);
 
-								  instructions.add(putInstruction);
-								  LOGGER.finer("Adding field write: " + putInstruction + ".");
+                      instructions.add(putInstruction);
+                      LOGGER.finer("Adding field write: " + putInstruction + ".");
 
-								  return instructions;
-							  }
-						  }
-						  //  Not found.
-						  throw new IllegalStateException(
-								  "Cannot find module: " + m + " in PYTHONPATH: " + pythonPath);
-					  })
-			  .flatMap(List::stream)
-			  .forEachOrdered(i -> codeContext.cfg().addInstruction(i));
-		  }
-	  }
+                      return instructions;
+                    }
+                  }
+                  //  Not found.
+                  throw new IllegalStateException(
+                      "Cannot find module: " + m + " in PYTHONPATH: " + pythonPath);
+                })
+            .flatMap(List::stream)
+            .forEachOrdered(i -> codeContext.cfg().addInstruction(i));
+      }
+    }
 
-	  return ret;
+    return ret;
   }
 
   /**

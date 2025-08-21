@@ -1145,9 +1145,9 @@ public class TestTensorflow2Model extends TestPythonMLCallGraphShape {
   public void testTensorboardExample()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     if (usesJython3Testing()) {
-	  test("tensorboard_example.py", "summarize_weights", 0, 4);
+      test("tensorboard_example.py", "summarize_weights", 0, 4);
     } else {
-  	  test("tensorboard_example.py", "summarize_weights", 0, 12);    	
+      test("tensorboard_example.py", "summarize_weights", 0, 12);
     }
   }
 

@@ -12,4 +12,3 @@ async def fibonacci(x):
     return lambda: ol+tl
 
 asyncio.run(fibonacci(10))()
-

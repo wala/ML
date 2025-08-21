@@ -20,10 +20,10 @@ async def gen():
 
 def p1(f, i):
     return f(i)
-    
+
 def p2(f, i):
     print(f(i))
-    
+
 async def main():
     i = 0
     async for f in gen():

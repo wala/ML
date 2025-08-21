@@ -21,6 +21,3 @@ except* e1 as e:
 except* e2 as e:
     print({s.f() for s in e.exceptions})
     print(e.__cause__.f())
-
-
-

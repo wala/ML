@@ -24,8 +24,7 @@ public class TestLambda extends TestJythonCallGraphShape {
           }
         },
         new Object[] {
-          "$script lambda1.py/Foo/foo:trampoline3", 
-          new String[] {"script lambda1.py/Foo/foo"}
+          "$script lambda1.py/Foo/foo:trampoline3", new String[] {"script lambda1.py/Foo/foo"}
         }
       };
 
@@ -48,13 +47,11 @@ public class TestLambda extends TestJythonCallGraphShape {
             "script lambda2.py/lambda3"
           }
         },
-        new Object[] {"$script lambda2.py/Foo/foo:trampoline3", 
-          new String[] {"script lambda2.py/Foo/foo"}
+        new Object[] {
+          "$script lambda2.py/Foo/foo:trampoline3", new String[] {"script lambda2.py/Foo/foo"}
         },
-        new Object[] {"script lambda2.py/lambda2", 
-          new String[] {"script lambda2.py/lambda1"}},
-        new Object[] {"script lambda2.py/lambda3", 
-          new String[] {"script lambda2.py/lambda1"}}
+        new Object[] {"script lambda2.py/lambda2", new String[] {"script lambda2.py/lambda1"}},
+        new Object[] {"script lambda2.py/lambda3", new String[] {"script lambda2.py/lambda1"}}
       };
 
   @Test

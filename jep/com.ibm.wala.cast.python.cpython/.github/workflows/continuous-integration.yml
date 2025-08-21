@@ -35,4 +35,4 @@ jobs:
 	mvn -f pom-core.xml install
 	popd
     - name: Build with Maven
-      run: mvn verify 
+      run: mvn verify

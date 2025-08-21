@@ -47,25 +47,25 @@ public class PythonTypes extends AstTypeReference {
       TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LException"));
 
   public static final TypeReference CodeBody =
-	      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LCodeBody"));
+      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LCodeBody"));
 
   public static final TypeReference Coroutine =
-	      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lcoroutine"));
+      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lcoroutine"));
 
   public static final TypeReference AsyncCodeBody =
-	      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LAsyncCodeBody"));
+      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LAsyncCodeBody"));
 
   public static final TypeReference MethodBody =
-	      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LMethodBody"));
+      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LMethodBody"));
 
   public static final TypeReference AsyncMethodBody =
-	      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LAsyncMethodBody"));
+      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LAsyncMethodBody"));
 
   public static final TypeReference lambda =
-	      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Llambda"));
+      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Llambda"));
 
   public static final TypeReference LambdaMethod =
-	      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LlambdaMethod"));
+      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LlambdaMethod"));
 
   public static final TypeReference filter =
       TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lfilter"));
@@ -101,8 +101,8 @@ public class PythonTypes extends AstTypeReference {
       TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lsuperfun"));
 
   public static final TypeReference coroutine =
-	      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lcoroutine"));
-  
+      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lcoroutine"));
+
   /** https://docs.python.org/3/library/stdtypes.html#typeiter. */
   public static final TypeReference iterator =
       TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Literator"));

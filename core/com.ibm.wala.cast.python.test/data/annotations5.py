@@ -19,4 +19,3 @@ print(foof.foo)
 print(x.foo)
 print(foof().bang(5))
 print(foof().foo_f())
-

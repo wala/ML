@@ -34,7 +34,6 @@ import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.MethodTargetSelector;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.ConstantValue;
-import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeReference;
@@ -174,15 +173,15 @@ public class PythonConstructorTargetSelector implements MethodTargetSelector {
             pc++;
           }
 
-          for(IField f : ((PythonClass)receiver).getAllStaticFields()) {
-              int tmp = v++;
-              int name = v++; 
-              
-              ctor.addConstant(name, new ConstantValue(f.getName().toString()));
-              ctor.addStatement(insts.PropertyRead(pc++, tmp, 1, name));
-              ctor.addStatement(insts.PropertyWrite(pc++, inst, name, tmp));
+          for (IField f : ((PythonClass) receiver).getAllStaticFields()) {
+            int tmp = v++;
+            int name = v++;
+
+            ctor.addConstant(name, new ConstantValue(f.getName().toString()));
+            ctor.addStatement(insts.PropertyRead(pc++, tmp, 1, name));
+            ctor.addStatement(insts.PropertyWrite(pc++, inst, name, tmp));
           }
-          
+
           if (init != null) {
             int fv = v++;
             ctor.addStatement(

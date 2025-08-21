@@ -85,7 +85,13 @@ public abstract class PythonAnalysisEngine<T>
   /** Library summaries to load. */
   private static final String[] LIBRARIES =
       new String[] {
-        "asyncio.xml", "flask.xml", "pandas.xml", "functools.xml", "pytest.xml", "click.xml", "abseil.xml"
+        "asyncio.xml",
+        "flask.xml",
+        "pandas.xml",
+        "functools.xml",
+        "pytest.xml",
+        "click.xml",
+        "abseil.xml"
       };
 
   protected PythonSSAPropagationCallGraphBuilder builder;
@@ -310,13 +316,13 @@ public abstract class PythonAnalysisEngine<T>
   }
 
   protected void addBypassLogic(IClassHierarchy cha, AnalysisOptions options) {
-	  options.setSelector(
-	    new PythonCoroutineTrampolines(
-		  new PythonInstanceMethodTrampolineTargetSelector<T>(
-		    new PythonClassMethodTrampolineTargetSelector<T>(
-			  new PythonConstructorTargetSelector(
-			    new PythonComprehensionTrampolines(options.getMethodTargetSelector()))),
-							  this)));
+    options.setSelector(
+        new PythonCoroutineTrampolines(
+            new PythonInstanceMethodTrampolineTargetSelector<T>(
+                new PythonClassMethodTrampolineTargetSelector<T>(
+                    new PythonConstructorTargetSelector(
+                        new PythonComprehensionTrampolines(options.getMethodTargetSelector()))),
+                this)));
 
     BuiltinFunctions builtins = new BuiltinFunctions(cha);
     options.setSelector(builtins.builtinClassTargetSelector(options.getClassTargetSelector()));

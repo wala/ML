@@ -18,7 +18,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
   TestAssign.class,
-//  TestCalls.class,
+  //  TestCalls.class,
   TestClasses.class,
   TestCollections.class,
   TestComprehension.class,
@@ -31,4 +31,3 @@ import org.junit.runners.Suite;
   TestSource.class
 })
 public class TestSuiteForJython2 {}
-

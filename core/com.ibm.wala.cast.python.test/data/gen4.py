@@ -17,7 +17,7 @@ def gen():
 def gen1():
     yield f2
     yield f3
-    
+
 i = 0
 for f in gen():
     g = f(i)
