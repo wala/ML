@@ -9,6 +9,11 @@
     <module>com.ibm.wala.cast.python.ml</module>
     <module>com.ibm.wala.cast.python.ml.test</module>
   </modules>
+  <parent>
+    <groupId>com.ibm.wala</groupId>
+    <artifactId>ml</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
   <distributionManagement>
     <repository>
       <id>internal.repo</id>

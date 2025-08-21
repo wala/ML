@@ -5,6 +5,11 @@
   <artifactId>ml-jython</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
+  <parent>
+    <groupId>com.ibm.wala</groupId>
+    <artifactId>ml</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
   <modules>
     <module>com.ibm.wala.cast.python.jython</module>
     <module>com.ibm.wala.cast.python.jython3</module>
