@@ -1,16 +1,19 @@
-a : int = 3
-b : int = 4
+a: int = 3
+b: int = 4
+
 
 class foof:
     foo: int = 42
     bar: 17 = 42
     baz: a + b = 42
     bang: lambda: 17 = lambda self, x: x + self.foo_f()
+
     def foo_f(self):
         return self.foo
 
+
 print(foof.__annotations__)
-print(foof.__annotations__['bang']())
+print(foof.__annotations__["bang"]())
 
 x = foof()
 print(x.foo)

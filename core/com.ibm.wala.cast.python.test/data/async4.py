@@ -1,5 +1,6 @@
 import asyncio
 
+
 def f1(a):
     return lambda x: a + x
 
@@ -24,5 +25,6 @@ async def main():
         g = f(i)
         print(g(i))
         i = i + 1
+
 
 asyncio.run(main())

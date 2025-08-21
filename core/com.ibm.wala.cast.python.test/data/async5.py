@@ -1,5 +1,6 @@
 import asyncio
 
+
 def f1(a):
     return lambda x: a + x
 
@@ -21,8 +22,10 @@ async def gen():
 def p1(f, i):
     return f(i)
 
+
 def p2(f, i):
     print(f(i))
+
 
 async def main():
     i = 0
@@ -30,5 +33,6 @@ async def main():
         g = p1(f, i)
         p2(g, i)
         i = i + 1
+
 
 asyncio.run(main())

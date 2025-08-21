@@ -14,9 +14,11 @@ def gen():
     yield f1
     yield from gen1()
 
+
 def gen1():
     yield f2
     yield f3
+
 
 i = 0
 for f in gen():

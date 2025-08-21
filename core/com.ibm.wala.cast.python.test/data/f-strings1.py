@@ -1,9 +1,10 @@
-
 def f(x):
-    return 3*x
+    return 3 * x
+
 
 def g(x):
-    return f(x+1)
+    return f(x + 1)
+
 
 x = f(0) + g(0)
 

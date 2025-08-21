@@ -1,5 +1,6 @@
-x = lambda a: a+1
+x = lambda a: a + 1
 print(x(3))
+
 
 class Foo:
     def foo(self, a, b):

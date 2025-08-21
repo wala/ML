@@ -7,7 +7,7 @@ def ff(f, v):
 
 
 def fff(ff, f, v):
-    return lambda x: ff(f, v+x), lambda x: ff(f, v+x+1)
+    return lambda x: ff(f, v + x), lambda x: ff(f, v + x + 1)
 
 
 a = f(0)
