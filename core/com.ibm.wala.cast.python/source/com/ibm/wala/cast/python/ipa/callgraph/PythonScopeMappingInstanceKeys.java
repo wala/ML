@@ -53,4 +53,15 @@ public class PythonScopeMappingInstanceKeys extends ScopeMappingInstanceKeys {
       ScopeMappingInstanceKey smik, Pair<String, String> name) {
     return Collections.singleton(smik.getCreator());
   }
+
+  @Override
+  protected boolean isTrueConstructorCall(Pair<String, String> name, CGNode callerOfConstructor) {
+    return callerOfConstructor
+        .getMethod()
+        .getReference()
+        .getDeclaringClass()
+        .getName()
+        .toString()
+        .equals(name.snd);
+  }
 }
