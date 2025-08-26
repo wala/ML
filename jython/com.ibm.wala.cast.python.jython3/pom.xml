@@ -11,7 +11,6 @@
     <dependency>
       <groupId>com.ibm.wala</groupId>
       <artifactId>ml-core</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
       <type>pom</type>
     </dependency>
     <dependency>
