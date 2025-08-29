@@ -1,9 +1,9 @@
 name: Continuous integration
 on:
   push:
-    branches: [ "master", "jumpstart-jep-merge" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "master", "jumpstart-jep-merge" ]
+    branches: [ "master" ]
 concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
