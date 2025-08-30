@@ -1,9 +1,7 @@
 name: Continuous integration
 on:
   push:
-    branches: [ "master" ]
   pull_request:
-    branches: [ "master" ]
 concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: ${{ github.event_name != 'push' || !startsWith(github.ref, 'refs/tags/') }} # Cancel if not a tag push.
