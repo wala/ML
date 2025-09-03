@@ -105,12 +105,18 @@ public abstract class PythonAnalysisEngine<T>
       PythonAnalysisEngine.setLoaderFactory(j4);
     } catch (UnsatisfiedLinkError | ClassNotFoundException e2) {
       try {
-        Class<?> j3 = Class.forName("com.ibm.wala.cast.python.loader.Python3LoaderFactory");
-        PythonAnalysisEngine.setLoaderFactory((Class<? extends PythonLoaderFactory>) j3);
+        @SuppressWarnings("unchecked")
+        Class<? extends PythonLoaderFactory> j3 =
+            (Class<? extends PythonLoaderFactory>)
+                Class.forName("com.ibm.wala.cast.python.loader.Python3LoaderFactory");
+        PythonAnalysisEngine.setLoaderFactory(j3);
       } catch (ClassNotFoundException e) {
         try {
-          Class<?> j2 = Class.forName("com.ibm.wala.cast.python.loader.Python2LoaderFactory");
-          PythonAnalysisEngine.setLoaderFactory((Class<? extends PythonLoaderFactory>) j2);
+          @SuppressWarnings("unchecked")
+          Class<? extends PythonLoaderFactory> j2 =
+              (Class<? extends PythonLoaderFactory>)
+                  Class.forName("com.ibm.wala.cast.python.loader.Python2LoaderFactory");
+          PythonAnalysisEngine.setLoaderFactory(j2);
         } catch (ClassNotFoundException e1) {
           assert false : e.getMessage() + ", then " + e1.getMessage();
         }

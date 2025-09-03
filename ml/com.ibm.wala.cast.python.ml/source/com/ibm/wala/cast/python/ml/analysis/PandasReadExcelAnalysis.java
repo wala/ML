@@ -67,9 +67,10 @@ public class PandasReadExcelAnalysis {
                                       if (field instanceof ConstantKey<?>
                                           && ((ConstantKey<?>) field).getValue()
                                               instanceof String) {
-                                        excelTableFields
-                                            .get(obj)
-                                            .add(((ConstantKey<String>) field).getValue());
+                                        @SuppressWarnings("unchecked")
+                                        ConstantKey<String> constantKey =
+                                            (ConstantKey<String>) field;
+                                        excelTableFields.get(obj).add(constantKey.getValue());
                                       }
                                     });
                           }

@@ -113,7 +113,7 @@ public class TensorType implements Iterable<Dimension<?>> {
   }
 
   public static class SymbolicDim extends Dimension<String> {
-    SymbolicDim(String name) {
+    public SymbolicDim(String name) {
       super(name);
     }
 
@@ -147,8 +147,8 @@ public class TensorType implements Iterable<Dimension<?>> {
     }
   }
 
-  static class NumericDim extends Dimension<Integer> {
-    NumericDim(Integer v) {
+  public static class NumericDim extends Dimension<Integer> {
+    public NumericDim(Integer v) {
       super(v);
     }
 
@@ -179,7 +179,7 @@ public class TensorType implements Iterable<Dimension<?>> {
   }
 
   public static class CompoundDim extends Dimension<List<Dimension<?>>> {
-    CompoundDim(List<Dimension<?>> v) {
+    public CompoundDim(List<Dimension<?>> v) {
       super(v);
     }
 
@@ -329,7 +329,7 @@ public class TensorType implements Iterable<Dimension<?>> {
     return new TensorType("pixel", Arrays.asList(batch, vec));
   }
 
-  public static TensorType shapeArg(CGNode node, int literalVn) {
+  public static TensorType shapeArg(CGNode node, int literalVn) throws IOException {
     logger.fine(() -> node.getIR().toString());
     ArrayList<Dimension<?>> r = new ArrayList<>();
     DefUse du = node.getDU();
@@ -351,7 +351,7 @@ public class TensorType implements Iterable<Dimension<?>> {
       }
       if (S.isNumberConstant(val)) {
         int v = ((Number) S.getConstantValue(val)).intValue();
-        System.err.println("value: " + v);
+        logger.fine("value: " + v);
         r.add(v >= 0 ? new NumericDim((Integer) v) : new SymbolicDim("?"));
       } else {
         if (du.getDef(val) != null && node.getMethod() instanceof AstMethod) {
@@ -360,18 +360,13 @@ public class TensorType implements Iterable<Dimension<?>> {
                   .debugInfo()
                   .getInstructionPosition(du.getDef(val).iIndex());
           System.err.println(p);
-          try {
-            SourceBuffer b = new SourceBuffer(p);
-            String expr = b.toString();
-            System.err.println(expr);
-            Integer ival = PythonInterpreter.interpretAsInt(expr);
-            if (ival != null) {
-              r.add(new NumericDim(ival));
-              continue;
-            }
-          } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+          SourceBuffer b = new SourceBuffer(p);
+          String expr = b.toString();
+          System.err.println(expr);
+          Integer ival = PythonInterpreter.interpretAsInt(expr);
+          if (ival != null) {
+            r.add(new NumericDim(ival));
+            continue;
           }
         }
         r.add(new SymbolicDim("?"));

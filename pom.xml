@@ -14,16 +14,15 @@
   </modules>
   <properties>
     <project-version>0.0.1-SNAPSHOT</project-version>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.release>21</maven.compiler.release>
     <maven.compiler.version>3.14.0</maven.compiler.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build-alias>b000</build-alias>
     <wala.version>1.6.12-SNAPSHOT</wala.version>
-    <spotless.version>2.44.4</spotless.version>
+    <spotless.version>2.46.1</spotless.version>
     <maven.surefire.version>3.5.3</maven.surefire.version>
     <parallel>both</parallel>
-    <logging.config.file>${maven.multiModuleProjectDirectory}/logging.properties</logging.config.file>
+    <logging.config.file>./logging.properties</logging.config.file>
     <jacoco-version>0.8.13</jacoco-version>
     <argLine/>
   </properties>
@@ -34,11 +33,44 @@
         <artifactId>spotless-maven-plugin</artifactId>
         <version>${spotless.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>33.4.8-jre</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven.compiler.version}</version>
+          <configuration>
+            <compilerArgs>
+              <arg>-Xlint:deprecation</arg>
+              <arg>-Xlint:unchecked</arg>
+            </compilerArgs>
+            <failOnWarning>true</failOnWarning>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven.surefire.version}</version>
+          <configuration>
+            <threadCount>1</threadCount>
+            <systemPropertyVariables>
+              <!-- Set JUL Formatting -->
+              <java.util.logging.config.file>${logging.config.file}</java.util.logging.config.file>
+            </systemPropertyVariables>
+            <forkCount>1</forkCount>
+            <reuseForks>true</reuseForks>
+            <argLine>@{argLine} -Dpython.import.site=false</argLine>
+            <trimStackTrace>false</trimStackTrace>
+          </configuration>
+        </plugin>
         <plugin>
           <groupId>com.diffplug.spotless</groupId>
           <artifactId>spotless-maven-plugin</artifactId>
@@ -80,6 +112,9 @@
                   <exclude>**/.pytest_cache/</exclude>
                   <exclude>**/*.log</exclude>
                   <exclude>**/*.pdf</exclude>
+                  <!-- Exclude Git submodules -->
+                  <exclude>IDE/</exclude>
+                  <exclude>jython3/</exclude>
                 </excludes>
                 <trimTrailingWhitespace/>
                 <endWithNewline/>
@@ -110,11 +145,14 @@
                   <exclude>**/dependency-reduced-pom.xml</exclude>
                   <exclude>**/gradle.xml</exclude>
                   <exclude>**/target/</exclude>
+                  <!-- Exclude Git submodules -->
+                  <exclude>IDE/</exclude>
+                  <exclude>jython3/</exclude>
                 </excludes>
                 <eclipseWtp>
                   <type>XML</type>
                   <files>
-                    <file>${maven.multiModuleProjectDirectory}/spotless.xml.prefs</file>
+                    <file>./spotless.xml.prefs</file>
                   </files>
                 </eclipseWtp>
                 <trimTrailingWhitespace/>
@@ -123,7 +161,7 @@
             </formats>
             <java>
               <googleJavaFormat>
-                <version>1.19.2</version>
+                <version>1.27.0</version>
                 <reflowLongStrings>true</reflowLongStrings>
               </googleJavaFormat>
               <trimTrailingWhitespace/>

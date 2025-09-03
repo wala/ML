@@ -28,6 +28,7 @@ import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
+import com.ibm.wala.ipa.callgraph.propagation.PropagationSystem;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
@@ -43,6 +44,7 @@ import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
 import com.ibm.wala.util.intset.OrdinalSet;
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -79,8 +81,6 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
               PythonTypes.pythonLoader, TypeName.string2TypeName("Ltensorflow/functions/conv3d")),
           AstMethodReference.fnSelector);
 
-  /** Not used due to https://github.com/wala/ML/issues/195 workaround. */
-  @SuppressWarnings("unused")
   private static final MethodReference reshape =
       MethodReference.findOrCreate(
           TypeReference.findOrCreate(
@@ -169,12 +169,12 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
           int objectRef = propertyRead.getObjectRef();
           SSAInstruction def = du.getDef(objectRef);
 
-          if (def == null) {
+          if (def == null)
             // definition is unavailable from the local DefUse. Use interprocedural analysis using
             // the PA.
             processInstructionInterprocedurally(
                 propertyRead, objectRef, localPointerKeyNode, src, sources, pointerAnalysis);
-          } else if (def instanceof EachElementGetInstruction
+          else if (def instanceof EachElementGetInstruction
               || def instanceof PythonPropertyRead
               || def instanceof PythonInvokeInstruction) {
             boolean added = false;
@@ -409,7 +409,7 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
         IClass concreteType = asin.getConcreteType();
         TypeReference reference = concreteType.getReference();
 
-        if (reference.equals(DATASET) && isDatasetTensorElement(src, use, node, pointerAnalysis)) {
+        if (reference.equals(DATASET) && isDatasetTensorElement(src, use, pointerAnalysis)) {
           sources.add(src);
           logger.info("Added dataflow source from tensor dataset: " + src + ".");
           return true;
@@ -422,69 +422,71 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 
   /**
    * Returns true iff the given {@link PointsToSetVariable} refers to a tensor dataset element of
-   * the dataset defined by the given value number in the given {@link CGNode}.
+   * the dataset defined by the given value number in the its associated {@link CGNode}.
    *
    * @param variable The {@link PointsToSetVariable} to consider.
    * @param val The value in the given {@link CGNode} representing the tensor dataset.
-   * @param node The {@link CGNode} containing the given {@link PointsToSetVariable} and value.
    * @param pointerAnalysis The {@link PointerAnalysis} that includes points-to information for the
    *     given {@link CGNode}.
    * @return True iff src refers to a tensor dataset element defined by the dataset represented by
-   *     val in node.
+   *     val in the node associated with src.
    */
   private static boolean isDatasetTensorElement(
-      PointsToSetVariable variable,
-      int val,
-      CGNode node,
-      PointerAnalysis<InstanceKey> pointerAnalysis) {
-    SSAInstruction def = node.getDU().getDef(val);
+      PointsToSetVariable variable, int val, PointerAnalysis<InstanceKey> pointerAnalysis) {
+    if (variable.getPointerKey() instanceof LocalPointerKey) {
+      LocalPointerKey localPointerKey = (LocalPointerKey) variable.getPointerKey();
+      CGNode node = localPointerKey.getNode();
+      SSAInstruction def = node.getDU().getDef(val);
 
-    if (def instanceof PythonInvokeInstruction) {
-      PythonInvokeInstruction invokeInstruction = (PythonInvokeInstruction) def;
+      if (def instanceof PythonInvokeInstruction) {
+        PythonInvokeInstruction invokeInstruction = (PythonInvokeInstruction) def;
 
-      // Check whether we are calling enumerate(), as that returns a tuple.
-      // Get the invoked function.
-      int invocationUse = invokeInstruction.getUse(0);
+        // Check whether we are calling enumerate(), as that returns a tuple.
+        // Get the invoked function.
+        int invocationUse = invokeInstruction.getUse(0);
 
-      PointerKey invocationUsePointerKey =
-          pointerAnalysis.getHeapModel().getPointerKeyForLocal(node, invocationUse);
+        PointerKey invocationUsePointerKey =
+            pointerAnalysis.getHeapModel().getPointerKeyForLocal(node, invocationUse);
 
-      for (InstanceKey functionInstance : pointerAnalysis.getPointsToSet(invocationUsePointerKey)) {
-        if (functionInstance instanceof ConcreteTypeKey) {
-          ConcreteTypeKey typeKey = (ConcreteTypeKey) functionInstance;
-          IClass type = typeKey.getType();
-          TypeReference typeReference = type.getReference();
+        for (InstanceKey functionInstance :
+            pointerAnalysis.getPointsToSet(invocationUsePointerKey)) {
+          if (functionInstance instanceof ConcreteTypeKey) {
+            ConcreteTypeKey typeKey = (ConcreteTypeKey) functionInstance;
+            IClass type = typeKey.getType();
+            TypeReference typeReference = type.getReference();
 
-          if (typeReference.equals(ENUMERATE.getDeclaringClass())) {
-            // it's a call to enumerate(), where the returned value is an iterator over
-            // tuples. Each tuple consists of the enumeration number and the dataset
-            // element. Check that we are not looking at the enumeration number.
+            if (typeReference.equals(ENUMERATE.getDeclaringClass())) {
+              // it's a call to enumerate(), where the returned value is an iterator over
+              // tuples. Each tuple consists of the enumeration number and the dataset
+              // element. Check that we are not looking at the enumeration number.
 
-            PythonPropertyRead srcDef =
-                (PythonPropertyRead)
-                    node.getDU()
-                        .getDef(((LocalPointerKey) variable.getPointerKey()).getValueNumber());
+              PythonPropertyRead srcDef =
+                  (PythonPropertyRead)
+                      node.getDU()
+                          .getDef(((LocalPointerKey) variable.getPointerKey()).getValueNumber());
 
-            // What does the member reference point to?
-            PointerKey memberRefPointerKey =
-                pointerAnalysis.getHeapModel().getPointerKeyForLocal(node, srcDef.getMemberRef());
+              // What does the member reference point to?
+              PointerKey memberRefPointerKey =
+                  pointerAnalysis.getHeapModel().getPointerKeyForLocal(node, srcDef.getMemberRef());
 
-            for (InstanceKey memberInstance : pointerAnalysis.getPointsToSet(memberRefPointerKey)) {
-              ConstantKey<?> constant = (ConstantKey<?>) memberInstance;
-              Object value = constant.getValue();
+              for (InstanceKey memberInstance :
+                  pointerAnalysis.getPointsToSet(memberRefPointerKey)) {
+                ConstantKey<?> constant = (ConstantKey<?>) memberInstance;
+                Object value = constant.getValue();
 
-              // if it's the first tuple element.
-              if (value.equals(0)) {
-                // Now that we know it's the first tuple element, we now need to know whether it's
-                // the first tuple, i.e., the one returned by enumerate.
-                // To do that, we examine the object being referenced on the RHS.
+                // if it's the first tuple element.
+                if (value.equals(0)) {
+                  // Now that we know it's the first tuple element, we now need to know whether it's
+                  // the first tuple, i.e., the one returned by enumerate.
+                  // To do that, we examine the object being referenced on the RHS.
 
-                SSAInstruction objRefDef = node.getDU().getDef(srcDef.getObjectRef());
+                  SSAInstruction objRefDef = node.getDU().getDef(srcDef.getObjectRef());
 
-                // If the object being read is that of the dataset, we know that this is the first
-                // tuple read of the result of enumerate() on the dataset.
-                if (objRefDef instanceof PythonPropertyRead
-                    && ((PythonPropertyRead) objRefDef).getObjectRef() == val) return false;
+                  // If the object being read is that of the dataset, we know that this is the first
+                  // tuple read of the result of enumerate() on the dataset.
+                  if (objRefDef instanceof PythonPropertyRead
+                      && ((PythonPropertyRead) objRefDef).getObjectRef() == val) return false;
+                }
               }
             }
           }
@@ -618,16 +620,19 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
         op,
         builder,
         (CGNode src, SSAAbstractInvokeInstruction call) -> {
-          if (call.getNumberOfUses() > param) {
-            targets.put(
-                builder
-                    .getPropagationSystem()
-                    .findOrCreatePointsToSet(
-                        builder
-                            .getPointerAnalysis()
-                            .getHeapModel()
-                            .getPointerKeyForLocal(src, call.getDef())),
-                TensorType.shapeArg(src, call.getUse(param)));
+          try {
+            if (call.getNumberOfUses() > param)
+              targets.put(
+                  builder
+                      .getPropagationSystem()
+                      .findOrCreatePointsToSet(
+                          builder
+                              .getPointerAnalysis()
+                              .getHeapModel()
+                              .getPointerKeyForLocal(src, call.getDef())),
+                  TensorType.shapeArg(src, call.getUse(param)));
+          } catch (IOException e) {
+            throw new RuntimeException("Error while processing shape source call: " + call, e);
           }
         });
     return targets;
@@ -664,36 +669,46 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 
     TensorType mnistData = TensorType.mnistInput();
     Map<PointsToSetVariable, TensorType> init = HashMapFactory.make();
-    for (PointsToSetVariable v : sources) {
-      init.put(v, mnistData);
-    }
 
-    Map<PointsToSetVariable, TensorType> placeholders =
-        handleShapeSourceOp(builder, dataflow, placeholder, 2);
-    System.err.println(placeholders);
-    for (Map.Entry<PointsToSetVariable, TensorType> e : placeholders.entrySet()) {
-      init.put(e.getKey(), e.getValue());
+    for (PointsToSetVariable v : sources) init.put(v, mnistData);
+
+    Map<PointsToSetVariable, TensorType> placeholders = null;
+    try {
+      placeholders = handleShapeSourceOp(builder, dataflow, placeholder, 2);
+    } catch (IOException e) {
+      throw new RuntimeException("Error while processing placeholder calls.", e);
     }
+    logger.fine("Placeholders: " + placeholders);
+
+    for (Map.Entry<PointsToSetVariable, TensorType> e : placeholders.entrySet())
+      init.put(e.getKey(), e.getValue());
 
     Map<PointsToSetVariable, TensorType> setCalls = HashMapFactory.make();
     Map<PointsToSetVariable, TensorType> set_shapes = getShapeSourceCalls(set_shape, builder, 1);
+
     for (Map.Entry<PointsToSetVariable, TensorType> x : set_shapes.entrySet()) {
-      CGNode setNode = ((LocalPointerKey) x.getKey().getPointerKey()).getNode();
-      int defVn = ((LocalPointerKey) x.getKey().getPointerKey()).getValueNumber();
+      LocalPointerKey localPointerKey = (LocalPointerKey) x.getKey().getPointerKey();
+      CGNode setNode = localPointerKey.getNode();
+      int defVn = localPointerKey.getValueNumber();
       SSAInstruction read = setNode.getDU().getDef(defVn);
       SSAInstruction call = setNode.getDU().getDef(read.getUse(0));
+
       PointerKey setKey =
           builder
               .getPointerAnalysis()
               .getHeapModel()
               .getPointerKeyForLocal(setNode, call.getUse(0));
+
       setCalls.put(builder.getPropagationSystem().findOrCreatePointsToSet(setKey), x.getValue());
     }
 
     Map<PointsToSetVariable, TensorType> shapeOps = HashMapFactory.make();
 
-    // Don't handle shape source operations for now to workaround
-    // https://github.com/wala/ML/issues/195.
+    try {
+      shapeOps.putAll(handleShapeSourceOp(builder, dataflow, reshape, 2));
+    } catch (IOException e) {
+      throw new RuntimeException("Error while processing reshape calls.", e);
+    }
 
     Set<PointsToSetVariable> conv2ds = getKeysDefinedByCall(conv2d, builder);
 
@@ -711,7 +726,8 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
       PropagationCallGraphBuilder builder,
       Graph<PointsToSetVariable> dataflow,
       MethodReference op,
-      int shapeSrcOperand) {
+      int shapeSrcOperand)
+      throws IOException {
     Map<PointsToSetVariable, TensorType> reshapeTypes =
         getShapeSourceCalls(op, builder, shapeSrcOperand);
     for (PointsToSetVariable to : reshapeTypes.keySet()) {
@@ -721,7 +737,12 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
       int srcVn = srcNode.getDU().getDef(toVn).getUse(1);
       PointerKey from =
           builder.getPointerAnalysis().getHeapModel().getPointerKeyForLocal(srcNode, srcVn);
-      dataflow.addEdge(builder.getPropagationSystem().findOrCreatePointsToSet(from), to);
+
+      final PropagationSystem system = builder.getPropagationSystem();
+
+      // If the source is not implicit, we add an edge from the points-to set of the source to the
+      // target https://github.com/wala/ML/issues/268.
+      if (!system.isImplicit(from)) dataflow.addEdge(system.findOrCreatePointsToSet(from), to);
     }
     return reshapeTypes;
   }

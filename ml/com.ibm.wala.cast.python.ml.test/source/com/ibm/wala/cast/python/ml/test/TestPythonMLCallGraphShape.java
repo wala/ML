@@ -29,7 +29,8 @@ import com.ibm.wala.util.NullProgressMonitor;
 import com.ibm.wala.util.collections.HashSetFactory;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -43,10 +44,9 @@ public abstract class TestPythonMLCallGraphShape extends TestJythonCallGraphShap
   }
 
   @Override
-  protected PythonAnalysisEngine<TensorTypeAnalysis> makeEngine(
-      List<File> pythonPath, String... name)
+  protected PythonTensorAnalysisEngine makeEngine(List<File> pythonPath, String... name)
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    PythonAnalysisEngine<TensorTypeAnalysis> engine = new PythonTensorAnalysisEngine(pythonPath);
+    PythonTensorAnalysisEngine engine = new PythonTensorAnalysisEngine(pythonPath);
     Set<Module> modules = HashSetFactory.make();
     for (String n : name) {
       modules.add(getScript(n));
@@ -109,9 +109,9 @@ public abstract class TestPythonMLCallGraphShape extends TestJythonCallGraphShap
   }
 
   protected void checkTensorOps(String url, CheckTensorOps check)
-      throws IllegalArgumentException, CancelException, IOException {
+      throws IllegalArgumentException, CancelException, IOException, URISyntaxException {
     PythonTensorAnalysisEngine e = new PythonTensorAnalysisEngine();
-    e.setModuleFiles(Collections.singleton(new SourceURLModule(new URL(url))));
+    e.setModuleFiles(Collections.singleton(new SourceURLModule(new URI(url).toURL())));
     PropagationCallGraphBuilder cgBuilder =
         (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
     CallGraph CG = cgBuilder.makeCallGraph(cgBuilder.getOptions());

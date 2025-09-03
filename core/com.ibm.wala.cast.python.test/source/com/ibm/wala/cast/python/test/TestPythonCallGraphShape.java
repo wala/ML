@@ -21,6 +21,8 @@ import com.ibm.wala.util.collections.HashSetFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
@@ -58,10 +60,10 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
       if (f.exists()) {
         return new SourceURLModule(f.toURI().toURL());
       } else {
-        URL url = new URL(name);
+        URL url = new URI(name).toURL();
         return new SourceURLModule(url);
       }
-    } catch (MalformedURLException e) {
+    } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
       return new SourceURLModule(getClass().getClassLoader().getResource(name)) {
         @Override
         public String getName() {

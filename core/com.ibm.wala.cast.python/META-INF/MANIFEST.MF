@@ -17,5 +17,5 @@ Export-Package: com.ibm.wala.cast.python.analysis.ap,
  com.ibm.wala.cast.python.types,
  com.ibm.wala.cast.python.util
 Bundle-Vendor: IBM
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: com.ibm.wala.cast.python

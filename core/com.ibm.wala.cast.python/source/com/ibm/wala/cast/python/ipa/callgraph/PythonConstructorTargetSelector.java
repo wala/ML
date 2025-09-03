@@ -206,8 +206,10 @@ public class PythonConstructorTargetSelector implements MethodTargetSelector {
             int result = v++;
             int except = v++;
             CallSiteReference cref = new DynamicCallSiteReference(site.getDeclaredTarget(), pc);
+            @SuppressWarnings("unchecked")
+            Pair<String, Integer>[] keywordParams = new Pair[0];
             ctor.addStatement(
-                new PythonInvokeInstruction(2, result, except, cref, cps, new Pair[0]));
+                new PythonInvokeInstruction(2, result, except, cref, cps, keywordParams));
             pc++;
           }
 
