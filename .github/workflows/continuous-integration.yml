@@ -3,7 +3,7 @@ on:
   push:
   pull_request:
   schedule:
-    - cron: "0 2 * * 5"
+    - cron: "0 2 * * 5" # Run at 2 am on Fridays.
 concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: ${{ github.event_name != 'push' || !startsWith(github.ref, 'refs/tags/') }} # Cancel if not a tag push.
