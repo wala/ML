@@ -100,6 +100,7 @@ public class Util {
     return (String) interp.getValue("modname");
   }
 
+  @SuppressWarnings("unchecked")
   public static <T> T runit(String expr) {
     assert Thread.currentThread() == queueThread;
     interp.exec("result = " + expr);

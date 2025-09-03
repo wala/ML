@@ -232,7 +232,8 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 
       TranslationVisitor x =
           new TranslationVisitor(this, initTypeDictionary()) {
-            @Override
+            @SuppressWarnings("deprecation")
+			@Override
             public URL url() {
               try {
                 return new URL("file:" + fn);

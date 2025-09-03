@@ -209,7 +209,8 @@ public class ParquetPythonReader {
                         return new StringReader(program.getString("contents"));
                       }
 
-                      @Override
+                      @SuppressWarnings("deprecation")
+					  @Override
                       public URL getURL() {
                         try {
                           return new URL(program.getString("document"));
