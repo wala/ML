@@ -1,9 +1,7 @@
 name: Continuous integration
 on:
   push:
-    branches: [ "master" ]
   pull_request:
-    branches: [ "master" ]
   schedule:
     - cron: "0 2 * * 5"
 concurrency:
