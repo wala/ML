@@ -94,7 +94,8 @@ public class ClientDriver implements LanguageClient {
         });
   }
 
-  @Override
+  @SuppressWarnings("deprecation")
+@Override
   public void publishDiagnostics(PublishDiagnosticsParams diagnostics) {
     process.accept(diagnostics);
     diags.add(diagnostics);
@@ -141,13 +142,11 @@ public class ClientDriver implements LanguageClient {
       CompletableFuture<Hover> data = server.getTextDocumentService().hover(a);
       data.thenAccept(
           (Hover t) -> {
-            @SuppressWarnings("deprecation")
             Either<List<Either<String, MarkedString>>, MarkupContent> contents = t.getContents();
             if (contents != null) {
               if (contents.isLeft()) {
                 String xx = "";
-                for (@SuppressWarnings("deprecation")
-                Either<String, MarkedString> hd : contents.getLeft()) {
+                for (Either<String, MarkedString> hd : contents.getLeft()) {
                   xx += hd.getLeft();
                 }
                 process.accept(xx);
