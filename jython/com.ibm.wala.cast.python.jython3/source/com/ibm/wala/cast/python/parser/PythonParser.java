@@ -1284,7 +1284,7 @@ public abstract class PythonParser<T> extends AbstractParser implements Translat
 
             // Only add object metadata for non-static and non-class methods.
             if (isMethod && !staticMethod && !classMethod) {
-              CAst Ast = PythonParser.this.Ast;
+              CAst Ast = PythonParser.Ast;
 
               CAstNode[] newNodes = new CAstNode[nodes.length + 2];
               System.arraycopy(nodes, 0, newNodes, 2, nodes.length);
@@ -1314,13 +1314,13 @@ public abstract class PythonParser<T> extends AbstractParser implements Translat
                               Ast.makeConstant("$self")),
                           Ast.makeNode(CAstNode.VAR, Ast.makeConstant(getArgumentNames()[1]))));
 
-              return PythonParser.this.Ast.makeNode(CAstNode.BLOCK_STMT, newNodes);
+              return PythonParser.Ast.makeNode(CAstNode.BLOCK_STMT, newNodes);
             } else {
-              return PythonParser.this.Ast.makeNode(CAstNode.BLOCK_STMT, nodes);
+              return PythonParser.Ast.makeNode(CAstNode.BLOCK_STMT, nodes);
             }
           } else {
-            return PythonParser.this.Ast.makeNode(
-                CAstNode.RETURN, PythonParser.this.Ast.makeNode(CAstNode.BLOCK_EXPR, nodes));
+            return PythonParser.Ast.makeNode(
+                CAstNode.RETURN, PythonParser.Ast.makeNode(CAstNode.BLOCK_EXPR, nodes));
           }
         }
 
