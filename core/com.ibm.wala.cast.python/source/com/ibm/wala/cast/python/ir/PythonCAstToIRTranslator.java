@@ -382,6 +382,8 @@ public class PythonCAstToIRTranslator extends AstTranslator {
                   visit(a, context, this);
                   int pos = context.cfg().getCurrentInstruction();
                   CallSiteReference site = new DynamicCallSiteReference(PythonTypes.CodeBody, pos);
+                  @SuppressWarnings("unchecked")
+                  Pair<String, Integer>[] keywordParams = new Pair[0];
                   context
                       .cfg()
                       .addInstruction(
@@ -391,7 +393,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
                               context.currentScope().allocateTempValue(),
                               site,
                               new int[] {context.getValue(a), result},
-                              new Pair[0]));
+                              keywordParams));
                 });
       }
     }
@@ -1187,10 +1189,12 @@ public class PythonCAstToIRTranslator extends AstTranslator {
       CallSiteReference site = new DynamicCallSiteReference(PythonTypes.CodeBody, pos);
       int result = context.currentScope().allocateTempValue();
       int exception = context.currentScope().allocateTempValue();
+      @SuppressWarnings("unchecked")
+      Pair<String, Integer>[] keywordParams = new Pair[0];
       context
           .cfg()
           .addInstruction(
-              new PythonInvokeInstruction(pos, result, exception, site, args, new Pair[0]));
+              new PythonInvokeInstruction(pos, result, exception, site, args, keywordParams));
 
       context.setValue(n, result);
       return true;
