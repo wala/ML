@@ -95,7 +95,7 @@ public class ClientDriver implements LanguageClient {
   }
 
   @SuppressWarnings("deprecation")
-@Override
+  @Override
   public void publishDiagnostics(PublishDiagnosticsParams diagnostics) {
     process.accept(diagnostics);
     diags.add(diagnostics);
