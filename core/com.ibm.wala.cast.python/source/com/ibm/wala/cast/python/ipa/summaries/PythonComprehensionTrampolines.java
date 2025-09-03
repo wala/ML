@@ -21,6 +21,7 @@ public class PythonComprehensionTrampolines extends PythonTrampolines
     super(base);
   }
 
+  @SuppressWarnings("unchecked")
   PythonSummarizedFunction makeTrampoline(
       CGNode caller, CallSiteReference site, IClass receiver, MethodReference method) {
     MethodReference synth =
