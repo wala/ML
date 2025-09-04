@@ -31,7 +31,7 @@ jobs:
     - name: Check formatting with spotless.
       run: mvn spotless:check -B
     - name: Check formatting with Black.
-      run: black --fast --check --extend-exclude IDE --extend-exclude jython3 --extend-exclude WALA .
+      run: black --fast --check .
     - name: Install Jython3.
       run: |
         pushd jython3
