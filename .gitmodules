@@ -4,3 +4,7 @@
 [submodule "jython3"]
 	path = jython3
 	url = https://github.com/ponder-lab/jython3.git
+[submodule "WALA"]
+	path = WALA
+	url = https://github.com/wala/WALA
+	branch = jumpstart-jep-merge

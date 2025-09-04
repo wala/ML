@@ -41,11 +41,9 @@ jobs:
         popd
         popd
       shell: bash
-    - name: build WALA
+    - name: Install WALA `jumpstart-jep-merge` branch.
       run: |
-        git clone https://github.com/wala/WALA ${{ runner.temp }}/wala
-        pushd ${{ runner.temp }}/wala
-        git checkout jumpstart-jep-merge
+        pushd WALA
         ./gradlew build publishToMavenLocal -x test -x javadoc -x lintMarkdown
         popd
     - name: Checkout wala/IDE sources.
