@@ -6,7 +6,6 @@
     <artifactId>ml</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <groupId>com.ibm.wala</groupId>
   <artifactId>ml-jep</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
