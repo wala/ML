@@ -15,10 +15,10 @@ jobs:
       uses: actions/checkout@v5
       with:
         submodules: 'recursive'
-    - name: Display the WALA submodule current branch.
+    - name: Pull the latest changes from the `jumpstart-jep-merge` branch of WALA.
       run: |
         pushd WALA
-        git branch
+        git pull origin jumpstart-jep-merge
         popd
     - name: Set up JDK 21
       uses: actions/setup-java@v4
