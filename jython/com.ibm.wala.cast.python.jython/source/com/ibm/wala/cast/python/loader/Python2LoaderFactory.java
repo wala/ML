@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Python2LoaderFactory extends PythonLoaderFactory {
 
-  public Python2LoaderFactory(List path) {}
+  public Python2LoaderFactory(List<?> path) {}
 
   @Override
   protected IClassLoader makeTheLoader(IClassHierarchy cha) {
