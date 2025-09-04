@@ -127,7 +127,10 @@
                 </includes>
                 <excludes>
                   <exclude>**/target/</exclude>
-                </excludes>
+                  <!-- Exclude Git submodules -->
+                  <exclude>IDE/</exclude>
+                  <exclude>jython3/</exclude>
+                  <exclude>WALA/</exclude>
                 <trimTrailingWhitespace/>
                 <endWithNewline/>
                 <indent>
