@@ -7,7 +7,6 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>ml-ml</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
     <module>com.ibm.wala.cast.python.ml</module>
