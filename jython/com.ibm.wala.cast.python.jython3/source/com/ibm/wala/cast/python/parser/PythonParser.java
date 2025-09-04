@@ -2446,7 +2446,7 @@ public abstract class PythonParser<T> extends AbstractParser implements Translat
               return "script " + scriptRelativePath.toString();
             }
           }
-          
+
           // not found, so revert to name
           return this.getName();
         }

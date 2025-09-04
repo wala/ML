@@ -65,11 +65,11 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
       }
     } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
       URL module = getClass().getClassLoader().getResource(name);
-	  return new SourceURLModule(module) {
+      return new SourceURLModule(module) {
         @Override
         public String getName() {
-        	return name;
-        	/*
+          return name;
+          /*
           if (name.contains("/")) {
             return name.substring(name.lastIndexOf("/"));
           } else {
