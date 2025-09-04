@@ -6,30 +6,19 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
-    <module>com.ibm.wala.cast.python</module>
-    <module>com.ibm.wala.cast.python.jython</module>
-    <module>com.ibm.wala.cast.python.jython3</module>
-    <module>com.ibm.wala.cast.python.test</module>
-    <module>com.ibm.wala.cast.python.jython.test</module>
-    <module>com.ibm.wala.cast.python.jython3.test</module>
-    <module>com.ibm.wala.cast.python.ml</module>
-    <module>com.ibm.wala.cast.python.ml.test</module>
+    <module>core</module>
+    <module>jep</module>
+    <module>jython</module>
+    <module>ml</module>
     <module>com.ibm.wala.cast.python.report</module>
   </modules>
-  <distributionManagement>
-    <repository>
-      <id>internal.repo</id>
-      <name>Temporary Staging Repository</name>
-      <url>file://${project.build.directory}/mvn-repo</url>
-    </repository>
-  </distributionManagement>
   <properties>
     <project-version>0.0.1-SNAPSHOT</project-version>
     <maven.compiler.release>21</maven.compiler.release>
     <maven.compiler.version>3.14.0</maven.compiler.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build-alias>b000</build-alias>
-    <wala.version>1.6.11</wala.version>
+    <wala.version>1.6.12-SNAPSHOT</wala.version>
     <spotless.version>2.46.1</spotless.version>
     <maven.surefire.version>3.5.3</maven.surefire.version>
     <parallel>both</parallel>
@@ -39,81 +28,6 @@
   </properties>
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>com.ibm.wala</groupId>
-        <artifactId>com.ibm.wala.util</artifactId>
-        <version>${wala.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.ibm.wala</groupId>
-        <artifactId>com.ibm.wala.shrike</artifactId>
-        <version>${wala.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.ibm.wala</groupId>
-        <artifactId>com.ibm.wala.core</artifactId>
-        <version>${wala.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.ibm.wala</groupId>
-        <artifactId>com.ibm.wala.cast</artifactId>
-        <version>${wala.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.ibm.wala</groupId>
-        <artifactId>com.ibm.wala.cast.java</artifactId>
-        <version>${wala.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.eclipse.lsp4j</groupId>
-        <artifactId>org.eclipse.lsp4j</artifactId>
-        <version>0.24.0</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-cli</groupId>
-        <artifactId>commons-cli</artifactId>
-        <version>1.10.0</version>
-      </dependency>
-      <dependency>
-        <groupId>org.json</groupId>
-        <artifactId>json</artifactId>
-        <version>20250517</version>
-      </dependency>
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.13.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.python</groupId>
-        <artifactId>jython3</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.python</groupId>
-        <artifactId>jython-slim</artifactId>
-        <version>[2.7.3a1-SNAPSHOT,)</version>
-      </dependency>
-      <dependency>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr-runtime</artifactId>
-        <version>3.5.3</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-all</artifactId>
-        <version>6.0_BETA</version>
-      </dependency>
-      <dependency>
-        <groupId>com.github.jnr</groupId>
-        <artifactId>jnr-constants</artifactId>
-        <version>0.10.4</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>versions-maven-plugin</artifactId>
-        <version>2.18.0</version>
-      </dependency>
       <dependency>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
@@ -201,6 +115,7 @@
                   <!-- Exclude Git submodules -->
                   <exclude>IDE/</exclude>
                   <exclude>jython3/</exclude>
+                  <exclude>WALA/</exclude>
                 </excludes>
                 <trimTrailingWhitespace/>
                 <endWithNewline/>
@@ -212,6 +127,10 @@
                 </includes>
                 <excludes>
                   <exclude>**/target/</exclude>
+                  <!-- Exclude Git submodules -->
+                  <exclude>IDE/</exclude>
+                  <exclude>jython3/</exclude>
+                  <exclude>WALA/</exclude>
                 </excludes>
                 <trimTrailingWhitespace/>
                 <endWithNewline/>
@@ -234,6 +153,7 @@
                   <!-- Exclude Git submodules -->
                   <exclude>IDE/</exclude>
                   <exclude>jython3/</exclude>
+                  <exclude>WALA/</exclude>
                 </excludes>
                 <eclipseWtp>
                   <type>XML</type>

@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<!DOCTYPE summary-spec>
+<!-- Pytest model -->
+<summary-spec>
+  <classloader name="PythonLoader">
+    <class name="asyncio" allocatable="true">
+      <method name="import" static="true" descriptor="()Lasyncio;" paramNames="v">
+        <new def="x" class="Lasyncio" />
+        <new def="run" class="Lasyncio/class/run" />
+        <putfield class="LRoot" field="run" fieldType="LRoot" ref="x" value="run" />
+        <return value="x" />
+      </method>
+    </class>
+    <package name="asyncio/class">
+      <class name="run" allocatable="true">
+        <method name="do" descriptor="()LRoot;" numArgs="2" paramNames="self v">
+          <getfield class="LRoot" field="__async_content__" fieldType="LRoot" ref="v" def="x" />
+          <return value="x" />
+        </method>
+      </class>
+    </package>
+  </classloader>
+</summary-spec>

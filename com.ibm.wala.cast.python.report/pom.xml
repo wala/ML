@@ -5,7 +5,6 @@
     <groupId>com.ibm.wala</groupId>
     <artifactId>ml</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <relativePath>..</relativePath>
   </parent>
   <artifactId>com.ibm.wala.cast.python.report</artifactId>
   <packaging>pom</packaging>
