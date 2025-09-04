@@ -552,8 +552,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
 
                       if (packagePath == null) {
                         // it must be a top-level module. I don't think we need the extra
-                        // instructions
-                        // in this case.
+                        // instructions in this case.
                         LOGGER.finer("Found top-level module; no extra instructions needed.");
                         return instructions;
                       }
