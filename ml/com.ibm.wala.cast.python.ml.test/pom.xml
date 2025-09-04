@@ -9,6 +9,10 @@
   <artifactId>com.ibm.wala.cast.python.ml.test</artifactId>
   <dependencies>
     <dependency>
+      <groupId>org.eclipse.lsp4j</groupId>
+      <artifactId>org.eclipse.lsp4j</artifactId>
+    </dependency>
+    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>com.ibm.wala.cast.python.jython3.test</artifactId>
       <version>0.0.1-SNAPSHOT</version>
