@@ -115,6 +115,7 @@
                   <!-- Exclude Git submodules -->
                   <exclude>IDE/</exclude>
                   <exclude>jython3/</exclude>
+                  <exclude>WALA/</exclude>
                 </excludes>
                 <trimTrailingWhitespace/>
                 <endWithNewline/>
@@ -148,6 +149,7 @@
                   <!-- Exclude Git submodules -->
                   <exclude>IDE/</exclude>
                   <exclude>jython3/</exclude>
+                  <exclude>WALA/</exclude>
                 </excludes>
                 <eclipseWtp>
                   <type>XML</type>
