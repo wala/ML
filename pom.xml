@@ -131,6 +131,7 @@
                   <exclude>IDE/</exclude>
                   <exclude>jython3/</exclude>
                   <exclude>WALA/</exclude>
+                </excludes>
                 <trimTrailingWhitespace/>
                 <endWithNewline/>
                 <indent>
