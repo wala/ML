@@ -46,8 +46,6 @@ jobs:
         pushd WALA
         ./gradlew build publishToMavenLocal -x test -x javadoc -x lintMarkdown
         popd
-    - name: Checkout wala/IDE sources.
-      run: git clone --depth=1 https://github.com/wala/IDE ${{ runner.temp }}/IDE
     - name: Install IDE.
       run: |
         pushd IDE/com.ibm.wala.cast.lsp
