@@ -18,7 +18,7 @@ jobs:
     - name: Check out wala/WALA `jumpstart-jep-merge` sources
       uses: actions/checkout@v5
       with:
-        repository: 'https://github.com/wala/WALA'
+        repository: 'wala/WALA'
         ref: 'jumpstart-jep-merge'
         path: 'WALA'
     - name: Set up JDK 21
