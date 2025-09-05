@@ -1,9 +1,11 @@
 [submodule "IDE"]
 	path = IDE
 	url = https://github.com/wala/IDE
+	branch = master
 [submodule "jython3"]
 	path = jython3
 	url = https://github.com/ponder-lab/jython3.git
+	branch = master
 [submodule "WALA"]
 	path = WALA
 	url = https://github.com/wala/WALA
