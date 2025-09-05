@@ -18,7 +18,8 @@ jobs:
     - name: Pull the latest changes from the `jumpstart-jep-merge` branch of WALA.
       run: |
         pushd WALA
-        git pull origin jumpstart-jep-merge
+        git fetch origin
+        git checkout jumpstart-jep-merge # Should be at the HEAD of the branch.
         popd
     - name: Set up JDK 21
       uses: actions/setup-java@v4
