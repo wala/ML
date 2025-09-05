@@ -17,7 +17,9 @@ jobs:
         submodules: 'recursive'
     - name: Update the WALA Git submodule
       run: |
-        git submodule foreach --recursive 'git fetch'
+        cd WALA
+        git fetch origin
+        cd -
         git submodule update --init --recursive --remote -- WALA
     - name: Set up JDK 21
       uses: actions/setup-java@v4
