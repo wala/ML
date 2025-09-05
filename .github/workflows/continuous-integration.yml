@@ -41,7 +41,7 @@ jobs:
         popd
         popd
       shell: bash
-    - name: Install WALA `jumpstart-jep-merge` branch.
+    - name: Install WALA.
       run: |
         pushd WALA
         ./gradlew build publishToMavenLocal -x test -x javadoc -x lintMarkdown
