@@ -1,21 +1,21 @@
 def monday():
     print("Monday")
-    
+
 def tuesday():
     print("Tuesday")
-    
+
 def wednesday():
     print("Wednesday")
-    
+
 def thursday():
     print("Thursday")
-    
+
 def friday():
     print("Friday")
-    
+
 def saturday():
     print("Saturday")
-    
+
 def sunday():
     print("Sunday")
 
@@ -36,4 +36,3 @@ match day:
       saturday()
   case 7:
       sunday()
-
