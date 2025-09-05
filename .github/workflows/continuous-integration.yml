@@ -18,9 +18,9 @@ jobs:
     - name: Update the WALA Git submodule
       run: |
         cd WALA
-        git fetch origin
+        git remote set-branches origin jumpstart-jep-merge
         cd -
-        git submodule update --init --recursive --remote -- WALA
+        git submodule update --recursive --remote -- WALA
     - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
