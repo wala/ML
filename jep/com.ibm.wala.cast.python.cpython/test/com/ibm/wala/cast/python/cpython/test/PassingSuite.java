@@ -31,7 +31,8 @@ import org.junit.runners.Suite.SuiteClasses;
   TestCallables.class,
   TestCompare.class,
   TestAssign.class,
-  TestGenerators.class
+  TestGenerators.class,
+  TestMatch.class
 })
 public class PassingSuite extends TestBase {
 

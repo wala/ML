@@ -7,7 +7,9 @@
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
         <listEntry value="1"/>
     </listAttribute>
-    <mapAttribute key="org.eclipse.debug.core.environmentVariables"/>
+    <mapAttribute key="org.eclipse.debug.core.preferred_launchers">
+        <mapEntry key="[run]" value="org.eclipse.jdt.junit.launchconfig"/>
+    </mapAttribute>
     <stringAttribute key="org.eclipse.debug.ui.ATTR_CAPTURE_IN_FILE" value="/tmp/pyjep.out"/>
     <stringAttribute key="org.eclipse.jdt.junit.CONTAINER" value=""/>
     <booleanAttribute key="org.eclipse.jdt.junit.KEEPRUNNING_ATTR" value="false"/>
@@ -29,5 +31,5 @@
     <listAttribute key="org.eclipse.jdt.launching.MODULEPATH"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="com.ibm.wala.cast.python.cpython"/>
     <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea&#10;--enable-native-access=ALL-UNNAMED -Djava.library.path=${sitePackages}/jep/&#10;-Djava.util.logging.config.file=./logging.properties"/>
+    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea -Djava.library.path=/Users/dolby/miniforge3/envs/walajep/lib/python3.13/site-packages/jep"/>
 </launchConfiguration>

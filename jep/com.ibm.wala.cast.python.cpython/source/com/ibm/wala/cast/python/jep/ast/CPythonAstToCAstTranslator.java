@@ -243,6 +243,76 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
             }
           };
 
+          class ScriptContext extends FunctionContext implements WalkContext {
+        	    private final Scope scope =
+        	        new Scope() {
+        	          @Override
+        	          Scope parent() {
+        	            // no parent here
+        	            return null;
+        	          }
+        	        };
+
+        	    private final PyObject ast;
+        	    PythonScriptEntity self;
+
+        	    protected ScriptContext(PyObject s, CAstImpl ast, PythonScriptEntity self) {
+        	      super(null, s, Collections.emptyList(), false);
+        	      this.ast = s;
+        	      this.self = self;
+        	    }
+
+        	    @Override
+        	    public CAstEntity entity() {
+        	      return self;
+        	    }
+
+        	    public Scope scope() {
+        	      return scope;
+        	    }
+
+        	    @Override
+        	    public PyObject top() {
+        	      return ast;
+        	    }
+
+        	    @Override
+        	    public WalkContext getParent() {
+        	      assert false;
+        	      return null;
+        	    }
+
+        	    @Override
+        	    public CAstNode getCatchTarget() {
+        	      return null;
+        	    }
+
+        	    @Override
+        	    public CAstNode getCatchTarget(String s) {
+        	      return null;
+        	    }
+
+        	    @Override
+        	    public CAstControlFlowRecorder cfg() {
+        	      return (CAstControlFlowRecorder) self.getControlFlow();
+        	    }
+
+        	    @Override
+        	    public CAstSourcePositionRecorder pos() {
+        	      return (CAstSourcePositionRecorder) self.getSourceMap();
+        	    }
+
+        	    @Override
+        	    public void addScopedEntity(CAstNode construct, CAstEntity e) {
+        	      self.addScopedEntity(construct, e);
+        	    }
+
+        	    @Override
+        	    public Map<CAstNode, Collection<CAstEntity>> getScopedEntities() {
+        	      return self.getAllScopedEntities();
+        	    }
+        	  }
+
       Ast = x.visit(ast, new ScriptContext(ast, new CAstImpl(), this));
     }
 
@@ -293,96 +363,49 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
   }
 
   public interface WalkContext extends TranslatorToCAst.WalkContext<WalkContext, PyObject> {
-    Scope scope();
+	  default boolean isAsync() {
+		  return getParent().isAsync();
+	  }
 
-    CAstEntity entity();
+	  default boolean isGenerator() {
+		  return getParent().isGenerator();
+	  }
 
-    List<String> inits();
+	  default boolean isGenerator(boolean v) {
+		  return getParent().isGenerator(v);
+	  }
 
-    WalkContext getParent();
+	  default boolean isFunctionScope() {
+		  return getParent().isFunctionScope();
+	  }
 
-    boolean isGenerator();
+	  default CAstType classSelfVar() {
+		  return getParent().classSelfVar();
+	  }
 
-    boolean isGenerator(boolean v);
+	  default WalkContext codeParent() {
+		  return getParent().codeParent();
+	  }
 
-    boolean isAsync();
+	  WalkContext getParent();
 
-    boolean isFunctionScope();
+	  default Scope scope() {
+		  return getParent().scope();
+	  }
 
-    CAstType classSelfVar();
+	  default CAstEntity entity() {
+		  return getParent().entity();
+	  }
 
-    WalkContext codeParent();
+	  default List<String> inits() {
+		  return getParent().inits();
+	  }
+
+	  default CAstNode matchVar() {
+		  return getParent().matchVar();
+	  }
   }
 
-  public static class ScriptContext extends FunctionContext implements WalkContext {
-    private final Scope scope =
-        new Scope() {
-          @Override
-          Scope parent() {
-            // no parent here
-            return null;
-          }
-        };
-
-    private final PyObject ast;
-    PythonScriptEntity self;
-
-    protected ScriptContext(PyObject s, CAstImpl ast, PythonScriptEntity self) {
-      super(null, s, Collections.emptyList(), false);
-      this.ast = s;
-      this.self = self;
-    }
-
-    @Override
-    public CAstEntity entity() {
-      return self;
-    }
-
-    public Scope scope() {
-      return scope;
-    }
-
-    @Override
-    public PyObject top() {
-      return ast;
-    }
-
-    @Override
-    public WalkContext getParent() {
-      assert false;
-      return null;
-    }
-
-    @Override
-    public CAstNode getCatchTarget() {
-      return null;
-    }
-
-    @Override
-    public CAstNode getCatchTarget(String s) {
-      return null;
-    }
-
-    @Override
-    public CAstControlFlowRecorder cfg() {
-      return (CAstControlFlowRecorder) self.getControlFlow();
-    }
-
-    @Override
-    public CAstSourcePositionRecorder pos() {
-      return (CAstSourcePositionRecorder) self.getSourceMap();
-    }
-
-    @Override
-    public void addScopedEntity(CAstNode construct, CAstEntity e) {
-      self.addScopedEntity(construct, e);
-    }
-
-    @Override
-    public Map<CAstNode, Collection<CAstEntity>> getScopedEntities() {
-      return self.getAllScopedEntities();
-    }
-  }
 
   private abstract static class Scope {
     abstract Scope parent();
@@ -407,10 +430,6 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 
     public Scope scope() {
       return scope;
-    }
-
-    void addInit(String n) {
-      inits.add(n);
     }
 
     @Override
@@ -465,79 +484,6 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
     @Override
     public boolean isAsync() {
       return async;
-    }
-  }
-
-  private static class LoopContext extends TranslatorToCAst.LoopContext<WalkContext, PyObject>
-      implements WalkContext {
-
-    LoopContext(WalkContext parent, PyObject breakTo, PyObject continueTo) {
-      super(parent, breakTo, continueTo, null);
-    }
-
-    private boolean continued = false;
-    private boolean broke = false;
-
-    @Override
-    public List<String> inits() {
-      return parent.inits();
-    }
-
-    @Override
-    public Scope scope() {
-      return parent.scope();
-    }
-
-    @Override
-    public PyObject getContinueFor(String l) {
-      continued = true;
-      return super.getContinueFor(l);
-    }
-
-    @Override
-    public PyObject getBreakFor(String l) {
-      broke = true;
-      return super.getBreakFor(l);
-    }
-
-    @Override
-    public WalkContext getParent() {
-      return (WalkContext) super.getParent();
-    }
-
-    @Override
-    public CAstEntity entity() {
-      return parent.entity();
-    }
-
-    @Override
-    public boolean isAsync() {
-      return parent.isAsync();
-    }
-
-    @Override
-    public boolean isGenerator() {
-      return parent.isGenerator();
-    }
-
-    @Override
-    public boolean isGenerator(boolean v) {
-      return parent.isGenerator(v);
-    }
-
-    @Override
-    public boolean isFunctionScope() {
-      return getParent().isFunctionScope();
-    }
-
-    @Override
-    public CAstType classSelfVar() {
-      return parent.classSelfVar();
-    }
-
-    @Override
-    public WalkContext codeParent() {
-      return parent.codeParent();
     }
   }
 
@@ -1322,6 +1268,44 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
       return loopNode;
     }
 
+    private static class LoopContext extends TranslatorToCAst.LoopContext<WalkContext, PyObject>
+    implements WalkContext {
+
+  LoopContext(WalkContext parent, PyObject breakTo, PyObject continueTo) {
+    super(parent, breakTo, continueTo, null);
+  }
+
+  private boolean continued = false;
+  private boolean broke = false;
+
+  @Override
+  public List<String> inits() {
+    return parent.inits();
+  }
+
+  @Override
+  public Scope scope() {
+    return parent.scope();
+  }
+
+  @Override
+  public PyObject getContinueFor(String l) {
+    continued = true;
+    return super.getContinueFor(l);
+  }
+
+  @Override
+  public PyObject getBreakFor(String l) {
+    broke = true;
+    return super.getBreakFor(l);
+  }
+
+  @Override
+  public WalkContext getParent() {
+    return (WalkContext) super.getParent();
+  }
+}
+
     private CAstNode visitLoopCore(
         PyObject loop, WalkContext context, CAstNode testNode, CAstNode update) {
       @SuppressWarnings("unchecked")
@@ -1892,64 +1876,6 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
               .collect(Collectors.toSet());
     }
 
-    private class TryCatchContext extends TranslatorToCAst.TryCatchContext<WalkContext, PyObject>
-        implements WalkContext {
-
-      private TryCatchContext(WalkContext parent, Map<String, CAstNode> catchNode) {
-        super(parent, catchNode);
-      }
-
-      @Override
-      public WalkContext getParent() {
-        return (WalkContext) super.getParent();
-      }
-
-      @Override
-      public Scope scope() {
-        return getParent().scope();
-      }
-
-      @Override
-      public CAstEntity entity() {
-        return getParent().entity();
-      }
-
-      @Override
-      public List<String> inits() {
-        return getParent().inits();
-      }
-
-      @Override
-      public boolean isAsync() {
-        return getParent().isAsync();
-      }
-
-      @Override
-      public boolean isGenerator() {
-        return getParent().isGenerator();
-      }
-
-      @Override
-      public boolean isGenerator(boolean v) {
-        return getParent().isGenerator(v);
-      }
-
-      @Override
-      public boolean isFunctionScope() {
-        return getParent().isFunctionScope();
-      }
-
-      @Override
-      public CAstType classSelfVar() {
-        return getParent().classSelfVar();
-      }
-
-      @Override
-      public WalkContext codeParent() {
-        return getParent().codeParent();
-      }
-    }
-
     public CAstNode visitAssert(PyObject asrt, WalkContext context) throws Exception {
       return ast.makeNode(CAstNode.ASSERT, visit(asrt.getAttr("test", PyObject.class), context));
     }
@@ -2056,6 +1982,18 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
                               : "<class 'Exception'>",
                           catchBlock);
                     });
+
+        class TryCatchContext extends TranslatorToCAst.TryCatchContext<WalkContext, PyObject> implements WalkContext {
+
+      	  private TryCatchContext(WalkContext parent, Map<String, CAstNode> catchNode) {
+      		  super(parent, catchNode);
+      	  }
+
+      	  @Override
+      	  public WalkContext getParent() {
+      		  return (WalkContext) super.getParent();
+      	  }
+        }
 
         cc = new TryCatchContext(context, catches);
       }
@@ -2415,6 +2353,60 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 
     public CAstNode visitFormattedValue(PyObject fv, WalkContext context) throws Exception {
       return visit(fv.getAttr("value", PyObject.class), context);
+    }
+    
+    public CAstNode visitMatchValue(PyObject match, WalkContext context) {
+    	return ast.makeNode(CAstNode.BINARY_EXPR,
+    		CAstOperator.OP_EQ,
+    		context.matchVar(),
+    		visit(match.getAttr("value", PyObject.class), context));
+    }
+    
+    public CAstNode visitMatch(PyObject match, WalkContext context) {
+    	CAstNode var;
+		CAstNode exprDecl =
+                ast.makeNode(
+                    CAstNode.DECL_STMT,
+                    var = ast.makeConstant(new CAstSymbolImpl("__expr__", CAstType.DYNAMIC)),
+                    visit(match.getAttr("subject", PyObject.class), context));
+        @SuppressWarnings("unchecked")
+		java.util.List<PyObject> cases = match.getAttr("cases", List.class);
+
+        WalkContext mc = new WalkContext() {
+
+			@Override
+			public WalkContext getParent() {
+				return context;
+			}
+
+			@Override
+			public CAstNode matchVar() {
+				return var;
+			}
+        	
+        };
+        
+        CAstNode body = ast.makeNode(CAstNode.BLOCK_STMT, 
+        	cases.stream().map(matchCase -> { 
+        		CAstNode expr = visit(matchCase.getAttr("pattern", PyObject.class), mc);
+        		@SuppressWarnings("unchecked")
+				CAstNode stmts = ast.makeNode(CAstNode.BLOCK_STMT, 
+        				((List<PyObject>)matchCase.getAttr("body", List.class))
+        					.stream()
+        					.map(n -> visit(n, context))
+        					.collect(Collectors.toList()));
+        				
+        		CAstNode bodyNode = 
+        			matchCase.getAttr("guard") != null?
+        			ast.makeNode(CAstNode.IF_STMT, visit(matchCase.getAttr("guard", PyObject.class), mc), stmts):
+        				stmts;
+        		
+        		return ast.makeNode(CAstNode.IF_STMT, expr, bodyNode);
+        	}).collect(Collectors.toList()));
+        
+    
+        return ast.makeNode(CAstNode.BLOCK_STMT,
+        	exprDecl, body);
     }
   }
 
