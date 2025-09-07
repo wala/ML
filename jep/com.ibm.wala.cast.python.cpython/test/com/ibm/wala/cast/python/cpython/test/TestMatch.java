@@ -36,13 +36,11 @@ public class TestMatch extends TestJythonCallGraphShape {
     PythonAnalysisEngine<?> E = makeEngine("match1.py");
     PythonSSAPropagationCallGraphBuilder B = E.defaultCallGraphBuilder();
     CallGraph CG = B.makeCallGraph(B.getOptions());
-    
+
     System.err.println(CG);
     CAstCallGraphUtil.AVOID_DUMP.set(false);
     CAstCallGraphUtil.dumpCG(
-        (SSAContextInterpreter) B.getContextInterpreter(),
-        B.getPointerAnalysis(),
-        CG);
+        (SSAContextInterpreter) B.getContextInterpreter(), B.getPointerAnalysis(), CG);
 
     verifyGraphAssertions(CG, assertionsForMatch1);
   }

@@ -25,11 +25,11 @@ def saturday():
 def sunday():
     print("Sunday")
 
-    
+
 def otherDay():
     print("other day??")
 
-    
+
 for day in [1, 2, 3, 4, 5, 6, 7, otherDay]:
     match day:
         case 1:
