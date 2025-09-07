@@ -404,6 +404,10 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
     default CAstNode matchVar() {
       return getParent().matchVar();
     }
+    
+    default Set<String> matchDeclNames() {
+    	return getParent().matchDeclNames();
+    }
   }
 
   private abstract static class Scope {
@@ -484,6 +488,11 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
     public boolean isAsync() {
       return async;
     }
+
+	@Override
+	public Set<String> matchDeclNames() {
+		return Collections.emptySet();
+	}
   }
 
   public abstract static class TranslationVisitor extends AbstractParser.CAstVisitor
@@ -2363,16 +2372,26 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
           visit(match.getAttr("value", PyObject.class), context));
     }
 
+    public CAstNode visitMatchAs(PyObject match, WalkContext context) {
+    	String id = match.getAttr("name", String.class);
+    	context.matchDeclNames().add(id);
+    	return ast.makeNode(CAstNode.BLOCK_EXPR,
+    			ast.makeNode(CAstNode.ASSIGN, 
+    			  ast.makeNode(CAstNode.VAR, ast.makeConstant(id)),
+    			  context.matchVar()),
+    			ast.makeConstant(true));
+    }
+
     public CAstNode visitMatch(PyObject match, WalkContext context) {
-      CAstNode var;
-      CAstNode exprDecl =
+    	CAstNode exprDecl =
           ast.makeNode(
               CAstNode.DECL_STMT,
-              var = ast.makeConstant(new CAstSymbolImpl("__expr__", CAstType.DYNAMIC)),
+              ast.makeConstant(new CAstSymbolImpl("__expr__", CAstType.DYNAMIC)),
               visit(match.getAttr("subject", PyObject.class), context));
       @SuppressWarnings("unchecked")
       java.util.List<PyObject> cases = match.getAttr("cases", List.class);
 
+      Set<String> decls = HashSetFactory.make();
       WalkContext mc =
           new WalkContext() {
 
@@ -2383,8 +2402,13 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 
             @Override
             public CAstNode matchVar() {
-              return var;
+              return ast.makeNode(CAstNode.VAR, ast.makeConstant("__expr__"));
             }
+
+			@Override
+			public Set<String> matchDeclNames() {
+				return decls;
+			}
           };
 
       CAstNode body =
@@ -2415,6 +2439,16 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
                       })
                   .collect(Collectors.toList()));
 
+      if (! decls.isEmpty()) {
+    	  exprDecl = ast.makeNode(CAstNode.BLOCK_STMT,
+    	    exprDecl,
+    	    ast.makeNode(CAstNode.BLOCK_STMT,
+    	      decls.stream().map(s -> ast.makeNode(
+    	        CAstNode.DECL_STMT,
+    	        ast.makeConstant(new CAstSymbolImpl(s, CAstType.DYNAMIC))))
+    	      .collect(Collectors.toList())));
+      }
+      
       return ast.makeNode(CAstNode.BLOCK_STMT, exprDecl, body);
     }
   }

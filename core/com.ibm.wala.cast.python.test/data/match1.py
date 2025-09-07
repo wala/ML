@@ -25,21 +25,26 @@ def saturday():
 def sunday():
     print("Sunday")
 
+    
+def otherDay():
+    print("other day??")
 
-day = 4
-
-match day:
-    case 1:
-        monday()
-    case 2:
-        tuesday()
-    case 3:
-        wednesday()
-    case 4:
-        thursday()
-    case 5:
-        friday()
-    case 6:
-        saturday()
-    case 7:
-        sunday()
+    
+for day in [1, 2, 3, 4, 5, 6, 7, otherDay]:
+    match day:
+        case 1:
+            monday()
+        case 2:
+            tuesday()
+        case 3:
+            wednesday()
+        case 4:
+            thursday()
+        case 5:
+            friday()
+        case 6:
+            saturday()
+        case 7:
+            sunday()
+        case x:
+            x()

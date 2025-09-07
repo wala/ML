@@ -1,9 +1,11 @@
 package com.ibm.wala.cast.python.cpython.test;
 
+import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.ipa.callgraph.PythonSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.python.test.TestJythonCallGraphShape;
 import com.ibm.wala.ipa.callgraph.CallGraph;
+import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 import java.io.IOException;
@@ -22,7 +24,8 @@ public class TestMatch extends TestJythonCallGraphShape {
             "script match1.py/thursday",
             "script match1.py/friday",
             "script match1.py/saturday",
-            "script match1.py/sunday"
+            "script match1.py/sunday",
+            "script match1.py/otherDay"
           }
         }
       };
@@ -33,6 +36,14 @@ public class TestMatch extends TestJythonCallGraphShape {
     PythonAnalysisEngine<?> E = makeEngine("match1.py");
     PythonSSAPropagationCallGraphBuilder B = E.defaultCallGraphBuilder();
     CallGraph CG = B.makeCallGraph(B.getOptions());
+    
+    System.err.println(CG);
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
+    CAstCallGraphUtil.dumpCG(
+        (SSAContextInterpreter) B.getContextInterpreter(),
+        B.getPointerAnalysis(),
+        CG);
+
     verifyGraphAssertions(CG, assertionsForMatch1);
   }
 }

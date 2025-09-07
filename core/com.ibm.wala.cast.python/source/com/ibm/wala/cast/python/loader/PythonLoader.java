@@ -228,14 +228,16 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
           PythonTypes.comprehension.getName(), PythonTypes.CodeBody.getName(), this, null);
   final CoreClass object =
       new CoreClass(PythonTypes.object.getName(), PythonTypes.rootTypeName, this, null);
+  final CoreClass sequence =
+      new CoreClass(PythonTypes.sequence.getName(), PythonTypes.Root.getName(), this, null);
   final CoreClass list =
-      new CoreClass(PythonTypes.list.getName(), PythonTypes.Root.getName(), this, null);
+      new CoreClass(PythonTypes.list.getName(), PythonTypes.sequence.getName(), this, null);
   final CoreClass set =
       new CoreClass(PythonTypes.set.getName(), PythonTypes.Root.getName(), this, null);
   final CoreClass dict =
       new CoreClass(PythonTypes.dict.getName(), PythonTypes.Root.getName(), this, null);
   final CoreClass tuple =
-      new CoreClass(PythonTypes.tuple.getName(), PythonTypes.Root.getName(), this, null);
+      new CoreClass(PythonTypes.tuple.getName(), PythonTypes.sequence.getName(), this, null);
   final CoreClass string =
       new CoreClass(PythonTypes.string.getName(), PythonTypes.Root.getName(), this, null);
   final CoreClass trampoline =
