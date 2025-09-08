@@ -12,73 +12,70 @@ import java.io.IOException;
 import org.junit.Test;
 
 public class TestMatch extends TestJythonCallGraphShape {
-	  protected static final Object[][] assertionsForMatch1 =
-		      new Object[][] {
-		        new Object[] {ROOT, new String[] {"script match1.py"}},
-		        new Object[] {
-		          "script match1.py",
-		          new String[] {
-		            "script match1.py/monday",
-		            "script match1.py/tuesday",
-		            "script match1.py/wednesday",
-		            "script match1.py/thursday",
-		            "script match1.py/friday",
-		            "script match1.py/saturday",
-		            "script match1.py/sunday",
-		            "script match1.py/otherDay"
-		          }
-		        }
-		      };
+  protected static final Object[][] assertionsForMatch1 =
+      new Object[][] {
+        new Object[] {ROOT, new String[] {"script match1.py"}},
+        new Object[] {
+          "script match1.py",
+          new String[] {
+            "script match1.py/monday",
+            "script match1.py/tuesday",
+            "script match1.py/wednesday",
+            "script match1.py/thursday",
+            "script match1.py/friday",
+            "script match1.py/saturday",
+            "script match1.py/sunday",
+            "script match1.py/otherDay"
+          }
+        }
+      };
 
-		  @Test
-		  public void testMatch1()
-		      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-		    PythonAnalysisEngine<?> E = makeEngine("match1.py");
-		    PythonSSAPropagationCallGraphBuilder B = E.defaultCallGraphBuilder();
-		    CallGraph CG = B.makeCallGraph(B.getOptions());
+  @Test
+  public void testMatch1()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    PythonAnalysisEngine<?> E = makeEngine("match1.py");
+    PythonSSAPropagationCallGraphBuilder B = E.defaultCallGraphBuilder();
+    CallGraph CG = B.makeCallGraph(B.getOptions());
 
-		    System.err.println(CG);
-		    CAstCallGraphUtil.AVOID_DUMP.set(false);
-		    CAstCallGraphUtil.dumpCG(
-		        (SSAContextInterpreter) B.getContextInterpreter(), B.getPointerAnalysis(), CG);
+    System.err.println(CG);
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
+    CAstCallGraphUtil.dumpCG(
+        (SSAContextInterpreter) B.getContextInterpreter(), B.getPointerAnalysis(), CG);
 
-		    verifyGraphAssertions(CG, assertionsForMatch1);
-		  }
+    verifyGraphAssertions(CG, assertionsForMatch1);
+  }
 
-		  protected static final Object[][] assertionsForMatch2 =
-			      new Object[][] {
-			        new Object[] {ROOT, new String[] {"script match2.py"}},
-			        new Object[] {
-					          "script match2.py",
-					          new String[] {
-					            "script match2.py/doit"}},
-			        new Object[] {
-					          "script match2.py/doit",			        
-			          new String[] {
-			            "script match2.py/monday",
-			            "script match2.py/tuesday",
-			            "script match2.py/wednesday",
-			            "script match2.py/thursday",
-			            "script match2.py/friday",
-			            "script match2.py/saturday",
-			            "script match2.py/sunday",
-			            "script match2.py/otherDay"
-			          }
-			        }
-			      };
+  protected static final Object[][] assertionsForMatch2 =
+      new Object[][] {
+        new Object[] {ROOT, new String[] {"script match2.py"}},
+        new Object[] {"script match2.py", new String[] {"script match2.py/doit"}},
+        new Object[] {
+          "script match2.py/doit",
+          new String[] {
+            "script match2.py/monday",
+            "script match2.py/tuesday",
+            "script match2.py/wednesday",
+            "script match2.py/thursday",
+            "script match2.py/friday",
+            "script match2.py/saturday",
+            "script match2.py/sunday",
+            "script match2.py/otherDay"
+          }
+        }
+      };
 
-			  @Test
-			  public void testMatch2()
-			      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-			    PythonAnalysisEngine<?> E = makeEngine("match2.py");
-			    PythonSSAPropagationCallGraphBuilder B = E.defaultCallGraphBuilder();
-			    CallGraph CG = B.makeCallGraph(B.getOptions());
+  @Test
+  public void testMatch2()
+      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+    PythonAnalysisEngine<?> E = makeEngine("match2.py");
+    PythonSSAPropagationCallGraphBuilder B = E.defaultCallGraphBuilder();
+    CallGraph CG = B.makeCallGraph(B.getOptions());
 
-			    System.err.println(CG);
-			    CAstCallGraphUtil.AVOID_DUMP.set(false);
-			    CAstCallGraphUtil.dumpCG(
-			        (SSAContextInterpreter) B.getContextInterpreter(), B.getPointerAnalysis(), CG);
+    System.err.println(CG);
+    CAstCallGraphUtil.AVOID_DUMP.set(false);
+    CAstCallGraphUtil.dumpCG(
+        (SSAContextInterpreter) B.getContextInterpreter(), B.getPointerAnalysis(), CG);
 
-			    verifyGraphAssertions(CG, assertionsForMatch2);
-			  }
+    verifyGraphAssertions(CG, assertionsForMatch2);
+  }
 }
