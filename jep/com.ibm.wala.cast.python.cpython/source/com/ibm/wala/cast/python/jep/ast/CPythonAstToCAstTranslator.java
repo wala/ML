@@ -1435,8 +1435,10 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
         CAstNode op =
             translateOperator(
                 ops.next().getAttr("__class__", PyObject.class).getAttr("__name__", String.class));
-        CAstNode rhs = visit(exprs.next(), context);
+        PyObject exp = exprs.next();
+		CAstNode rhs = visit(exp, context);
         CAstNode cmpop = ast.makeNode(CAstNode.BINARY_EXPR, op, ln, rhs);
+        ln = visit(exp, context);
         expr =
             expr == null
                 ? cmpop
