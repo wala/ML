@@ -78,4 +78,34 @@ public class TestMatch extends TestJythonCallGraphShape {
 
     verifyGraphAssertions(CG, assertionsForMatch2);
   }
+  
+  protected static final Object[][] assertionsForMatch3 =
+	      new Object[][] {
+	        new Object[] {ROOT, new String[] {"script match3.py"}},
+	        new Object[] {"script match3.py", new String[] {"script match3.py/doit"}},
+	        new Object[] {
+	          "script match3.py/doit",
+	          new String[] {
+	            "script match3.py/weekday",
+	            "script match3.py/weekend",
+	            "script match3.py/otherDay"
+	          }
+	        }
+	      };
+
+	  @Test
+	  public void testMatch3()
+	      throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
+	    PythonAnalysisEngine<?> E = makeEngine("match3.py");
+	    PythonSSAPropagationCallGraphBuilder B = E.defaultCallGraphBuilder();
+	    CallGraph CG = B.makeCallGraph(B.getOptions());
+
+	    System.err.println(CG);
+	    CAstCallGraphUtil.AVOID_DUMP.set(false);
+	    CAstCallGraphUtil.dumpCG(
+	        (SSAContextInterpreter) B.getContextInterpreter(), B.getPointerAnalysis(), CG);
+
+	    verifyGraphAssertions(CG, assertionsForMatch3);
+	  }
+
 }

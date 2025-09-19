@@ -2386,6 +2386,25 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
           ast.makeConstant(true));
     }
 
+    public CAstNode visitMatchOr(PyObject match, WalkContext context) {
+        @SuppressWarnings("unchecked")
+        java.util.List<PyObject> patterns = match.getAttr("patterns", List.class);
+        return patterns.stream().map(o -> visit(o, context)).reduce((l, rhs) -> {
+            CAstNode lhs =
+                    ast.makeNode(
+                        CAstNode.DECL_STMT,
+                        ast.makeConstant(new CAstSymbolImpl("__lhs__", CAstType.DYNAMIC)),
+                        l);
+        	return 
+        		ast.makeNode(CAstNode.BLOCK_EXPR,
+        			lhs,
+        			ast.makeNode(CAstNode.IF_EXPR, 
+        				ast.makeNode(CAstNode.VAR, ast.makeConstant("__lhs__")),
+        				ast.makeNode(CAstNode.VAR, ast.makeConstant("__lhs__")),
+        				rhs));
+        }).get();
+    }
+    
     public CAstNode visitMatch(PyObject match, WalkContext context) {
       CAstNode exprDecl =
           ast.makeNode(
