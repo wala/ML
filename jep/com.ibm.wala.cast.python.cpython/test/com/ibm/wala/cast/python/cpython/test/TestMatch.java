@@ -86,7 +86,10 @@ public class TestMatch extends TestJythonCallGraphShape {
         new Object[] {
           "script match3.py/doit",
           new String[] {
-            "script match3.py/weekday", "script match3.py/weekend", "script match3.py/otherDay"
+            "script match3.py/weekday",
+            "script match3.py/weekend",
+            "script match3.py/otherDay",
+            "script match3.py/somethingElse"
           }
         }
       };

@@ -10,6 +10,10 @@ def otherDay():
     print("other day??")
 
 
+def somethingElse():
+    print("something else")
+
+
 def doit(month):
     for day in [1, 2, 3, 4, 5, 6, 7, otherDay]:
         match day:
@@ -19,6 +23,8 @@ def doit(month):
                 weekend()
             case x if callable(x):
                 x()
+            case _:
+                somethingElse()
 
 
 doit(4)
