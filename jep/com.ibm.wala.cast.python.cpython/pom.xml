@@ -51,12 +51,12 @@
     <dependency>
       <groupId>black.ninia</groupId>
       <artifactId>jep</artifactId>
-      <version>4.2.0</version>
+      <version>4.2.2</version>
     </dependency>
     <dependency>
       <groupId>org.apache.parquet</groupId>
       <artifactId>parquet-avro</artifactId>
-      <version>1.14.3</version>
+      <version>1.16.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
