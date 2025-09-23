@@ -6,9 +6,12 @@ import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.util.CancelException;
 import java.io.IOException;
+import java.util.logging.Logger;
 import org.junit.Test;
 
 public class TestClasses extends TestJythonCallGraphShape {
+
+  private static final Logger LOGGER = Logger.getLogger(TestClasses.class.getName());
 
   protected static final Object[][] assertionsClasses1 =
       new Object[][] {
@@ -114,7 +117,7 @@ public class TestClasses extends TestJythonCallGraphShape {
     SSAPropagationCallGraphBuilder builder =
         (SSAPropagationCallGraphBuilder) engine.defaultCallGraphBuilder();
     CallGraph CG = builder.makeCallGraph(builder.getOptions());
-    System.err.println(CG);
+    LOGGER.info("Call graph for classes3.py: " + CG);
     verifyGraphAssertions(CG, assertionsClasses3);
   }
 }

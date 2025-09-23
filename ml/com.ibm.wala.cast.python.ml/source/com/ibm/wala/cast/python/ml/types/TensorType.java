@@ -359,10 +359,10 @@ public class TensorType implements Iterable<Dimension<?>> {
               ((AstMethod) node.getMethod())
                   .debugInfo()
                   .getInstructionPosition(du.getDef(val).iIndex());
-          System.err.println(p);
+          logger.fine("Position: " + p);
           SourceBuffer b = new SourceBuffer(p);
           String expr = b.toString();
-          System.err.println(expr);
+          logger.fine("Expression: " + expr);
           Integer ival = PythonInterpreter.interpretAsInt(expr);
           if (ival != null) {
             r.add(new NumericDim(ival));

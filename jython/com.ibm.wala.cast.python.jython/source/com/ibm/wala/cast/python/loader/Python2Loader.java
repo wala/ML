@@ -32,9 +32,13 @@ import com.ibm.wala.ipa.cha.IClassHierarchy;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import org.python.core.PyObject;
 
 public class Python2Loader extends PythonLoader {
+
+  private static final Logger LOGGER = Logger.getLogger(Python2Loader.class.getName());
+
   public Python2Loader(IClassHierarchy cha, IClassLoader parent) {
     super(cha, parent, Collections.emptyList());
   }
@@ -97,7 +101,15 @@ public class Python2Loader extends PythonLoader {
                   PyObject x =
                       Python2Interpreter.getInterp().eval(lhs + " " + op.getValue() + " " + rhs);
                   if (x.isNumberType()) {
-                    System.err.println(lhs + " " + op.getValue() + " " + rhs + " -> " + x.asInt());
+                    LOGGER.fine(
+                        "Expression evaluation: "
+                            + lhs
+                            + " "
+                            + op.getValue()
+                            + " "
+                            + rhs
+                            + " -> "
+                            + x.asInt());
                     return x.asInt();
                   }
                 } catch (Exception e) {

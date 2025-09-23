@@ -8,9 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 import org.eclipse.lsp4j.Diagnostic;
 
 public class CloudFunction {
+
+  private static final Logger LOGGER = Logger.getLogger(CloudFunction.class.getName());
 
   public static JsonObject main(JsonObject args) {
     String code = "";
@@ -28,7 +31,7 @@ public class CloudFunction {
     uriTextPairs.put("fakecode.py", code);
     Map<String, List<Diagnostic>> diagnostics = PythonDriver.getDiagnostics(uriTextPairs);
     if (diagnostics == null) {
-      System.err.println("There was an error generating diagnostics");
+      LOGGER.severe("There was an error generating diagnostics");
       return "Error";
     }
     // return diagnostics.toString();

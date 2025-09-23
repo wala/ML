@@ -667,8 +667,8 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
               .isSubclassOf(
                   ik.getConcreteType(),
                   getClassHierarchy().lookupClass(PythonTypes.LambdaMethod))) {
-        System.err.println(ik.getConcreteType().getName().toString());
-        System.err.println(container.getConcreteType().getName().toString());
+        logger.fine("Instance key concrete type: " + ik.getConcreteType().getName().toString());
+        logger.fine("Container concrete type: " + container.getConcreteType().getName().toString());
         TypeReference trampolineClassRef =
             PythonInstanceMethodTrampoline.findOrCreate(
                 ik.getConcreteType().getReference(), getClassHierarchy());

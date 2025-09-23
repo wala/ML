@@ -665,7 +665,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
     assert nm != null : "cannot find var for " + CAstPrinter.print(n, context.getSourceMap());
 
     if ("0".equals(nm)) {
-      System.err.println("got here");
+      LOGGER.fine("got here");
     }
 
     if (isGlobalVar(nm)) {
@@ -1202,7 +1202,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
       int numOfChildren = n.getChildCount();
       for (int i = 0; i < numOfChildren; i++) {
         String val = (String) n.getChild(i).getChild(0).getValue();
-        System.out.println("Hey " + val);
+        LOGGER.fine("Processing global declaration: " + val);
         addGlobal(context.currentScope(), val);
       }
       return true;
