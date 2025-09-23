@@ -12,6 +12,13 @@
     <module>ml</module>
     <module>com.ibm.wala.cast.python.report</module>
   </modules>
+  <distributionManagement>
+    <repository>
+      <id>internal.repo</id>
+      <name>Temporary Staging Repository</name>
+      <url>file://${project.build.directory}/mvn-repo</url>
+    </repository>
+  </distributionManagement>
   <properties>
     <project-version>0.0.1-SNAPSHOT</project-version>
     <maven.compiler.release>25</maven.compiler.release>
@@ -82,6 +89,26 @@
         <groupId>com.ibm.wala</groupId>
         <artifactId>com.ibm.wala.cast.java</artifactId>
         <version>${wala.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.json</groupId>
+        <artifactId>json</artifactId>
+        <version>20250517</version>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-all</artifactId>
+        <version>6.0_BETA</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.jnr</groupId>
+        <artifactId>jnr-constants</artifactId>
+        <version>0.10.4</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
