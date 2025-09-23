@@ -83,7 +83,7 @@ public class Ariadne {
 // Test class
 public class TestParser {
 	private static final Logger LOGGER = Logger.getLogger(TestParser.class.getName());
-	
+
 	public void testMethod() {
 		LOGGER.info("Debug output"); // OK - using logging
 	}
