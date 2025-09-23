@@ -21,7 +21,6 @@
   </distributionManagement>
   <dependencyManagement>
     <dependencies>
-
       <dependency>
         <groupId>org.json</groupId>
         <artifactId>json</artifactId>
@@ -42,8 +41,6 @@
         <artifactId>jnr-constants</artifactId>
         <version>0.10.4</version>
       </dependency>
-
     </dependencies>
   </dependencyManagement>
-
 </project>
