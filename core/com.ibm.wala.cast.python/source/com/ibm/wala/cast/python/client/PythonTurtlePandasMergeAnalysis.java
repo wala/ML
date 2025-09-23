@@ -54,9 +54,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import org.json.JSONObject;
 
 public class PythonTurtlePandasMergeAnalysis extends PythonTurtleAnalysisEngine {
+
+  private static final Logger LOGGER = Logger.getLogger(PythonTurtlePandasMergeAnalysis.class.getName());
 
   class DataFrameState {
     private final String fileName;

@@ -45,8 +45,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 public class PythonTurtleSKLearnClassifierAnalysis extends PythonTurtleAnalysisEngine {
+
+  private static final Logger LOGGER = Logger.getLogger(PythonTurtleSKLearnClassifierAnalysis.class.getName());
 
   private enum State {
     FRESH,
@@ -147,7 +150,7 @@ public class PythonTurtleSKLearnClassifierAnalysis extends PythonTurtleAnalysisE
 
     objs.forEach(
         (tp) -> {
-          System.out.println(" " + tp.position() + " " + tp.value());
+          LOGGER.info("Tensor position and value: " + tp.position() + " " + tp.value());
         });
 
     ISupergraph<BasicBlockInContext<IExplodedBasicBlock>, CGNode> supergraph =
@@ -217,7 +220,7 @@ public class PythonTurtleSKLearnClassifierAnalysis extends PythonTurtleAnalysisE
                   ClassifierState adapt = new ClassifierState(dest.getNode(), i + 1, flow.state);
                   if (!domain.hasMappedIndex(adapt)) {
                     int idx = domain.add(adapt);
-                    System.err.println(adapt + " is " + idx);
+                    LOGGER.fine("Added classifier state: " + adapt + " with index " + idx);
                   }
                   result.add(domain.getMappedIndex(adapt));
                 }
@@ -260,7 +263,7 @@ public class PythonTurtleSKLearnClassifierAnalysis extends PythonTurtleAnalysisE
                                 new ClassifierState(dest.getNode(), pyCall.getDef(0), flow.state);
                             if (!domain.hasMappedIndex(adapt)) {
                               int i = domain.add(adapt);
-                              System.err.println(adapt + " is " + i);
+                              LOGGER.fine("Added return classifier state: " + adapt + " with index " + i);
                             }
                             result.add(domain.getMappedIndex(adapt));
                           }
@@ -568,7 +571,7 @@ public class PythonTurtleSKLearnClassifierAnalysis extends PythonTurtleAnalysisE
                         (n) -> {
                           ClassifierState s = domain.getMappedObject(n);
                           if (s.vn == vn && s.node == bbic.getNode()) {
-                            System.err.println(
+                            LOGGER.info(
                                 ((AstMethod) bbic.getMethod())
                                         .debugInfo()
                                         .getInstructionPosition(inst.iIndex())
@@ -587,7 +590,7 @@ public class PythonTurtleSKLearnClassifierAnalysis extends PythonTurtleAnalysisE
                                                     fp.fst.getLastInstructionIndex()));
                                       }
                                     });
-                            System.err.println(trace);
+                            LOGGER.info("Trace positions: " + trace);
                           }
                         });
               }
