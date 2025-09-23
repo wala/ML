@@ -17,7 +17,7 @@ jobs:
         submodules: 'recursive'
     - name: Update the WALA submodule with its latest commit
       run: git submodule update --recursive --remote
-    - name: Set up JDK 21
+    - name: Set up JDK
       uses: actions/setup-java@v4
       with:
         java-version: '25'
