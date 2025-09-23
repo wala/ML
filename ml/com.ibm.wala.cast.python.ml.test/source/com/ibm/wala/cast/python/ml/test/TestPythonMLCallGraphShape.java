@@ -35,8 +35,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 public abstract class TestPythonMLCallGraphShape extends TestJythonCallGraphShape {
+
+  private static final Logger LOGGER = Logger.getLogger(TestPythonMLCallGraphShape.class.getName());
 
   @FunctionalInterface
   protected interface CheckTensorOps {
@@ -116,7 +119,7 @@ public abstract class TestPythonMLCallGraphShape extends TestJythonCallGraphShap
         (PropagationCallGraphBuilder) e.defaultCallGraphBuilder();
     CallGraph CG = cgBuilder.makeCallGraph(cgBuilder.getOptions());
     TensorTypeAnalysis result = e.performAnalysis(cgBuilder);
-    System.err.println(result);
+    LOGGER.info("Tensor analysis result: " + result);
     check.check(cgBuilder, CG, result);
   }
 

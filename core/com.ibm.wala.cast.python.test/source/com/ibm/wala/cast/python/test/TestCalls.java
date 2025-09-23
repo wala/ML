@@ -170,10 +170,10 @@ public class TestCalls extends TestJythonCallGraphShape {
   public void testCalls8()
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
     CallGraph CG = process("calls8.py");
-    System.err.println(CG);
+    LOGGER.info("Call graph for calls8.py: " + CG);
     CG.forEach(
         (n) -> {
-          System.err.println(n.getIR());
+          LOGGER.fine("Node IR: " + n.getIR());
         });
     // verifyGraphAssertions(CG, assertionsCalls6);
   }
