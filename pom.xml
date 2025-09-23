@@ -14,11 +14,11 @@
   </modules>
   <properties>
     <project-version>0.0.1-SNAPSHOT</project-version>
-    <maven.compiler.release>21</maven.compiler.release>
+    <maven.compiler.release>25</maven.compiler.release>
     <maven.compiler.version>3.14.1</maven.compiler.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build-alias>b000</build-alias>
-    <wala.version>1.6.12</wala.version>
+    <wala.version>1.6.13-SNAPSHOT</wala.version>
     <spotless.version>2.46.1</spotless.version>
     <maven.surefire.version>3.5.4</maven.surefire.version>
     <parallel>both</parallel>
@@ -212,7 +212,7 @@
             </formats>
             <java>
               <googleJavaFormat>
-                <version>1.27.0</version>
+                <version>1.28.0</version>
                 <reflowLongStrings>true</reflowLongStrings>
               </googleJavaFormat>
               <trimTrailingWhitespace/>
