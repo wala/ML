@@ -511,8 +511,9 @@ public abstract class PythonParser<T> extends AbstractParser implements Translat
             public Collection<CAstType> getSupertypes() {
               Collection<CAstType> supertypes = HashSetFactory.make();
               for (expr e : arg0.getInternalBases()) {
-                LOGGER.fine("Class inheritance: " +
-                    arg0.getInternalName()
+                LOGGER.fine(
+                    "Class inheritance: "
+                        + arg0.getInternalName()
                         + " "
                         + arg0.getType()
                         + " extends "

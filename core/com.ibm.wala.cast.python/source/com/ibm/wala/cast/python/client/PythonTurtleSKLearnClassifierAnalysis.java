@@ -49,7 +49,8 @@ import java.util.logging.Logger;
 
 public class PythonTurtleSKLearnClassifierAnalysis extends PythonTurtleAnalysisEngine {
 
-  private static final Logger LOGGER = Logger.getLogger(PythonTurtleSKLearnClassifierAnalysis.class.getName());
+  private static final Logger LOGGER =
+      Logger.getLogger(PythonTurtleSKLearnClassifierAnalysis.class.getName());
 
   private enum State {
     FRESH,
@@ -263,7 +264,8 @@ public class PythonTurtleSKLearnClassifierAnalysis extends PythonTurtleAnalysisE
                                 new ClassifierState(dest.getNode(), pyCall.getDef(0), flow.state);
                             if (!domain.hasMappedIndex(adapt)) {
                               int i = domain.add(adapt);
-                              LOGGER.fine("Added return classifier state: " + adapt + " with index " + i);
+                              LOGGER.fine(
+                                  "Added return classifier state: " + adapt + " with index " + i);
                             }
                             result.add(domain.getMappedIndex(adapt));
                           }

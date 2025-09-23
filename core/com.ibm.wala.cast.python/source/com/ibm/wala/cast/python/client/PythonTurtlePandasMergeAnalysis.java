@@ -59,7 +59,8 @@ import org.json.JSONObject;
 
 public class PythonTurtlePandasMergeAnalysis extends PythonTurtleAnalysisEngine {
 
-  private static final Logger LOGGER = Logger.getLogger(PythonTurtlePandasMergeAnalysis.class.getName());
+  private static final Logger LOGGER =
+      Logger.getLogger(PythonTurtlePandasMergeAnalysis.class.getName());
 
   class DataFrameState {
     private final String fileName;
@@ -487,8 +488,9 @@ public class PythonTurtlePandasMergeAnalysis extends PythonTurtleAnalysisEngine 
             LOGGER.info("Processing method: " + currentMethod);
             currentMethod = bbic.getMethod();
           }
-          LOGGER.info("Instruction: " +
-              bbic.getLastInstruction().toString(bbic.getNode().getIR().getSymbolTable()));
+          LOGGER.info(
+              "Instruction: "
+                  + bbic.getLastInstruction().toString(bbic.getNode().getIR().getSymbolTable()));
           result
               .getResult(bbic)
               .foreach(
