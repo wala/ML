@@ -32,6 +32,7 @@
     <logging.config.file>./logging.properties</logging.config.file>
     <jacoco-version>0.8.13</jacoco-version>
     <argLine/>
+    <skip.print.check>false</skip.print.check>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -252,8 +253,36 @@
             </pom>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>3.1.0</version>
+          <executions>
+            <execution>
+              <id>check-print-statements</id>
+              <phase>validate</phase>
+              <goals>
+                <goal>run</goal>
+              </goals>
+              <configuration>
+                <skip>${skip.print.check}</skip>
+                <target>
+                  <exec executable="bash" failonerror="true">
+                    <arg value="${project.basedir}/scripts/check-print-statements.sh"/>
+                  </exec>
+                </target>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+      </plugin>
+    </plugins>
   </build>
   <reporting>
     <plugins>
