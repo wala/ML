@@ -25,12 +25,12 @@ cd jython3
 ant
 cd dist
 mvn install:install-file \
-  -Dfile=./jython-dev.jar \
-  -DgroupId="org.python" \
-  -DartifactId="jython3" \
-  -Dversion="0.0.1-SNAPSHOT" \
-  -Dpackaging="jar" \
-  -DgeneratePom=true -B
+-Dfile=./jython-dev.jar \
+-DgroupId="org.python" \
+-DartifactId="jython3" \
+-Dversion="0.0.1-SNAPSHOT" \
+-Dpackaging="jar" \
+-DgeneratePom=true -B
 cd ../..
 
 # 5. Build IDE/LSP component (17 seconds - NEVER CANCEL)
@@ -79,7 +79,7 @@ mvn install -B -DskipTests
 ```bash
 # Build creates shaded JAR for CLI usage
 java -cp ml/com.ibm.wala.cast.python.ml/target/com.ibm.wala.cast.python.ml-0.0.1-SNAPSHOT-shaded.jar \
-  com.ibm.wala.cast.python.ml.driver.Ariadne --help
+com.ibm.wala.cast.python.ml.driver.Ariadne --help
 
 # Note: Full functionality requires complete WALA build dependencies
 ```
@@ -88,7 +88,7 @@ java -cp ml/com.ibm.wala.cast.python.ml/target/com.ibm.wala.cast.python.ml-0.0.1
 After making changes, always run through this validation sequence:
 
 1. **Build Validation**: Run full build sequence above and verify no compilation errors
-2. **Format Validation**: Run both spotless and black checks to ensure code style compliance  
+2. **Format Validation**: Run both spotless and black checks to ensure code style compliance
 3. **CLI Testing**: Verify Ariadne CLI shows help output correctly
 4. **Import Testing**: Test basic Java compilation to verify dependencies resolve
 
@@ -110,7 +110,7 @@ After making changes, always run through this validation sequence:
 
 ### Key Components
 - **core/**: Python analysis core (`com.ibm.wala.cast.python`)
-- **ml/**: ML-specific analysis (`com.ibm.wala.cast.python.ml`) 
+- **ml/**: ML-specific analysis (`com.ibm.wala.cast.python.ml`)
 - **jython/**: Jython-based Python parsing
 - **jep/**: JEP (Java Embedded Python) integration
 - **IDE/**: Language Server Protocol implementation
@@ -130,7 +130,7 @@ After making changes, always run through this validation sequence:
 # Quick compile check
 mvn compile -B
 
-# Full build with format checks  
+# Full build with format checks
 mvn spotless:apply -B && black . && mvn install -B -DskipTests
 ```
 
@@ -156,7 +156,7 @@ Always run `mvn spotless:apply -B` and `black .` before committing to avoid CI f
 
 ### Network Dependencies
 - Maven Central for Java dependencies
-- Python Package Index for Python dependencies  
+- Python Package Index for Python dependencies
 - GitHub for git submodules (WALA, IDE, jython3)
 
 ## Project Context
