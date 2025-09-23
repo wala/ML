@@ -170,10 +170,6 @@
               </format>
             </formats>
             <java>
-              <googleJavaFormat>
-                <version>1.19.2</version>
-                <reflowLongStrings>true</reflowLongStrings>
-              </googleJavaFormat>
               <trimTrailingWhitespace/>
               <endWithNewline/>
             </java>
