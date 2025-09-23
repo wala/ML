@@ -16,8 +16,8 @@ git submodule update --init --recursive
 # 2. Install Python dependencies (30 seconds)
 pip install -r requirements.txt
 
-# 3. Set Java environment (required: Java 21 for compilation)
-export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+# 3. Set Java environment (required: Java 25 for compilation)
+export JAVA_HOME=/usr/lib/jvm/temurin-25-jdk-amd64
 export PATH=$JAVA_HOME/bin:$PATH
 
 # 4. Build Jython3 (26 seconds - NEVER CANCEL)
@@ -33,20 +33,25 @@ mvn install:install-file \
 -DgeneratePom=true -B
 cd ../..
 
-# 5. Build IDE/LSP component (17 seconds - NEVER CANCEL)
+# 5. Build WALA from source (5+ minutes - NEVER CANCEL, set timeout to 600+ seconds)
+cd WALA
+./gradlew build publishToMavenLocal -x test -x javadoc -x lintMarkdown
+cd ..
+
+# 6. Build IDE/LSP component (17 seconds - NEVER CANCEL)
 cd IDE/com.ibm.wala.cast.lsp
 mvn install -B -q -DskipTests
 cd ../..
 
-# 6. Build main project (40 seconds - NEVER CANCEL, set timeout to 120+ seconds)
+# 7. Build main project (40 seconds - NEVER CANCEL, set timeout to 120+ seconds)
 mvn install -B -DskipTests
 ```
 
 ### CRITICAL Build Notes
-- **NEVER CANCEL** any build command. Set timeouts to 120+ seconds minimum for Maven builds.
-- **WALA Dependency**: The project requires WALA but building WALA from source needs Java 24 (not available in standard environments). The build works fine using pre-built WALA 1.6.12 from Maven Central.
-- **Java Version**: Use Java 21 for the ML project. Java 24 is only needed if building WALA from source.
-- **Test Failures**: Tests may fail due to missing full WALA build dependencies. Always use `-DskipTests` for reliable builds.
+- **NEVER CANCEL** any build command. Set timeouts to 600+ seconds minimum for WALA builds, 120+ seconds for Maven builds.
+- **WALA Dependency**: The project requires WALA 1.6.13-SNAPSHOT built from the Git submodule. Do NOT use Maven Central versions.
+- **Java Version**: Use Java 25 for the project. This is required for both WALA compilation and the ML project.
+- **Test Failures**: Tests may fail due to dependencies. Always use `-DskipTests` for reliable builds.
 
 ## Validation and Testing
 
@@ -99,12 +104,13 @@ After making changes, always run through this validation sequence:
 | Git submodules | 3 minutes | 300+ seconds | One-time setup, NEVER CANCEL |
 | Jython3 build | 26 seconds | 120+ seconds | NEVER CANCEL |
 | Jython3 install | 6 seconds | 60+ seconds | Maven install step |
+| WALA build | 5+ minutes | 600+ seconds | NEVER CANCEL, requires Java 25 |
 | IDE build | 17 seconds | 60+ seconds | NEVER CANCEL |
 | Main build | 40 seconds | 120+ seconds | NEVER CANCEL |
 | Spotless check | 19 seconds | 60+ seconds | NEVER CANCEL |
 | Black check | 3 seconds | 30+ seconds | Fast Python format check |
 
-**Total clean build time: ~2 hours (including submodules) or ~90 seconds (if submodules exist)**
+**Total clean build time: ~2.5 hours (including submodules) or ~6 minutes (if submodules exist)**
 
 ## Repository Structure
 
@@ -139,7 +145,7 @@ The project's CI pipeline expects this sequence:
 1. Git submodules initialized
 2. Python dependencies installed
 3. Jython3 built and installed
-4. WALA built (or using Maven Central version)
+4. WALA built from source (requires Java 25)
 5. IDE component built
 6. Main project built with tests
 
@@ -148,11 +154,12 @@ Always run `mvn spotless:apply -B` and `black .` before committing to avoid CI f
 ## Troubleshooting
 
 ### Common Issues
-- **Java version errors**: Ensure Java 21 is set in JAVA_HOME and PATH
-- **WALA build failures**: Use pre-built WALA from Maven Central (default behavior)
-- **Test failures**: Expected due to incomplete dependencies, use `-DskipTests`
+- **Java version errors**: Ensure Java 25 is set in JAVA_HOME and PATH
+- **WALA build failures**: Ensure you have Java 25 and sufficient memory (Gradle may require more RAM)
+- **Test failures**: Expected due to dependencies, use `-DskipTests`
 - **Formatting failures**: Run `mvn spotless:apply -B` and `black .` to auto-fix
 - **Submodule issues**: Re-run `git submodule update --init --recursive`
+- **Gradle errors**: WALA build requires proper toolchain setup and network access
 
 ### Network Dependencies
 - Maven Central for Java dependencies
