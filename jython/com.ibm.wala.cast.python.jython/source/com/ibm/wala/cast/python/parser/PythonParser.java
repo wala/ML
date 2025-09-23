@@ -55,6 +55,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 import org.python.antlr.PythonTree;
 import org.python.antlr.ast.Assert;
 import org.python.antlr.ast.Assign;
@@ -124,6 +125,8 @@ import org.python.antlr.base.stmt;
 import org.python.core.PyObject;
 
 public abstract class PythonParser<T> extends AbstractParser implements TranslatorToCAst {
+
+  private static final Logger LOGGER = Logger.getLogger(PythonParser.class.getName());
 
   private static boolean COMPREHENSION_IR = true;
 
@@ -508,7 +511,7 @@ public abstract class PythonParser<T> extends AbstractParser implements Translat
             public Collection<CAstType> getSupertypes() {
               Collection<CAstType> supertypes = HashSetFactory.make();
               for (expr e : arg0.getInternalBases()) {
-                System.out.println(
+                LOGGER.fine("Class inheritance: " +
                     arg0.getInternalName()
                         + " "
                         + arg0.getType()
@@ -1966,7 +1969,7 @@ public abstract class PythonParser<T> extends AbstractParser implements Translat
   }
 
   public void print(PyObject ast) {
-    System.err.println(ast.getClass());
+    LOGGER.fine("AST class: " + ast.getClass());
   }
 
   /**
