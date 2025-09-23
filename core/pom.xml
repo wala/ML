@@ -21,31 +21,7 @@
   </distributionManagement>
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>com.ibm.wala</groupId>
-        <artifactId>com.ibm.wala.util</artifactId>
-        <version>${wala.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.ibm.wala</groupId>
-        <artifactId>com.ibm.wala.shrike</artifactId>
-        <version>${wala.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.ibm.wala</groupId>
-        <artifactId>com.ibm.wala.core</artifactId>
-        <version>${wala.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.ibm.wala</groupId>
-        <artifactId>com.ibm.wala.cast</artifactId>
-        <version>${wala.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.ibm.wala</groupId>
-        <artifactId>com.ibm.wala.cast.java</artifactId>
-        <version>${wala.version}</version>
-      </dependency>
+
       <dependency>
         <groupId>org.json</groupId>
         <artifactId>json</artifactId>
@@ -66,11 +42,7 @@
         <artifactId>jnr-constants</artifactId>
         <version>0.10.4</version>
       </dependency>
-      <dependency>
-        <groupId>com.diffplug.spotless</groupId>
-        <artifactId>spotless-maven-plugin</artifactId>
-        <version>${spotless.version}</version>
-      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
