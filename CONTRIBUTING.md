@@ -36,4 +36,21 @@ You must install the `jython-dev.jar` to your local maven repository.
 
 Build and install to your local Maven repo: `mvn install`
 
+## Code Quality Standards
+
+This project enforces code quality standards during the build process:
+
+### Print Statement Policy
+
+Print statements (`System.out.println`, `System.err.println`) are only allowed in CLI driver classes. The build will fail if inappropriate print statements are detected in core library code.
+
+- **To fix violations**: Replace print statements with appropriate logging using `java.util.logging.Logger`
+- **To skip check during development**: Use `mvn install -Dskip.print.check=true`
+- **For detailed policy**: See [Print Statement Policy](docs/PRINT_STATEMENT_POLICY.md)
+
+### Code Formatting
+
+- **Java**: Uses Spotless with Google Java Format - run `mvn spotless:apply` to auto-fix
+- **Python**: Uses Black - run `black .` to auto-fix
+
 [SO post]: https://stackoverflow.com/questions/4955635/how-to-add-local-jar-files-to-a-maven-project#answer-4955695
