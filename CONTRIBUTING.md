@@ -42,7 +42,7 @@ This project enforces code quality standards during the build process:
 
 ### Print Statement Policy
 
-Print statements (`System.out.println`, `System.err.println`) are only allowed in CLI driver classes. The build will fail if inappropriate print statements are detected in core library code.
+Print statements (`System.out.println`, `System.err.println`) are only allowed in CLI driver classes. The build uses Maven Checkstyle plugin to enforce this policy and will fail if inappropriate print statements are detected in core library code or test classes.
 
 - **To fix violations**: Replace print statements with appropriate logging using `java.util.logging.Logger`
 - **To skip check during development**: Use `mvn install -Dskip.print.check=true`

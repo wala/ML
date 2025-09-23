@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+    "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+    "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+    <!-- Allow print statements in CLI driver classes -->
+    <suppress checks="RegexpSinglelineJava" files=".*[/\\]driver[/\\].*\.java"/>
+    
+    <!-- Allow print statements in main methods of utility classes -->
+    <suppress checks="RegexpSinglelineJava" files=".*PythonFileParser\.java"/>
+    <suppress checks="RegexpSinglelineJava" files=".*PythonModuleParser\.java"/>
+</suppressions>

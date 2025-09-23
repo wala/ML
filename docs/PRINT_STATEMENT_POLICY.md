@@ -4,15 +4,15 @@ This project enforces a policy that prevents inappropriate usage of `System.out.
 
 ## Policy
 
-- **Allowed**: Print statements in CLI driver classes (under `/driver/` packages) and test classes
+- **Allowed**: Print statements in CLI driver classes (under `/driver/` packages)
 - **Allowed**: Print statements in main methods of utility/demo classes (e.g., parser demos)
-- **Not Allowed**: Print statements in core library code, analysis code, or other non-CLI components
+- **Not Allowed**: Print statements in core library code, analysis code, test classes, or other components
 
-For non-CLI code, use `java.util.logging.Logger` instead of print statements.
+For all non-CLI code, including test classes, use `java.util.logging.Logger` instead of print statements.
 
 ## Build Integration
 
-The build automatically checks for inappropriate print statement usage during the `validate` phase:
+The build automatically checks for inappropriate print statement usage during the `validate` phase using Maven Checkstyle plugin:
 
 ```bash
 # This will fail if inappropriate print statements are found
@@ -39,32 +39,32 @@ mvn clean install -Dskip.print.check=true
 If the build fails due to inappropriate print statements:
 
 1. **For debug/info messages**: Replace with appropriate logging:
-   ```java
-   // Bad
-   System.err.println("Debug info: " + value);
-   
-   // Good
-   private static final Logger LOGGER = Logger.getLogger(MyClass.class.getName());
-   LOGGER.fine("Debug info: " + value);
-   ```
+```java
+// Bad
+System.err.println("Debug info: " + value);
+
+// Good
+private static final Logger LOGGER = Logger.getLogger(MyClass.class.getName());
+LOGGER.fine("Debug info: " + value);
+```
 
 2. **For error messages**: Use logging with appropriate levels:
-   ```java
-   // Bad
-   System.err.println("Error occurred: " + exception.getMessage());
-   
-   // Good
-   LOGGER.severe("Error occurred: " + exception.getMessage());
-   ```
+```java
+// Bad
+System.err.println("Error occurred: " + exception.getMessage());
+
+// Good
+LOGGER.severe("Error occurred: " + exception.getMessage());
+```
 
 3. **For CLI output**: Move the code to a driver class or ensure it's in an appropriate location
 
 ## Script Details
 
-The check is implemented by `scripts/check-print-statements.sh` which:
+The check is implemented using Maven Checkstyle plugin with a custom configuration that:
 
-- Scans all Java files for `System.out` and `System.err` usage
-- Excludes files in `/driver/`, `/test/`, and `/test-source/` directories
+- Scans all Java files (including test files) for `System.out` and `System.err` usage
+- Excludes files in `/driver/` directories
 - Allows print statements in main methods of specific utility classes
 - Fails the build if violations are found
 
@@ -75,23 +75,25 @@ The check is implemented by `scripts/check-print-statements.sh` which:
 ```java
 // CLI driver class
 public class Ariadne {
-    public static void main(String[] args) {
-        System.out.println("Analysis complete."); // OK - CLI output
-    }
+	public static void main(String[] args) {
+		System.out.println("Analysis complete."); // OK - CLI output
+	}
 }
 
 // Test class
 public class TestParser {
-    public void testMethod() {
-        System.err.println("Debug output"); // OK - test code
-    }
+	private static final Logger LOGGER = Logger.getLogger(TestParser.class.getName());
+	
+	public void testMethod() {
+		LOGGER.info("Debug output"); // OK - using logging
+	}
 }
 
 // Demo main method
 public class PythonFileParser {
-    public static void main(String[] args) {
-        System.err.println(script); // OK - demo/utility main method
-    }
+	public static void main(String[] args) {
+		System.err.println(script); // OK - demo/utility main method
+	}
 }
 ```
 
@@ -100,15 +102,22 @@ public class PythonFileParser {
 ```java
 // Core library code
 public class PythonParser {
-    public void parseCode() {
-        System.err.println("Parsing..."); // NOT OK - use LOGGER.fine() instead
-    }
+	public void parseCode() {
+		System.err.println("Parsing..."); // NOT OK - use LOGGER.fine() instead
+	}
 }
 
 // Analysis engine
 public class AnalysisEngine {
-    public void analyze() {
-        System.out.println("Found result"); // NOT OK - use LOGGER.info() instead
-    }
+	public void analyze() {
+		System.out.println("Found result"); // NOT OK - use LOGGER.info() instead
+	}
+}
+
+// Test class
+public class TestAnalysis {
+	public void testMethod() {
+		System.err.println("Debug info"); // NOT OK - use LOGGER.info() instead
+	}
 }
 ```

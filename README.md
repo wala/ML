@@ -10,7 +10,7 @@ Since it is built using [WALA], you need to have WALA on your system to use it. 
 
 This project enforces several code quality standards:
 
-- **Print Statement Policy**: Print statements (`System.out`, `System.err`) should only be used in CLI driver classes. See [Print Statement Policy](docs/PRINT_STATEMENT_POLICY.md) for details.
+- **Print Statement Policy**: Print statements (`System.out`, `System.err`) should only be used in CLI driver classes. See [Print Statement Policy](docs/PRINT_STATEMENT_POLICY.md) for details. Enforced via Maven Checkstyle plugin.
 - **Code Formatting**: Java code is formatted using Spotless with Google Java Format.
 - **Python Formatting**: Python code is formatted using Black.
 
