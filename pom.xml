@@ -18,7 +18,7 @@
     <maven.compiler.version>3.14.0</maven.compiler.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build-alias>b000</build-alias>
-    <wala.version>1.6.12-SNAPSHOT</wala.version>
+    <wala.version>1.6.12</wala.version>
     <spotless.version>2.46.1</spotless.version>
     <maven.surefire.version>3.5.4</maven.surefire.version>
     <parallel>both</parallel>
@@ -57,6 +57,31 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <version>3.6.1</version>
+      </dependency>
+      <dependency>
+        <groupId>com.ibm.wala</groupId>
+        <artifactId>com.ibm.wala.util</artifactId>
+        <version>${wala.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.ibm.wala</groupId>
+        <artifactId>com.ibm.wala.shrike</artifactId>
+        <version>${wala.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.ibm.wala</groupId>
+        <artifactId>com.ibm.wala.core</artifactId>
+        <version>${wala.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.ibm.wala</groupId>
+        <artifactId>com.ibm.wala.cast</artifactId>
+        <version>${wala.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.ibm.wala</groupId>
+        <artifactId>com.ibm.wala.cast.java</artifactId>
+        <version>${wala.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
