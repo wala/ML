@@ -20,6 +20,7 @@ import com.ibm.wala.cast.ir.ssa.AssignInstruction;
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
+import com.ibm.wala.cast.ir.translator.AstTranslator.WalkContext;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.loader.DynamicAnnotatableEntity;
@@ -1231,5 +1232,29 @@ public class PythonCAstToIRTranslator extends AstTranslator {
   protected void leaveBlockStmt(CAstNode n, WalkContext c, CAstVisitor<WalkContext> visitor) {
     // TODO Auto-generated method stub
     super.leaveBlockStmt(n, c, visitor);
+  }
+
+  @Override
+  protected boolean visitInstanceOf(
+      CAstNode n, WalkContext context, CAstVisitor<WalkContext> visitor) {
+    int result = context.currentScope().allocateTempValue();
+    context.setValue(n, result);
+    return false;
+  }
+
+  @Override
+  protected void leaveInstanceOf(
+      CAstNode n, WalkContext context, CAstVisitor<WalkContext> visitor) {
+    int result = context.getValue(n);
+    TypeReference ref = (TypeReference) n.getChild(0).getValue();
+
+    context
+        .cfg()
+        .addInstruction(
+            insts.InstanceofInstruction(
+                context.cfg().getCurrentInstruction(),
+                result,
+                context.getValue(n.getChild(1)),
+                ref));
   }
 }

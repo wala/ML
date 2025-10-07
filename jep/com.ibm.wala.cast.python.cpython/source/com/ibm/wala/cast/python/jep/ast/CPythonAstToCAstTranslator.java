@@ -13,6 +13,7 @@ import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
 import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.jep.Util;
+import com.ibm.wala.cast.python.jep.ast.CPythonAstToCAstTranslator.WalkContext;
 import com.ibm.wala.cast.python.loader.JepPythonLoaderFactory;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
 import com.ibm.wala.cast.python.parser.AbstractParser;
@@ -2376,8 +2377,22 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 
     public CAstNode visitMatchAs(PyObject match, WalkContext context) {
       String id = match.getAttr("name", String.class);
+      PyObject pattern = match.getAttr("pattern", PyObject.class);
       if (id == null) {
         return ast.makeConstant(true);
+      } else if (pattern != null) {
+        context.matchDeclNames().add(id);
+        return ast.makeNode(
+            CAstNode.IF_EXPR,
+            visit(pattern, context),
+            ast.makeNode(
+                CAstNode.BLOCK_EXPR,
+                ast.makeNode(
+                    CAstNode.ASSIGN,
+                    ast.makeNode(CAstNode.VAR, ast.makeConstant(id)),
+                    context.matchVar()),
+                ast.makeConstant(true)),
+            ast.makeConstant(false));
       } else {
         context.matchDeclNames().add(id);
         return ast.makeNode(
@@ -2414,11 +2429,45 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
           .get();
     }
 
+    public CAstNode visitMatchSequence(PyObject seq, WalkContext context) {
+      @SuppressWarnings("unchecked")
+      java.util.List<PyObject> patterns = seq.getAttr("patterns", List.class);
+      int i = 0;
+      CAstNode result =
+          ast.makeNode(
+              CAstNode.INSTANCEOF, ast.makeConstant(PythonTypes.sequence), context.matchVar());
+      for (PyObject p : patterns) {
+        int idx = i;
+        WalkContext eltContext =
+            new WalkContext() {
+              @Override
+              public WalkContext getParent() {
+                return context;
+              }
+
+              @Override
+              public CAstNode matchVar() {
+                return ast.makeNode(CAstNode.OBJECT_REF, context.matchVar(), ast.makeConstant(idx));
+              }
+            };
+
+        CAstNode eltNode = visit(p, eltContext);
+
+        result = ast.makeNode(CAstNode.IF_EXPR, result, eltNode, ast.makeConstant(false));
+        i++;
+      }
+
+      return result;
+    }
+
+    private int nextDecl = 0;
+
     public CAstNode visitMatch(PyObject match, WalkContext context) {
+      String exprVarName = "__expr" + nextDecl++ + "__";
       CAstNode exprDecl =
           ast.makeNode(
               CAstNode.DECL_STMT,
-              ast.makeConstant(new CAstSymbolImpl("__expr__", CAstType.DYNAMIC)),
+              ast.makeConstant(new CAstSymbolImpl(exprVarName, CAstType.DYNAMIC)),
               visit(match.getAttr("subject", PyObject.class), context));
       @SuppressWarnings("unchecked")
       java.util.List<PyObject> cases = match.getAttr("cases", List.class);
@@ -2434,7 +2483,7 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 
             @Override
             public CAstNode matchVar() {
-              return ast.makeNode(CAstNode.VAR, ast.makeConstant("__expr__"));
+              return ast.makeNode(CAstNode.VAR, ast.makeConstant(exprVarName));
             }
 
             @Override

@@ -7,9 +7,6 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>com.ibm.wala.cast.python.cpython</artifactId>
-  <properties>
-    <wala.version>1.6.12-SNAPSHOT</wala.version>
-  </properties>
   <dependencies>
     <dependency>
       <groupId>com.ibm.wala</groupId>
