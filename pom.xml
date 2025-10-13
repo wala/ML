@@ -30,7 +30,7 @@
     <maven.surefire.version>3.5.4</maven.surefire.version>
     <parallel>both</parallel>
     <logging.config.file>./logging.properties</logging.config.file>
-    <jacoco-version>0.8.13</jacoco-version>
+    <jacoco-version>0.8.14</jacoco-version>
     <argLine/>
   </properties>
   <dependencyManagement>
