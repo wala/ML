@@ -54,9 +54,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import org.json.JSONObject;
 
 public class PythonTurtlePandasMergeAnalysis extends PythonTurtleAnalysisEngine {
+
+  private static final Logger LOGGER =
+      Logger.getLogger(PythonTurtlePandasMergeAnalysis.class.getName());
 
   class DataFrameState {
     private final String fileName;
@@ -261,7 +265,7 @@ public class PythonTurtlePandasMergeAnalysis extends PythonTurtleAnalysisEngine 
               ValueState vs = domain.getMappedObject(d1);
               if (AccessPath.isRootedAtLocal(ref, vs.fst)) {
                 ValueState nvs = vs.assign(colName == null ? "*" : colName);
-                System.err.println("found " + nvs);
+                LOGGER.fine("Found value state: " + nvs);
                 if (!domain.hasMappedIndex(nvs)) {
                   domain.add(nvs);
                 }
@@ -278,7 +282,7 @@ public class PythonTurtlePandasMergeAnalysis extends PythonTurtleAnalysisEngine 
                 if (!domain.hasMappedIndex(nvs)) {
                   domain.add(nvs);
                 }
-                System.err.println("found " + nvs);
+                LOGGER.fine("Found value state: " + nvs);
                 return IntSetUtil.make(new int[] {d1, domain.getMappedIndex(nvs)});
               } else {
                 return IntSetUtil.make(new int[] {d1});
@@ -316,7 +320,7 @@ public class PythonTurtlePandasMergeAnalysis extends PythonTurtleAnalysisEngine 
                           flow.snd);
                   if (!domain.hasMappedIndex(adapt)) {
                     int idx = domain.add(adapt);
-                    System.err.println(adapt + " is " + idx);
+                    LOGGER.fine("Added adapted value state: " + adapt + " with index " + idx);
                   }
                   result.add(domain.getMappedIndex(adapt));
                 }
@@ -481,16 +485,17 @@ public class PythonTurtlePandasMergeAnalysis extends PythonTurtleAnalysisEngine 
       for (BasicBlockInContext<IExplodedBasicBlock> bbic : stmts) {
         if (bbic.getLastInstruction() != null) {
           if (bbic.getMethod() != currentMethod) {
-            System.err.println("method " + currentMethod);
+            LOGGER.info("Processing method: " + currentMethod);
             currentMethod = bbic.getMethod();
           }
-          System.err.println(
-              bbic.getLastInstruction().toString(bbic.getNode().getIR().getSymbolTable()));
+          LOGGER.info(
+              "Instruction: "
+                  + bbic.getLastInstruction().toString(bbic.getNode().getIR().getSymbolTable()));
           result
               .getResult(bbic)
               .foreach(
                   (i) -> {
-                    System.err.println(domain.getMappedObject(i));
+                    LOGGER.fine("Domain mapped object: " + domain.getMappedObject(i));
                   });
         }
       }
@@ -498,13 +503,13 @@ public class PythonTurtlePandasMergeAnalysis extends PythonTurtleAnalysisEngine 
       for (BasicBlockInContext<IExplodedBasicBlock> bbic : stmts) {
         SSAInstruction inst = bbic.getLastInstruction();
         if (merges.containsKey(inst)) {
-          System.err.println(merges.get(inst));
+          LOGGER.info("Merge instruction: " + merges.get(inst));
           result
               .getResult(bbic)
               .foreach(
                   (i) -> {
                     ValueState val = domain.getMappedObject(i);
-                    System.err.println(val);
+                    LOGGER.fine("Value state: " + val);
                   });
         }
       }
