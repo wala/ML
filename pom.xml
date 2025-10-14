@@ -28,10 +28,12 @@
     <wala.version>1.6.13-SNAPSHOT</wala.version>
     <spotless.version>2.46.1</spotless.version>
     <maven.surefire.version>3.5.4</maven.surefire.version>
+    <checkstyle.version>10.20.1</checkstyle.version>
     <parallel>both</parallel>
     <logging.config.file>./logging.properties</logging.config.file>
     <jacoco-version>0.8.14</jacoco-version>
     <argLine/>
+    <skip.print.check>false</skip.print.check>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -252,8 +254,43 @@
             </pom>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>3.5.0</version>
+          <configuration>
+            <configLocation>checkstyle.xml</configLocation>
+            <includeTestSourceDirectory>true</includeTestSourceDirectory>
+            <encoding>UTF-8</encoding>
+            <consoleOutput>true</consoleOutput>
+            <failsOnError>true</failsOnError>
+            <skip>${skip.print.check}</skip>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>${checkstyle.version}</version>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <id>check-print-statements</id>
+              <goals>
+                <goal>check</goal>
+              </goals>
+              <phase>validate</phase>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+      </plugin>
+    </plugins>
   </build>
   <reporting>
     <plugins>
