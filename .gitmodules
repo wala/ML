@@ -7,4 +7,3 @@
 [submodule "WALA"]
 	path = WALA
 	url = https://github.com/wala/WALA
-	branch = jumpstart-jep-merge
