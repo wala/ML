@@ -2,17 +2,6 @@ package com.ibm.wala.cast.python.test;
 
 import static java.util.Collections.emptyList;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 import com.ibm.wala.cast.python.client.PythonAnalysisEngine;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
@@ -29,6 +18,16 @@ import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashSetFactory;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 
@@ -132,12 +131,12 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
     }
     return sb;
   }
-  
+
   protected void verifyGraphAssertions(CallGraph CG, Object[][] data) {
-	  List<GraphAssertion> asserts = new ArrayList<>();
-	  for(int i = 0; i < data.length; i++) {
-		  asserts.add(new GraphAssertion(data[i][0], (String[]) data[i][1]));
-	  }
-	  verifyGraphAssertions(CG, asserts);
+    List<GraphAssertion> asserts = new ArrayList<>();
+    for (int i = 0; i < data.length; i++) {
+      asserts.add(new GraphAssertion(data[i][0], (String[]) data[i][1]));
+    }
+    verifyGraphAssertions(CG, asserts);
   }
 }
