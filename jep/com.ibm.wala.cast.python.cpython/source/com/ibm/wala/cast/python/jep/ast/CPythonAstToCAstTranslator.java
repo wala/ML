@@ -2460,6 +2460,40 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
       return result;
     }
 
+    public CAstNode visitMatchClass(PyObject cls, WalkContext context) {
+      PyObject klass = cls.getAttr("cls", PyObject.class);
+      CAstNode result =
+          ast.makeNode(CAstNode.INSTANCEOF, visit(klass, context), context.matchVar());
+
+      @SuppressWarnings("unchecked")
+      Iterator<String> names = cls.getAttr("kwd_attrs", List.class).iterator();
+      @SuppressWarnings("unchecked")
+      Iterator<PyObject> patterns = cls.getAttr("kwd_patterns", List.class).iterator();
+      while (names.hasNext()) {
+        String name = names.next();
+        WalkContext eltContext =
+            new WalkContext() {
+
+              @Override
+              public WalkContext getParent() {
+                return context;
+              }
+
+              @Override
+              public CAstNode matchVar() {
+                return ast.makeNode(
+                    CAstNode.OBJECT_REF, context.matchVar(), ast.makeConstant(name));
+              }
+            };
+
+        CAstNode eltNode = visit(patterns.next(), eltContext);
+
+        result = ast.makeNode(CAstNode.IF_EXPR, result, eltNode, ast.makeConstant(false));
+      }
+
+      return result;
+    }
+
     private int nextDecl = 0;
 
     public CAstNode visitMatch(PyObject match, WalkContext context) {
