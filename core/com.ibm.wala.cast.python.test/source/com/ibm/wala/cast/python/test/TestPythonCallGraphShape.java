@@ -13,6 +13,7 @@ import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
+import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
@@ -84,7 +85,8 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 
   protected PythonAnalysisEngine<?> createEngine(List<File> pythonPath)
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    return new PythonAnalysisEngine<Void>(pythonPath) {
+    return new PythonAnalysisEngine<Void>(
+        pythonPath, PythonAnalysisEngine.makeSSAOptions(SSAOptions.defaultOptions())) {
       @Override
       public Void performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
         assert false;

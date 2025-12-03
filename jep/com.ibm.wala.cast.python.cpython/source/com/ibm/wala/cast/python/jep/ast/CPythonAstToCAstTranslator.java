@@ -13,7 +13,6 @@ import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
 import com.ibm.wala.cast.python.ir.PythonCAstToIRTranslator;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.jep.Util;
-import com.ibm.wala.cast.python.jep.ast.CPythonAstToCAstTranslator.WalkContext;
 import com.ibm.wala.cast.python.loader.JepPythonLoaderFactory;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
 import com.ibm.wala.cast.python.parser.AbstractParser;
@@ -2463,7 +2462,11 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
     public CAstNode visitMatchClass(PyObject cls, WalkContext context) {
       PyObject klass = cls.getAttr("cls", PyObject.class);
       CAstNode result =
-          ast.makeNode(CAstNode.INSTANCEOF, visit(klass, context), context.matchVar());
+          ast.makeNode(
+              CAstNode.BINARY_EXPR,
+              CAstOperator.OP_INSTANCE_OF,
+              context.matchVar(),
+              visit(klass, context));
 
       @SuppressWarnings("unchecked")
       Iterator<String> names = cls.getAttr("kwd_attrs", List.class).iterator();
@@ -2575,7 +2578,8 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
   }
 
   public static IClassHierarchy load(Set<SourceModule> files) throws ClassHierarchyException {
-    PythonLoaderFactory loaders = new JepPythonLoaderFactory(Collections.emptyList());
+    PythonLoaderFactory loaders =
+        new JepPythonLoaderFactory(Collections.emptyList(), SSAOptions.defaultOptions());
 
     AnalysisScope scope =
         new AnalysisScope(Collections.singleton(PythonLanguage.Python)) {

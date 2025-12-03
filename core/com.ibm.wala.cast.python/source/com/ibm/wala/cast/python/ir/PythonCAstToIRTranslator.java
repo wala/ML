@@ -20,7 +20,6 @@ import com.ibm.wala.cast.ir.ssa.AssignInstruction;
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
-import com.ibm.wala.cast.ir.translator.AstTranslator.WalkContext;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.loader.DynamicCallSiteReference;
 import com.ibm.wala.cast.python.loader.DynamicAnnotatableEntity;
@@ -57,6 +56,7 @@ import com.ibm.wala.shrike.shrikeBT.IBinaryOpInstruction;
 import com.ibm.wala.shrike.shrikeBT.IBinaryOpInstruction.IOperator;
 import com.ibm.wala.shrike.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.ssa.SSAInstruction;
+import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.ssa.SSAPutInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.FieldReference;
@@ -89,8 +89,8 @@ public class PythonCAstToIRTranslator extends AstTranslator {
   private final Set<Pair<Scope, String>> globalDeclSet = new HashSet<>();
   private static boolean singleFileAnalysis = true;
 
-  public PythonCAstToIRTranslator(IClassLoader loader) {
-    super(loader);
+  public PythonCAstToIRTranslator(IClassLoader loader, SSAOptions ssaOptions) {
+    super(loader, ssaOptions);
   }
 
   public static boolean isSingleFileAnalysis() {
@@ -1246,7 +1246,7 @@ public class PythonCAstToIRTranslator extends AstTranslator {
   protected void leaveInstanceOf(
       CAstNode n, WalkContext context, CAstVisitor<WalkContext> visitor) {
     int result = context.getValue(n);
-    TypeReference ref = (TypeReference) n.getChild(0).getValue();
+    TypeReference type = (TypeReference) n.getChild(0).getValue();
 
     context
         .cfg()
@@ -1255,6 +1255,6 @@ public class PythonCAstToIRTranslator extends AstTranslator {
                 context.cfg().getCurrentInstruction(),
                 result,
                 context.getValue(n.getChild(1)),
-                ref));
+                type));
   }
 }

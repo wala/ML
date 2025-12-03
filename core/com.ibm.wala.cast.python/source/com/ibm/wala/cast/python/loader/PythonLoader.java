@@ -36,6 +36,7 @@ import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInstructionFactory;
+import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.types.FieldReference;
@@ -201,7 +202,7 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
 
   @Override
   protected TranslatorToIR initTranslator(Set<Pair<CAstEntity, ModuleEntry>> topLevelEntities) {
-    return new PythonCAstToIRTranslator(this);
+    return new PythonCAstToIRTranslator(this, ssaOptions);
   }
 
   final CoreClass CodeBody =
@@ -230,6 +231,8 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
       new CoreClass(PythonTypes.object.getName(), PythonTypes.rootTypeName, this, null);
   final CoreClass sequence =
       new CoreClass(PythonTypes.sequence.getName(), PythonTypes.Root.getName(), this, null);
+  final CoreClass slice =
+      new CoreClass(PythonTypes.Slice.getName(), PythonTypes.Root.getName(), this, null);
   final CoreClass list =
       new CoreClass(PythonTypes.list.getName(), PythonTypes.sequence.getName(), this, null);
   final CoreClass set =
@@ -258,22 +261,29 @@ public abstract class PythonLoader extends CAstAbstractModuleLoader {
    */
   protected List<File> pythonPath;
 
-  public PythonLoader(IClassHierarchy cha, IClassLoader parent) {
+  protected SSAOptions ssaOptions;
+
+  public PythonLoader(IClassHierarchy cha, IClassLoader parent, SSAOptions ssaOptions) {
     super(cha, parent);
+    this.ssaOptions = ssaOptions;
   }
 
-  public PythonLoader(IClassHierarchy cha, IClassLoader parent, List<File> pythonPath) {
+  public PythonLoader(
+      IClassHierarchy cha, IClassLoader parent, List<File> pythonPath, SSAOptions ssaOptions) {
     super(cha, parent);
     this.pythonPath = pythonPath;
+    this.ssaOptions = ssaOptions;
   }
 
-  public PythonLoader(IClassHierarchy cha) {
+  public PythonLoader(IClassHierarchy cha, SSAOptions ssaOptions) {
     super(cha);
+    this.ssaOptions = ssaOptions;
   }
 
-  public PythonLoader(IClassHierarchy cha, List<File> pythonPath) {
+  public PythonLoader(IClassHierarchy cha, List<File> pythonPath, SSAOptions ssaOptions) {
     super(cha);
     this.pythonPath = pythonPath;
+    this.ssaOptions = ssaOptions;
   }
 
   public IClass makeMethodBodyType(

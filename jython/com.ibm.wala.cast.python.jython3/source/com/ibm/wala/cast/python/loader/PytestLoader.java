@@ -17,6 +17,7 @@ import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
+import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
@@ -35,13 +36,13 @@ public class PytestLoader extends Python3Loader {
 
   private final Map<String, Map<String, Integer>> testParams = HashMapFactory.make();
 
-  public PytestLoader(IClassHierarchy cha, List<File> pythonPath) {
-    super(cha, pythonPath);
+  public PytestLoader(IClassHierarchy cha, List<File> pythonPath, SSAOptions ssaOptions) {
+    super(cha, pythonPath, ssaOptions);
   }
 
   @Override
   protected TranslatorToIR initTranslator(Set<Pair<CAstEntity, ModuleEntry>> topLevelEntities) {
-    return new PythonCAstToIRTranslator(this) {
+    return new PythonCAstToIRTranslator(this, ssaOptions) {
 
       private boolean isPytestEntry(CAstEntity F) {
         if (F.getType() instanceof CAstType.Function) {

@@ -19,12 +19,14 @@ import com.ibm.wala.cast.ipa.callgraph.AstSSAPropagationCallGraphBuilder;
 import com.ibm.wala.cast.ipa.callgraph.GlobalObjectKey;
 import com.ibm.wala.cast.ir.ssa.AstGlobalRead;
 import com.ibm.wala.cast.ir.ssa.AstPropertyRead;
+import com.ibm.wala.cast.ir.ssa.CAstBinaryOp;
 import com.ibm.wala.cast.python.ipa.summaries.PythonInstanceMethodTrampoline;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.ssa.ForElementGetInstruction;
 import com.ibm.wala.cast.python.ssa.PythonInstructionVisitor;
 import com.ibm.wala.cast.python.ssa.PythonInvokeInstruction;
 import com.ibm.wala.cast.python.types.PythonTypes;
+import com.ibm.wala.cfg.Util;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.NewSiteReference;
@@ -44,13 +46,16 @@ import com.ibm.wala.ipa.callgraph.propagation.PointerKeyFactory;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ipa.callgraph.propagation.StaticFieldKey;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
+import com.ibm.wala.ssa.ISSABasicBlock;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAArrayLoadInstruction;
 import com.ibm.wala.ssa.SSAArrayStoreInstruction;
 import com.ibm.wala.ssa.SSABinaryOpInstruction;
+import com.ibm.wala.ssa.SSAConditionalBranchInstruction;
 import com.ibm.wala.ssa.SSAGetInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInvokeInstruction;
+import com.ibm.wala.ssa.SSAPiInstruction;
 import com.ibm.wala.ssa.SSAPutInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.Descriptor;
@@ -60,6 +65,7 @@ import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.EmptyIterator;
+import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.intset.IntIterator;
 import com.ibm.wala.util.intset.IntSet;
@@ -376,6 +382,142 @@ public class PythonSSAPropagationCallGraphBuilder extends AstSSAPropagationCallG
             }
         }
       }
+    }
+
+    private boolean isIsInstance(SSAInstruction inst) {
+      return inst instanceof SSABinaryOpInstruction
+          && ((SSABinaryOpInstruction) inst).getOperator() == CAstBinaryOp.INSTANCE_OF;
+    }
+
+    @Override
+    public void visitPi(SSAPiInstruction instruction) {
+      assert instruction.getPiBlock() == basicBlock.getNumber();
+      int lval = instruction.getDef();
+      PointerKey lvalKey = getPointerKeyForLocal(lval);
+      final SSAInstruction ctrl =
+          ir.getControlFlowGraph().getNode(instruction.getPiBlock()).getLastInstruction();
+
+      if (ctrl instanceof SSAConditionalBranchInstruction) {
+        ISSABasicBlock fallThruBlock =
+            Util.getFallThruBlock(
+                ir.getControlFlowGraph(),
+                ir.getControlFlowGraph().getBlockForInstruction(ctrl.iIndex()));
+
+        SSAInstruction d1 = du.getDef(instruction.getUse(0));
+        SSAInstruction d2 = du.getDef(instruction.getUse(1));
+        SSAInstruction def = isIsInstance(d1) ? d1 : isIsInstance(d2) ? d2 : null;
+
+        if (def != null) {
+          boolean sense = fallThruBlock.getNumber() != basicBlock.getNumber();
+
+          int objVn = def.getUse(0);
+          PointerKey objKey = getPointerKeyForLocal(objVn);
+          int typeVn = def.getUse(1);
+          PointerKey typeKey = getPointerKeyForLocal(typeVn);
+
+          if (contentsAreInvariant(ir.getSymbolTable(), du, typeVn)) {
+            system.recordImplicitPointsToSet(typeKey);
+            Set<IClass> types = HashSetFactory.make();
+            for (InstanceKey tik : getInvariantContents(typeVn)) {
+              types.add(tik.getConcreteType());
+            }
+
+            if (contentsAreInvariant(ir.getSymbolTable(), du, objVn)) {
+              system.recordImplicitPointsToSet(objKey);
+              InstanceKey[] iks = getInvariantContents(objVn);
+              for (InstanceKey oik : iks) {
+                Iterator<Pair<CGNode, NewSiteReference>> css =
+                    oik.getCreationSites(builder.getCallGraph());
+                boolean everyKill = true;
+                while (css.hasNext()) {
+                  if (types.contains(css.next().fst.getMethod().getDeclaringClass())) {
+                    // true branch
+                    if (sense) {
+                      system.newConstraint(lvalKey, oik);
+                      // false branch
+                    } else {
+                      everyKill = false;
+                    }
+                  }
+                }
+                if (!sense && !everyKill) {
+                  system.newConstraint(lvalKey, oik);
+                }
+              }
+              return;
+            }
+          }
+
+          // at least one is not invariant
+          system.newConstraint(
+              lvalKey,
+              new AbstractOperator<PointsToSetVariable>() {
+                @Override
+                public byte evaluate(PointsToSetVariable lhs, PointsToSetVariable[] rhs) {
+                  if (rhs[0].getValue() != null && rhs[1].getValue() != null) {
+                    MutableIntSet flag = IntSetUtil.make();
+                    Set<IClass> types = HashSetFactory.make();
+                    rhs[0]
+                        .getValue()
+                        .foreach(
+                            i -> {
+                              types.add(system.getInstanceKey(i).getConcreteType());
+                            });
+                    rhs[1]
+                        .getValue()
+                        .foreach(
+                            i -> {
+                              InstanceKey oik = system.getInstanceKey(i);
+                              Iterator<Pair<CGNode, NewSiteReference>> css =
+                                  oik.getCreationSites(builder.getCallGraph());
+                              boolean everyKill = true;
+                              while (css.hasNext()) {
+                                if (types.contains(
+                                    css.next().fst.getMethod().getDeclaringClass())) {
+                                  if (sense) {
+                                    if (system.newConstraint(lvalKey, oik)) {
+                                      flag.add(0);
+                                    }
+                                  } else {
+                                    everyKill = false;
+                                  }
+                                }
+                              }
+                              if (!sense && !everyKill) {
+                                if (system.newConstraint(lvalKey, oik)) {
+                                  flag.add(0);
+                                }
+                              }
+                            });
+                    if (flag.contains(0)) {
+                      return CHANGED;
+                    }
+                  }
+                  return NOT_CHANGED;
+                }
+
+                @Override
+                public int hashCode() {
+                  return objKey.hashCode() * typeKey.hashCode();
+                }
+
+                @Override
+                public boolean equals(Object o) {
+                  return this == o;
+                }
+
+                @Override
+                public String toString() {
+                  return objKey + "is_instance" + typeKey;
+                }
+              },
+              typeKey,
+              objKey);
+        }
+      }
+
+      // other pi nodes...
+      super.visitPi(instruction);
     }
 
     /**

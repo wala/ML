@@ -67,6 +67,9 @@ public class PythonTypes extends AstTypeReference {
   public static final TypeReference LambdaMethod =
       TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LlambdaMethod"));
 
+  public static final TypeReference Slice =
+      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LSlice"));
+
   public static final TypeReference filter =
       TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lfilter"));
 
