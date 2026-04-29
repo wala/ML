@@ -15,8 +15,6 @@ jobs:
       uses: actions/checkout@v5
       with:
         submodules: 'recursive'
-    - name: Update the WALA submodule with its latest commit
-      run: git submodule update --recursive --remote
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
