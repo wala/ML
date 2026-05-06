@@ -22,8 +22,11 @@ import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.intset.OrdinalSet;
 import java.io.File;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class PytestAnalysisEngine<T> extends PythonAnalysisEngine<T> {
+
+  private static final Logger LOGGER = Logger.getLogger(PytestAnalysisEngine.class.getName());
 
   private class PytestTargetSelector implements MethodTargetSelector {
     private final MethodTargetSelector base;
@@ -35,7 +38,7 @@ public class PytestAnalysisEngine<T> extends PythonAnalysisEngine<T> {
     @Override
     public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
       if (site.getDeclaredTarget().getDeclaringClass().equals(PytestLoader.pytestType)) {
-        System.err.println("pytest call site " + site + " " + receiver);
+        LOGGER.fine("Pytest call site: " + site + " " + receiver);
         PointerKeyFactory pkf = builder.getPointerKeyFactory();
         for (SSAAbstractInvokeInstruction inst : caller.getIR().getCalls(site)) {
           PointerKey test = pkf.getPointerKeyForLocal(caller, inst.getUse(0));
@@ -56,7 +59,7 @@ public class PytestAnalysisEngine<T> extends PythonAnalysisEngine<T> {
                             PointerKey names = pkf.getPointerKeyForInstanceField(p, ns);
                             OrdinalSet<InstanceKey> namesObjs =
                                 builder.getPointerAnalysis().getPointsToSet(names);
-                            System.err.println("names: " + namesObjs);
+                            LOGGER.fine("Parameter names: " + namesObjs);
 
                             IField vs =
                                 p.getConcreteType()
@@ -64,11 +67,11 @@ public class PytestAnalysisEngine<T> extends PythonAnalysisEngine<T> {
                             PointerKey values = pkf.getPointerKeyForInstanceField(p, vs);
                             OrdinalSet<InstanceKey> valsObjs =
                                 builder.getPointerAnalysis().getPointsToSet(values);
-                            System.err.println("values: " + valsObjs);
+                            LOGGER.fine("Parameter values: " + valsObjs);
                           });
                 }
               });
-          System.err.println(test + " " + testObjs);
+          LOGGER.fine("Test pointer key and objects: " + test + " " + testObjs);
         }
       }
       return base.getCalleeTarget(caller, site, receiver);

@@ -240,6 +240,6 @@ public class ParquetPythonReader {
               code.add((SourceModule) f);
             });
     IClassHierarchy cha = CPythonAstToCAstTranslator.load(code);
-    System.err.println(cha);
+    LOGGER.info("Class hierarchy: " + cha);
   }
 }

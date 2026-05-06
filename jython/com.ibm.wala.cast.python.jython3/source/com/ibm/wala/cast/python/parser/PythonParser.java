@@ -2058,7 +2058,7 @@ public abstract class PythonParser<T> extends AbstractParser implements Translat
       CAstVisitor child = new CAstVisitor(catches, parser);
       CAstNode block = child.block(arg0.getInternalBody());
 
-      System.err.println("catches: " + handlers);
+      LOGGER.fine("Exception handlers: " + handlers);
 
       return Ast.makeNode(
           CAstNode.TRY,
@@ -2496,7 +2496,7 @@ public abstract class PythonParser<T> extends AbstractParser implements Translat
   }
 
   public void print(PyObject ast) {
-    System.err.println(ast.getClass());
+    LOGGER.fine("AST class: " + ast.getClass());
   }
 
   /**
