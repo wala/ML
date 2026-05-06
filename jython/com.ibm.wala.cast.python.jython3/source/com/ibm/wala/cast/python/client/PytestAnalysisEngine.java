@@ -18,6 +18,7 @@ import com.ibm.wala.ipa.callgraph.propagation.PointerKeyFactory;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
+import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.intset.OrdinalSet;
 import java.io.File;
@@ -76,11 +77,11 @@ public class PytestAnalysisEngine<T> extends PythonAnalysisEngine<T> {
   }
 
   public PytestAnalysisEngine() {
-    loader = new PytestLoaderFactory(emptyList());
+    loader = new PytestLoaderFactory(emptyList(), SSAOptions.defaultOptions());
   }
 
   public PytestAnalysisEngine(List<File> pythonPath) {
-    loader = new PytestLoaderFactory(pythonPath);
+    loader = new PytestLoaderFactory(pythonPath, SSAOptions.defaultOptions());
   }
 
   protected void addBypassLogic(IClassHierarchy cha, AnalysisOptions options) {

@@ -404,6 +404,10 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
     default CAstNode matchVar() {
       return getParent().matchVar();
     }
+
+    default Set<String> matchDeclNames() {
+      return getParent().matchDeclNames();
+    }
   }
 
   private abstract static class Scope {
@@ -483,6 +487,11 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
     @Override
     public boolean isAsync() {
       return async;
+    }
+
+    @Override
+    public Set<String> matchDeclNames() {
+      return Collections.emptySet();
     }
   }
 
@@ -1426,8 +1435,10 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
         CAstNode op =
             translateOperator(
                 ops.next().getAttr("__class__", PyObject.class).getAttr("__name__", String.class));
-        CAstNode rhs = visit(exprs.next(), context);
+        PyObject exp = exprs.next();
+        CAstNode rhs = visit(exp, context);
         CAstNode cmpop = ast.makeNode(CAstNode.BINARY_EXPR, op, ln, rhs);
+        ln = visit(exp, context);
         expr =
             expr == null
                 ? cmpop
@@ -2363,16 +2374,142 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
           visit(match.getAttr("value", PyObject.class), context));
     }
 
+    public CAstNode visitMatchAs(PyObject match, WalkContext context) {
+      String id = match.getAttr("name", String.class);
+      PyObject pattern = match.getAttr("pattern", PyObject.class);
+      if (id == null) {
+        return ast.makeConstant(true);
+      } else if (pattern != null) {
+        context.matchDeclNames().add(id);
+        return ast.makeNode(
+            CAstNode.IF_EXPR,
+            visit(pattern, context),
+            ast.makeNode(
+                CAstNode.BLOCK_EXPR,
+                ast.makeNode(
+                    CAstNode.ASSIGN,
+                    ast.makeNode(CAstNode.VAR, ast.makeConstant(id)),
+                    context.matchVar()),
+                ast.makeConstant(true)),
+            ast.makeConstant(false));
+      } else {
+        context.matchDeclNames().add(id);
+        return ast.makeNode(
+            CAstNode.BLOCK_EXPR,
+            ast.makeNode(
+                CAstNode.ASSIGN,
+                ast.makeNode(CAstNode.VAR, ast.makeConstant(id)),
+                context.matchVar()),
+            ast.makeConstant(true));
+      }
+    }
+
+    public CAstNode visitMatchOr(PyObject match, WalkContext context) {
+      @SuppressWarnings("unchecked")
+      java.util.List<PyObject> patterns = match.getAttr("patterns", List.class);
+      return patterns.stream()
+          .map(o -> visit(o, context))
+          .reduce(
+              (l, rhs) -> {
+                CAstNode lhs =
+                    ast.makeNode(
+                        CAstNode.DECL_STMT,
+                        ast.makeConstant(new CAstSymbolImpl("__lhs__", CAstType.DYNAMIC)),
+                        l);
+                return ast.makeNode(
+                    CAstNode.BLOCK_EXPR,
+                    lhs,
+                    ast.makeNode(
+                        CAstNode.IF_EXPR,
+                        ast.makeNode(CAstNode.VAR, ast.makeConstant("__lhs__")),
+                        ast.makeNode(CAstNode.VAR, ast.makeConstant("__lhs__")),
+                        rhs));
+              })
+          .get();
+    }
+
+    public CAstNode visitMatchSequence(PyObject seq, WalkContext context) {
+      @SuppressWarnings("unchecked")
+      java.util.List<PyObject> patterns = seq.getAttr("patterns", List.class);
+      int i = 0;
+      CAstNode result =
+          ast.makeNode(
+              CAstNode.INSTANCEOF, ast.makeConstant(PythonTypes.sequence), context.matchVar());
+      for (PyObject p : patterns) {
+        int idx = i;
+        WalkContext eltContext =
+            new WalkContext() {
+              @Override
+              public WalkContext getParent() {
+                return context;
+              }
+
+              @Override
+              public CAstNode matchVar() {
+                return ast.makeNode(CAstNode.OBJECT_REF, context.matchVar(), ast.makeConstant(idx));
+              }
+            };
+
+        CAstNode eltNode = visit(p, eltContext);
+
+        result = ast.makeNode(CAstNode.IF_EXPR, result, eltNode, ast.makeConstant(false));
+        i++;
+      }
+
+      return result;
+    }
+
+    public CAstNode visitMatchClass(PyObject cls, WalkContext context) {
+      PyObject klass = cls.getAttr("cls", PyObject.class);
+      CAstNode result =
+          ast.makeNode(
+              CAstNode.BINARY_EXPR,
+              CAstOperator.OP_INSTANCE_OF,
+              context.matchVar(),
+              visit(klass, context));
+
+      @SuppressWarnings("unchecked")
+      Iterator<String> names = cls.getAttr("kwd_attrs", List.class).iterator();
+      @SuppressWarnings("unchecked")
+      Iterator<PyObject> patterns = cls.getAttr("kwd_patterns", List.class).iterator();
+      while (names.hasNext()) {
+        String name = names.next();
+        WalkContext eltContext =
+            new WalkContext() {
+
+              @Override
+              public WalkContext getParent() {
+                return context;
+              }
+
+              @Override
+              public CAstNode matchVar() {
+                return ast.makeNode(
+                    CAstNode.OBJECT_REF, context.matchVar(), ast.makeConstant(name));
+              }
+            };
+
+        CAstNode eltNode = visit(patterns.next(), eltContext);
+
+        result = ast.makeNode(CAstNode.IF_EXPR, result, eltNode, ast.makeConstant(false));
+      }
+
+      return result;
+    }
+
+    private int nextDecl = 0;
+
     public CAstNode visitMatch(PyObject match, WalkContext context) {
-      CAstNode var;
+      String exprVarName = "__expr" + nextDecl++ + "__";
       CAstNode exprDecl =
           ast.makeNode(
               CAstNode.DECL_STMT,
-              var = ast.makeConstant(new CAstSymbolImpl("__expr__", CAstType.DYNAMIC)),
+              ast.makeConstant(new CAstSymbolImpl(exprVarName, CAstType.DYNAMIC)),
               visit(match.getAttr("subject", PyObject.class), context));
       @SuppressWarnings("unchecked")
       java.util.List<PyObject> cases = match.getAttr("cases", List.class);
 
+      Set<String> decls = HashSetFactory.make();
       WalkContext mc =
           new WalkContext() {
 
@@ -2383,7 +2520,12 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
 
             @Override
             public CAstNode matchVar() {
-              return var;
+              return ast.makeNode(CAstNode.VAR, ast.makeConstant(exprVarName));
+            }
+
+            @Override
+            public Set<String> matchDeclNames() {
+              return decls;
             }
           };
 
@@ -2415,12 +2557,29 @@ public class CPythonAstToCAstTranslator extends AbstractParser implements Transl
                       })
                   .collect(Collectors.toList()));
 
+      if (!decls.isEmpty()) {
+        exprDecl =
+            ast.makeNode(
+                CAstNode.BLOCK_STMT,
+                exprDecl,
+                ast.makeNode(
+                    CAstNode.BLOCK_STMT,
+                    decls.stream()
+                        .map(
+                            s ->
+                                ast.makeNode(
+                                    CAstNode.DECL_STMT,
+                                    ast.makeConstant(new CAstSymbolImpl(s, CAstType.DYNAMIC))))
+                        .collect(Collectors.toList())));
+      }
+
       return ast.makeNode(CAstNode.BLOCK_STMT, exprDecl, body);
     }
   }
 
   public static IClassHierarchy load(Set<SourceModule> files) throws ClassHierarchyException {
-    PythonLoaderFactory loaders = new JepPythonLoaderFactory(Collections.emptyList());
+    PythonLoaderFactory loaders =
+        new JepPythonLoaderFactory(Collections.emptyList(), SSAOptions.defaultOptions());
 
     AnalysisScope scope =
         new AnalysisScope(Collections.singleton(PythonLanguage.Python)) {

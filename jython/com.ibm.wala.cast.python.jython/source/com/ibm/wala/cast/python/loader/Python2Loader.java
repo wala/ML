@@ -29,18 +29,19 @@ import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.SourceModule;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
+import com.ibm.wala.ssa.SSAOptions;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import org.python.core.PyObject;
 
 public class Python2Loader extends PythonLoader {
-  public Python2Loader(IClassHierarchy cha, IClassLoader parent) {
-    super(cha, parent, Collections.emptyList());
+  public Python2Loader(IClassHierarchy cha, IClassLoader parent, SSAOptions ssaOptions) {
+    super(cha, parent, Collections.emptyList(), ssaOptions);
   }
 
-  public Python2Loader(IClassHierarchy cha) {
-    super(cha, Collections.emptyList());
+  public Python2Loader(IClassHierarchy cha, SSAOptions ssaOptions) {
+    super(cha, Collections.emptyList(), ssaOptions);
   }
 
   @Override

@@ -33,6 +33,7 @@ import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
+import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
@@ -55,8 +56,8 @@ public class PythonTensorAnalysisEngine extends PythonAnalysisEngine<TensorTypeA
 
   public PythonTensorAnalysisEngine() {}
 
-  public PythonTensorAnalysisEngine(List<File> pythonPath) {
-    super(pythonPath);
+  public PythonTensorAnalysisEngine(List<File> pythonPath, SSAOptions ssaOptions) {
+    super(pythonPath, ssaOptions);
   }
 
   /** A "fake" function name in the summaries that indicates that an API produces a new tensor. */

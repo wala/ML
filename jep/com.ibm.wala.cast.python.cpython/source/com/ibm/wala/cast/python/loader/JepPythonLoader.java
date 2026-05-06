@@ -13,6 +13,7 @@ import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.SourceModule;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
+import com.ibm.wala.ssa.SSAOptions;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -21,23 +22,24 @@ import java.util.stream.Collectors;
 
 public class JepPythonLoader extends PythonLoader {
 
-  public JepPythonLoader(IClassHierarchy cha, IClassLoader parent) {
-    super(cha, parent);
+  public JepPythonLoader(IClassHierarchy cha, IClassLoader parent, SSAOptions ssaOptions) {
+    super(cha, parent, ssaOptions);
     // TODO Auto-generated constructor stub
   }
 
-  public JepPythonLoader(IClassHierarchy cha, IClassLoader parent, List<File> pythonPath) {
-    super(cha, parent, pythonPath);
+  public JepPythonLoader(
+      IClassHierarchy cha, IClassLoader parent, List<File> pythonPath, SSAOptions ssaOptions) {
+    super(cha, parent, pythonPath, ssaOptions);
     // TODO Auto-generated constructor stub
   }
 
-  public JepPythonLoader(IClassHierarchy cha) {
-    super(cha);
+  public JepPythonLoader(IClassHierarchy cha, SSAOptions ssaOptions) {
+    super(cha, ssaOptions);
     // TODO Auto-generated constructor stub
   }
 
-  public JepPythonLoader(IClassHierarchy cha, List<File> pythonPath) {
-    super(cha, pythonPath);
+  public JepPythonLoader(IClassHierarchy cha, List<File> pythonPath, SSAOptions ssaOptions) {
+    super(cha, pythonPath, ssaOptions);
     // TODO Auto-generated constructor stub
   }
 

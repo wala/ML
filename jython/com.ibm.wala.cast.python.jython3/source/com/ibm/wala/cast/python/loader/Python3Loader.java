@@ -31,6 +31,7 @@ import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.SourceModule;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
+import com.ibm.wala.ssa.SSAOptions;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -43,12 +44,13 @@ public class Python3Loader extends PythonLoader {
 
   private static final Logger logger = Logger.getLogger(Python3Loader.class.getName());
 
-  public Python3Loader(IClassHierarchy cha, IClassLoader parent, List<File> pythonPath) {
-    super(cha, parent, pythonPath);
+  public Python3Loader(
+      IClassHierarchy cha, IClassLoader parent, List<File> pythonPath, SSAOptions ssaOptions) {
+    super(cha, parent, pythonPath, ssaOptions);
   }
 
-  public Python3Loader(IClassHierarchy cha, List<File> pythonPath) {
-    super(cha, pythonPath);
+  public Python3Loader(IClassHierarchy cha, List<File> pythonPath, SSAOptions ssaOptions) {
+    super(cha, pythonPath, ssaOptions);
   }
 
   @Override
