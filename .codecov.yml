@@ -1,0 +1,18 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+        informational: false
+    patch:
+      default:
+        target: auto
+        threshold: 2%
+        informational: false
+
+# Inline annotations on changed lines in the PR's "Files changed" view, posted via the
+# GitHub Checks API. Surfaces uncovered patch lines co-located with the code under review,
+# alongside the per-PR Codecov comment (which is enabled by default).
+github_checks:
+  annotations: true
