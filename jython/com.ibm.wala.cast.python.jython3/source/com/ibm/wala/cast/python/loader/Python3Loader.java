@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 import org.python.core.PyObject;
 import org.python.core.PySyntaxError;
 import org.python.core.PyUnicode;
+import org.python.util.PythonInterpreter;
 
 public class Python3Loader extends PythonLoader {
 
@@ -102,6 +103,15 @@ public class Python3Loader extends PythonLoader {
               @Override
               protected Object eval(CAstOperator op, Object lhs, Object rhs) {
                 String s = lhs + " " + op.getValue() + " " + rhs;
+
+                PythonInterpreter ip = Python3Interpreter.getInterp();
+                if (ip == null) {
+                  // Jython init failed (memoized in Python3Interpreter). Skip constant folding
+                  // for this expression; analysis remains correct, just less precise. Don't log
+                  // an "Evaluating:" entry — nothing is actually evaluated, and the underlying
+                  // init failure was already announced from getInterp().
+                  return null;
+                }
                 logger.info(() -> "Evaluating: " + s);
 
                 // Use the Python interpreter to evaluate the expression.
@@ -109,7 +119,7 @@ public class Python3Loader extends PythonLoader {
                 PyObject x;
 
                 try {
-                  x = Python3Interpreter.getInterp().eval(unicode);
+                  x = ip.eval(unicode);
                 } catch (PySyntaxError e) {
                   // Handle syntax errors gracefully.
                   logger.log(WARNING, e, () -> "Syntax error in expression: " + unicode);
