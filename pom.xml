@@ -230,7 +230,7 @@
                 <eclipseWtp>
                   <type>XML</type>
                   <files>
-                    <file>./spotless.xml.prefs</file>
+                    <file>${maven.multiModuleProjectDirectory}/spotless.xml.prefs</file>
                   </files>
                 </eclipseWtp>
                 <trimTrailingWhitespace/>
