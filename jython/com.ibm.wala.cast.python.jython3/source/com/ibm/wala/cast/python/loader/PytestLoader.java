@@ -27,8 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Logger;
 
 public class PytestLoader extends Python3Loader {
+
+  private static final Logger LOGGER = Logger.getLogger(PytestLoader.class.getName());
 
   public static final TypeReference pytestType =
       TypeReference.findOrCreate(PythonTypes.pythonLoader, "LPytest");
@@ -148,6 +151,6 @@ public class PytestLoader extends Python3Loader {
   @Override
   protected void finishTranslation() {
     super.finishTranslation();
-    System.err.println("xxsymbol " + testParams);
+    LOGGER.fine("Test parameters: " + testParams);
   }
 }
