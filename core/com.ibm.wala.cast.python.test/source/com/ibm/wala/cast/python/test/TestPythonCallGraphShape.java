@@ -13,6 +13,7 @@ import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
+import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
@@ -24,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -83,7 +85,8 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
 
   protected PythonAnalysisEngine<?> createEngine(List<File> pythonPath)
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    return new PythonAnalysisEngine<Void>(pythonPath) {
+    return new PythonAnalysisEngine<Void>(
+        pythonPath, PythonAnalysisEngine.makeSSAOptions(SSAOptions.defaultOptions())) {
       @Override
       public Void performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
         assert false;
@@ -129,5 +132,13 @@ public abstract class TestPythonCallGraphShape extends TestCallGraphShape {
       sb.append(n.getIR()).append("\n");
     }
     return sb;
+  }
+
+  protected void verifyGraphAssertions(CallGraph CG, Object[][] data) {
+    List<GraphAssertion> asserts = new ArrayList<>();
+    for (int i = 0; i < data.length; i++) {
+      asserts.add(new GraphAssertion(data[i][0], (String[]) data[i][1]));
+    }
+    verifyGraphAssertions(CG, asserts);
   }
 }

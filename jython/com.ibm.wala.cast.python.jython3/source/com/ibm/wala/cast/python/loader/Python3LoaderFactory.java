@@ -2,6 +2,7 @@ package com.ibm.wala.cast.python.loader;
 
 import com.ibm.wala.classLoader.IClassLoader;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
+import com.ibm.wala.ssa.SSAOptions;
 import java.io.File;
 import java.util.List;
 
@@ -16,13 +17,16 @@ public class Python3LoaderFactory extends PythonLoaderFactory {
    */
   protected List<File> pythonPath;
 
-  public Python3LoaderFactory(List<File> pythonPath) {
+  private SSAOptions ssaOptions;
+
+  public Python3LoaderFactory(List<File> pythonPath, SSAOptions ssaOptions) {
     this.pythonPath = pythonPath;
+    this.ssaOptions = ssaOptions;
   }
 
   @Override
   protected IClassLoader makeTheLoader(IClassHierarchy cha) {
-    return new Python3Loader(cha, this.getPythonPath());
+    return new Python3Loader(cha, this.getPythonPath(), ssaOptions);
   }
 
   /**

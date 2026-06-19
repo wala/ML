@@ -22,6 +22,7 @@ import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
+import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
@@ -46,7 +47,9 @@ public abstract class TestPythonMLCallGraphShape extends TestJythonCallGraphShap
   @Override
   protected PythonTensorAnalysisEngine makeEngine(List<File> pythonPath, String... name)
       throws ClassHierarchyException, IllegalArgumentException, CancelException, IOException {
-    PythonTensorAnalysisEngine engine = new PythonTensorAnalysisEngine(pythonPath);
+    PythonTensorAnalysisEngine engine =
+        new PythonTensorAnalysisEngine(
+            pythonPath, PythonAnalysisEngine.makeSSAOptions(SSAOptions.defaultOptions()));
     Set<Module> modules = HashSetFactory.make();
     for (String n : name) {
       modules.add(getScript(n));

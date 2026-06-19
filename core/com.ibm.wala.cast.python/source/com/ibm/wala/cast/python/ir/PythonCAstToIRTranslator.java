@@ -56,6 +56,7 @@ import com.ibm.wala.shrike.shrikeBT.IBinaryOpInstruction;
 import com.ibm.wala.shrike.shrikeBT.IBinaryOpInstruction.IOperator;
 import com.ibm.wala.shrike.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.ssa.SSAInstruction;
+import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.ssa.SSAPutInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.FieldReference;
@@ -88,8 +89,8 @@ public class PythonCAstToIRTranslator extends AstTranslator {
   private final Set<Pair<Scope, String>> globalDeclSet = new HashSet<>();
   private static boolean singleFileAnalysis = true;
 
-  public PythonCAstToIRTranslator(IClassLoader loader) {
-    super(loader);
+  public PythonCAstToIRTranslator(IClassLoader loader, SSAOptions ssaOptions) {
+    super(loader, ssaOptions);
   }
 
   public static boolean isSingleFileAnalysis() {
@@ -1231,5 +1232,29 @@ public class PythonCAstToIRTranslator extends AstTranslator {
   protected void leaveBlockStmt(CAstNode n, WalkContext c, CAstVisitor<WalkContext> visitor) {
     // TODO Auto-generated method stub
     super.leaveBlockStmt(n, c, visitor);
+  }
+
+  @Override
+  protected boolean visitInstanceOf(
+      CAstNode n, WalkContext context, CAstVisitor<WalkContext> visitor) {
+    int result = context.currentScope().allocateTempValue();
+    context.setValue(n, result);
+    return false;
+  }
+
+  @Override
+  protected void leaveInstanceOf(
+      CAstNode n, WalkContext context, CAstVisitor<WalkContext> visitor) {
+    int result = context.getValue(n);
+    TypeReference type = (TypeReference) n.getChild(0).getValue();
+
+    context
+        .cfg()
+        .addInstruction(
+            insts.InstanceofInstruction(
+                context.cfg().getCurrentInstruction(),
+                result,
+                context.getValue(n.getChild(1)),
+                type));
   }
 }

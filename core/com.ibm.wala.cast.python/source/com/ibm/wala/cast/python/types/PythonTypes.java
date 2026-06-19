@@ -67,6 +67,9 @@ public class PythonTypes extends AstTypeReference {
   public static final TypeReference LambdaMethod =
       TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LlambdaMethod"));
 
+  public static final TypeReference Slice =
+      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("LSlice"));
+
   public static final TypeReference filter =
       TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lfilter"));
 
@@ -102,6 +105,9 @@ public class PythonTypes extends AstTypeReference {
 
   public static final TypeReference coroutine =
       TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lcoroutine"));
+
+  public static final TypeReference sequence =
+      TypeReference.findOrCreate(pythonLoader, TypeName.findOrCreate("Lsequence"));
 
   /** https://docs.python.org/3/library/stdtypes.html#typeiter. */
   public static final TypeReference iterator =

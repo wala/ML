@@ -18,6 +18,7 @@ import com.ibm.wala.cast.python.ipa.summaries.PythonCoroutineTrampolines;
 import com.ibm.wala.cast.python.ipa.summaries.PythonSuper;
 import com.ibm.wala.cast.python.ir.PythonLanguage;
 import com.ibm.wala.cast.python.loader.PythonLoaderFactory;
+import com.ibm.wala.cast.python.ssa.IsInstancePiPolicy;
 import com.ibm.wala.cast.python.types.PythonTypes;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cast.util.Util;
@@ -52,7 +53,9 @@ import com.ibm.wala.ipa.summaries.BypassMethodTargetSelector;
 import com.ibm.wala.ipa.summaries.BypassSyntheticClassLoader;
 import com.ibm.wala.ipa.summaries.XMLMethodSummaryReader;
 import com.ibm.wala.shrike.shrikeBT.Constants;
+import com.ibm.wala.ssa.CompoundPiPolicy;
 import com.ibm.wala.ssa.IRFactory;
+import com.ibm.wala.ssa.InstanceOfPiPolicy;
 import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.ssa.SSAOptions.DefaultValues;
 import com.ibm.wala.ssa.SymbolTable;
@@ -135,10 +138,13 @@ public abstract class PythonAnalysisEngine<T>
 
   private final IRFactory<IMethod> irs = AstIRFactory.makeDefaultFactory();
 
-  public PythonAnalysisEngine(List<File> pythonPath) {
+  public PythonAnalysisEngine(List<File> pythonPath, SSAOptions ssaOptions) {
     PythonLoaderFactory f;
     try {
-      f = loaders.getConstructor(java.util.List.class).newInstance(pythonPath);
+      f =
+          loaders
+              .getConstructor(java.util.List.class, SSAOptions.class)
+              .newInstance(pythonPath, ssaOptions);
     } catch (InstantiationException
         | IllegalAccessException
         | InvocationTargetException
@@ -150,7 +156,7 @@ public abstract class PythonAnalysisEngine<T>
   }
 
   public PythonAnalysisEngine() {
-    this(emptyList());
+    this(emptyList(), makeSSAOptions(SSAOptions.defaultOptions()));
   }
 
   @Override
@@ -363,16 +369,7 @@ public abstract class PythonAnalysisEngine<T>
     addBypassLogic(cha, options);
 
     options.setUseConstantSpecificKeys(true);
-
-    SSAOptions ssaOptions = options.getSSAOptions();
-    ssaOptions.setDefaultValues(
-        new DefaultValues() {
-          @Override
-          public int getDefaultValue(SymbolTable symtab, int valueNumber) {
-            return symtab.getNullConstant();
-          }
-        });
-    options.setSSAOptions(ssaOptions);
+    options.setSSAOptions(makeSSAOptions(options));
 
     PythonSSAPropagationCallGraphBuilder builder = makeBuilder(cha, options, cache);
 
@@ -390,6 +387,24 @@ public abstract class PythonAnalysisEngine<T>
     new PythonSuper(cha).handleSuperCalls(builder, options);
 
     return this.builder = builder;
+  }
+
+  public static SSAOptions makeSSAOptions(AnalysisOptions options) {
+    return makeSSAOptions(options.getSSAOptions());
+  }
+
+  public static SSAOptions makeSSAOptions(SSAOptions ssaOptions) {
+    ssaOptions.setDefaultValues(
+        new DefaultValues() {
+          @Override
+          public int getDefaultValue(SymbolTable symtab, int valueNumber) {
+            return symtab.getNullConstant();
+          }
+        });
+    ssaOptions.setPiNodePolicy(
+        CompoundPiPolicy.createCompoundPiPolicy(
+            InstanceOfPiPolicy.createInstanceOfPiPolicy(), new IsInstancePiPolicy()));
+    return ssaOptions;
   }
 
   public PythonSSAPropagationCallGraphBuilder getCachedCallGraphBuilder() {
